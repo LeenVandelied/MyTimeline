@@ -9,6 +9,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 vi.mock('../src/styles/globals.css', () => ({}))
 
 import GlobalNotFound, { metadata } from './global-not-found'
+import deErrors from '../public/locales/de/errors.json'
+import enErrors from '../public/locales/en/errors.json'
+import esErrors from '../public/locales/es/errors.json'
+import frErrors from '../public/locales/fr/errors.json'
 
 /**
  * #413 (suite) — écran 404 des URL NON MATCHÉES, hors de tout layout.
@@ -35,9 +39,13 @@ let errorSpy: ReturnType<typeof vi.spyOn>
 
 beforeEach(() => {
   errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+  // #627 — horloge factice (`Date` seul) : jeudi 24 septembre 2026, semaine ISO 39.
+  vi.useFakeTimers({ toFake: ['Date'] })
+  vi.setSystemTime(new Date(2026, 8, 24, 9, 0))
 })
 
 afterEach(() => {
+  vi.useRealTimers()
   errorSpy.mockRestore()
   window.history.pushState({}, '', '/')
 })
@@ -51,17 +59,20 @@ describe('GlobalNotFound', () => {
     expect(container.querySelector('html')).not.toBeNull()
     expect(container.querySelector('html > body')).not.toBeNull()
     expect(screen.getByTestId('global-not-found-screen')).toBeInTheDocument()
-    expect(screen.getByTestId('state-screen-code')).toHaveTextContent('404')
     expect(screen.getByTestId('global-not-found-home-link')).toBeInTheDocument()
+    // #627 — éphéméride : le code ne vit plus que dans le sur-titre.
+    expect(screen.queryByTestId('state-screen-code')).not.toBeInTheDocument()
+    expect(screen.getByTestId('state-screen-eyebrow')).toHaveTextContent('Erreur 404')
+    expect(screen.getByTestId('ephemeris-leaf')).toBeInTheDocument()
   })
 
   // WCAG 3.1.1 — l'attribut suit la locale de l'URL, y compris sur cet écran
   // rendu hors du segment `[locale]`.
   it.each([
-    ['/fr/nope', 'fr', 'Page introuvable'],
-    ['/en/nope', 'en', 'Page not found'],
-    ['/es/nope', 'es', 'Página no encontrada'],
-    ['/de/nope', 'de', 'Seite nicht gefunden'],
+    ['/fr/nope', 'fr', "Cette page n'a pas de date dans l'almanach."],
+    ['/en/nope', 'en', "This page isn't in the almanac."],
+    ['/es/nope', 'es', 'Esta página no figura en el almanaque.'],
+    ['/de/nope', 'de', 'Für diese Seite gibt es kein Kalenderblatt.'],
   ])('%s → <html lang="%s"> + titre localisé', (pathname, expectedLang, expectedTitle) => {
     window.history.pushState({}, '', pathname)
     const { container } = render(<GlobalNotFound />)
@@ -79,8 +90,43 @@ describe('GlobalNotFound', () => {
     const { container } = render(<GlobalNotFound />)
 
     expect(container.querySelector('html')).toHaveAttribute('lang', 'fr')
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Page introuvable')
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
+      "Cette page n'a pas de date dans l'almanach.",
+    )
     expect(screen.getByTestId('global-not-found-home-link')).toHaveAttribute('href', '/fr')
+  })
+
+  // #627 — le feuillet suit la locale POSÉE PAR L'EFFET (pas le défaut `fr` du
+  // premier rendu) : jour de semaine, mois et libellé de semaine en allemand.
+  it('/de/nope → feuillet daté du jour, en allemand', () => {
+    window.history.pushState({}, '', '/de/nope')
+    render(<GlobalNotFound />)
+
+    expect(screen.getByTestId('ephemeris-leaf')).toHaveAttribute('data-ephemeris-ready', 'true')
+    expect(screen.getByTestId('ephemeris-weekday').textContent).toBe('Donnerstag')
+    expect(screen.getByTestId('ephemeris-day').textContent).toBe('24')
+    expect(screen.getByTestId('ephemeris-month').textContent).toBe('September 2026')
+    expect(screen.getByTestId('ephemeris-week').textContent).toBe('KW 39')
+  })
+
+  // Les messages sont INLINÉS dans `global-not-found-screen.tsx` (aucun provider
+  // next-intl ici) : ce test échoue dès qu'ils divergent de `errors.json`.
+  it.each([
+    ['fr', frErrors.notFound],
+    ['en', enErrors.notFound],
+    ['es', esErrors.notFound],
+    ['de', deErrors.notFound],
+  ])('%s : libellés identiques à errors.json → notFound.*', (locale, messages) => {
+    window.history.pushState({}, '', `/${locale}/nope`)
+    render(<GlobalNotFound />)
+
+    expect(screen.getByTestId('state-screen-eyebrow').textContent).toBe(messages.eyebrow)
+    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe(messages.title)
+    expect(screen.getByText(messages.description)).toBeInTheDocument()
+    expect(screen.getByTestId('global-not-found-home-link').textContent).toBe(messages.backHome)
+    expect(screen.getByTestId('ephemeris-week').textContent).toBe(
+      messages.week.replace('{week}', '39'),
+    )
   })
 })
 

@@ -59,15 +59,16 @@ export interface TimelineSidebarProps {
 /**
  * Raccourcis de la frise : SOURCE UNIQUE pour la bulle `?` (dashboard, fiche
  * produit) et le pied de sidebar (écran Timeline). `t` est résolu sous
- * `dashboard.timeline`. « Plein écran » pour `F` : c'est le comportement actuel
- * (#597 le changera — la maquette annonce « recadrer », on ne le promet pas).
+ * `dashboard.timeline`. #597 — `F` RECADRE sur les événements affichés (maquette) ;
+ * le plein écran n'a plus de raccourci, seulement son bouton (`help.fullscreen`
+ * reste son `aria-label`).
  */
 export function buildTimelineShortcuts(t: (key: string) => string): Array<[string, string]> {
   return [
     ['T', t('help.today')],
     ['[  ]', t('help.period')],
     ['+  −', t('help.zoom')],
-    ['F', t('help.fullscreen')],
+    ['F', t('help.fit')],
     [t('help.escapeKey'), t('help.escape')],
   ]
 }

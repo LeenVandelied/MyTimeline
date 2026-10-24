@@ -296,6 +296,20 @@ describe('AppShell — sélecteurs intégrés', () => {
     expect(setTheme).toHaveBeenCalledWith('dark')
   })
 
+  // #655 — le shell monte la bascule UNIQUE (`ui/theme-toggle.tsx`, gabarit
+  // `square`) : carré 44×44 inchangé, nom accessible lu dans `common`.
+  it('#655 — la bascule du shell garde son carré 44×44 et annonce la destination', () => {
+    mockResolvedTheme = 'dark'
+    renderShell()
+    const toggle = screen.getByTestId('shell-sidebar-theme-toggle')
+    expect(toggle.className).toContain('h-11')
+    expect(toggle.className).toContain('w-11')
+    expect(toggle).toHaveAttribute('aria-label', 'common.theme.toLight')
+    expect(toggle).toHaveAttribute('aria-pressed', 'true')
+    fireEvent.click(toggle)
+    expect(setTheme).toHaveBeenCalledWith('light')
+  })
+
   it('la déconnexion appelle logout puis redirige vers /login localisé', async () => {
     renderShell()
     fireEvent.click(screen.getByTestId('shell-sidebar-logout'))
@@ -432,9 +446,11 @@ describe('AppShell — palier responsive (#298)', () => {
       expect(el.getAttribute('title'), `${testid} doit porter un title natif`).toBe(name)
     }
     // Le toggle de thème est dynamique (clair/sombre) : nom et title concordent.
+    // #655 — libellés lus dans `common.theme` (bascule unique `ui/theme-toggle`),
+    // valeurs identiques aux anciennes clés `shell.theme` dans les 4 locales.
     const toggle = screen.getByTestId('shell-sidebar-theme-toggle')
-    expect(toggle).toHaveAccessibleName('shell.theme.toDark')
-    expect(toggle.getAttribute('title')).toBe('shell.theme.toDark')
+    expect(toggle).toHaveAccessibleName('common.theme.toDark')
+    expect(toggle.getAttribute('title')).toBe('common.theme.toDark')
   })
 
   it('ne duplique pas la nav mobile de l’écran enveloppé', () => {

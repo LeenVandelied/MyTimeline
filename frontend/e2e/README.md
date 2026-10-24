@@ -110,8 +110,10 @@ dans les deux thèmes.
 
 ## Sélecteurs
 
-Aucun CTA de la landing ne porte de `data-testid`. L'ancrage se fait sur la
-structure et les `href` (`header a[href$="/register"]`, `a.cta-button`,
-`section a[href="#how-it-works"]`, `section a[href$="/register"]:not(.cta-button)`),
-**jamais sur les libellés** : la suite doit rester valable en `fr`/`en`/`es`/`de`.
-Ajouter des `data-testid` sur ces boutons est un follow-up ouvert.
+Depuis #354 (Sprint 103), les CTA de la landing portent un `data-testid`
+(`LANDING_CTA` dans `support/contrast.ts` : `landing-header-cta-register`,
+`landing-header-cta-login`, `landing-hero-cta-primary`, `landing-hero-cta-secondary`,
+`landing-final-cta-register`, et `landing-menu-cta-login` pour la copie du panneau
+burger). Le harnais ne dépend plus ni des `href` ni de la structure : déplacer un CTA
+ne le sort plus des mesures, en retirer l'identifiant fait rougir la spec. Toujours
+**jamais de libellé** : la suite doit rester valable en `fr`/`en`/`es`/`de`.

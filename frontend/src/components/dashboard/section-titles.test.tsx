@@ -27,8 +27,11 @@ import { ProductCarousel } from './ProductCarousel'
  * `e2e/sprint-84-section-titles.spec.ts`.
  */
 vi.mock('next-intl', () => ({
-  useTranslations: (namespace?: string) => (key: string) =>
-    namespace ? `${namespace}.${key}` : key,
+  // #640 — `KpiMarginalia` appelle `t.rich` : le mock l'expose (même rendu `ns.key`).
+  useTranslations: (namespace?: string) => {
+    const t = (key: string) => (namespace ? `${namespace}.${key}` : key)
+    return Object.assign(t, { rich: t })
+  },
 }))
 
 const NOW = new Date(2026, 6, 15, 9, 0, 0)
@@ -78,7 +81,13 @@ describe('#575 — titres de section du dashboard', () => {
       name: 'KpiMarginalia',
       ui: () => (
         <KpiMarginalia
-          kpis={{ activeProducts: 1, eventsThisMonth: 2, currentStreak: 3 }}
+          kpis={{
+            week: 1,
+            weekRecurring: 0,
+            dueSoon: 2,
+            ongoing: 3,
+            busiestCategory: 'Cat',
+          }}
           locale={LOCALE}
         />
       ),
@@ -126,11 +135,13 @@ describe('#575 — titres de section du dashboard', () => {
   it('CompactAgenda : les intertitres de groupe Aujourd’hui/Demain restent en mono capitales', () => {
     // Ce sont des en-têtes de GROUPE (usage que la charte réserve au mono
     // capitales) : ils ne devaient pas être emportés par le correctif.
+    // #632 — le mono capitales passe désormais par `.mt-eyebrow` (DS, détendue en
+    // `de`) ; détail verrouillé par `src/styles/__tests__/eyebrow-consumers.test.tsx`.
     render(<CompactAgenda events={[evt('t', '2026-07-15'), evt('d', '2026-07-16')]} now={NOW} />)
     const today = screen.getByTestId('dashboard-compact-agenda-today').querySelector('span')
     expect(today?.textContent).toBe('dashboard.mobile.compactAgenda.today')
-    expect(today?.className).toContain('uppercase')
-    expect(today?.className).toContain('font-mono')
+    expect(today?.tagName).toBe('SPAN')
+    expect(today?.className).toBe('mt-eyebrow')
   })
 })
 
@@ -156,7 +167,9 @@ describe('#575 — DensityRibbon : eyebrow informatif AU-DESSUS du titre (motif 
 })
 
 describe('#575 — hiérarchie h1 > h2 et GreetingHeader intact', () => {
-  it('GreetingHeader garde son eyebrow et son h1 (motif de référence, NON converti)', () => {
+  // #632 — l'eyebrow passe par `.mt-eyebrow` (arbitrage maquette S109) ; ce test ne
+  // vérifie que sa présence et son ordre, la classe est dans `eyebrow-consumers.test.tsx`.
+  it('GreetingHeader garde son eyebrow et son h1 (motif de référence)', () => {
     render(<GreetingHeader name="Alice" now={NOW} />)
     const h1 = screen.getByRole('heading', { level: 1 })
     expect(h1).toHaveTextContent('dashboard.greeting.morning')

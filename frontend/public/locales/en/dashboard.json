@@ -13,14 +13,18 @@
     "subtitle": "Your upcoming deadlines, at a glance."
   },
   "density": {
-    "label": "Event density over {days} days",
-    "eyebrow": "Density · {days} days",
+    "label": "Event density over the next {days} days",
+    "eyebrow": "Next {days} days",
     "title": "Timeline overview",
+    "today": "Today",
+    "window": "Window · {range}",
+    "viewport": "{days}-day preview window",
     "empty": "No events in this period",
     "openTimeline": "Open timeline"
   },
   "week": {
     "title": "This week",
+    "count": "{count, plural, one {# event} other {# events}}",
     "label": "Current week agenda",
     "empty": "Nothing this week: add an event to follow it here",
     "emptyCta": "Add an event"
@@ -31,13 +35,12 @@
       "title": "Settings",
       "close": "Close menu",
       "language": "Language",
-      "theme": "Theme",
-      "themeLight": "Light",
-      "themeDark": "Dark"
+      "theme": "Theme"
     },
     "scrollHint": "Scroll horizontally",
     "compactAgenda": {
       "title": "Today and tomorrow",
+      "count": "{count, plural, one {# event} other {# events}}",
       "label": "Compact agenda for today and tomorrow",
       "today": "Today",
       "tomorrow": "Tomorrow",
@@ -60,12 +63,15 @@
   "kpi": {
     "title": "At a glance",
     "label": "Key indicators",
-    "activeProducts": "{count, plural, one {active product} other {active products}}",
-    "eventsThisMonth": "{count, plural, one {event this month} other {events this month}}",
-    "currentStreak": "{count, plural, one {day streak} other {days streak}}"
+    "week": "You have <weekNum>{weekValue}</weekNum> {week, plural, one {event} other {events}} this week, including <recurringNum>{recurringValue}</recurringNum> recurring.",
+    "dueSoon": "<dueNum>{dueValue}</dueNum> {due, plural, one {falls} other {fall}} due within <daysNum>{daysValue}</daysNum> {days, plural, one {day} other {days}}.",
+    "ongoing": "<ongoingNum>{ongoingValue}</ongoingNum> {ongoing, plural, one {coverage period is} other {coverage periods are}} currently active.",
+    "busiestCategory": "Busiest category this month: <categoryName>{category}</categoryName>.",
+    "busiestCategoryNone": "—"
   },
   "productList": {
     "title": "Your products",
+    "count": "{count, plural, one {# product} other {# products}}",
     "label": "Product list",
     "empty": "Add a first product to track its deadlines",
     "emptyCta": "Go to products",
@@ -76,11 +82,6 @@
     "totalEvents": "Total events",
     "upcomingEvents": "Upcoming events",
     "completedEvents": "Completed events"
-  },
-  "recentEvents": {
-    "title": "Recent events",
-    "noEvents": "No recent events",
-    "viewAll": "View all"
   },
   "actions": {
     "createEvent": "Create event",
@@ -119,6 +120,7 @@
       "today": "Go to today",
       "period": "Previous / next period",
       "zoom": "Zoom in / out",
+      "fit": "Fit to events",
       "fullscreen": "Fullscreen",
       "escape": "Close panel",
       "escapeKey": "Esc"

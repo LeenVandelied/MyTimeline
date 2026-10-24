@@ -13,14 +13,18 @@
     "subtitle": "Tes échéances des prochains jours, en un coup d'œil."
   },
   "density": {
-    "label": "Densité des événements sur {days} jours",
-    "eyebrow": "Densité · {days} jours",
+    "label": "Densité des événements sur les {days} prochains jours",
+    "eyebrow": "{days} prochains jours",
     "title": "Aperçu de la frise",
+    "today": "Auj.",
+    "window": "Fenêtre · {range}",
+    "viewport": "Fenêtre d’aperçu de {days} jours",
     "empty": "Aucun événement sur la période",
     "openTimeline": "Ouvrir la frise"
   },
   "week": {
     "title": "Cette semaine",
+    "count": "{count, plural, one {# événement} other {# événements}}",
     "label": "Agenda de la semaine courante",
     "empty": "Rien cette semaine : ajoute un événement pour le suivre ici",
     "emptyCta": "Ajouter un événement"
@@ -31,13 +35,12 @@
       "title": "Réglages",
       "close": "Fermer le menu",
       "language": "Langue",
-      "theme": "Thème",
-      "themeLight": "Clair",
-      "themeDark": "Sombre"
+      "theme": "Thème"
     },
     "scrollHint": "Faire défiler horizontalement",
     "compactAgenda": {
       "title": "Aujourd'hui et demain",
+      "count": "{count, plural, one {# événement} other {# événements}}",
       "label": "Agenda compact du jour et du lendemain",
       "today": "Aujourd'hui",
       "tomorrow": "Demain",
@@ -60,12 +63,15 @@
   "kpi": {
     "title": "En bref",
     "label": "Indicateurs clés",
-    "activeProducts": "{count, plural, one {produit actif} other {produits actifs}}",
-    "eventsThisMonth": "{count, plural, one {événement ce mois} other {événements ce mois}}",
-    "currentStreak": "{count, plural, one {jour de série} other {jours de série}}"
+    "week": "Tu as <weekNum>{weekValue}</weekNum> {week, plural, one {événement} other {événements}} cette semaine, dont <recurringNum>{recurringValue}</recurringNum> {recurring, plural, one {récurrent} other {récurrents}}.",
+    "dueSoon": "<dueNum>{dueValue}</dueNum> {due, plural, one {arrive} other {arrivent}} à échéance sous <daysNum>{daysValue}</daysNum> {days, plural, one {jour} other {jours}}.",
+    "ongoing": "<ongoingNum>{ongoingValue}</ongoingNum> {ongoing, plural, one {couverture est en cours} other {couvertures sont en cours}} actuellement.",
+    "busiestCategory": "Catégorie la plus chargée ce mois : <categoryName>{category}</categoryName>.",
+    "busiestCategoryNone": "—"
   },
   "productList": {
     "title": "Tes produits",
+    "count": "{count, plural, one {# produit} other {# produits}}",
     "label": "Liste des produits",
     "empty": "Ajoute un premier produit pour suivre ses échéances",
     "emptyCta": "Aller aux produits",
@@ -76,11 +82,6 @@
     "totalEvents": "Total des événements",
     "upcomingEvents": "Événements à venir",
     "completedEvents": "Événements terminés"
-  },
-  "recentEvents": {
-    "title": "Événements récents",
-    "noEvents": "Aucun événement récent",
-    "viewAll": "Voir tout"
   },
   "actions": {
     "createEvent": "Créer un événement",
@@ -119,6 +120,7 @@
       "today": "Aller à aujourd’hui",
       "period": "Période précédente / suivante",
       "zoom": "Zoom avant / arrière",
+      "fit": "Recadrer sur les événements",
       "fullscreen": "Plein écran",
       "escape": "Fermer le panneau",
       "escapeKey": "Échap"

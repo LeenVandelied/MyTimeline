@@ -2,6 +2,7 @@ import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import { HeaderSection } from './HeaderSection'
+import { LANDING_NAV_ANCHORS } from './landing-nav'
 
 /**
  * #56 / #295 — en-tête extrait du monolithe HomePage.
@@ -20,20 +21,14 @@ vi.mock('next-intl', () => ({
 }))
 
 describe('HeaderSection', () => {
-  it('rend les trois ancres de navigation', () => {
+  it('rend l’ancre de navigation, sans lien vers les sections retirées (#612, #613)', () => {
     render(<HeaderSection locale="fr" />)
-    expect(screen.getByText('common.landing.navigation.features')).toHaveAttribute(
-      'href',
-      '#features',
-    )
     expect(screen.getByText('common.landing.navigation.howItWorks')).toHaveAttribute(
       'href',
       '#how-it-works',
     )
-    expect(screen.getByText('common.landing.navigation.testimonials')).toHaveAttribute(
-      'href',
-      '#testimonials',
-    )
+    expect(screen.queryByText('common.landing.navigation.features')).not.toBeInTheDocument()
+    expect(screen.queryByText('common.landing.navigation.testimonials')).not.toBeInTheDocument()
   })
 
   it('préfixe les liens d’authentification par la locale reçue', () => {
@@ -171,12 +166,32 @@ describe('HeaderSection', () => {
       'true',
     )
 
-    // Les 3 ancres + « Connexion » sont atteignables depuis le panneau (critère 2).
-    expect(within(panel).getByText('common.landing.navigation.features')).toBeInTheDocument()
+    // L'ancre restante + « Connexion » sont atteignables depuis le panneau (critère 2).
+    expect(within(panel).getByText('common.landing.navigation.howItWorks')).toBeInTheDocument()
+    expect(within(panel).queryByText('common.landing.navigation.features')).not.toBeInTheDocument()
     expect(within(panel).getByText('common.login.title').closest('a')).toHaveAttribute(
       'href',
       '/fr/login',
     )
+  })
+
+  /**
+   * #793 — chaque lien d'ancre du panneau porte un `data-testid` DÉRIVÉ de son ancre
+   * (`landing-header-menu-link-<id>`), et le panneau rend exactement les ancres de la
+   * source partagée `LANDING_NAV_ANCHORS` — ni plus, ni moins.
+   */
+  it('donne à chaque ancre du panneau un testid dérivé de la source partagée (#793)', async () => {
+    const user = userEvent.setup()
+    render(<HeaderSection locale="fr" />)
+    await user.click(screen.getByTestId('landing-header-menu-toggle'))
+    const panel = screen.getByTestId('landing-header-menu')
+
+    const links = panel.querySelectorAll('nav a')
+    expect(links).toHaveLength(LANDING_NAV_ANCHORS.length)
+    LANDING_NAV_ANCHORS.forEach((anchor, i) => {
+      expect(links[i]).toHaveAttribute('data-testid', `landing-header-menu-link-${anchor}`)
+      expect(links[i]).toHaveAttribute('href', `#${anchor}`)
+    })
   })
 
   it('ferme le panneau via le bouton fermer, Escape et le clic sur une ancre (#334)', async () => {
@@ -194,8 +209,27 @@ describe('HeaderSection', () => {
 
     await open()
     const panel = screen.getByTestId('landing-header-menu')
-    await user.click(within(panel).getByText('common.landing.navigation.features'))
+    await user.click(within(panel).getByText('common.landing.navigation.howItWorks'))
     expect(screen.queryByTestId('landing-header-menu')).not.toBeInTheDocument()
+  })
+
+  /**
+   * #614 — la barre collante porte un `z-index` (`--z-sticky`), donc un contexte
+   * d'empilement. Monté DEDANS, l'overlay (`z-40`) et le panneau (`z-50`) ne seraient
+   * comparés au reste de la page qu'au palier de la barre. Ce test garde la
+   * STRUCTURE (frères de la barre) ; la peinture est mesurée au navigateur
+   * (`e2e/sprint-104-landing-sticky-nav.spec.ts`).
+   */
+  it('rend le panneau burger et son overlay HORS de la barre collante (#614)', async () => {
+    const user = userEvent.setup()
+    render(<HeaderSection locale="fr" />)
+    const bar = screen.getByTestId('landing-header-bar')
+    expect(bar.classList.contains('landing-sticky-bar')).toBe(true)
+    expect(bar.querySelector('header')).not.toBeNull()
+
+    await user.click(screen.getByTestId('landing-header-menu-toggle'))
+    expect(bar.contains(screen.getByTestId('landing-header-menu'))).toBe(false)
+    expect(bar.contains(screen.getByTestId('landing-header-menu-overlay'))).toBe(false)
   })
 
   it('restaure le focus sur le burger à la fermeture (#334)', async () => {

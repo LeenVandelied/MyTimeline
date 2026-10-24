@@ -18,19 +18,23 @@
     "maintenance": "El servidor está en mantenimiento. Por favor, inténtelo más tarde"
   },
   "notFound": {
-    "title": "Página no encontrada",
-    "description": "La página que buscas no existe o ha sido movida.",
+    "eyebrow": "Error 404",
+    "title": "Esta página no figura en el almanaque.",
+    "description": "La página que buscas ha caducado, se ha mudado o nunca existió. Vuelve al inicio: siempre es una apuesta segura.",
+    "week": "Semana {week}",
     "backHome": "Volver al inicio"
   },
   "forbidden": {
     "title": "Acceso denegado",
     "description": "No tienes los permisos necesarios para acceder a esta página.",
-    "backHome": "Volver al inicio"
+    "backHome": "Volver al inicio",
+    "incidentRef": "Referencia para soporte:"
   },
   "crash": {
     "title": "Se produjo un error",
     "description": "Ocurrió un problema inesperado. Inténtalo de nuevo o vuelve al inicio.",
     "retry": "Reintentar",
-    "backHome": "Volver al inicio"
+    "backHome": "Volver al inicio",
+    "incidentRef": "Referencia para soporte:"
   }
 }

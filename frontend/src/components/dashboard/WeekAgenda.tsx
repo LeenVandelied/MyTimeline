@@ -2,13 +2,13 @@
 
 import React, { useMemo } from 'react'
 import { useTranslations } from 'next-intl'
-import { getWeekRange, getEventsInRange } from '@/components/timeline'
 import type { FullCalendarEvent } from '@/types/event'
 import { parseLocalDate, toLocalIsoDate } from '@/lib/date-iso'
 import { Button } from '@/components/ui/button'
 import { TOUCH_TARGET_BUTTON } from '@/lib/touchTarget'
 import { EmptyState } from '@/components/shared/EmptyState'
 import { useOpenCreateEvent } from '@/components/layout/CreateEventContext'
+import { currentWeekEvents } from './kpis'
 
 /**
  * #80 — Agenda de la semaine courante (spec Designer §3). Filets (pas de `<Card>`
@@ -43,8 +43,8 @@ export const WeekAgenda: React.FC<WeekAgendaProps> = ({
 }) => {
   const t = useTranslations('dashboard.week')
   const openCreateEvent = useOpenCreateEvent()
-  const { start, end } = useMemo(() => getWeekRange(now), [now])
-  const weekEvents = useMemo(() => getEventsInRange(events, start, end), [events, start, end])
+  // #640 — même source que le compteur « … événements cette semaine » de `KpiMarginalia`.
+  const weekEvents = useMemo(() => currentWeekEvents(events, now), [events, now])
   const dayFmt = useMemo(
     () => new Intl.DateTimeFormat(locale, { weekday: 'short', day: 'numeric' }),
     [locale],
@@ -66,8 +66,26 @@ export const WeekAgenda: React.FC<WeekAgendaProps> = ({
               un `h1..h6` la règle HORS layer de `base.css` le ramène à 1.08 — ce
               couple n'est donc sûr QUE sur un titre, pas sur un `<p>`/`<span>`.
           Pas d'eyebrow au-dessus : l'ancien ne portait que ce même libellé, aucune
-          information (plage, compteur) à conserver. */}
-      <h2 className="text-ink font-display text-sm font-semibold">{t('title')}</h2>
+          information (plage, compteur) à conserver.
+          #664 — Maquette `Dashboard.dc.html` (relevé S109) : AUCUN sur-titre sur
+          « Cette semaine » (absence voulue) ; à droite du titre, un compteur
+          « {n} événements » (mono, `ink-muted`, sans capitales) = lignes affichées.
+          Ce n'est pas un sur-titre : ni `.mt-eyebrow`, ni capitales. Taille : 11 px
+          maquette → `text-2xs` (13 px), plus bas palier de l'échelle du DS. Pas de
+          compteur dans l'état vide (son message dit déjà « rien »).
+          `min-w-0` + `whitespace-nowrap` + `flex-wrap` : en `de`, un titre long passe
+          à la ligne au lieu de pousser le compteur hors de la carte. */}
+      <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+        <h2 className="text-ink font-display min-w-0 text-sm font-semibold">{t('title')}</h2>
+        {weekEvents.length > 0 && (
+          <p
+            className="text-ink-muted text-2xs font-mono whitespace-nowrap"
+            data-testid="dashboard-week-count"
+          >
+            {t('count', { count: weekEvents.length })}
+          </p>
+        )}
+      </div>
       {weekEvents.length === 0 ? (
         // #630 — État vide partagé (compact) + CTA « Ajouter un événement » qui ouvre
         // LE drawer du shell (`useOpenCreateEvent`). Hors shell (null), aucun bouton

@@ -230,7 +230,7 @@ class CorsAllowedOriginsConfigIntegrationTest {
         UrlBasedCorsConfigurationSource probeCorsConfigurationSource(
                 @Value(SecurityConfig.ALLOWED_ORIGINS_EXPRESSION) List<String> allowedOrigins) {
             return (UrlBasedCorsConfigurationSource)
-                    new SecurityConfig(null, null, allowedOrigins).corsConfigurationSource();
+                    new SecurityConfig(null, null, null, allowedOrigins).corsConfigurationSource();
         }
     }
 }

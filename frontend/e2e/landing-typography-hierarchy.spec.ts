@@ -14,6 +14,17 @@ import { devToolingSelectors } from './support/dev-tooling'
  *   2. le chiffre d'étape était figé en `<=` sous `md` (AC #1) pour tolérer l'égalité
  *      27/27 avec le h2 — ce qui masquait qu'il DÉPASSAIT le h3 de sa propre étape.
  *      Il est en `<` STRICT contre le h3 ET le h2, à tous les paliers.
+ *
+ * #612 (Sprint 103) — LE CHIFFRE D'ÉTAPE N'EXISTE PLUS. « Comment ça marche » est une
+ * frise de cas d'usage à 4 jalons (pastille colorée + étiquette mono + titre + texte),
+ * plus des étapes numérotées. L'élément secondaire qui se rattache au `h3` est
+ * désormais l'ÉTIQUETTE mono du jalon (`data-testid="landing-frieze-tag"`) ; elle
+ * reprend EXACTEMENT les contraintes du chiffre (palier DS, interligne explicite,
+ * `<` STRICT contre le h3 de son jalon ET le h2 de section, à tous les paliers).
+ * Aucune attente n'est donc affaiblie : seule la cible change, parce que l'ancienne a
+ * disparu. Paliers : titre de jalon `text-sm` (17, maquette 18) et étiquette
+ * `text-2xs` (13, maquette 10.5) À TOUTES LES LARGEURS — la maquette ne les fait pas
+ * varier, d'où des cibles plates ci-dessous (le h3 valait 21/27 avec `md:text-lg`).
  * Un test qui encode le défaut au lieu de l'AC ne protège rien : il le rend permanent.
  *
  * POURQUOI UN E2E ET PAS UN UNITAIRE. Rien ici ne se déduit d'une classe utilitaire :
@@ -88,15 +99,15 @@ const DS_SCALE = [13, 15, 17, 21, 27, 35, 45, 57]
  */
 function expected(width: number) {
   if (width < 640) {
-    return { h1: 35, subtitle: 21, h2: 27, h3: 21, stepNumber: 17, footerWordmark: 21 }
+    return { h1: 35, subtitle: 21, h2: 27, h3: 17, milestoneTag: 13, footerWordmark: 21 }
   }
   if (width < 768) {
-    return { h1: 35, subtitle: 21, h2: 27, h3: 21, stepNumber: 17, footerWordmark: 27 }
+    return { h1: 35, subtitle: 21, h2: 27, h3: 17, milestoneTag: 13, footerWordmark: 27 }
   }
   if (width < 1024) {
-    return { h1: 45, subtitle: 27, h2: 35, h3: 27, stepNumber: 21, footerWordmark: 27 }
+    return { h1: 45, subtitle: 27, h2: 35, h3: 17, milestoneTag: 13, footerWordmark: 27 }
   }
-  return { h1: 57, subtitle: 27, h2: 35, h3: 27, stepNumber: 21, footerWordmark: 27 }
+  return { h1: 57, subtitle: 27, h2: 35, h3: 17, milestoneTag: 13, footerWordmark: 27 }
 }
 
 /**
@@ -114,24 +125,25 @@ const DEV_TOOLING = devToolingSelectors()
  * de la classe : en Tailwind 4 une utilitaire `text-*` pose aussi
  * `line-height: var(--tw-leading, var(--text-<n>--line-height))`. La règle
  * `base.css:53` (`h1..h6 { line-height: var(--leading-tight) }`) est HORS layer et
- * couvre donc les titres — mais PAS le `<p>` du sous-titre ni le `<span>` du
- * chiffre. Sans `leading-*` explicite sur ces deux-là :
+ * couvre donc les titres — mais PAS le `<p>` du sous-titre ni le `<p>` de
+ * l'étiquette de jalon (#612 ; c'était le `<span>` du chiffre d'étape). Sans
+ * `leading-*` explicite sur ces deux-là :
  *   · `text-md` → `--text-md--line-height` n'existe chez personne (nom propre au
  *     DS) → déclaration invalide au calcul → héritage silencieux du parent ;
  *   · `md:text-lg` → `--text-lg--line-height` existe, au DÉFAUT TAILWIND 1.5556.
  * Un test qui ne mesure que `font-size` laisserait donc passer la moitié du défaut.
  */
-const EXPECTED_RATIO = { h1: 1.08, subtitle: 1.5, stepNumber: 1 } as const
+const EXPECTED_RATIO = { h1: 1.08, subtitle: 1.5, milestoneTag: 1.5 } as const
 
 interface TypeMetrics {
   h1: number
   subtitle: number
   h2: number
   h3: number
-  stepNumber: number
+  milestoneTag: number
   h1Ratio: number
   subtitleRatio: number
-  stepNumberRatio: number
+  milestoneTagRatio: number
   h1Count: number
   h1Lines: number
   h1BoxWidth: number
@@ -186,10 +198,10 @@ async function readTypography(page: Page, devTooling: string[]): Promise<TypeMet
     const h2 = how.querySelector('h2')
     const h3 = how.querySelector('h3')
     if (!h2 || !h3) throw new Error('titres de #how-it-works introuvables')
-    // La pastille chiffrée est le `<span>` de la carte d'étape, au-dessus du `h3`.
-    const card = h3.parentElement
-    const stepNumber = card?.querySelector('span')
-    if (!stepNumber) throw new Error('chiffre d’étape introuvable')
+    // #612 — l'étiquette mono du jalon, dans le MÊME jalon que ce `h3`.
+    const milestone = h3.closest('[data-testid="landing-frieze-milestone"]')
+    const milestoneTag = milestone?.querySelector('[data-testid="landing-frieze-tag"]')
+    if (!milestoneTag) throw new Error('étiquette de jalon introuvable')
 
     // Nombre de LIGNES du h1 : compté sur les boîtes de ligne réelles d'un Range,
     // jamais déduit d'une hauteur.
@@ -256,10 +268,10 @@ async function readTypography(page: Page, devTooling: string[]): Promise<TypeMet
       subtitle: px(subtitle),
       h2: px(h2),
       h3: px(h3),
-      stepNumber: px(stepNumber),
+      milestoneTag: px(milestoneTag),
       h1Ratio: ratio(h1),
       subtitleRatio: ratio(subtitle),
-      stepNumberRatio: ratio(stepNumber),
+      milestoneTagRatio: ratio(milestoneTag),
       h1Count: h1s.length,
       h1Lines,
       h1BoxWidth: +h1.getBoundingClientRect().width.toFixed(1),
@@ -303,7 +315,7 @@ test.describe('Landing — hiérarchie typographique', () => {
           `${locale}: h1 ${m.h1}px×${m.h1Ratio}/${m.h1Lines}l (boîte ${m.h1BoxWidth} dans ` +
             `colonne ${m.columnWidth}), sous-titre ${m.subtitle}px×${m.subtitleRatio}, ` +
             `h2 ${m.h2}px, h3 ${m.h3}px, ` +
-            `chiffre ${m.stepNumber}px×${m.stepNumberRatio}, wordmark footer ` +
+            `étiquette ${m.milestoneTag}px×${m.milestoneTagRatio}, wordmark footer ` +
             `${m.footerWordmark}px/${m.footerWordmarkLines}l (desc ${m.footerDescription}px), ` +
             `max page ${m.pageMaxFontPx}px (${m.pageMaxFontTag}), ` +
             `max footer ${m.footerMaxFontPx}px (${m.footerMaxFontTag})`,
@@ -334,21 +346,25 @@ test.describe('Landing — hiérarchie typographique', () => {
           width < 768 ? 'text-md' : 'md:text-lg',
         )
         check('h2 de #how-it-works', m.h2, want.h2, width < 768 ? 'text-lg' : 'md:text-xl')
-        check('h3 d’étape', m.h3, want.h3, width < 768 ? 'text-md' : 'md:text-lg')
+        check('h3 de jalon', m.h3, want.h3, 'text-sm')
         check(
-          'chiffre d’étape',
-          m.stepNumber,
-          want.stepNumber,
-          width < 768 ? 'text-sm' : 'md:text-md',
-          ' À `text-lg` il vaudrait 27px partout : ÉGAL au h2 sous md, et au-dessus ' +
-            'du h3 de sa propre étape (21px).',
+          'étiquette de jalon',
+          m.milestoneTag,
+          want.milestoneTag,
+          'text-2xs',
+          ' Elle doit rester STRICTEMENT sous le h3 de son jalon (17px).',
         )
 
         // INTERLIGNES — la moitié invisible du correctif (cf. EXPECTED_RATIO).
         for (const [label, got, wanted, token] of [
           ['h1 du hero', m.h1Ratio, EXPECTED_RATIO.h1, 'base.css:53, hors layer'],
           ['sous-titre du hero', m.subtitleRatio, EXPECTED_RATIO.subtitle, 'leading-normal'],
-          ['chiffre d’étape', m.stepNumberRatio, EXPECTED_RATIO.stepNumber, 'leading-none'],
+          [
+            'étiquette de jalon',
+            m.milestoneTagRatio,
+            EXPECTED_RATIO.milestoneTag,
+            'leading-normal',
+          ],
         ] as const) {
           expect
             .soft(
@@ -432,30 +448,37 @@ test.describe('Landing — hiérarchie typographique', () => {
           .toBeLessThan(m.h1)
 
         /**
-         * AC #1 — LE CHIFFRE D'ÉTAPE, STRICTEMENT, À TOUS LES PALIERS.
+         * AC #1 — L'ÉLÉMENT SECONDAIRE DU JALON, STRICTEMENT, À TOUS LES PALIERS.
+         * (#612 : l'étiquette mono a remplacé le chiffre d'étape ; historique ci-dessous
+         * conservé parce qu'il dit POURQUOI l'inégalité est stricte.)
          *
          * La tolérance `<=` qui vivait ici est SUPPRIMÉE : elle figeait l'égalité
          * chiffre/h2 sous `md` (27 = 27) que produisait `text-lg`, et laissait passer
          * le vrai défaut — le chiffre DÉPASSAIT alors le h3 de sa propre étape
          * (27 > 21). Le chiffre est décoratif et se rattache au h3 de SON étape :
          * c'est contre lui que l'AC « strictement plus petit » se mesure d'abord.
-         * `text-sm md:text-md` (17 / 21) le place sous les deux, partout.
+         * Chaîne désormais tenue : étiquette 13 < h3 de jalon 17 < h2 27/35.
          */
         expect
           .soft(
-            m.stepNumber,
-            `chiffre d’étape (${m.stepNumber}px) vs h3 de son étape (${m.h3}px) à ` +
+            m.milestoneTag,
+            `étiquette de jalon (${m.milestoneTag}px) vs h3 de son jalon (${m.h3}px) à ` +
               `${width} px en ${locale} — l'AC #1 exige STRICTEMENT plus petit que le ` +
-              `titre auquel il se rattache. Égalité = échec : ` +
-              `\`text-md md:text-lg\` rendrait 21/27, soit exactement le h3.`,
+              `titre auquel elle se rattache. Égalité = échec.`,
           )
           .toBeLessThan(m.h3)
         expect
           .soft(
-            m.stepNumber,
-            `chiffre d’étape (${m.stepNumber}px) vs h2 de section (${m.h2}px) à ${width} px ` +
-              `en ${locale} — STRICTEMENT plus petit exigé à TOUS les paliers, y compris ` +
-              `sous md (c'est là que \`text-lg\` produisait l'égalité 27/27).`,
+            m.h3,
+            `h3 de jalon (${m.h3}px) vs h2 de section (${m.h2}px) à ${width} px en ` +
+              `${locale} — le titre de jalon doit rester STRICTEMENT sous le titre de section.`,
+          )
+          .toBeLessThan(m.h2)
+        expect
+          .soft(
+            m.milestoneTag,
+            `étiquette de jalon (${m.milestoneTag}px) vs h2 de section (${m.h2}px) à ` +
+              `${width} px en ${locale} — STRICTEMENT plus petit exigé à TOUS les paliers.`,
           )
           .toBeLessThan(m.h2)
 
@@ -465,7 +488,7 @@ test.describe('Landing — hiérarchie typographique', () => {
           subtitle: m.subtitle,
           h2: m.h2,
           h3: m.h3,
-          stepNumber: m.stepNumber,
+          milestoneTag: m.milestoneTag,
           footerWordmark: m.footerWordmark,
         })) {
           expect
@@ -627,7 +650,7 @@ test.describe('Landing — invariance des métriques typographiques au thème', 
     expect.soft(dark.h1, 'h1 en thème sombre').toBe(want.h1)
     expect.soft(dark.h2, 'h2 en thème sombre').toBe(want.h2)
     expect.soft(dark.h3, 'h3 en thème sombre').toBe(want.h3)
-    expect.soft(dark.stepNumber, 'chiffre d’étape en thème sombre').toBe(want.stepNumber)
+    expect.soft(dark.milestoneTag, 'étiquette de jalon en thème sombre').toBe(want.milestoneTag)
     expect.soft(dark.footerWordmark, 'wordmark du footer en thème sombre').toBe(want.footerWordmark)
   })
 })

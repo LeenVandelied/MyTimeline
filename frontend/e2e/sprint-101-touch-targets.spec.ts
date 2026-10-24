@@ -3,6 +3,7 @@ import { expect, test } from './support/fixtures'
 import { PROD } from './support/accounts'
 import { ensureAuthenticated } from './support/auth'
 import { neutralizeDevToolingPointerEvents } from './support/dev-tooling'
+import { MIN_TARGET, expectAllTouchable, expectHitbox } from './support/touch-targets'
 import {
   getUserId,
   gotoProducts,
@@ -42,163 +43,18 @@ import {
  * DESKTOP (1280×800) : hauteurs d'AVANT #754 (cva `h-9` = 36, `sm` = 32, croix 16×16,
  * aucun pseudo peint) — un `max-md:` devenu utilitaire nu ferait rougir.
  *
+ * MESURE : `support/touch-targets.ts` (#768), profil complet (défaut du module).
+ *
  * PRÉREQUIS RUNTIME : backend + front avec proxy `/api` (runbook E2E S47).
  */
 
-const MIN_TARGET = 44
-/** Tolérance sous-pixel : `h-11` = 2.75rem = 44 px exacts à dpr 1. */
-const EPS = 0.01
 const MOBILE = { width: 375, height: 812 } as const
 const DESKTOP = { width: 1280, height: 800 } as const
 const BUDGET = 15_000
 const API = '/api'
 
-interface Measured {
-  label: string
-  width: number
-  height: number
-}
-
-/** Mesure TOUS les contrôles interactifs visibles sous `root` (motif PAT-S99-001). */
-async function measureControls(root: Locator): Promise<Measured[]> {
-  return root.evaluate((el) => {
-    const SELECTOR = [
-      'button',
-      'a[href]',
-      'input:not([type="hidden"])',
-      'textarea',
-      'select',
-      '[role="button"]',
-      '[role="combobox"]',
-      '[role="option"]',
-      '[role="switch"]',
-      '[role="checkbox"]',
-      // `ui/switch.tsx` : l'input est à 0×0 (opacity 0), la cible visible est le label.
-      'label.mt-switch',
-    ].join(',')
-    const isExempt = (node: Element): boolean =>
-      node.classList.contains('sr-only') ||
-      node.closest('[aria-hidden="true"]') !== null ||
-      (node.getAttribute('data-testid') ?? '').endsWith('-grabber')
-    const nodes = [el, ...Array.from(el.querySelectorAll(SELECTOR))].filter((n) =>
-      n.matches(SELECTOR),
-    )
-    return nodes
-      .filter((n) => !isExempt(n))
-      .map((n) => {
-        const r = n.getBoundingClientRect()
-        const style = getComputedStyle(n)
-        // Cible étendue par `::before` (TOUCH_TARGET_HITBOX) : la taille EFFECTIVE est
-        // celle du pseudo. Sa zone réellement cliquable (non rognée) est prouvée à part
-        // par `expectHitbox` sur chaque cible concernée.
-        const pseudo = getComputedStyle(n, '::before')
-        const extended = pseudo.content !== 'none' && pseudo.position === 'absolute'
-        const text = (n.textContent ?? '').trim().slice(0, 30)
-        const label =
-          n.getAttribute('data-testid') ?? n.getAttribute('aria-label') ?? (text || n.tagName)
-        return {
-          label: `${n.tagName.toLowerCase()}[${label}]${extended ? '(::before)' : ''}`,
-          width: extended ? Math.max(r.width, parseFloat(pseudo.width) || 0) : r.width,
-          height: extended ? Math.max(r.height, parseFloat(pseudo.height) || 0) : r.height,
-          visible:
-            r.width > 0 &&
-            r.height > 0 &&
-            style.visibility !== 'hidden' &&
-            style.opacity !== '0' &&
-            style.display !== 'none',
-        }
-      })
-      .filter((m) => m.visible)
-      .map(({ label, width, height }) => ({ label, width, height }))
-  })
-}
-
-function report(step: string, measured: Measured[]): void {
-  const rows = measured.map((m) => `${m.label}=${Math.round(m.width)}x${m.height.toFixed(1)}`)
-  console.log(`[#754 ${step}] ${rows.join(' | ')}`)
-}
-
-/** Au moins `min` contrôles mesurés (anti-vacuité), chacun >= 44×44. */
-async function expectAllTouchable(step: string, root: Locator, min: number): Promise<void> {
-  const measured = await measureControls(root)
-  report(step, measured)
-  expect
-    .soft(measured.length, `${step} : nombre de contrôles mesurés (garde anti-vacuité)`)
-    .toBeGreaterThanOrEqual(min)
-  const undersized = measured.filter(
-    (m) => m.height < MIN_TARGET - EPS || m.width < MIN_TARGET - EPS,
-  )
-  expect.soft(undersized, `${step} : contrôles sous 44×44 px`).toEqual([])
-}
-
-interface HitboxMeasure {
-  content: string
-  pseudoWidth: number
-  pseudoHeight: number
-  host: string
-  /** Coins de la zone 44×44 où `elementFromPoint` désigne l'hôte (4 attendus). */
-  cornersHit: boolean[]
-  /** Nœud touché au centre puis aux 4 coins — diagnostic d'un coin rogné. */
-  debug: string[]
-}
-
-/**
- * Zone cliquable d'une cible dense : boîte du `::before` + preuve par
- * `elementFromPoint` aux 4 coins de la zone 44×44 centrée sur l'hôte. Le pseudo
- * est attribué à l'hôte par le hit-testing : un coin qui désigne l'hôte HORS de
- * sa boîte visible ne peut venir que du pseudo, et un ancêtre qui le rogne
- * (PIT-S41-001) fait désigner autre chose.
- */
-async function measureHitbox(target: Locator): Promise<HitboxMeasure> {
-  // `behavior: 'instant'` : un `scroll-behavior: smooth` hérité animerait le
-  // défilement et la mesure lirait une position intermédiaire (hors viewport).
-  await target.evaluate((el) =>
-    el.scrollIntoView({ block: 'center', inline: 'center', behavior: 'instant' }),
-  )
-  await expect
-    .poll(() => target.evaluate((el) => el.getBoundingClientRect().bottom <= window.innerHeight))
-    .toBe(true)
-  return target.evaluate((el, size) => {
-    const host = el.getBoundingClientRect()
-    const pseudo = getComputedStyle(el, '::before')
-    const cx = host.left + host.width / 2
-    const cy = host.top + host.height / 2
-    const half = size / 2 - 1
-    const corners: Array<[number, number]> = [
-      [cx - half, cy - half],
-      [cx + half, cy - half],
-      [cx - half, cy + half],
-      [cx + half, cy + half],
-    ]
-    return {
-      content: pseudo.content,
-      pseudoWidth: parseFloat(pseudo.width) || 0,
-      pseudoHeight: parseFloat(pseudo.height) || 0,
-      host: `${host.width.toFixed(1)}x${host.height.toFixed(1)}`,
-      cornersHit: corners.map(([x, y]) => {
-        const hit = document.elementFromPoint(x, y)
-        return hit !== null && (hit === el || el.contains(hit))
-      }),
-      debug: [[cx, cy], ...corners].map(([x, y]) => {
-        const hit = document.elementFromPoint(x, y)
-        return `${Math.round(x)},${Math.round(y)}:${hit ? hit.tagName + '.' + (hit.getAttribute('class') ?? '').slice(0, 40) + '#' + (hit.getAttribute('data-testid') ?? '') : 'null'}`
-      }),
-    }
-  }, MIN_TARGET)
-}
-
-async function expectHitbox(label: string, target: Locator): Promise<void> {
-  await expect(target).toBeVisible({ timeout: BUDGET })
-  const m = await measureHitbox(target)
-  console.log(
-    `[#754 hitbox ${label}] hôte=${m.host} ::before=${m.pseudoWidth}x${m.pseudoHeight} coins=${m.cornersHit.join(',')}${m.cornersHit.every(Boolean) ? '' : ` — nœuds touchés (centre puis coins) : ${m.debug.join(' ; ')}`}`,
-  )
-  expect.soft(m.pseudoWidth, `${label} : largeur du ::before`).toBeGreaterThanOrEqual(MIN_TARGET)
-  expect.soft(m.pseudoHeight, `${label} : hauteur du ::before`).toBeGreaterThanOrEqual(MIN_TARGET)
-  expect
-    .soft(m.cornersHit, `${label} : zone 44×44 cliquable aux 4 coins (hôte ${m.host})`)
-    .toEqual([true, true, true, true])
-}
+/** Profil COMPLET de `support/touch-targets.ts` (#768) : `aria-hidden` exempté, hitbox `::before` comptée. */
+const TOUCH = { tag: '#754' } as const
 
 /** Le dialog Radix qui contient `testId`. */
 function dialogWith(page: Page, testId: string): Locator {
@@ -266,13 +122,17 @@ test.describe('#754 — drawers et dialogues mobiles (375 px) : cibles >= 44 px'
     await pickFirstSwatch(create, 'product')
     await expect(create.getByRole('button', { name: 'Réinitialiser' })).toBeVisible()
     // croix + nom + catégorie + pastilles + reset + date + annuler + créer.
-    await expectAllTouchable('ProductDrawer (création)', create, 10)
+    await expectAllTouchable('ProductDrawer (création)', create, 10, TOUCH)
     await page.keyboard.press('Escape')
     await expect(create).toBeHidden({ timeout: BUDGET })
 
     // Rangée dense de la liste : icônes éditer / archiver (pseudo-hitbox).
-    await expectHitbox('products-edit', page.getByTestId(`products-edit-${product.id}`))
-    await expectHitbox('products-archive', page.getByTestId(`products-archive-${product.id}`))
+    await expectHitbox('products-edit', page.getByTestId(`products-edit-${product.id}`), TOUCH)
+    await expectHitbox(
+      'products-archive',
+      page.getByTestId(`products-archive-${product.id}`),
+      TOUCH,
+    )
     // Review S101 — deux zones 44×44 VOISINES ne doivent pas se toucher : l'icône
     // « archiver », peinte après, capterait sinon le bord de « éditer ». Zones
     // centrées sur leur hôte ⇒ écart entre zones = entraxe − 44. Avec `gap-1` il
@@ -294,13 +154,13 @@ test.describe('#754 — drawers et dialogues mobiles (375 px) : cibles >= 44 px'
     await page.getByTestId(`products-edit-${product.id}`).click({ timeout: BUDGET })
     const edit = dialogWith(page, 'product-drawer-form')
     await expect(edit.getByTestId('product-drawer-archive')).toBeVisible({ timeout: BUDGET })
-    await expectAllTouchable('ProductDrawer (édition)', edit, 6)
+    await expectAllTouchable('ProductDrawer (édition)', edit, 6, TOUCH)
 
     // Archivage : DeleteConfirmDialog (variante archive), confirmé pour atteindre la restauration.
     await edit.getByTestId('product-drawer-archive').click({ timeout: BUDGET })
     const archive = dialogWith(page, 'delete-confirm-button')
     await expect(archive).toBeVisible({ timeout: BUDGET })
-    await expectAllTouchable('DeleteConfirmDialog (archivage produit)', archive, 3)
+    await expectAllTouchable('DeleteConfirmDialog (archivage produit)', archive, 3, TOUCH)
     await archive.getByTestId('delete-confirm-button').click({ timeout: BUDGET })
     await expect(archive).toBeHidden({ timeout: BUDGET })
 
@@ -311,12 +171,12 @@ test.describe('#754 — drawers et dialogues mobiles (375 px) : cibles >= 44 px'
       .getByRole('tab', { name: 'Archivés' })
       .click({ timeout: BUDGET })
     const restore = page.getByTestId(`products-archived-restore-${product.id}`)
-    await expectHitbox('products-archived-restore', restore)
+    await expectHitbox('products-archived-restore', restore, TOUCH)
     await restore.click({ timeout: BUDGET })
     const restoreDialog = page.getByTestId('product-restore-confirm')
     await expect(restoreDialog).toBeVisible({ timeout: BUDGET })
     // croix + annuler + confirmer.
-    await expectAllTouchable('RestoreProductDialog', restoreDialog, 3)
+    await expectAllTouchable('RestoreProductDialog', restoreDialog, 3, TOUCH)
     await page.getByTestId('product-restore-cancel').click({ timeout: BUDGET })
   })
 
@@ -333,24 +193,24 @@ test.describe('#754 — drawers et dialogues mobiles (375 px) : cibles >= 44 px'
     await pickFirstSwatch(create, 'category')
     await expect(create.getByRole('button', { name: 'Réinitialiser' })).toBeVisible()
     // croix + nom + pastilles + reset + description + annuler + créer.
-    await expectAllTouchable('CategoryDrawer (création)', create, 10)
+    await expectAllTouchable('CategoryDrawer (création)', create, 10, TOUCH)
     await page.keyboard.press('Escape')
     await expect(create).toBeHidden({ timeout: BUDGET })
 
     // Rangée dense : icône de suppression (pseudo-hitbox).
-    await expectHitbox('categories-delete', page.getByTestId(`categories-delete-${cat.id}`))
+    await expectHitbox('categories-delete', page.getByTestId(`categories-delete-${cat.id}`), TOUCH)
 
     await page.getByTestId(`categories-card-${cat.id}`).click({ timeout: BUDGET })
     const edit = page.getByTestId('category-drawer')
     await expect(edit.getByTestId('category-delete-button')).toBeVisible({ timeout: BUDGET })
-    await expectAllTouchable('CategoryDrawer (édition)', edit, 6)
+    await expectAllTouchable('CategoryDrawer (édition)', edit, 6, TOUCH)
     await page.keyboard.press('Escape')
     await expect(edit).toBeHidden({ timeout: BUDGET })
 
     await page.getByTestId(`categories-delete-${cat.id}`).click({ timeout: BUDGET })
     const del = dialogWith(page, 'delete-confirm-button')
     await expect(del).toBeVisible({ timeout: BUDGET })
-    await expectAllTouchable('DeleteConfirmDialog (catégorie)', del, 3)
+    await expectAllTouchable('DeleteConfirmDialog (catégorie)', del, 3, TOUCH)
   })
 
   test('drawer de création d’événement (FAB) et lien « Ouvrir la frise »', async ({ page }) => {
@@ -368,7 +228,11 @@ test.describe('#754 — drawers et dialogues mobiles (375 px) : cibles >= 44 px'
     await page.goto('/fr/dashboard', { waitUntil: 'domcontentloaded' })
     await expect(page.getByTestId('dashboard')).toBeVisible({ timeout: BUDGET })
     // Ruban : « Ouvrir la frise », `size="sm"` dans la rangée d'en-tête (pseudo-hitbox).
-    await expectHitbox('dashboard-open-timeline', page.getByTestId('dashboard-open-timeline'))
+    await expectHitbox(
+      'dashboard-open-timeline',
+      page.getByTestId('dashboard-open-timeline'),
+      TOUCH,
+    )
 
     await page.getByTestId('shell-mobile-new-event-button').click({ timeout: BUDGET })
     const panel = page.getByTestId('shell-new-event-drawer')
@@ -377,11 +241,12 @@ test.describe('#754 — drawers et dialogues mobiles (375 px) : cibles >= 44 px'
     await page.getByTestId(`product-option-${product.id}`).click({ timeout: BUDGET })
     await expect(page.getByTestId('event-form')).toBeVisible({ timeout: BUDGET })
     await expect(page.getByTestId('event-form-submit')).toBeVisible({ timeout: BUDGET })
-    await expectAllTouchable('NewEventDrawer (création)', panel, 6)
+    await expectAllTouchable('NewEventDrawer (création)', panel, 6, TOUCH)
     // Case « récurrent » 16×16 : zone tactile par pseudo, non rognée par la sheet.
     await expectHitbox(
       'event-form-recurring-toggle',
       page.getByTestId('event-form-recurring-toggle'),
+      TOUCH,
     )
   })
 
@@ -410,10 +275,11 @@ test.describe('#754 — drawers et dialogues mobiles (375 px) : cibles >= 44 px'
         .locator('[role="dialog"]')
         .filter({ has: pageB.getByTestId('event-form') })
       // Pied en portail (supprimer + annuler + enregistrer) + champs + croix.
-      await expectAllTouchable('EventEditForm (édition)', editDialog, 6)
+      await expectAllTouchable('EventEditForm (édition)', editDialog, 6, TOUCH)
       await expectHitbox(
         'event-form-archived-toggle (label)',
         pageB.getByTestId('event-form-archived-toggle').locator('xpath=ancestor::label[1]'),
+        TOUCH,
       )
 
       // Confirmation d'archivage : cocher le toggle (surface visible = label parent).
@@ -424,7 +290,7 @@ test.describe('#754 — drawers et dialogues mobiles (375 px) : cibles >= 44 px'
       const archive = pageB.getByTestId('event-archive-confirm')
       await expect(archive).toBeVisible({ timeout: BUDGET })
       // croix + annuler + confirmer.
-      await expectAllTouchable('ArchiveConfirmDialog', archive, 3)
+      await expectAllTouchable('ArchiveConfirmDialog', archive, 3, TOUCH)
       await pageB.getByTestId('event-archive-cancel').click({ timeout: BUDGET })
       await expect(archive).toHaveCount(0)
 
@@ -446,7 +312,7 @@ test.describe('#754 — drawers et dialogues mobiles (375 px) : cibles >= 44 px'
       const conflict = pageB.getByTestId('event-form-conflict')
       await expect(conflict).toBeVisible({ timeout: BUDGET })
       // croix + prendre la version serveur + garder la mienne.
-      await expectAllTouchable('ConflictDialog (comparatif)', conflict, 3)
+      await expectAllTouchable('ConflictDialog (comparatif)', conflict, 3, TOUCH)
     } finally {
       await ctxA.close()
       await ctxB.close()

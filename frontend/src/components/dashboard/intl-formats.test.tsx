@@ -2,7 +2,6 @@ import { render, screen, cleanup } from '@testing-library/react'
 import { describe, expect, it, vi, afterEach } from 'vitest'
 import type { FullCalendarEvent } from '@/types/event'
 import type { Product } from '@/types/product'
-import { KpiMarginalia } from './KpiMarginalia'
 import { ProductList } from './ProductList'
 import { ProductCarousel } from './ProductCarousel'
 import { DensityRibbon } from './DensityRibbon'
@@ -37,8 +36,6 @@ const EXPECTED_12345: Record<(typeof LOCALES)[number], RegExp> = {
   de: /^12\.345$/u,
 }
 
-const norm = (el: HTMLElement) => el.textContent ?? ''
-
 const NOW = new Date(2026, 6, 15, 9, 0, 0)
 
 const evt = (id: string, start: string): FullCalendarEvent => ({
@@ -70,21 +67,8 @@ const productWith = (count: number): Product => ({
 afterEach(cleanup)
 
 describe('#72 — Intl.NumberFormat sur les 4 locales', () => {
-  it.each(LOCALES)('KpiMarginalia groupe les milliers en %s', (locale) => {
-    render(
-      <KpiMarginalia
-        kpis={{ activeProducts: 12345, eventsThisMonth: 12345, currentStreak: 12345 }}
-        locale={locale}
-      />,
-    )
-    for (const testid of [
-      'dashboard-kpi-active-products',
-      'dashboard-kpi-events-month',
-      'dashboard-kpi-streak',
-    ]) {
-      expect(norm(screen.getByTestId(testid))).toMatch(EXPECTED_12345[locale])
-    }
-  })
+  // #640 — le cas `KpiMarginalia` (rendu par `t.rich`, absent du mock ci-dessus) vit
+  // dans `KpiMarginalia.intl.test.tsx`, avec les vrais messages des 4 locales.
 
   it.each(LOCALES)('ProductList groupe le compteur d’événements en %s', (locale) => {
     const { container } = render(

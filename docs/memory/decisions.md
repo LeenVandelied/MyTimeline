@@ -358,7 +358,7 @@ documentait l'en-tête de `ci.yml` — le `PUT` réécrit toute la protection et
 et les reviews au passage. Vérifié après coup : `enforce_admins: true` et reviews `0` inchangés.
 
 ## DEC-S56-001 — En-tête de lane : gouttière de piste, et surtout PAS `pointer-events:none`
-S56 #392. L'en-tête sticky opaque recouvrait les 168 px (`--lane-header-w`) de tête du viewport ; aux zooms
+S56 #392. L'en-tête sticky opaque recouvrait les 168 px (`--lane-header-w`, 176 px depuis #674 au S105) de tête du viewport ; aux zooms
 **Trimestre (150 px) et Année (66 px)** le 1er événement naissait dessous. L'option tentante — neutraliser
 l'en-tête aux pointeurs — était **fausse**, mais pas pour la raison que dit l'artefact de #392. **Vérifié dans
 le CSS au moment de la clôture :** `.mt-tlv__lane-label` porte **déjà** `pointer-events:none`, et ce depuis
@@ -890,6 +890,11 @@ dashboard et la fiche produit ont leur propre CTA de création. → prop opt-in 
 `page → TimelineEditHost → TimelineResponsive → TimelineView`, défaut = comportement
 actuel. En revanche la pastille, le compteur et le résumé plié (#601) vivent dans
 `TimelineGroupHead`, partagé : ils s'appliquent aux trois écrans.
+**Correctif S109 (#697)** : depuis S90 (#624), le dashboard ne monte plus la frise (ruban et
+agenda à la place). `TimelineEditHost` n'est plus monté que par DEUX écrans : `/timeline`
+(`app/[locale]/(app)/timeline/page.tsx`, `layout="screen"`) et la fiche produit
+(`ProductDetailView.tsx`). La décision opt-in reste valable ; lire « trois écrans » ci-dessus
+comme « deux ».
 
 ## DEC-S85-006 — Couleur de catégorie : `product.category.color`, repli neutre si `null`
 `Resource` n'a pas de couleur ; le DTO produit expose `category.color` (hex nullable,
@@ -1025,7 +1030,7 @@ Arbitrage dev (#605, vaut pour #600). Le DELETE produit est un soft delete (BR-P
 Alternative écartée : exposer l'état d'ouverture par le contexte. La détection DOM couvre aussi `TimelineEditHost`, `ConflictDialog` et toute future modale du shell sans élargir le contrat du contexte. Limite assumée : les rôles `menu`/`listbox` (Popover, DropdownMenu Radix montés hors dialog) échappent à la garde — aucun composant concerné à ce jour (grep vérifié en review), à revoir à l'ajout d'un tel composant. (Sprint 94 #672)
 
 ## DEC-S94-002 — Gouttière mobile à 120 px, et `background-position-x` volontairement non transposé
-`--lane-header-w-m: 120px` reprend le `max-width` que le DS déclarait déjà pour `.mt-tlm__lane-label` — ce n'est pas un seuil déduit du « ~120 px » de l'énoncé. Le desktop reste à 168 px (`LANE_TRACK_OFFSET_PX`), les deux vues n'ayant pas la même place. Le décalage de trame du desktop n'est PAS porté : les lanes mobiles n'ont aucun `background-size`, le décaler peindrait un filet doublé au lieu d'aligner une trame. (Sprint 94 #706)
+`--lane-header-w-m: 120px` reprend le `max-width` que le DS déclarait déjà pour `.mt-tlm__lane-label` — ce n'est pas un seuil déduit du « ~120 px » de l'énoncé. Le desktop reste à 168 px (`LANE_TRACK_OFFSET_PX` ; 176 px depuis #674 au S105), les deux vues n'ayant pas la même place. Le décalage de trame du desktop n'est PAS porté : les lanes mobiles n'ont aucun `background-size`, le décaler peindrait un filet doublé au lieu d'aligner une trame. (Sprint 94 #706)
 
 ## DEC-S94-003 — Les overlays du shell sortent du plein écran ; ils n'y sont pas portés
 Stratégie (a) de l'énoncé #712 retenue, (b) écartée : le toaster est global au layout, le déplacer dans l'élément en plein écran aurait une portée bien au-delà de l'issue et changerait le montage de toutes les notifications de l'application. (Sprint 94 #712)
@@ -1113,3 +1118,100 @@ Contexte : `scorePassword` comptait toute lettre ou tout chiffre non-ASCII comme
 
 ## DEC-S102-002 — Les CTA d'état vide desktop-only sont déclarés absents à 375 px, pas mesurés
 `WeekAgenda` et `ProductList` ne sont rendus que par la branche desktop du tableau de bord : `sprint-102-touch-targets` asserte leur ABSENCE à 375 px. S'ils apparaissent un jour en mobile, la spec rougit et force leur mesure (même logique que PAT-S101-003). (Sprint 102, #764)
+
+## DEC-S103-001 — Section témoignages retirée de la landing ; la bande « avis presse » ne revient qu'avec des citations réelles sourcées
+`testimonials.json` portait 4 avis nominatifs inventés (FR en dur, hors i18n) et la maquette cite des magazines inventés. Publier l'un ou l'autre fabriquerait des avis sur un dépôt public. Composants, données, ancres `#testimonials` et clés i18n supprimés. Arbitrage dev au plan S103. (Sprint 103, #613)
+
+## DEC-S103-002 — Frise de cas d'usage : verticale < 640 px, 2×2 de 640 à 1023 px, 4 colonnes ≥ 1024 px ; étiquettes en `ink-muted`
+La maquette ne dessine que 4 colonnes. Verticale sous 640 px (arbitrage dev) ; 2×2 entre 640 et 1023 px, car à 4 colonnes chaque jalon ne fait que 131 à 163 px et les étiquettes passent sur 2 lignes dans les 4 locales (mesuré). Les étiquettes sont en `ink-muted` et non en accent comme dans la maquette : la charte (#615) prime. `id="how-it-works"` est conservé ; la nav sera refaite au S104. (Sprint 103, #612/#615)
+
+## DEC-S104-001 — Le gabarit `lg` des CTA de la landing vient du DS Graphite, pas de `ui/button.tsx`
+`size="lg"` de shadcn pose une hauteur FIXE de 40 px, qui couperait un libellé replié ; la maquette pose ~46 px. La métrique retenue est celle de `.mt-btn--lg` (padding 12/22 px, corps 14 px) + `.mt-btn--wrap.mt-btn--lg` (hauteur minimale 46 px, qui tient aussi la cible tactile ≥ 44 px), transcrite dans l'utilitaire `cta-lg` de `globals.css` — et non les classes DS elles-mêmes, qui supposent la base `.mt-btn` importée hors layer et écraseraient les utilitaires de couleur et de survol du hero. `cta-lg` ne déclare aucune couleur et cible `&:is(a, button)` pour battre les utilitaires du variant sans dépendre de l'ordre d'émission. (Sprint 104, #682, review)
+
+## DEC-S104-002 — La landing est plafonnée à 1340 px par un utilitaire dédié, `container` reste inchangé
+`container` sert aussi au footer applicatif et aux pages légales : un plafond global les modifierait. Le token `--container-landing` (1340 px) et l'utilitaire `container-landing` ne s'appliquent qu'aux 5 sections de la landing. Conséquence assumée : entre 1340 et 1535 px la landing s'élargit de 1280 à 1340 px, et au-delà de 1536 px elle se resserre de 1536 à 1340. (Sprint 104, #616)
+
+## DEC-S105-001 — Gouttière desktop de la frise à 176 px, sans valeur de repli
+`--lane-header-w: 176px` et `LANE_TRACK_OFFSET_PX = 176` : la maquette `.dc.html` (`LH = 176px`) fait foi sur l'écart relevé au S85. Le repli `var(--lane-header-w, 160px)` est supprimé (#429) : un repli sur un token défini sous `:root` ne sert jamais et ne peut que diverger (PIT-S56-003). Gouttière mobile (120 px) inchangée. (Sprint 105, #674/#429)
+
+## DEC-S105-002 — Zébrures de lanes au lieu de la grille verticale de jours, bureau et mobile
+Arbitrage dev au démarrage du S105. Grille retirée sur bureau, portrait et paysage (la règle porte déjà les graduations) ; une lane sur deux par catégorie en aplat `color-mix(in srgb, var(--color-ink) 2.6%, transparent)` (handoff écrit ; la règle CSS du `.dc.html` n'a pas été relue). La cellule sticky de lane suit la zébrure sur bureau ; la colonne mobile reste `surface-2` (#706). (Sprint 105, #596)
+
+## DEC-S105-003 — La touche F recadre la frise ; le plein écran n'a plus de raccourci
+Arbitrage dev au démarrage du S105 : plein écran au bouton seul (`timeline-fullscreen`), Échap le quitte toujours ; `help.fullscreen` reste l'`aria-label` du bouton, `help.fit` décrit F. « Affiché » suit la règle du rendu : catégorie masquée exclue, catégorie repliée incluse (résumé #601), produit replié exclu. Niveau choisi = le plus fin où l'étendue tient (marge 40 px), calculé d'abord en px/jour pour rester compatible avec le zoom continu (#593). Aucun événement affiché : no-op silencieux (annonce `aria-live` versée en follow-up). (Sprint 105, #597)
+
+## DEC-S106-001 — Historique produit : un événement passé change d'encre, sans filtre ni opacité sur le texte
+Arbitrage dev au démarrage du S106 : ligne entière traitée, archivé cumulé (pastille `.mt-evt--archived` à .45 + badge). Mise en œuvre : encre `ink-muted` sur la ligne, `grayscale(1)` sur la seule pastille décorative, mention sr-only « passé » dans les 4 locales, sans badge visible (validé par le dev : presque tout l'historique est passé, un badge répété serait du bruit). Contraste mesuré 5,96:1 (clair) / 6,26:1 (sombre). Anti-pattern : `.mt-evt--archived` ou une opacité sur du texte (PIT-S61-003, PIT-S70-003). (Sprint 106, #607)
+
+## DEC-S106-002 — Critère « passé » d'un événement : `isPastEvent`
+Fin (ou début si l'événement est ponctuel) strictement antérieure au jour civil local ; série bornée = fin de la dernière occurrence réelle ≤ horizon (PIT-S106-001) ; série sans fin = jamais passée (validé par le dev). Série marquée récurrente sans unité : traitée comme ponctuelle, comme `nextStart`. (Sprint 106, #607)
+
+## DEC-S106-003 — Création de produit/catégorie : l'invalidation du cache n'est pas attendue
+Arbitrage dev au démarrage du S106, écrit en commentaire de #698 : `onSuccess` de `useCreateProduct` / `useCreateCategory` lance `invalidateQueries` sans retourner la promesse. Le tiroir se ferme dès la réponse ; la liste peut montrer l'état précédent pendant un aller-retour. Alternative écartée : attendre l'invalidation (+1 requête de latence perçue sur le bouton). Aucun code modifié. (Sprint 106, #698)
+
+## DEC-S107-001 — Liste produits : mini-frise 90 j conservée sous `md`, en version compacte
+Arbitrage dev au démarrage du S107 (#608) : la frise reste sous `md` (« frise = ADN » du handoff), en 64×24 au lieu de 220×40 ; la fenêtre reste 90 jours. Deux SVG sont basculés en CSS (`block md:hidden` / `hidden md:block`), sans hook média : pas de saut à l'hydratation, et un seul SVG dans l'arbre d'accessibilité. Redimensionner le SVG 220 en CSS aurait réduit les points de r=3 à ~0,9 px. `ProductSparkline` prend `width`/`height`, avec 220×40 par défaut (tiroir inchangé). Documenté dans `docs/design/graphite-handoff.md` §5.
+
+## DEC-S107-002 — Liste produits à 390 px : la troncature du nom à 5-7 caractères est acceptée
+Arbitrage dev en revue de la PR #814 : 4 colonnes à 390 px (Produit, Prochain événement, frise, Actions) laissent ~58 px au nom. Le dev préfère ce compromis à un tableau de 978 px qui défile horizontalement.
+
+## DEC-S108-001 — « Ouvrir la frise » : boîte visible 32 px, zone tactile 44×44 sous 768 px
+Arbitrage dev au démarrage du S108 (#699, point 1). Le critère AAA 2.5.5 (44 px) est visé **par la zone tactile**, pas par la boîte : `TOUCH_TARGET_HITBOX` (#754, S102) étend la cible à 44×44 par pseudo-élément sous 768 px, la boîte `size="sm"` (32 px) reste dans la rangée d'en-tête du ruban. Grossir la boîte ferait descendre les titres de section sous la flottaison à 1280×800 (`e2e/sprint-84-section-titles.spec.ts`). Aucun code modifié : la décision entérine l'état livré par #754, déjà gardé par `e2e/sprint-101-touch-targets.spec.ts`. (Sprint 108, #699)
+
+## DEC-S108-002 — Piste de frise vide : `rule-emphasis` conservé malgré l'usage décoratif
+Arbitrage dev au démarrage du S108 (#699, point 2). `EmptyState` (`track`) garde `border-rule-emphasis`, le token que le DS réserve aux bordures fonctionnelles : c'est le même que celui du connecteur pointillé de la frise (`.mt-evt-connector`), dont la piste vide est l'image, et il n'est pas inversé en sombre (≈ 4,1:1 clair, ≈ 4,7:1 sombre). Écarté : `rule-strong` (1,46:1), trop pâle pour un tireté de 2 px qui doit se lire comme une frise et pas comme un filet. Exception documentée à la règle d'usage de `ds/readme.md` § Border tiers. Aucun code modifié. (Sprint 108, #699)
+
+## DEC-S108-003 — Ruban du tableau de bord : 30 prochains jours, règle, viewport de 9 jours ; histogramme conservé
+Arbitrage dev au démarrage du S108 (#623). La maquette `Dashboard.dc.html` montre les **30 prochains jours** (« AUJ. » à gauche), la prod montrait les 30 derniers : on s'aligne sur la maquette. Règle graduée tous les 5 jours, viewport de 9 jours déplaçable qui pilote le libellé « Fenêtre · … ». Aucune synchronisation avec la frise : le tableau de bord n'en rend pas. L'histogramme de densité est conservé ; le rendu en barres d'événements empilées de la maquette reste un écart suivi à part. Extrait de maquette : `docs/memory/sprints/sprint-108/maquette-dashboard.md`. (Sprint 108, #623)
+
+## DEC-S108-004 — « En bref » : les 4 phrases de la maquette remplacent les 3 lignes
+Arbitrage dev au démarrage du S108 (#640). Retirés : « produits actifs » (déjà compté dans « Tes produits »), « événements ce mois », « jours de série » (DEC-S82-007). Affichés : événements de la semaine dont récurrents, échéances sous 14 jours, couvertures en cours (événement de type durée dont la période contient aujourd'hui), catégorie la plus chargée. Celle-ci est comptée sur le **mois calendaire** (le libellé dit « ce mois »), pas sur la fenêtre de 30 jours du script de la maquette. (Sprint 108, #640)
+
+## DEC-S108-005 — « Catégorie la plus chargée » ex æquo : collator à locale figée, puis points de code
+Départage par `Intl.Collator('en')` (collation racine, locale FIGÉE), puis par points de code. Le résultat ne dépend ni de l'ordre renvoyé par l'API ni de la locale du navigateur. Les points de code seuls rangeraient « É » après « Z ». (Sprint 108 #640, `frontend/src/components/dashboard/kpis.ts`)
+
+## DEC-S108-006 — Viewport du ruban : pas de hook partagé avec la Minimap de la frise
+La Minimap fait un seek absolu recentré au clic (composant contrôlé, fraction), alors que le ruban déplace sa fenêtre par delta depuis la saisie (état local, jours, calage au lâcher). Un hook commun imposait de changer le contrat de `Minimap`, dont dépendent la virtualisation et le zoom de la frise. La géométrie du ruban vit en fonctions pures dans `densityWindow.ts`, contrairement à ce que demandait l'énoncé de #623 (« mutualiser »). (Sprint 108 #623)
+
+## DEC-S109-001 — En-têtes de section du tableau de bord : aucun sur-titre, compteur à droite du titre
+Relevé de maquette au démarrage du S109 (`docs/memory/sprints/sprint-109/maquette-sections.md`) : aucune des 6 sections (« Cette semaine », « En bref », « Tes produits », agenda compact, carrousel, sous-frise produit) n'a de sur-titre ; la donnée est un compteur mono `ink-muted` À DROITE du `h2`. Arbitrage dev : compteurs « n événements » (semaine, agenda compact qui compte ce qu'il affiche : aujourd'hui + demain), « n produits » (liste, carrousel), plage de dates de la sous-frise ; rien sur « En bref » ni l'historique (DEC-S84-004 conservée) ; pas de compteur en état vide. Taille 13 px (`text-2xs`, plus petit palier du DS) au lieu des 11/10 px de la maquette, écart entériné en clôture. La plage de la sous-frise est l'étendue des événements filtrés, pas la fenêtre visible (suivi en issue). (Sprint 109, #664)
+
+## DEC-S109-002 — `.mt-eyebrow` pour tous les sur-titres mono capitales ; 6 utilitaires i18n du DS documentés dormants
+L'eyebrow de date du salut passe sur `.mt-eyebrow` : la maquette le pose en 10 px `ink-muted` (tranche le point laissé ouvert au S84, plus qu'une taille d'eyebrow sur le dashboard). Idem `CompactAgenda`, `MobileDrawer`, page et squelette de la Frise. `.mt-seg*`, `.mt-tabs--collapsible`, `.mt-btn--wrap`, `.mt-truncate`, `.mt-eyebrow--wrap`, `.mt-eyebrow--title` n'ont aucun cas d'usage : documentés « volontairement dormants » dans l'en-tête de `ds/components/i18n.css`, CSS conservée. Le badge « archivé » de la fiche reste un badge (bordure, pas mono), détendu par `[&:lang(de)]:tracking-[.02em]`. (Sprint 109, #632)
+
+## DEC-S110-001 — Écrans d'erreur : écarts assumés avec la maquette `États système`
+Voix : celle déjà en place par locale (vous en fr/de/en, tu en es), pas le tutoiement de la maquette. Encres de texte `ink-muted` au lieu du `ink-faint` de la maquette (DEC-S97-001). Feuillet du 404 en `bg-surface` : il repose sur la page (`bg-bg`) et non sur une carte `surface` comme sur la planche. Bouton « Retour à l'accueil » conservé tant que `/${locale}` sert la landing aux personnes connectées (suite en issue). Référence d'incident = `error.digest` seul (hash djb2 de Next, non réversible), jamais la valeur factice `MT-AAAA-NNNN` du prototype ; rien d'affiché sans digest. (Sprint 110, #627 #628)
+
+## DEC-S110-002 — La neutralisation `color`/`text-decoration` reste limitée à `time.mt-num`
+Le DS est chargé hors `@layer` : un `color:inherit` sur `.mt-num` nu battrait toute utilitaire Tailwind (`@layer utilities`) posée sur le même élément — `text-ink-muted` du code de `StateScreen`, couleurs des `span` de `KpiMarginalia`. Restriction commentée dans `i18n.css` et testée (`i18n-intl-classes.test.ts`). Le motif réel de la règle est défensif (un `<time>` imbriqué dans un lien), `<time>` n'ayant aucun style natif. (Sprint 110 #516)
+
+## DEC-S111-001 — Préférence de thème du compte : colonne nullable V16 et endpoint dédié (ADR-010)
+`users.theme_preference` nullable (NULL = aucun choix, distinct de `system`), CHECK light/dark/system, écrite par `PUT /api/me/preferences` ; `PATCH /api/me` inchangé (il exige name/username/email). Validé par le dev au démarrage du sprint. Détail : `docs/adr/ADR-010-preference-de-theme-du-compte.md`, BR-AUT-013. (Sprint 111 #653)
+
+## DEC-S111-002 — L'arbitrage du thème n'a lieu qu'à la connexion explicite
+`AuthContext.login` seulement : le compte gagne s'il a une préférence (appliquée avant publication du user, jamais réécrite) ; sinon le choix local EXPLICITE est adopté ; sinon rien. Aucun arbitrage à la restauration de session ni au `register` (pas de session). Raisons : lecture littérale de « à la connexion » (DEC-S82-009) ; ~20 specs E2E fixent le thème par `localStorage` sous la session partagée. Conséquence assumée : un appareil déjà connecté ne suit un changement fait ailleurs qu'à sa reconnexion. (Sprint 111, lead + #653)
+
+## DEC-S111-003 — `useThemeChoice` est le seul écrivain du thème ; la persistance lui est injectée
+Seul `hooks/useThemeChoice.ts` appelle `setTheme` (garde-fou textuel dans son test). La persistance serveur passe par `ThemePersistenceContext` (défaut `null` = local seul) fourni par `AuthProvider` ; `useApplyAccountTheme` applique sans réécrire. Évite de coupler le hook à `useAuth`, qui lève hors provider. (Sprint 111 #655 + #653)
+
+## DEC-S111-004 — Un seul écran 404 : `[locale]/not-found.tsx` supprimé
+Option (b) de #827, choisie par le dev : brancher `notFound()` sur `/products/[productId]` aurait remplacé le message « produit introuvable » du shell par un écran 404 plein document. `app/global-not-found.tsx` reste seul ; `next build` inchangé (52 pages). (Sprint 111 #827)
+
+## DEC-S111-005 — Pas de plafond de débit sur `PUT /api/me/preferences` pour l'instant
+security-expert (MINEUR) recommandait 10/min/IP comme `PATCH /api/me`. Non appliqué : le limiteur est armé en E2E (#547) et compte par IP, toutes les specs authentifiées partageraient le seau de 127.0.0.1 avec des 429 silencieux. La bonne forme est un plafond par utilisateur → follow-up. (Sprint 111, lead, ADR-010 § 7)
+> ⚠️ **Amendée Sprint 112 (#831, 2026-09-24) — plafond appliqué, PAR UTILISATEUR** : 30 `PUT`/min par id d'utilisateur, via un filtre dédié `UserRateLimitingFilter` monté après l'authentification (avant `AuthorizationFilter`), puisque `RateLimitingFilter` tourne avant `JwtFilter` et ne voit que l'IP. Même 429 que les autres créneaux. Non réglable par profil : la suite E2E émet au plus un `PUT` réel par compte et le seau par utilisateur ignore l'IP partagée. Détail et alternatives : ADR-010 § 7 (amendement S112).
+
+## DEC-S112-001 — Périmètre S112 recalibré à 7 issues ; #832 par helper `storageState` ; #700 reste ouverte
+Arbitrage dev au `/sprint start` : les 4 suites du S111 gardées (~11 pts) ; #832 → option helper `storageState`, plafond `login-per-minute=30` inchangé (relever le plafond rachète de la marge sans rien protéger) ; #700 → E2E livrés, volet VoiceOver/NVDA manuel au dev, issue laissée ouverte (grille `sprints/sprint-112/issue-700-sr-checklist.md`). (Sprint 112)
+
+## DEC-S112-002 — `e2e/support/touch-targets.ts` : profil complet par défaut, `sprint-99` en `BOX_ONLY`
+La factorisation ne devait rien changer à ce que mesure une spec : les 3 divergences deviennent 3 options, et sprint-99 garde son ancien comportement. L'alignement serait neutre aujourd'hui (mesuré) mais reste une décision à part (suite). (Sprint 112 #768)
+
+## DEC-S112-003 — Plafond de `PUT /api/me/preferences` : 30/min par id de compte, filtre dédié, fail-closed
+`UserRateLimitingFilter` avant `AuthorizationFilter` (seul point où le principal existe sans toucher domaine/application), clé `id:<UUID>` stable au renommage, non réglable (≤ 1 PUT réel par compte en E2E), 429 partagé avec `RateLimitingFilter`. Principal authentifié sans id de compte → 401 identique à l'entry point : un fail-open annulerait le plafond pour tout futur mécanisme d'auth (cohérent avec `CallerResolver`, BR-AUT-005). Remplace DEC-S111-005. (Sprint 112 #831 + revue)
+
+## DEC-S112-004 — Opt-out d'erreur par requête étendu à 500 seulement, pas à 409
+#833 demandait 500 ET 409 ; l'intercepteur n'a aucune branche 409 et le contrat d'`inlineErrorHandling.ts` veut que chaque statut du type soit lu dans sa branche → `InlineHandledStatus = 403 | 500`. Le 409 est tenu par un test de non-régression sur la chaîne réelle (PAT-S112-008). (Sprint 112 #833)
+
+## DEC-S112-005 — Session E2E : `sessionState(X)` pour toute spec qui ne teste pas la connexion ; aucun helper de support ne se connecte par formulaire
+`registerAndLogin` supprimé (0 appelant) ; le Vitest de budget refuse tout helper de `e2e/support/` qui émet `login`. Aucune session ne s'obtient sans `POST /api/auth/login`, la seule économie est de ne pas se reconnecter. Budget inchangé (login 14/26/30) ; le vrai levier (passe 2 CI à un seul compte) touche `ci.yml` → suite soumise au dev. (Sprint 112 #832)

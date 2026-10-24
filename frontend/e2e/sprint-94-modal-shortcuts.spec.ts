@@ -30,12 +30,20 @@ import { getUserId, seedCategory, seedProduct, unique } from './support/products
  * CE QUE CETTE SPEC NE PROUVE PAS : le comportement sous les autres couches du shell
  * (édition, confirmations Radix), couvert unitairement ; ni hors Chromium.
  *
+ * #597 (S105) — `F` RECADRE désormais la frise (il ne passe plus en plein écran : seul
+ * le bouton `timeline-fullscreen` le fait). La moitié « panneau ouvert » le couvrait
+ * déjà par ses relevés de zoom et de défilement ; la contrepartie exige maintenant que
+ * `F` DÉPLACE la vue, et entre en plein écran par le bouton pour garder la sortie par
+ * Échap sous test.
+ *
  * PRÉREQUIS RUNTIME : backend + front avec proxy `/api` (runbook E2E S47).
  */
 
 const DESKTOP = { width: 1280, height: 900 }
 const CLICK_BUDGET = 15_000
 const FIRST_NAV_BUDGET = 60_000
+/** Nombre de niveaux de zoom (`ZOOM_LEVELS`) : autant de `=` atteignent la borne `day`. */
+const ZOOM_LEVEL_COUNT = 5
 
 /** L'élément en plein écran, décrit par son `data-testid` (ou `null`). */
 function fullscreenTestId(page: Page): Promise<string | null> {
@@ -117,10 +125,31 @@ test.describe('#672 — raccourcis de la frise sous le panneau de création du s
       timeout: CLICK_BUDGET,
     })
 
+    // #597 — F RECADRE. Point de départ où tout cadrage DÉPLACE la vue : zoom `day`
+    // (borne fine) et défilement au bord droit. Le produit semé porte un événement
+    // (aujourd'hui) : `rangeEnd` ≥ dernier événement + 30 j, donc le cadrage — centré
+    // ou aligné à gauche — vise un `scrollLeft` < maximum, à tout niveau.
+    for (let i = 0; i < ZOOM_LEVEL_COUNT; i += 1) await page.keyboard.press('=')
+    await expect(page.getByTestId('timeline-zoom-in')).toBeDisabled({ timeout: CLICK_BUDGET })
+    const atRightEdge = await page.getByTestId('timeline-scroll').evaluate((el) => {
+      el.scrollTo({ left: el.scrollWidth, behavior: 'instant' })
+      return Math.round(el.scrollLeft)
+    })
+    const viewBefore = { level: await zoomLevel.textContent(), scroll: atRightEdge }
     await page.keyboard.press('f')
     await expect
+      .poll(async () => ({ level: await zoomLevel.textContent(), scroll: await scrollLeft() }), {
+        message: 'F doit recadrer la frise une fois le panneau fermé',
+        timeout: CLICK_BUDGET,
+      })
+      .not.toEqual(viewBefore)
+    expect(await fullscreenTestId(page), 'F ne passe plus en plein écran (#597)').toBeNull()
+
+    // Le plein écran reste accessible par son bouton, et Échap le quitte toujours.
+    await page.getByTestId('timeline-fullscreen').click({ timeout: CLICK_BUDGET })
+    await expect
       .poll(() => fullscreenTestId(page), {
-        message: 'F doit passer la frise en plein écran une fois le panneau fermé',
+        message: 'le bouton doit passer la frise en plein écran',
         timeout: CLICK_BUDGET,
       })
       .toBe('timeline-view')

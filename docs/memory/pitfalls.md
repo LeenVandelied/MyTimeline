@@ -1787,6 +1787,7 @@ Verdict APPROUVÉ à 0 finding avec des ancrages `virtualization.ts:3312`, `Time
 
 ## PIT-S91-011 — Mesurer un contraste sur une lane mobile : le helper refuse la grille `background-image`
 `readTextRendering` (`frontend/e2e/support/contrast.ts`) lève dès qu'il traverse un dégradé ; or `.mt-tlm__lane` peint sa grille en `background-image`. Vérifier que ce dégradé est le seul traversé, le passer à `none` le temps de la mesure, puis mesurer contre le fond réellement peint (`--color-surface`). Motif : `frontend/e2e/sprint-91-more-contrast.spec.ts`. (Sprint 91, absorption `⋯`)
+⚠ **PÉRIMÉ DEPUIS LE S105 (#596)** : les lanes (bureau et mobile) n'ont plus de `background-image` — la grille de jours est remplacée par une zébrure en aplat (`background-color` à 2,6 % d'encre, une lane sur deux). `sprint-91-more-contrast` mesure désormais le fond réel, sans neutralisation. Le piège ne vaut plus que pour un futur dégradé réintroduit sur une lane.
 
 ## PIT-S92-001 — `ln -s <cible> node_modules` sur un dossier existant crée `node_modules/node_modules`, que Node résout en premier
 Au démarrage du S92 le lead a lu « (empty) » d'un `ls -d node_modules` résumé par RTK comme « absent » et posé un symlink vers le `node_modules` du dépôt principal : le dossier existait, le lien est donc parti DEDANS. La résolution Node privilégie ce `node_modules` imbriqué → versions étrangères chargées, Vitest (`eachMapping`) et eslint (`eslint-patch`) en erreur pour les 2 agents de la vague. Tester l'existence sans RTK (`test -d frontend/node_modules`) avant tout lien ; ne jamais conclure « absent » d'un `ls` résumé. (Sprint 92, lead)
@@ -1981,3 +1982,133 @@ Chaque édition déclenche une recompilation HMR pendant la spec ; la page reste
 
 ## PIT-S102-004 — Un grep de `data-testid` sans résultat ne prouve pas l'absence du testid
 Le lead a affirmé dans un briefing qu'aucun `timeline-actionsheet-{edit,delete,cancel}` n'existait : le grep ne trouvait que `timeline-actionsheet-overlay`, les autres identifiants étant composés dynamiquement, et la spec `sprint-101-touch-targets` les citait déjà. Avant d'écrire « n'existe pas » dans un briefing, chercher aussi dans `frontend/e2e/` (une spec qui cite l'identifiant prouve qu'il est rendu) et le préfixe seul. L'agent l'a relevé, sans conséquence. (Sprint 102, lead)
+
+## PIT-S103-001 — Un halo décoratif en `ring-*` est refusé par le garde-fou DEC-S58-001, même hors focus
+Le halo `--color-bg` des pastilles de la frise, écrit `ring-4 ring-bg`, a fait rougir le garde-fou Vitest qui refuse tout `ring-*` / `outline-none` dans un `.tsx` (réservés à l'indicateur de focus). Écrire le halo en `shadow-[0_0_0_4px_var(--color-bg)]`, comme la maquette (`box-shadow`). (Sprint 103, #612)
+
+## PIT-S103-002 — Un mock `useTranslations` qui ignore le namespace casse les tests PARENTS quand un enfant passe à `useTranslations('ns')`
+`HomePage.test` mockait `useTranslations: () => (k) => k` : dès que `HowItWorksSection` a appelé `useTranslations('common.landing.howItWorks')`, la clé rendue a perdu son préfixe et le test parent est devenu rouge. Mock tolérant : `(ns) => (k) => ns ? \`${ns}.${k}\` : k`. Cousin de PIT-S63-006. (Sprint 103, #612)
+
+## PIT-S103-003 — `mobileMenuTargets` cible les ancres du burger PAR POSITION, et la spec fige leur nombre
+`e2e/support/contrast.ts` vise `nav a`.nth(i) et `landing-mobile-menu.spec.ts` asserte `toHaveCount(N)` : retirer un lien de `navLinks` (ici `#testimonials` en #613, puis `#features` en #612) oblige à modifier les DEUX, sans quoi une ancre « disparaît » des mesures ou la spec rougit sans raison apparente. Grepper `ancre-` et `toHaveCount` avant de toucher la nav. Suite proposée : cibler ces ancres par testid. (Sprint 103, #613/#612)
+
+## PIT-S103-004 — Une affirmation du briefing sur l'état du code se greppe avant d'être écrite
+Le briefing du lead annonçait un « surtitre du hero en accent dans le code » : il n'existe que dans la maquette (`HeroSection.tsx` n'a aucun eyebrow). L'agent l'a relevé et converti en suite, sans conséquence. Lire la maquette ne dit rien du code : grepper la classe ou l'élément avant de l'écrire dans une consigne. Même famille que PIT-S102-004. (Sprint 103, lead)
+
+## PIT-S104-001 — `test.use({ reducedMotion })` n'existe pas, et une section animée glisse encore après l'arrêt du défilement
+`reducedMotion` n'est pas une option de `test.use` (tsc TS2353, donc muette si personne ne lance `tsc`) : écrire `contextOptions: { reducedMotion: 'reduce' }` ou `page.emulateMedia`. Et pour mesurer une position d'ancre, figer `.section-animation` par feuille injectée : la section glisse encore de ~20 px après l'arrêt du défilement (écart lu −3,5 à −4,9 px). (Sprint 104, #614)
+
+## PIT-S104-002 — Une mutation de géométrie sur un élément `transition-all` se relit aux ANCIENNES valeurs
+Étend PIT-S58-002 au-delà des couleurs : l'auto-contrôle du CTA du hero mutait padding et `font-size`, et `getComputedStyle`/`getBoundingClientRect` rendaient les valeurs de départ de la transition — la feuille injectée semblait « sans effet ». Poser `transition: none !important` AVANT la mutation, ou attendre la fin de la transition. (Sprint 104, #682)
+
+## PIT-S104-003 — `html{font-size:200%}` ne prouve RIEN sur la tenue à 200 % de texte dans ce dépôt
+Le DS Graphite écrit ses tailles en px : agrandir la racine ne change aucun corps de texte, et un « tient à 200 % » conclu ainsi est vacant. Simuler un zoom texte seul en doublant les tokens `--text-*`. Fait ainsi, la barre collante de la landing débordait réellement (texte sorti de 11,5 px sous la barre, 12,5 px au-dessus, en `de` à 1024 px). (Sprint 104, #614, review)
+
+## PIT-S104-004 — Une même sonde DOM réutilisée pour deux tokens de couleur rend deux fois la PREMIÈRE valeur
+Constaté sous Chromium : `span.style.color = var(--a)`, lecture, puis `style.color = var(--b)` dans le même `evaluate` — la 2ᵉ lecture rend encore la valeur de `--a`. Créer une sonde neuve par token. (Sprint 104, #614)
+
+## PIT-S104-005 — Le stdout du reporter JSON de Playwright est pollué par les lignes `[e2e]` du harnais
+Parser `--reporter=json` depuis stdout donne un JSON invalide dans ce dépôt (préfixe `[e2e] …`). Passer par `PLAYWRIGHT_JSON_OUTPUT_NAME=<fichier>`. (Sprint 104, #793)
+
+## PIT-S104-006 — Dans un `<Button>` shadcn, la variante `[&_svg]:size-4` bat le `h-5 w-5` posé sur l'icône
+Sélecteur descendant (0,1,1) contre classe simple (0,1,0) : l'icône reste à 16 px malgré la classe. Pour la dimensionner, surcharger la variante sur le bouton, pas la classe de l'enfant. (Déduit de la spécificité, non mesuré — Sprint 104, #682)
+
+## PIT-S105-001 — Zébrure « une lane sur deux » sur une liste virtualisée : jamais `:nth-child`
+La cale haute de virtualisation (`timeline-lane-spacer`) est un enfant de la liste et le premier rang monté varie au défilement : `:nth-child(even)` tient sans virtualisation puis inverse la parité (mesuré : casse à `scroll 1522`, lane 21, sous 70 lanes). Tirer la parité du rang STABLE (`startIndex + i`, rang dans la catégorie) et la poser en classe depuis le composant. Un test jsdom ou une petite fixture ne peut pas le voir : exiger une fixture au-delà de `LANE_VIRTUALIZATION_MIN_ROWS`. (Sprint 105, #596)
+
+## PIT-S105-002 — Changer le zoom ET la position de la frise dans la même action : `scrollLeft =` rend une position fausse
+L'effet #392 (`el.scrollLeft = offsetDays × dayWidth`, gardé sur la VALEUR d'`offsetDays`) donne en navigateur réel une position finale fausse quand le niveau change en même temps (332 px mesurés contre 216 attendus ; cause supposée : `scroll-behavior:smooth` du conteneur, non vérifiée) et ne rejoue rien si l'offset est identique (F après un défilement manuel). Appliquer le défilement dans un `useLayoutEffect` ordonné APRÈS la re-projection #449, armé par un ref, avec `scrollTo({behavior:'instant'})`, et le prouver par `getBoundingClientRect` en E2E (jsdom ne clampe rien). (Sprint 105, #597)
+
+## PIT-S105-003 — Frise `/timeline` à 1600 px : ~878 px de piste utile et 30 jours de marge de rail
+Hors shell, sidebar et gouttière (176 px), la piste utile ne fait que ~878 px, et `computeRange` ne laisse que 30 jours de marge : un cadrage « centré » sur tous les événements bute sur le bord du rail. En E2E, asserter la largeur utile en prémisse et ne mesurer le centrage que quand le rail a de la place des deux côtés. (Sprint 105, #597)
+
+## PIT-S105-004 — Une couleur à 2,6 % d'alpha ne se vérifie pas par un canvas 1×1
+Le `toRgba` de `contrast.ts` passe par un canvas 8 bits prémultiplié : à alpha 7/255 les canaux sont quantifiés. Parser `getComputedStyle().backgroundColor` (Chromium sérialise `color(srgb r g b / a)` en flottants 0-1) et résoudre les tokens par un témoin `background-color:var(--token)`. (Sprint 105, #596)
+
+## PIT-S106-001 — Fin d'une série récurrente bornée : `recurrenceEndDate` est un horizon, pas une occurrence
+La première version d'`isPastEvent` prenait `recurrenceEndDate` pour le début de la dernière occurrence : une borne hors cadence (série WEEK du lundi bornée un mercredi) repoussait la fin de ~3 jours et laissait « à venir » une série terminée. La dernière occurrence est la plus grande `occurrenceStart(start, unit, k) ≤ seriesHorizon` : réutiliser `lib/recurrence.ts` comme `lib/next-occurrence.ts#nextStart`, jamais un calcul local. Les tests unitaires alignés sur la cadence ne le voient pas : exiger un cas hors cadence (WEEK, MONTH le 31). (Sprint 106, #607 — trouvé en review)
+
+## PIT-S106-002 — `router.prefetch()` part en mode FULL, sans l'en-tête `next-router-prefetch`
+Contrairement à `<Link>` (préchargement AUTO avec `next-router-prefetch: 1`), un `router.prefetch(href)` impératif charge la page entière : le `waitForPrefetch` de `sprint-90`, qui filtre sur cet en-tête, ne le voit pas. En E2E, reconnaître la requête `?_rsc=` vers l'URL cible ET vérifier que l'URL de page n'a pas changé. (Sprint 106, #698)
+
+## PIT-S106-003 — Harnais E2E sur un port libre : CORS du backend partagé et `NEXT_PUBLIC_API_URL` au build
+Front sur `:3106` contre un backend `:8086` lancé ailleurs : son CORS dev n'autorise que `:3000`/`:3100`, donc 403 au `register` du projet `setup`. Relais `:8186` → `:8086` qui réécrit `Origin` vers une origine autorisée, build avec `E2E_API_PROXY_TARGET` pointé dessus. Un rebuild sans `NEXT_PUBLIC_API_URL=/api` donne un autre échec du `setup` : « AUCUNE réponse POST /api/auth/register observée » alors que `curl` via le proxy répond. Avant la suite : sonder `OPTIONS /api/auth/register` avec l'`Origin` du port, et exporter les DEUX variables au build. (Sprint 106, harnais)
+
+## PIT-S107-001 — Tabs du DS : les flèches changent `aria-selected` sans déplacer le focus
+Dans `frontend/src/components/ui/tabs.tsx`, `→`/`←` sélectionnent l'onglet voisin mais n'appellent aucun `.focus()` : le focus reste sur l'onglet précédent, devenu `tabIndex=-1` et non sélectionné (8/8 configurations mesurées, `/products` et fiche produit). Contraire au motif APG « tablist à activation automatique ». Prévention : tout test clavier de Tabs vérifie `toBeFocused()` sur l'onglet NOUVELLEMENT sélectionné, pas seulement `aria-selected`. Correctif suivi en #815. (Sprint 107 #524)
+
+## PIT-S107-002 — Un `sr-only` dans un conteneur `overflow-x-auto` NON positionné fait défiler la page
+`sr-only` est `position:absolute` : son bloc conteneur est le premier ancêtre positionné, pas la boîte de défilement. Si celle-ci n'est pas `relative`, le texte masqué échappe à son clip et élargit le DOCUMENT (1535 px mesurés à 1280 avec un nom de produit long dans `ProductsListView`). Prévention : `relative` sur tout conteneur `overflow-*` qui contient des cellules avec `sr-only` ; sonder `document.documentElement.scrollWidth == innerWidth`, pas seulement le conteneur. Correctif suivi en #816. (Sprint 107 #608)
+
+## PIT-S108-001 — jsdom n'a pas de `PointerEvent` : un test de glisser passe vert sans rien prouver
+Sous jsdom 25, `fireEvent.pointerDown/Move(el, { clientX })` produit un `Event` nu. `e.clientX` vaut alors `undefined`, le calcul px→jours donne `NaN` puis 0 après bornage : le test « en glisser » passe sans qu'aucun déplacement n'ait eu lieu. Solution : polyfill LOCAL au fichier (`class extends MouseEvent` avec `pointerId`/`pointerType`, `vi.stubGlobal` en `beforeAll`, `vi.unstubAllGlobals` en `afterAll`) et espion sur `getBoundingClientRect` de la piste. Prévention : tout test pointeur asserte un DÉPLACEMENT non nul, pas seulement l'état. (Sprint 108 #623, `DensityRibbon.window.test.tsx`)
+
+## PIT-S108-002 — `formatRange` insère des espaces fines que `toHaveTextContent` ne normalise que d'un côté
+`Intl.DateTimeFormat#formatRange` entoure le tiret d'espaces fines (U+2009). `toHaveTextContent` normalise les blancs du texte REÇU mais pas de l'attendu : l'échec affiche deux chaînes identiques. Solution : comparer `el.textContent` avec `toBe` (Playwright `toHaveText` normalise les deux côtés). (Sprint 108 #623)
+
+## PIT-S108-003 — Passer un composant de `t()` à `t.rich` casse tous les mocks `(ns) => (k) => ns.k`
+« t.rich is not a function » dans chaque fichier de test qui mocke `useTranslations` et rend le composant, même indirectement (3 fichiers dashboard au S108). Solution : exposer `rich` dans le mock (`Object.assign(t, { rich: t })`) ou déplacer les assertions du composant dans un `*.intl.test.tsx` avec les vrais messages. Prévention : avant d'introduire `t.rich`, grepper les tests qui importent le composant ou son parent. Voir PAT-S83-002. (Sprint 108 #640)
+
+## PIT-S109-001 — Réduire un sur-titre décale le squelette calé sur la hauteur totale de l'en-tête
+`GreetingHeader` passé sur `.mt-eyebrow` (10 px × 1,3 au lieu de 13 px × 1,5) : la salutation perd 6,3 px, et `dashboard/loading.tsx`, calé au total, dépasse la tolérance de 6 px de `sprint-106-product-detail`. Vitest, tsc, build et les specs ciblées des agents étaient verts ; seule la suite E2E complète l'a vu. Prévention : tout changement de taille/interligne d'un en-tête → grepper les `loading.tsx` qui le miment. (Sprint 109, lead)
+
+## PIT-S109-002 — Sous RTK, `next lint` résume « Errors: 1 » sur une sortie propre
+La sortie brute dit « No ESLint warnings or errors ». Lire tout verdict lint/prettier sous `rtk proxy`, jamais le résumé. (Sprint 109 #697)
+
+## PIT-S109-003 — Une sauvegarde de mutation vers un chemin qui est un dossier empile les mutations
+`cp f $SP/bak` avec `bak` dossier existant : copie refusée, restauration inopérante, mutations M2..M6 contaminées. Solution : nom de sauvegarde unique + `cmp -s` après chaque restauration. Corollaire : `formatRange` ICU ajoute l'année d'office sur une plage à cheval sur deux ans, donc une mutation de la condition `year` peut être un mutant équivalent — le vérifier au lieu d'écrire un test vacant. (Sprint 109 #664)
+
+## PIT-S109-004 — ` ` écrit par l'outil Write atterrit comme caractère invisible dans une regex
+La séquence d'échappement devient le caractère U+2009 littéral. Contrôler les octets (`od -c`) après écriture d'une regex d'espaces Unicode. (Sprint 109 #664)
+
+## PIT-S110-001 — Une assertion « aucun chiffre » sur du HTML rougit sur le balisage, pas sur le texte
+Pour prouver qu'un écran prérendu ne fige pas une date, `expect(html).not.toMatch(/\d/)` échoue à tort : les classes Tailwind arbitraires (`w-[150px]`, `px-2.5`, `text-[62px]`) contiennent des chiffres. Retirer les balises (`html.replace(/<[^>]*>/g, '')`) ou isoler le texte du composant avant l'assertion — en unitaire (`renderToString`) comme en E2E (`request.get`). (Sprint 110 #627)
+
+## PIT-S110-002 — Une maquette antérieure à une décision d'accessibilité ou de voix ne se recopie pas dans le briefing
+Le lead a prescrit le vouvoiement partout et les couleurs de la maquette `États système` ; deux prémisses fausses, rattrapées par l'agent : es tutoie déjà dans `errors.json`, et la maquette peint du texte en `ink-faint`, que DEC-S97-001 réserve au non-textuel. Avant de briefer un texte ou une encre repris d'une maquette : lire la voix EXISTANTE de chaque locale dans le namespace concerné et confronter chaque encre de texte aux décisions `DEC-*` d'accessibilité. (Sprint 110, lead)
+
+## PIT-S110-003 — `test-quiet.sh frontend-unit` ne conserve pas de log : un rouge isolé devient inidentifiable
+Suite complète : 2216/2217 au 1er run, puis 2217/2217 ×2 — le nom du test rouge était perdu (aucun fichier de log, sortie résumée). Pour tout run complet dont on devra peut-être expliquer un rouge, lancer `rtk proxy npx vitest run --reporter=json --outputFile=<fichier>` et lire `numFailedTests` + `assertionResults` en Python. (Sprint 110, lead)
+
+## PIT-S111-001 — Un numéro de migration retiré de l'historique reste dans les `flyway_schema_history` locales
+Un premier `V16__delete_unbounded_recurring_events.sql` (#452) a été ajouté puis retiré le 2026-09-02 (`072a40a6` → `61ca5d0f`) ; le nouveau V16 (#653) réutilise le numéro. Toute base qui a booté entre les deux commits refusera le boot (checksum/description). CI et Testcontainers sont épargnés (bases neuves), la base e2e était à V15. Remédiation (ADR-010, Risques) : supprimer la ligne 16 de `flyway_schema_history` puis redémarrer — **jamais `flyway repair`**, qui marquerait V16 appliquée sans créer la colonne. Prévention : `git log --all --name-status -- 'backend/src/main/resources/db/migration/V<N>*'` avant de prendre un numéro. (Sprint 111 #653, revue db-expert)
+
+## PIT-S111-002 — Une spec E2E à comptes neufs impose une retouche backend, même dans un briefing « frontend seulement »
+`src/__tests__/e2e-rate-limit-budget.test.ts` recompte les connexions par formulaire et les `register` des specs et exige la mise à jour des lignes `BUDGET` de `backend/src/main/resources/application-e2e.properties`. Le briefing interdisait `backend/**` : l'agent a dû y déroger. Après #653, login au pire cas CI = 26/30 — deux connexions de plus dépassent le plafond. Briefer d'avance cette exception, et regarder le budget avant de demander une spec qui se connecte. (Sprint 111 #653 front)
+
+## PIT-S111-003 — Un gestionnaire `page.route` qui attend une requête réseau survit à la fin du test
+`keepThemeOffSharedAccount` relisait `GET /api/auth/me` DANS le gestionnaire de `PUT /api/me/preferences` : la dernière bascule d'un test encore en vol faisait partir la requête après la fin du test → « 1 error was not a part of any test » en suite complète (invisible en spec isolée). Lire les données nécessaires AVANT de poser la route, et répondre sans I/O depuis le gestionnaire. (Sprint 111, lead)
+
+## PIT-S111-004 — Abréger le pack d'un briefing fait refuser le spawn par `pre-spawn-fullstack.sh`
+Le hook exige un prompt `fullstack-dev` ≥ 8 000 octets avec un marqueur `<!-- ===== cp-/br-/pit- ===== -->`. Un briefing dont le pack a été résumé à la main (7 792 octets) est bloqué : inliner le pack complet (`cp-frontend.md` fait 8,4 Ko) plutôt que d'en couper des passages. (Sprint 111, lead, #827)
+
+## PIT-S112-001 — Un dialogue Radix contrôlé sans `Dialog.Trigger` ne rend le focus à RIEN à la fermeture
+`DialogContent` modal (Radix Dialog 1.1.6, `dist/index.mjs:144-147`) annule toujours `onCloseAutoFocus` et focalise `triggerRef` — nul sans Trigger — donc le focus tombe sur `body`. Les tiroirs de création produits/catégories étaient touchés (4/6 E2E rouges avant correctif) alors qu'un test Vitest les disait conformes. Tout dialogue contrôlé place lui-même le focus dans `onCloseAutoFocus` (`preventDefault` + `ref.focus()`) et le prouve en E2E réel. Aucun dialogue du front n'a de Trigger : les autres sont probablement touchés (suite ouverte). (Sprint 112 #700)
+
+## PIT-S112-002 — Un mock de bibliothèque tierce qui recopie l'hypothèse du composant valide l'hypothèse au lieu de la tester
+Le tiroir mocké du S90 refocalisait l'élément actif quand l'événement n'était pas annulé — exactement ce que le composant supposait de Radix, et faux. Test vert pendant 22 sprints sur un focus perdu. Un mock qui simule une bibliothèque cite la ligne source qu'il reproduit ; sinon, E2E réel. Famille PIT-S94-001. (Sprint 112 #700)
+
+## PIT-S112-003 — Le hit-testing de Chromium suit `border-radius` : un coin sondé à 1 px de l'arête « rate » une cible pourtant non recouverte
+Sonde `elementFromPoint` aux coins d'un `⋯` de 44×44 à `border-radius: 5px` : les coins désignaient le parent, ce qui ressemblait à un recouvrement par la lane voisine. Une grille de pixels a montré que seuls les pixels de l'arrondi manquaient. Sonder les coins à `1 + ceil(r·(1 − 1/√2))` px (`expectClickableBox`) ; avant de conclure à un recouvrement, cartographier les points manqués et lire `border-radius`. (Sprint 112 #767)
+
+## PIT-S112-004 — La liste d'écarts d'une issue de factorisation n'est pas l'inventaire des écarts
+#768 annonçait 2 divergences entre les copies de `measureControls` ; la lecture ligne à ligne en montrait 3 (sprint-101/102 écartent aussi `opacity: 0` / `display: none`). Comparer les copies elles-mêmes avant de factoriser, et prouver l'équivalence par les mesures (PAT-S112-004), pas par « N passed ». (Sprint 112 #768)
+
+## PIT-S112-005 — Ajouter un paramètre au constructeur de `SecurityConfig` casse la COMPILATION de toute la suite de tests
+`CorsAllowedOriginsConfigIntegrationTest` l'instancie directement (`new SecurityConfig(null, null, …)`) : l'erreur n'est pas un test rouge mais 0 test exécuté. `/usr/bin/grep -rn "new SecurityConfig(" backend/src/test` avant de toucher la signature. (Sprint 112 #831)
+
+## PIT-S112-006 — Un plan de migration « de X vers Y » bâti sur un comptage RTK : 0 appelant réel
+Le lead a briefé #832 sur « `registerAndLogin` appelé par de nombreuses specs » d'après un `grep -rlc` passé sous RTK (sortie `fichier:0` pour tous les fichiers, lue comme une liste d'appelants). Grep absolu : 0 appelant, 76 specs déjà en `storageState` ; l'issue a livré ses critères sans aucun gain de budget. Compter les appelants avec `/usr/bin/grep` avant de planifier une migration, et lire le chiffre, pas la présence de lignes. Cousin de « Prérequis d'issue : grepper les appelants ». (Sprint 112, lead, #832)
+
+## PIT-S112-007 — Sous le hook RTK, `find -newer`, `cat` et `wc -l` rendent des mesures fausses
+`rtk find` refuse les prédicats composés (`-newer`) → comptage surefire vide ; `wc -l < f` a rendu 0 pour un fichier de 2 lignes ; `cat` est réécrit en `rtk read`. Toute MESURE passe par `/usr/bin/find`, `/bin/cat`, `/usr/bin/wc` ou un script Python. Étend la note S93 sur `grep`. (Sprint 112, #831 + lead)
+
+## PIT-S112-008 — `timeout` n'existe pas sur macOS : un `timeout 900 docker compose … --build` ne fait RIEN et le conteneur reste périmé
+Sortie `command not found` (exit 127) avalée par un `;`, puis la sonde `/api/auth/me` = 401 répond… depuis l'ANCIEN conteneur. Seul `docker inspect --format '{{.Created}}'` comparé à l'heure du dernier commit backend l'a révélé. Ne pas préfixer `timeout` ; dater le conteneur ET vérifier la classe attendue dans le jar (`docker cp … app.jar` + `unzip -l`, l'image n'a ni `jar` ni `unzip`). (Sprint 112, lead)
+
+## PIT-S112-009 — `while pgrep -f "<motif>"` ne se termine jamais quand le motif figure dans la commande qui boucle
+`pgrep -f` lit la ligne de commande complète, y compris celle du shell qui exécute la boucle : l'attente s'apparie à elle-même (tâche coupée à 10 min). Attendre sur un PID (`while kill -0 $PID`) ou sur un fichier produit, jamais sur un motif présent dans la commande. (Sprint 112, lead)
+
+## PIT-S112-010 — Un test Vitest qui analyse l'AST de tout le dépôt passe en local et dépasse 5 s en CI sous couverture
+`e2e-rate-limit-budget.test.ts` « les lignes BUDGET… disent vrai » : 870 ms en local, > 5 s (délai par défaut) sur le runner CI avec couverture (~6× plus lent) — rouge sur un commit de docs seules, vert sur le précédent. Tout test qui parcourt le dépôt réel porte un délai explicite (`describe(nom, { timeout }, fn)`) ; un rouge « Test timed out » sur un diff sans code se relit comme une lenteur, pas comme un budget faux. (Sprint 112, lead, clôture)
+

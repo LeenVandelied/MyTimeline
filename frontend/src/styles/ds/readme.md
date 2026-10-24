@@ -75,7 +75,8 @@ shadowed feature cards. The new system rejects all of that.
   Tailwind-default rhythm. Magazine-ish: unequal columns, fine rules over boxes.
 - **Borders & cards:** the system **prefers 1px hairline rules to cards**. When a
   card is used: 1px border, radius ≤ 10px, **no** heavy shadow. Radius ramp
-  3/5/7/10/14; pill reserved for switches.
+  3/5/7/10/14; pill reserved for switches — true circles
+  (decorative dots, step numbers, avatars, milestones) use `rounded-full` too (#616).
 - **Border tiers — decorative vs functional (#293).** Three tokens, and the
   choice is an accessibility decision, not a taste one:
 

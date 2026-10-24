@@ -933,6 +933,47 @@ Chaque édition déclenche une recompilation HMR pendant la spec ; la page reste
 ## PIT-S102-004 — Un grep de `data-testid` sans résultat ne prouve pas l'absence du testid
 Le lead a affirmé dans un briefing qu'aucun `timeline-actionsheet-{edit,delete,cancel}` n'existait : le grep ne trouvait que `timeline-actionsheet-overlay`, les autres identifiants étant composés dynamiquement, et la spec `sprint-101-touch-targets` les citait déjà. Avant d'écrire « n'existe pas » dans un briefing, chercher aussi dans `frontend/e2e/` (une spec qui cite l'identifiant prouve qu'il est rendu) et le préfixe seul. L'agent l'a relevé, sans conséquence. (Sprint 102, lead)
 
+
+## PIT-S103-004 — Une affirmation du briefing sur l'état du code se greppe avant d'être écrite
+Le briefing du lead annonçait un « surtitre du hero en accent dans le code » : il n'existe que dans la maquette (`HeroSection.tsx` n'a aucun eyebrow). L'agent l'a relevé et converti en suite, sans conséquence. Lire la maquette ne dit rien du code : grepper la classe ou l'élément avant de l'écrire dans une consigne. Même famille que PIT-S102-004. (Sprint 103, lead)
+
+
+## PIT-S110-003 — `test-quiet.sh frontend-unit` ne conserve pas de log : un rouge isolé devient inidentifiable
+Suite complète : 2216/2217 au 1er run, puis 2217/2217 ×2 — le nom du test rouge était perdu (aucun fichier de log, sortie résumée). Pour tout run complet dont on devra peut-être expliquer un rouge, lancer `rtk proxy npx vitest run --reporter=json --outputFile=<fichier>` et lire `numFailedTests` + `assertionResults` en Python. (Sprint 110, lead)
+
+
+## PIT-S111-001 — Un numéro de migration retiré de l'historique reste dans les `flyway_schema_history` locales
+Un premier `V16__delete_unbounded_recurring_events.sql` (#452) a été ajouté puis retiré le 2026-09-02 (`072a40a6` → `61ca5d0f`) ; le nouveau V16 (#653) réutilise le numéro. Toute base qui a booté entre les deux commits refusera le boot (checksum/description). CI et Testcontainers sont épargnés (bases neuves), la base e2e était à V15. Remédiation (ADR-010, Risques) : supprimer la ligne 16 de `flyway_schema_history` puis redémarrer — **jamais `flyway repair`**, qui marquerait V16 appliquée sans créer la colonne. Prévention : `git log --all --name-status -- 'backend/src/main/resources/db/migration/V<N>*'` avant de prendre un numéro. (Sprint 111 #653, revue db-expert)
+
+
+## PIT-S111-002 — Une spec E2E à comptes neufs impose une retouche backend, même dans un briefing « frontend seulement »
+`src/__tests__/e2e-rate-limit-budget.test.ts` recompte les connexions par formulaire et les `register` des specs et exige la mise à jour des lignes `BUDGET` de `backend/src/main/resources/application-e2e.properties`. Le briefing interdisait `backend/**` : l'agent a dû y déroger. Après #653, login au pire cas CI = 26/30 — deux connexions de plus dépassent le plafond. Briefer d'avance cette exception, et regarder le budget avant de demander une spec qui se connecte. (Sprint 111 #653 front)
+
+
+## PIT-S111-004 — Abréger le pack d'un briefing fait refuser le spawn par `pre-spawn-fullstack.sh`
+Le hook exige un prompt `fullstack-dev` ≥ 8 000 octets avec un marqueur `<!-- ===== cp-/br-/pit- ===== -->`. Un briefing dont le pack a été résumé à la main (7 792 octets) est bloqué : inliner le pack complet (`cp-frontend.md` fait 8,4 Ko) plutôt que d'en couper des passages. (Sprint 111, lead, #827)
+
+
+## PIT-S112-005 — Ajouter un paramètre au constructeur de `SecurityConfig` casse la COMPILATION de toute la suite de tests
+`CorsAllowedOriginsConfigIntegrationTest` l'instancie directement (`new SecurityConfig(null, null, …)`) : l'erreur n'est pas un test rouge mais 0 test exécuté. `/usr/bin/grep -rn "new SecurityConfig(" backend/src/test` avant de toucher la signature. (Sprint 112 #831)
+
+
+## PIT-S112-006 — Un plan de migration « de X vers Y » bâti sur un comptage RTK : 0 appelant réel
+Le lead a briefé #832 sur « `registerAndLogin` appelé par de nombreuses specs » d'après un `grep -rlc` passé sous RTK (sortie `fichier:0` pour tous les fichiers, lue comme une liste d'appelants). Grep absolu : 0 appelant, 76 specs déjà en `storageState` ; l'issue a livré ses critères sans aucun gain de budget. Compter les appelants avec `/usr/bin/grep` avant de planifier une migration, et lire le chiffre, pas la présence de lignes. Cousin de « Prérequis d'issue : grepper les appelants ». (Sprint 112, lead, #832)
+
+
+## PIT-S112-007 — Sous le hook RTK, `find -newer`, `cat` et `wc -l` rendent des mesures fausses
+`rtk find` refuse les prédicats composés (`-newer`) → comptage surefire vide ; `wc -l < f` a rendu 0 pour un fichier de 2 lignes ; `cat` est réécrit en `rtk read`. Toute MESURE passe par `/usr/bin/find`, `/bin/cat`, `/usr/bin/wc` ou un script Python. Étend la note S93 sur `grep`. (Sprint 112, #831 + lead)
+
+
+## PIT-S112-008 — `timeout` n'existe pas sur macOS : un `timeout 900 docker compose … --build` ne fait RIEN et le conteneur reste périmé
+Sortie `command not found` (exit 127) avalée par un `;`, puis la sonde `/api/auth/me` = 401 répond… depuis l'ANCIEN conteneur. Seul `docker inspect --format '{{.Created}}'` comparé à l'heure du dernier commit backend l'a révélé. Ne pas préfixer `timeout` ; dater le conteneur ET vérifier la classe attendue dans le jar (`docker cp … app.jar` + `unzip -l`, l'image n'a ni `jar` ni `unzip`). (Sprint 112, lead)
+
+
+## PIT-S112-009 — `while pgrep -f "<motif>"` ne se termine jamais quand le motif figure dans la commande qui boucle
+`pgrep -f` lit la ligne de commande complète, y compris celle du shell qui exécute la boucle : l'attente s'apparie à elle-même (tâche coupée à 10 min). Attendre sur un PID (`while kill -0 $PID`) ou sur un fichier produit, jamais sur un motif présent dans la commande. (Sprint 112, lead)
+
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)

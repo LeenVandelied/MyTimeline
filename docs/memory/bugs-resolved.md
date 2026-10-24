@@ -189,3 +189,9 @@ La croix de `DialogContent` (icône sans padding) était une cible de 16 px dans
 
 ## BUG-S102-002 — L'indicateur de force annonçait « fort » en comptant les lettres non-ASCII comme symboles
 `PasswordStrength.tsx` : `/[a-z]/` et `/[^A-Za-z0-9]/`. Correctif : classes Unicode (DEC-S102-001) ; `Ωabcdefg١` passe de 4 (« fort ») à 3 (« moyen »). (Sprint 102, #762)
+
+## BUG-S112-001 — Le focus clavier tombait sur `body` à la fermeture des tiroirs de création produits et catégories
+Annulation ou création depuis le CTA d'état vide ou le bouton permanent : Radix visait un `Dialog.Trigger` absent (PIT-S112-001). Correctif : `onCloseAutoFocus` qui place lui-même le focus (PAT-S112-001) ; E2E `sprint-112-focus-return` 8/8, vrai tiroir, rechargement lent inclus. (Sprint 112, #700)
+
+## BUG-S112-002 — Trois cibles tactiles mobiles à 36 px de haut
+CTA d'état vide Produits (168×36) et Catégories (182×36) → `TOUCH_TARGET_BUTTON` (44 px en mobile, 36 px conservés sur desktop) ; bascule de thème `labeled` du tiroir mobile (285,75×36) → `h-11`. Mesurés à 375 px avant correction ; désarchiver et `⋯` portrait déjà conformes, non modifiés. (Sprint 112, #767, #830)

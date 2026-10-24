@@ -11,10 +11,6 @@
     "timeline": "Zeitachse",
     "products": "Produkte"
   },
-  "theme": {
-    "toLight": "Zum hellen Design wechseln",
-    "toDark": "Zum dunklen Design wechseln"
-  },
   "createDrawer": {
     "title": "Neues Ereignis",
     "subtitle": "Einem Produkt zugeordnet",

@@ -12,6 +12,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -35,6 +36,7 @@ import com.matimeline.eventmanager.domain.exceptions.InvalidAvatarException;
 import com.matimeline.eventmanager.domain.exceptions.InvalidCredentialsException;
 import com.matimeline.eventmanager.domain.exceptions.SamePasswordException;
 import com.matimeline.eventmanager.domain.models.AvatarContent;
+import com.matimeline.eventmanager.domain.models.ThemePreference;
 import com.matimeline.eventmanager.domain.models.User;
 import com.matimeline.eventmanager.domain.ports.services.AvatarService;
 import com.matimeline.eventmanager.domain.ports.services.UserService;
@@ -453,5 +455,95 @@ class UserControllerTest {
                 .andExpect(status().isUnauthorized());
 
         verify(avatarService, never()).deleteAvatar(any(User.class));
+    }
+
+    // ----- #653 (BR-AUT-013, ADR-010) : préférence de thème du compte -----
+
+    @Test
+    void getMe_exposesThemePreferenceKey_asNull_whenNoExplicitChoice() throws Exception {
+        stubAuthenticatedCaller();
+
+        // La clé DOIT être présente à null (pas absente) : le front distingue « aucun choix ».
+        mockMvc.perform(get("/api/me").cookie(new Cookie("jwt", TOKEN)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.themePreference").hasJsonPath())
+                .andExpect(jsonPath("$.themePreference").isEmpty());
+    }
+
+    @Test
+    void getMe_exposesThemePreference_inLowercase() throws Exception {
+        caller = new User(caller.getId(), "Alice", "alice", HASH, "ROLE_USER", "alice@example.com",
+                null, ThemePreference.SYSTEM);
+        stubAuthenticatedCaller();
+
+        mockMvc.perform(get("/api/me").cookie(new Cookie("jwt", TOKEN)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.themePreference").value("system"));
+    }
+
+    @Test
+    void putPreferences_valid_returns200WithUpdatedUser_withoutHash() throws Exception {
+        stubAuthenticatedCaller();
+        when(userService.updateThemePreference(any(User.class), eq(ThemePreference.DARK)))
+                .thenReturn(new User(caller.getId(), "Alice", "alice", HASH, "ROLE_USER",
+                        "alice@example.com", null, ThemePreference.DARK));
+
+        mockMvc.perform(put("/api/me/preferences")
+                        .cookie(new Cookie("jwt", TOKEN))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"themePreference\":\"dark\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.themePreference").value("dark"))
+                .andExpect(jsonPath("$.username").value("alice"))
+                .andExpect(jsonPath("$.password").doesNotExist())
+                .andExpect(result -> org.junit.jupiter.api.Assertions.assertFalse(
+                        result.getResponse().getContentAsString().contains(HASH)));
+
+        // Identité dérivée du JWT : c'est le caller résolu qui est passé au service.
+        verify(userService).updateThemePreference(caller, ThemePreference.DARK);
+    }
+
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.ValueSource(strings = {
+            "{\"themePreference\":\"LIGHT\"}",
+            "{\"themePreference\":\"Dark\"}",
+            "{\"themePreference\":\" system\"}",
+            "{\"themePreference\":\"auto\"}",
+            "{\"themePreference\":\"\"}",
+            "{\"themePreference\":null}",
+            "{}",
+            "{\"theme\":\"dark\"}"
+    })
+    void putPreferences_invalidOrMissingValue_returns400_andWritesNothing(String body) throws Exception {
+        mockMvc.perform(put("/api/me/preferences")
+                        .cookie(new Cookie("jwt", TOKEN))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("validation_failed"));
+
+        verify(userService, never()).updateThemePreference(any(), any());
+    }
+
+    @Test
+    void putPreferences_missingBody_returns400() throws Exception {
+        mockMvc.perform(put("/api/me/preferences")
+                        .cookie(new Cookie("jwt", TOKEN))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(""))
+                .andExpect(status().isBadRequest());
+
+        verify(userService, never()).updateThemePreference(any(), any());
+    }
+
+    @Test
+    void putPreferences_anonymous_returns401() throws Exception {
+        // currentUser() = Optional.empty() (défaut Mockito) -> 401, rien écrit.
+        mockMvc.perform(put("/api/me/preferences")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"themePreference\":\"dark\"}"))
+                .andExpect(status().isUnauthorized());
+
+        verify(userService, never()).updateThemePreference(any(), any());
     }
 }

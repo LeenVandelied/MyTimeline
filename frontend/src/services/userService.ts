@@ -1,5 +1,7 @@
 import apiClient from '@/services/apiClient'
 import { UserSchema, type User } from '@/types/user'
+import type { ThemeOption } from '@/types/settings'
+import type { InlineErrorOptions } from './inlineErrorHandling'
 
 /**
  * #86 — Appels réseau du profil de l'utilisateur COURANT (`/api/me`). L'identité
@@ -14,6 +16,9 @@ import { UserSchema, type User } from '@/types/user'
  * Avatar (#75, livré) :
  *  - POST   /api/me/avatar  multipart `file` -> UserResponse (avatarUrl)
  *  - DELETE /api/me/avatar                    -> 204
+ *
+ * Préférences (#653, livré) :
+ *  - PUT    /api/me/preferences body {themePreference} -> UserResponse
  *
  * Endpoint NON encore livré (stub) :
  *  - GET  /api/me/export         (export RGPD — aucun endpoint backend à ce jour)
@@ -32,6 +37,28 @@ export interface ProfileUpdatePayload {
 export const updateProfile = async (payload: ProfileUpdatePayload): Promise<User> => {
   const response = await apiClient.patch('/me', payload)
   // Le backend renvoie UserResponse (avec `avatarUrl` depuis #75).
+  return UserSchema.parse(response.data)
+}
+
+export interface PreferencesPayload {
+  themePreference: ThemeOption
+}
+
+/**
+ * #653 — PUT /api/me/preferences — pose la préférence de thème du compte
+ * (ADR-010). Idempotent ; 400 pour toute valeur hors `light|dark|system` (le
+ * type l'interdit) ; on ne peut PAS remettre le compte à `null`. Renvoie le
+ * `UserResponse` à jour, dont `AuthProvider` recopie la valeur connue.
+ *
+ * #833 — `options` (opt-out du toast global, cf. `inlineErrorHandling.ts`) est
+ * fourni par l'APPELANT, jamais posé ici : un futur appelant qui n'absorbe pas
+ * l'échec garde le toast par défaut.
+ */
+export const updatePreferences = async (
+  payload: PreferencesPayload,
+  options?: InlineErrorOptions,
+): Promise<User> => {
+  const response = await apiClient.put('/me/preferences', payload, options)
   return UserSchema.parse(response.data)
 }
 

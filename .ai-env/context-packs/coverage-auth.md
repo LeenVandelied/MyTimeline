@@ -48,6 +48,12 @@
 ### User (31)
 - `UserControllerTest` (23, +1 au S71 #134 : `patchMe_conflictBody_leaksNoUsernameExistenceHint`), `UserServiceImplTest` (3), `UserRoleConstraintIntegrationTest` (5).
 
+### Préférence de thème du compte (NEW S111 #653, BR-AUT-013 — compteurs surefire du run ciblé S111)
+- `ThemePreferenceIntegrationTest` (6) — Postgres réel : boot V16 + `ddl-auto=validate`, `themePreference` à `null` (clé présente) sur `/api/me` et `/api/auth/me`, stockage en minuscules, relecture par une 2e session, `PATCH /api/me` qui ne l'efface pas (armé), 400/401 par la vraie chaîne de filtres, CHECK `ck_users_theme_preference`.
+- `UserControllerTest` : 36 au S111 (dont +13 #653 : GET expose la clé, PUT 200, 8 valeurs/corps invalides → 400, corps vide → 400, anonyme → 401). `UserServiceImplTest` : 6 (+3 #653 : port dédié, jamais `save`, compte disparu → 404, `null` refusé).
+- `ThemePreferenceTest` (9) — `fromValue` strict. Export : `UserDataExportTest` (+1), `ExportRenderersTest` (+3 : JSON/CSV/Markdown).
+- ⚠ Gap : l'**arbitrage à la connexion** (BR-AUT-013) est côté front, vague 2 S111 — aucun test ne le couvre tant qu'elle n'est pas livrée.
+
 ## Tests frontend (99)
 - `AuthContext.test.tsx` (6), `useCurrentUser` (2), `useSessionManager` (3), `authService` (1), `userService` (3).
 - Settings : `SecuritySection` (4), `SessionList` (6), `AccountSection` (4), `PasswordStrength` (6).

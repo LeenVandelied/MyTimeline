@@ -1,5 +1,6 @@
 import { test, expect, type Page } from '@playwright/test'
 import {
+  LANDING_CTA,
   MOBILE_MENU,
   describeRendering,
   expectNotTruncated,
@@ -9,6 +10,7 @@ import {
   requiredRatio,
   waitForFonts,
 } from './support/contrast'
+import { LANDING_NAV_ANCHORS, landingMenuLinkTestId } from '../src/components/landing/landing-nav'
 
 /**
  * #334 — Menu burger de la landing : comportement, accessibilité et contraste.
@@ -133,9 +135,10 @@ test.describe('Landing — menu burger (375 px)', () => {
   test('un clic sur une ancre referme le panneau et navigue', async ({ page }) => {
     await gotoLanding(page)
     const panel = await openMenu(page)
-    const anchor = panel.locator('nav a').first()
+    // #793 : ciblée par testid dérivé de la source des ancres, plus par position.
+    const anchor = panel.getByTestId(landingMenuLinkTestId(LANDING_NAV_ANCHORS[0]))
     const href = await anchor.getAttribute('href')
-    expect(href).toMatch(/^#/)
+    expect(href).toBe(`#${LANDING_NAV_ANCHORS[0]}`)
     await anchor.click()
     await expect(page.getByTestId(MOBILE_MENU.panel)).toHaveCount(0)
     expect(new URL(page.url()).hash).toBe(href)
@@ -520,8 +523,19 @@ test.describe('Landing — aucun débordement horizontal, tous paliers', () => {
       await waitForFonts(page)
 
       const panel = await openMenu(page)
-      await expect(panel.locator('nav a')).toHaveCount(3)
-      await expect(panel.locator('a[href="/fr/login"]')).toHaveCount(1)
+      // #793 : le compte attendu DÉRIVE de `LANDING_NAV_ANCHORS` (plus de nombre figé,
+      // PIT-S103-003), et chaque ancre de la source doit être rendue sous SON testid,
+      // avec SON `href` — un lien sans testid ou une ancre non rendue rougit ici.
+      await expect(panel.locator('nav a')).toHaveCount(LANDING_NAV_ANCHORS.length)
+      for (const anchor of LANDING_NAV_ANCHORS) {
+        await expect(panel.getByTestId(landingMenuLinkTestId(anchor))).toHaveAttribute(
+          'href',
+          `#${anchor}`,
+        )
+      }
+      const login = panel.getByTestId(LANDING_CTA.menuLogin)
+      await expect(login).toHaveCount(1)
+      await expect(login).toHaveAttribute('href', '/fr/login')
 
       // Le panneau lui-même ne doit pas réintroduire de débordement : il est en
       // `fixed`, mais `min(320px,85vw)` reste dans le cadre à toute largeur.

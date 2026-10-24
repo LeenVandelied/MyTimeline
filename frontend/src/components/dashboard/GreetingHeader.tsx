@@ -45,10 +45,12 @@ export const GreetingHeader: React.FC<GreetingHeaderProps> = ({
       className="border-rule flex min-w-0 flex-col gap-1 border-b pb-4"
       data-testid="dashboard-greeting"
     >
-      <p
-        className="text-ink-muted text-2xs font-mono tracking-widest uppercase"
-        data-testid="dashboard-greeting-eyebrow"
-      >
+      {/* #632 — `.mt-eyebrow` (DS `i18n.css` §2) : 10 px, capitales, `ink-muted`, et
+          interlettrage détendu à .02em en `de`. La maquette (`Dashboard.dc.html`) pose
+          exactement ce style sur la date au-dessus du « Bonjour » : le 13 px `.16em` fait
+          main disparaît, une seule taille d'eyebrow sur le dashboard. Aucune utilitaire
+          `text-*`/`tracking-*` à côté : la classe DS est HORS layer et la battrait. */}
+      <p className="mt-eyebrow" data-testid="dashboard-greeting-eyebrow">
         {t('eyebrow')}
       </p>
       <h1 className="text-ink text-md font-medium tracking-tight break-words">

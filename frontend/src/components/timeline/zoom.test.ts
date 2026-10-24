@@ -6,8 +6,12 @@ import {
   buildMinimapBuckets,
   buildRulerTicks,
   buildWeekendSegments,
+  computeFit,
   computeRange,
   daysBetween,
+  displayedEventDayExtent,
+  FIT_MARGIN_PX,
+  indexEventsByResource,
   initialZoomState,
   isWeekend,
   positionEvents,
@@ -283,5 +287,111 @@ describe('buildMinimapBuckets', () => {
     expect(buckets).toHaveLength(10)
     expect(Math.max(...buckets)).toBe(1) // bucket le plus dense normalisé à 1
     expect(Math.min(...buckets)).toBeGreaterThanOrEqual(0)
+  })
+})
+
+/**
+ * #597 — Recadrage `F` : action `FIT` du reducer, étendue des événements AFFICHÉS
+ * (lue sur les données, en jours) et choix du niveau / décalage par `computeFit`.
+ */
+describe('#597 recadrage (FIT)', () => {
+  const rangeStart = new Date(2026, 0, 1)
+  const now = new Date(2026, 0, 1)
+
+  it('FIT pose niveau ET décalage, en objet NEUF même à valeurs égales', () => {
+    const s0: ZoomState = { level: 'month', offsetDays: 3 }
+    const s1 = zoomReducer(s0, { type: 'FIT', level: 'week', offsetDays: 42 })
+    expect(s1).toEqual({ level: 'week', offsetDays: 42 })
+    // Un 2e `F` après un défilement manuel doit re-rendre (la frise ré-applique le cadrage).
+    const s2 = zoomReducer(s1, { type: 'FIT', level: 'week', offsetDays: 42 })
+    expect(s2).toEqual(s1)
+    expect(s2).not.toBe(s1)
+  })
+
+  it('étendue : une durée court jusqu’au bout de sa barre, un ponctuel s’arrête à sa date', () => {
+    const indexed = indexEventsByResource(
+      [
+        evt('d', '2026-01-11', '2026-01-16', 'r1', 'duration'), // jours 10 → 15
+        evt('s', '2026-01-21', '2026-01-21', 'r2', 'single'), // jour 20
+      ],
+      rangeStart,
+      now,
+    )
+    expect(displayedEventDayExtent(indexed, ['r1'])).toEqual({ startDay: 10, endDay: 15 })
+    expect(displayedEventDayExtent(indexed, ['r2'])).toEqual({ startDay: 20, endDay: 20 })
+    expect(displayedEventDayExtent(indexed, ['r1', 'r2'])).toEqual({ startDay: 10, endDay: 20 })
+  })
+
+  it('étendue : seules les ressources AFFICHÉES comptent (masquée/repliée exclue par l’appelant)', () => {
+    const indexed = indexEventsByResource(
+      [
+        evt('near', '2026-01-11', '2026-01-12', 'shown'),
+        evt('far', '2029-06-01', '2029-06-02', 'hidden'),
+      ],
+      rangeStart,
+      now,
+    )
+    const shownOnly = displayedEventDayExtent(indexed, ['shown'])
+    expect(shownOnly).toEqual({ startDay: 10, endDay: 11 })
+    // Contrôle : avec la ressource masquée, l'étendue — donc le cadrage — change.
+    const all = displayedEventDayExtent(indexed, ['shown', 'hidden'])
+    expect(all?.endDay).toBeGreaterThan(1000)
+    expect(computeFit(shownOnly, 1000)?.level).toBe('day')
+    expect(computeFit(all, 1000)?.level).toBe('year')
+  })
+
+  it('rien d’affiché : étendue nulle, `computeFit` rend null (F = no-op)', () => {
+    const indexed = indexEventsByResource(
+      [evt('a', '2026-01-11', '2026-01-12', 'r1')],
+      rangeStart,
+      now,
+    )
+    expect(displayedEventDayExtent(indexed, [])).toBeNull()
+    expect(displayedEventDayExtent(indexed, ['inconnue'])).toBeNull()
+    expect(computeFit(null, 1000)).toBeNull()
+    // Viewport non mesurable (jsdom, conteneur masqué) : no-op, pas de division par 0.
+    expect(computeFit({ startDay: 10, endDay: 20 }, 0)).toBeNull()
+  })
+
+  it('étendue COURTE : niveau le plus fin (`day`), centrée', () => {
+    // Largeur utile 1000 − 2 × 40 = 920 px ; 5 j → 184 px/j idéal → `day` (96).
+    const fit = computeFit({ startDay: 100, endDay: 105 }, 1000)
+    expect(fit?.level).toBe('day')
+    const lead = FIT_MARGIN_PX + (920 - 5 * DAY_WIDTH_PX.day) / 2
+    expect(fit?.offsetDays).toBeCloseTo(100 - lead / DAY_WIDTH_PX.day, 10)
+  })
+
+  it('étendue d’un seul jour (un ponctuel) : `day`, centrée sur la date', () => {
+    const fit = computeFit({ startDay: 50, endDay: 50 }, 1000)
+    expect(fit?.level).toBe('day')
+    // La date tombe au milieu de la largeur utile (marges comprises).
+    expect(((fit?.offsetDays ?? 0) - 50) * -DAY_WIDTH_PX.day).toBeCloseTo(500, 10)
+  })
+
+  it('étendue MOYENNE : le niveau le plus FIN qui tient (et le niveau plus fin déborde)', () => {
+    // 60 j dans 920 px → 15,3 px/j : `week` (34) déborde, `month` (12) tient.
+    const fit = computeFit({ startDay: 200, endDay: 260 }, 1000)
+    expect(fit?.level).toBe('month')
+    expect(60 * DAY_WIDTH_PX.month).toBeLessThanOrEqual(920)
+    expect(60 * DAY_WIDTH_PX.week).toBeGreaterThan(920)
+    const lead = FIT_MARGIN_PX + (920 - 60 * DAY_WIDTH_PX.month) / 2
+    expect(fit?.offsetDays).toBeCloseTo(200 - lead / DAY_WIDTH_PX.month, 10)
+  })
+
+  it('étendue LONGUE : `year`, et alignée à gauche (marge comprise) si elle déborde encore', () => {
+    // 1000 j dans 1120 px → 1,12 px/j < 2,2 : aucun niveau ne tient.
+    const fit = computeFit({ startDay: 400, endDay: 1400 }, 1200)
+    expect(fit?.level).toBe('year')
+    expect(fit?.offsetDays).toBeCloseTo(400 - FIT_MARGIN_PX / DAY_WIDTH_PX.year, 10)
+    // Deux ans tiennent en `year` dans un viewport large : centrés, pas alignés.
+    const twoYears = computeFit({ startDay: 400, endDay: 1130 }, 1800)
+    expect(twoYears?.level).toBe('year')
+    const lead = FIT_MARGIN_PX + (1720 - 730 * DAY_WIDTH_PX.year) / 2
+    expect(twoYears?.offsetDays).toBeCloseTo(400 - lead / DAY_WIDTH_PX.year, 10)
+  })
+
+  it('décalage borné à 0 (l’étendue commence au bord de la piste)', () => {
+    const fit = computeFit({ startDay: 1, endDay: 3 }, 1000)
+    expect(fit?.offsetDays).toBe(0)
   })
 })

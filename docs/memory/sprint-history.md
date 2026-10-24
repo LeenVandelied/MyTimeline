@@ -6958,3 +6958,275 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
   - `sprint-101-fab-landscape:271` rouge local selon l'heure, préexistant (A/B) [XS | tests] → issue #769 (backlog)
   Ratio discard 0/4.
 **Status :** Terminé — PR #765 mergée, issues #761/#762/#763/#764 et milestone #103 fermés après merge
+
+---
+
+> **Plan S103 → S112 (2026-09-22)** — `/sprint plan 10 -c "focus design et mvp"`, base `e0a3dab8`.
+> Axe arbitré par le dev : **écart maquette ↔ produit** (écrans visibles d'abord, puis a11y et dette du DS en complément) ;
+> bugs hors `epic:design` admis seulement sur un écran qu'un sprint touche déjà (#597, #607, #608, #632 retenus ; #444, #563, #620, #722, #766 au backlog).
+> Phase 0.5 scriptée **sautée** (32/69 faux positifs au S93) : contre-vérification manuelle par l'architect sur chaque issue retenue,
+> puis par le lead sur 7 affirmations clés (toutes confirmées ; seule correction : `.mt-evt--draft` à `timeline.css:88`, pas `:66`).
+> Détection NO-OP de l'étape 5 non jouée (inutilisable ici : `Closes #N` ne ferme rien sur la base `dev`).
+> 33 issues, 57 pts, cohésion moyenne 0.56. Fermées au plan : #418 (déjà livrée, `timeline.css:88`), #426 (absorbée par #612).
+> Arbitrage #613 : **section témoignages retirée** (4 avis nominatifs inventés dans `testimonials.json` ; pas de faux « avis presse »).
+> Branche : aucune créée au plan ; chaque `/sprint start` travaille sur sa branche de worktree (convention S85).
+> Ordre imposé : S103 → S104 ; S106 → S107, S109, S112 ; S108 → S109 ; S109 → S111. Mini-plans : `docs/memory/sprints/sprint-<N>/architect-plans.md`.
+
+### Sprint 103 — 2026-09-22 → 2026-09-22 (Terminé — merge PR #792 dans dev — cohésion 0.70, Landing : sections du milieu)
+**Objectif :** la frise de cas d'usage à 4 jalons remplace les deux sections redondantes ; la section témoignages inventés disparaît ; l'accent bleu redevient un signal ; CTA de la landing ciblés par `data-testid`
+**Milestone GitHub :** #104 (fermé après merge)
+**Issues livrées (4) :** #354, #613, #612, #615
+**Arbitrages au démarrage (dev) :** maquette lue par le lead (`Landing.dc.html` via DesignSync, extrait `sprints/sprint-103/maquette-landing-frise-cas-usage.md`) — aucun rendu mobile dessiné → frise **verticale < 640 px** ; étiquettes des jalons en `ink-muted` (#615 prime sur la maquette qui les met en accent) ; vagues revues en **2 agents séquentiels** (`HeaderSection`/`FooterSection`/`HomePage` touchés par 3 issues)
+**Vagues exécutées :** A (#354 → #613) puis B (#612 → #615), séquentiels | retour de review par le lead
+**Migrations Flyway :** aucune
+**Mini-plans :** `docs/memory/sprints/sprint-103/architect-plans.md` (issu de `/sprint plan 10`, PR #791 non mergée au démarrage : branche avancée en fast-forward sur `468f79fc`, qui fait donc partie de cette PR)
+**Branche :** `claude/sprint-103-start-f844e1` (worktree, pas de `sprint/103`)
+**Commits :** 0f945537 (#354), ee44f21e (#613), 2f5edd2f (#612), e61b0969 (#615, verrou + mesure), ecfcadb9 (retour de review), + d93f63d1 (docs avant PR), + commit de clôture (consolidation mémoire, packs pitfalls, 2 docs absorbées)
+**Écarts d'énoncé :** #354 : moitié `.eslintcache` déjà livrée (`a2d8e8e7`, #373) — seule la moitié testids livrée ; 6 testids (5 CTA + copie « Connexion » du burger) ; #613 : périmètre « retirer la section » (arbitrage plan) ; #612 : disposition choisie sur mesure — verticale < 640, **2×2 de 640 à 1023** (4 colonnes = 131-163 px, étiquettes sur 2 lignes dans les 4 locales), 4 colonnes ≥ 1024 ; `id="how-it-works"` conservé ; FR au vouvoiement, ES au tutoiement (déjà celui du produit) ; #615 : plus rien à retirer après #612/#613 → livré comme verrou (Vitest sur le DOM rendu + mesure E2E du contraste, armement `ink-faint`) ; AC #1 non tenue à la lettre : le wordmark reste en accent (dérogation nommée, à arbitrer)
+**Erreur du lead :** le briefing B affirmait « surtitre du hero en accent dans le code » — il n'existe que dans la maquette ; relevé par l'agent B, sans conséquence
+**Tests :** Vitest 157 fichiers / 2004 verts | `next build`, `lint`, `format:check`, `tsc` verts | E2E suite complète contre `next build`+`next start` : 510 verts, 8 sautés, 11 rouges hors sprint (10 × `sprint-77` darwin attendus ; `sprint-101-fab-landscape:271` préexistant, #769) | après retour de review : 89/89 sur les specs ciblées
+**Vérification navigateur (lead) :** 1280 (4 jalons, pas de débordement), 768 (2×2), 375 (verticale) ; seul 401 console = `/api/auth/me` anonyme (attendu)
+**Reviews :** reviewer batch — 0 CRITIQUE / 1 MAJEUR / 1 MINEUR, tous résolus (`ecfcadb9` : clés `footer.*` orphelines retirées ×4 dont 3 préexistantes, compte des cibles du burger chiffré) ; cycle 2 relu par le lead : OK
+**Audit tests :** `docs/memory/audits/sprint-103-test-coverage.md`
+**BR impactées :** aucune (landing) — mais la landing promet des rappels qui n'existent pas dans le produit (signal `business-rule` de l'agent B, suite proposée)
+**CI :** 7/7 verte sur `d93f63d1` (`e2e` Linux compris — les specs typographie et frise tiennent avec les polices Linux)
+**Contrôle de complétude :** vert sans `--force`
+**Nouveaux pitfalls / patterns / décisions / bugs :** PIT-S103-001…004, PAT-S103-001…003, DEC-S103-001…002, aucun bug ; packs pitfalls régénérés, `--check` = 0 ; signal `business-rule` (promesse de rappels) porté par l'issue #797, aucune BR créée (landing hors domaine)
+**Saturation contexte lead :** non mesurée
+**Harnais E2E :** pile dédiée `s103e2e` (backend `:8087`, Postgres `:5437`, image `s102e2e` re-taguée, 0 commit `backend/` depuis sa création)
+**Follow-ups arbitrés (Phase 4 — 7 items, recommandations du lead suivies) :**
+  - Ancres du burger ciblées par testid [XS | design] → issue #793 (Sprint 104)
+  - `cp-frontend.md` §Structure périmé (`Testimonial*`) + audit 2026-09-07 qui cite `FeaturesSection` [XS | docs] → absorbés (commit de clôture)
+  - Wordmark en accent, dérogation du verrou #615 [XS | design] → issue #794 (backlog)
+  - `.gradient-text` des pages légales [XS | design] → issue #795 (backlog)
+  - Surtitre du hero de la maquette non implémenté [XS | design] → issue #796 (backlog)
+  - La landing promet des rappels inexistants [S | produit] → issue #797 (backlog, P2)
+  Déjà résolues dans le sprint : `menu/ancre-2` (B), clés `footer.*` orphelines (`ecfcadb9`). Ratio discard 0/7.
+**Status :** Terminé — PR #792 mergée, issues #354/#612/#613/#615 et milestone #104 fermés après merge
+
+### Sprint 104 — 2026-09-22 (Terminé — merge PR #798 dans dev — cohésion 0.70, Landing : navigation, conteneur, CTA du hero)
+**Objectif :** nav sticky au spec, conteneur 1340 px réservé à la landing, CTA du hero sur une ligne entre 1024 et 1279 px
+**Milestone GitHub :** #105
+**Issues :** #616 (P3, XS), #614 (P2, S), #682 (P3, XS), #425 (P3, XS), #793 (P3, XS — follow-up S103 arbitré « Sprint 104 », étiquette ajoutée au démarrage) — 6 pts
+**Vagues :** V1 = #616 | V2 = #614 + #793 (même agent, `LandingMobileMenu` commun) | V3 = #682 + #425 (même agent) — séquentiel : un seul agent tient Playwright à la fois
+**Migrations Flyway :** aucune
+**Dépend de :** Sprint 103 (ancres finales de la nav)
+**À confirmer au démarrage :** interaction nav sticky × bannière réseau sticky ; taille `lg` du CTA (maquette) ; références `landing-hero-*` régénérées sur la CI Linux uniquement
+**Commits (8) :** `da0d2aec` #616 · `8dae3d1a` #614 · `5b7d2189` #793 · `49ff4c6a` #682 · `85d0750f` #425 · `16bb2616` (review, #682 : `@utility cta-lg`) · `8c8e7023` (review, #614 : barre en hauteur plancher + ResizeObserver, JSDoc #642 à jour) · `04b3c120` (références `landing-hero` régénérées, image noble)
+**Arbitrages du lead au démarrage :** #793 ajoutée (follow-up S103 arbitré « Sprint 104 », rattachée au milestone sans l'étiquette) ; `rounded-full` des cercles décoratifs documenté, pas de nouveau token ; CTA du hero au gabarit `lg` du DS (`.mt-btn--lg`, 46 px) et non au `size lg` shadcn (40 px figés) ; bannière réseau au-dessus de la nav sticky
+**Écarts d'énoncé :** #616 : `tailwind.config.ts` existe ; entre 1340 et 1535 px la landing passe de 1280 à 1340 (voulu) · #614 : une seule ancre depuis le S103, filet posé entre liens (`a+a`) ET avant le groupe droit ; `scroll-padding-top` sur `html` plutôt qu'un `scroll-margin` par section · #793 : `landing-cta-contrast` n'appelle pas `mobileMenuTargets` (erreur du briefing du lead) · #682 : repli mesuré sur 2 lignes et non 3 · #425 : 3 des 4 fichiers cités n'existent plus
+**Tests :** Vitest 2006/2006 | `next build`, `lint`, `format:check`, `tsc` verts | E2E suite complète contre `next build`+`next start` (base neuve) : 555 verts, 8 sautés, 2 rouges hors sprint (`sprint-101-fab-landscape:271` #769, armement `sprint-77` darwin) | `sprint-77-theme-visual` en image noble : 11/11 ×3
+**Reviews :** reviewer batch — 0 CRITIQUE / 1 MAJEUR / 3 MINEURS ; MAJEUR (valeurs arbitraires répétées des CTA) et 2 MINEURS (hauteur figée de la barre — débordement réel au texte ×2 —, JSDoc #642 périmé) corrigés ; 1 MINEUR (Safari/Firefox/lecteur d'écran non vérifiés) → suite à arbitrer ; cycle 2 relu par le lead : OK
+**Vérification navigateur (lead) :** 1024 px sombre — barre à `top:0` après défilement, fond opaque, 93 px, `scrollWidth === clientWidth`, CTA 228,9×46 avant et après le correctif `cta-lg`
+**Audit tests :** `docs/memory/audits/sprint-104-test-coverage.md`
+**Harnais E2E :** pile dédiée `s104e2e` (backend `:8088`, Postgres `:5438`, image `s102e2e` re-taguée, 0 commit `backend/` depuis sa création) ; image `mcr.microsoft.com/playwright:v1.61.1-noble` téléchargée (>10 min)
+**Suites proposées par les agents (à arbitrer au `/sprint end`) :** marge horizontale de la landing à 40 px comme la maquette [S] ; header qui déborde en largeur au texte ×2 (375 px, 1024 `de`) [S] ; `<p>` du bandeau final sans `leading-*` [XS] ; CTA du bandeau final et du header hors gabarit DS [XS] ; vérification Safari/Firefox (`:has()`) + lecteur d'écran [XS]
+**Issues livrées (5) :** #616, #614, #793, #682, #425 — milestone #105 fermé après merge
+**Nouveaux pitfalls / patterns / décisions :** PIT-S104-001…006 (dont : `test.use({reducedMotion})` inexistant ; une mutation de géométrie sur `transition-all` se relit aux anciennes valeurs ; `html{font-size:200%}` ne prouve rien sur ce DS en px) · PAT-S104-001…003 (plafond de conteneur Tailwind 4 hors paliers ; ancres sous barre collante + bannière optionnelle ; liste ciblée par les tests sans dépendre de l'ordre) · DEC-S104-001 (gabarit `lg` des CTA pris au DS, pas à shadcn) · DEC-S104-002 (plafond 1340 px réservé à la landing) · aucun bug ; packs pitfalls régénérés, `--check` = 0
+**Saturation contexte lead :** non mesurée
+**Follow-ups arbitrés (Phase 4 — 8 signalés, 4 déjà traités dans le sprint) :**
+  - Audit WCAG 1.4.4, texte ×2, débordement horizontal du header [S | design] → issue #799 (backlog)
+  - Marges horizontales de la landing à 40 px comme la maquette [S | design] → issue #800 (backlog)
+  - Bandeau final et header : taille de bouton hors DS ? [XS | design] → issue #801 (backlog)
+  - `<p>` du bandeau final sans `leading-*` [XS | design] → issue #802 (backlog)
+  - Safari, Firefox (`:has()`) et lecteur d'écran non vérifiés [XS | design] → consigné ici, pas d'issue (arbitrage dev)
+  Déjà traités dans le sprint : références `landing-hero` régénérées (`04b3c120`), CI Linux verte sur ces références, largeur de capture < 1340 px vérifiée, JSDoc #642 remis à jour (`8c8e7023`). Ratio discard 0/9.
+**Status :** Terminé — PR #798 mergée, issues #616/#614/#793/#682/#425 et milestone #105 fermés après merge
+
+### Sprint 105 — 2026-09-22 (Terminé — merge PR #803 dans dev — cohésion 0.50, Frise : gouttière, zébrures, recadrage)
+**Objectif :** gouttière de 176 px, zébrures de lanes au lieu de la grille de jours, touche F qui recadre
+**Milestone GitHub :** #106
+**Issues :** #674 (P2, S), #429 (P3, XS), #596 (P3, XS), #597 (P2, S — bug admis) — 6 pts
+**Vagues :** planifiées V1 = #674 + #429 | V2 = #596 ∥ #597 ; **exécutées** V1 = #674 + #429 + #596 (un agent, les trois dans `timeline.css`) | V2 = #597 — séquentiel : #597 et #674 touchent tous deux `TimelineView.tsx` sur un working tree partagé
+**Migrations Flyway :** aucune
+**Dépend de :** aucune
+**Arbitrages dev au démarrage :** zébrures bureau + mobile, grille verticale retirée partout ; plein écran au bouton seul, sans raccourci
+**Arbitrages du lead au démarrage :** repli `var(--lane-header-w, 160px)` supprimé plutôt qu'aligné (#429) ; F = niveau discret le plus fin où l'étendue tient, calculé d'abord en px/jour (compatible #593) ; `help.fullscreen` conservé comme `aria-label` du bouton, `help.fit` ajouté
+**Commits (5) :** `a0baf8bd` #674 + #429 · `3497a5d7` #596 · `7f4ac55c` #597 · `c2472a40` (audit + historique avant PR) · consolidation mémoire (ce commit)
+**Écarts d'énoncé :** #429 : fallback à `timeline.css:258`, pas `:161` · #597 : `case 'f'` à `TimelineView.tsx:1483`, pas `:1051` ; `computeFit` sans paramètre `rangeStart` (étendue déjà en jours depuis lui) · #596 : `.mt-lane__track` n'a aucun consommateur applicatif
+**Tests :** Vitest 2029/2029 | `next build` vert | E2E suite complète contre `next build`+`next start` : 555 verts, 8 sautés, 11 rouges hors sprint (10 captures `sprint-77` darwin ; `sprint-101-fab-landscape:271` rouge aussi sur la base `afa08f81` en A/B, #769) | baseline frise sur `ade5dba6` : 87/1 (`sprint-63:571` es, non reproduit ensuite)
+**Reviews :** reviewer batch — 0 CRITIQUE / 1 MAJEUR / 2 MINEURS ; MAJEUR (F silencieux quand rien n'est affiché) écarté : no-op voulu, cohérent avec `+`/`-` en butée → #807 ; MINEURS documentaires non traités
+**Audit tests :** `docs/memory/audits/sprint-105-test-coverage.md`
+**Harnais E2E :** backend compilé depuis HEAD sur `:8086` + Postgres `mytimeline-e2e-postgres-e2e-1` (`:5436`) ; front sur `:3100` (`:3000` squatté par un autre projet) ; A/B de base dans un worktree jetable
+**Non vérifié :** contrôle négatif de l'adaptation `sprint-91-more-contrast` ; règle CSS de zébrure du `.dc.html` (valeur prise au handoff écrit)
+**Issues livrées (4) :** #674, #429, #596, #597 — milestone #106 fermé après merge
+**Nouveaux pitfalls / patterns / décisions :** PIT-S105-001…004 (`:nth-child` sur liste virtualisée ; `scrollLeft =` faux quand zoom et position changent ensemble ; 878 px de piste utile et 30 j de rail à 1600 px ; canvas 1×1 inapte à un alpha de 2,6 %) · PIT-S91-011 marqué périmé · PAT-S105-001…002 (token lu par les E2E ; couleur `color-mix` vérifiée en E2E) · DEC-S105-001…003 (gouttière 176 sans repli ; zébrures bureau + mobile ; F recadre, plein écran au bouton) · aucun bug ; packs pitfalls régénérés, `--check` = 0
+**Saturation contexte lead :** non mesurée
+**Follow-ups arbitrés (Phase 4 — 8 signalés, proposition du lead retenue) :**
+  - Libellé de pin coupé en bout d'étendue après F [XS | events] → issue #804 (backlog)
+  - `[`/`]`/`T` sous `scroll-behavior:smooth` quand le niveau change aussi [S | events] → issue #805 (backlog)
+  - Marge de rail de 30 j empêchant un recadrage centré [XS | events] → issue #806 (backlog)
+  - Annonce `aria-live` quand F n'a rien à cadrer (MAJEUR de review) [XS | events] → issue #807 (backlog)
+  - Primitive `.mt-lane*` sans consommateur [XS | design] → issue #808 (backlog)
+  - `--spacing-lane-header` sans consommateur [XS | design] → issue #809 (backlog)
+  - PIT-S91-011 périmé [XS | mémoire] → absorbé dans le commit de consolidation
+  - Mentions 168 px dans `patterns.md` / `decisions.md` [XS | mémoire] → absorbé dans le commit de consolidation
+  Ratio discard 0/8.
+**Status :** Terminé — PR #803 mergée, issues #674/#429/#596/#597 et milestone #106 fermés après merge
+
+### Sprint 106 — 2026-09-22 (Terminé — merge PR #810 dans dev — cohésion 0.50, Fiche produit)
+**Objectif :** fiche d'inventaire au motif du DS, désaturation des événements passés, squelette de chargement cohérent
+**Milestone GitHub :** #107
+**Issues :** #606 (P3, S), #607 (P3, S — bug admis), #698 (P2, S) — 6 pts
+**Vagues :** V1 = #606 | V2 = #607 | V3 = #698 (même fichier `ProductDetailView.tsx`)
+**Migrations Flyway :** aucune
+**Dépend de :** aucune (précède S107, S109, S112)
+**Arbitrages dev au démarrage :** #698 `onSuccess` sans attente de l'invalidation (décision écrite en commentaire de #698, aucun changement de code) ; #607 passé = ligne entière désaturée sans opacité, archivé garde en plus pastille .45 + badge (cumul)
+**Vagues exécutées :** un seul agent, séquentiel #606 → #607 → #698 (même fichier), puis correctif de review
+**Commits (4 + docs) :** `4b879807` #606 · `0b0f8b68` #607 · `9fbca3c4` #698 (+ spec E2E commune) · `44c7dd75` correctif review #607 (série bornée = dernière occurrence réelle ≤ horizon)
+**Tests :** Vitest 2056/2056 | tsc/lint/format verts | E2E suite complète 564 verts / 9 sautés / 11 rouges hors sprint (identiques S105) | ciblé post-correctif 61/61
+**Reviews :** reviewer batch — 0 CRITIQUE / 1 MAJEUR (récurrence hors cadence, corrigé `44c7dd75`) / 2 MINEURS (couverture, traités dans le même commit)
+**Audit tests :** `docs/memory/audits/sprint-106-test-coverage.md`
+**Harnais E2E :** backend `:8086` du worktree S105 ; front `:3106` (`:3000`/`:3100` squattés) derrière un relais `:8186` qui réécrit l'`Origin` (CORS dev limité à 3000/3100) ; build avec `NEXT_PUBLIC_API_URL=/api` ET `E2E_API_PROXY_TARGET` (sans le premier, le setup échoue en « aucune réponse POST register »)
+**Issues livrées (3) :** #606, #607, #698 — milestone #107 fermé après merge
+**Écarts d'énoncé :** #606 : grille à `:364`, pas `:313` ; #607 : classe à `:455`, pas `:394` ; #698 : chemins `frontend/app/[locale]/(app)/…`, pas `frontend/src/app/…`
+**Choix de l'agent validés par le dev à la clôture :** indice « passé » en sr-only seul, sans badge visible ; série sans fin jamais passée
+**Nouveaux pitfalls / patterns / décisions :** PIT-S106-001…003 (horizon d'une série bornée ; `router.prefetch` en mode FULL ; harnais sur port libre : CORS + `NEXT_PUBLIC_API_URL` au build) · PAT-S106-001 (motif clé/valeur hors tiroir, valeurs longues) · DEC-S106-001…003 (passé = changement d'encre ; critère `isPastEvent` ; invalidation non attendue) · aucun bug ; packs pitfalls régénérés, `--check` = 0
+**Saturation contexte lead :** non mesurée
+**Follow-ups arbitrés (Phase 4 — 4 signalés, proposition du lead retenue) :**
+  - Squelette du dashboard aligné sur les vues mobile portrait et paysage [S | products] → issue #811 (backlog)
+  - Frise : traitement « passé » cohérent avec l'historique [S | events] → issue #812 (backlog)
+  - Alias neutre `.mt-kv*` pour le motif `.mt-drawer__row` [XS | design] → issue #813 (backlog)
+  - Sonde CORS du harnais sur port libre [XS | tooling] → absorbée dans la consolidation (PIT-S106-003)
+  Ratio discard 0/4.
+**Status :** Terminé — PR #810 mergée, issues #606/#607/#698 et milestone #107 fermés après merge
+
+### Sprint 107 — 2026-09-22 (Terminé — merge PR #814 dans dev — cohésion 0.50, Liste produits + onglets)
+**Objectif :** en-têtes de colonnes au motif `.mt-table th`, mini-frise visible sous `md`, focus des onglets vérifié
+**Milestone GitHub :** #108 (fermé après merge)
+**Issues livrées (3) :** #524, #609, #608 — 4 pts
+**Arbitrages dev au démarrage :** #608 frise conservée sous `md` en densité adaptée ; #609 en-têtes seuls (catégorie déjà fusionnée en mono sous le nom). En revue de PR : troncature du nom à ~5-7 caractères à 390 px acceptée (DEC-S107-002)
+**Vagues exécutées :** V1 = #524 seul (mesure au navigateur, exclusivité du harnais) | V2 = #609 → #608, un seul agent (même `<table>`). L'architect prévoyait #609 ∥ #524 ; séquencé pour ne pas partager le harnais E2E
+**Commits (3 + docs) :** `c3112b0a` #524 (mesure + garde E2E, 0 CSS) · `703c8eaf` #609 · `aa12e4c0` #608 (+ spec `sprint-92-products-next-event` alignée : frise attendue à 390)
+**Tests :** Vitest 2060/2060 | tsc/lint/format verts | E2E suite complète 573 verts / 9 sautés / 11 rouges hors sprint (identiques S105/S106 : 10 captures darwin `sprint-77`, `sprint-101-fab-landscape:271` #769) | nouvelles specs 20/20 et 9/9 en `--repeat-each=3` | CI 7/7 verte
+**Reviews :** reviewer batch — 0 CRITIQUE / 0 MAJEUR / 3 MINEURS non traités (largeur du nom non verrouillée en E2E, `seedEvent` dupliqué, `max-w-20` sans justification)
+**Audit tests :** `docs/memory/audits/sprint-107-test-coverage.md`
+**Harnais E2E :** backend `:8086` (worktree S105) ; front `next start` `:3107` derrière un relais `:8187` qui réécrit l'`Origin` (recette PIT-S106-003, rejouée sans accroc)
+**Écarts d'énoncé :** #609 : moitié déjà livrée ; #524 : hypothèse de rognage réfutée par la mesure (24 cas)
+**Nouveaux pitfalls / patterns / décisions :** PIT-S107-001 (flèches des Tabs sans focus) · PIT-S107-002 (`sr-only` dans un `overflow` non positionné) · PAT-S107-001 (deux oracles + mutation pour un « non rogné ») · PAT-S107-002 (motif DS partiel par constante Tailwind) · DEC-S107-001 (frise compacte sous `md`) · DEC-S107-002 (troncature acceptée) ; signal `POST /api/events` écarté, déjà PIT-S44-001 ; packs pitfalls régénérés, `--check` = 0
+**Saturation contexte lead :** non mesurée
+**Follow-ups arbitrés (Phase 4 — 2 signalés) :**
+  - Tabs du DS : flèches/Home/End doivent déplacer le focus [S | frontend/a11y] → issue #815 (backlog)
+  - Liste produits ≥ `sm` : nom long qui déborde + `sr-only` qui fait défiler la page [S | products] → issue #816 (backlog)
+  Ratio discard 0/2.
+**Status :** Terminé — PR #814 mergée, issues #524/#609/#608 et milestone #108 fermés après merge
+
+### Sprint 108 — 2026-09-22 → 2026-09-23 (Terminé — merge PR #817 dans dev — cohésion 0.70, Tableau de bord : ruban et « En bref »)
+**Objectif :** ruban de densité avec règle graduée et viewport déplaçable ; métriques « En bref » du handoff
+**Milestone GitHub :** #109 (fermé après merge)
+**Issues livrées (3) :** #640, #623, #699 — 5 pts
+**Arbitrages dev au démarrage :** #623 : fenêtre des 30 PROCHAINS jours, règle et viewport de 9 j, histogramme conservé, aucune synchro puisque le dashboard n'a pas de frise (DEC-S108-003) ; #640 : les 4 phrases de la maquette remplacent les 3 lignes (DEC-S108-004) ; #699 : aucun code, deux décisions consignées (DEC-S108-001/002). Ces arbitrages ont été pris sur l'extrait de maquette relevé par le lead (`sprints/sprint-108/maquette-dashboard.md`), qui a révélé que la prod montrait les 30 DERNIERS jours, un écart que l'issue ne mentionnait pas.
+**Vagues exécutées :** V1 = #640, puis V2 = #623 (séquentiel, contre le V1 parallèle de l'architect : `page.tsx`, `dashboard.json` et 4 fichiers de tests partagés) ; #699 traitée par le lead
+**Commits (4 + docs) :** `c03a98f1` #640 · `be0280ed` #623 · `69d8691b` correctif de revue (`pointerId`, multi-touch) · `6c5e69a7` docs avant PR · commit de clôture
+**Tests :** Vitest 2136/2136 | tsc, lint, format verts | `next build` OK | E2E : specs ciblées 95/95, nouvelles specs ×3 86/86, suite complète 581 verts / 9 sautés / 11 rouges hors sprint (identiques S105-S107) | 11 mutations détectées | CI 7/7 verte
+**Reviews :** reviewer groupé : 0 CRITIQUE / 0 MAJEUR / 3 MINEURS. `pointerId` corrigé (69d8691b, vérifié par mutation) ; longueur d'`occurrencesInMonth` et double passage dans `kpis.ts` non traités, sans effet mesurable
+**Audit tests :** `docs/memory/audits/sprint-108-test-coverage.md`
+**Harnais E2E :** backend `:8086` (worktree S105) ; front `next build` + `next start` `:3107` derrière un relais `:8187` qui réécrit l'`Origin` (PIT-S106-003, rejoué sans accroc). Le hook `warn-test-delegation` bloque `npx playwright test` : contourné consciemment (`SKIP_DELEGATION=1`, sortie JSON dans un fichier), la délégation au test-runner étant proscrite par la mémoire du projet
+**Vérification visuelle :** sonde jetable à 1280×800 (clair, sombre, `de`) et 375 px (fr, `de`), avec et sans données : pas de débordement, dernier titre de section à 633 px ; elle a confirmé l'écart ruban ↔ « échéances sous 14 j » sur les séries récurrentes (→ #818)
+**Écarts d'énoncé :** #623 demandait de mutualiser avec la Minimap : écarté (DEC-S108-006) ; #699 moitié livrée par #754
+**Nouveaux pitfalls / patterns / décisions :** PIT-S108-001 (jsdom sans `PointerEvent`) · PIT-S108-002 (`formatRange` et U+2009) · PIT-S108-003 (`t.rich` casse les mocks `ns.k`) · PAT-S108-001 (contrôle frère du `role="img"`) · PAT-S108-002 (filtre partagé liste/compteur) · DEC-S108-001..006 ; signal « `t.rich` par phrase » non ajouté, déjà PAT-S83-002 ; packs pitfalls régénérés, `--check` = 0
+**Saturation contexte lead :** non mesurée
+**Follow-ups arbitrés (Phase 4 — 4 signalés) :**
+  - Ruban : projeter occurrences récurrentes et durées en cours [S | frontend/dashboard] → issue #818 (backlog, P2)
+  - « Cette semaine » : 7 prochains jours avec récurrences et durées (maquette) [S | frontend/dashboard] → issue #819 (backlog)
+  - « Couvertures en cours » et durées récurrentes [XS | frontend/events] → issue #820 (backlog, question produit)
+  - Hauteur de l'en-tête du ruban à 375 px [XS] → écarté (mesuré sur captures fr/de : lisible, sans débordement ; cibles à 375 px déjà suivies par #767)
+  Ratio discard 1/4.
+**Status :** Terminé — PR #817 mergée, issues #623/#640/#699 et milestone #109 fermés après merge
+
+### Sprint 109 — 2026-09-23 → 2026-09-24 (Terminé — merge PR #821 dans dev — cohésion 0.50, Tableau de bord : sur-titres et nettoyage)
+**Objectif :** `.mt-eyebrow` câblé partout (élasticité allemande), en-têtes de section conformes à la maquette, restes du S90 supprimés
+**Milestone GitHub :** #110 (fermé après merge)
+**Issues livrées (3) :** #632, #697, #664 — 6 pts
+**Arbitrages dev au démarrage :** #664 : la maquette n'a AUCUN sur-titre de section ; compteurs à droite du titre (semaine, produits desktop + mobile, plage de la sous-frise), « En bref » et Historique inchangés (DEC-S109-001, extrait `sprints/sprint-109/maquette-sections.md`) ; #632 : `GreetingHeader` sur `.mt-eyebrow`, tranché par la maquette (DEC-S109-002)
+**Vagues exécutées :** V1 = #632 ∥ #697 (parallèles, working tree partagé, commits isolés par chemins littéraux) | V2 = #664
+**Commits (4 + docs) :** `db43be3e` #697 · `16736017` #632 · `9fc28be8` #664 · `821c0c31` squelette de la salutation (régression #632) · docs avant PR · commit de clôture
+**Tests :** Vitest 2173/2173 (rejoué par le lead) | tsc, format verts | `next build` OK | E2E complète 589 / 9 sautés / 11 rouges (10 captures darwin + 1 régression du sprint `sprint-106-product-detail`, corrigée) ; 7 specs ×3 = 245/245 après correctif ; 10/11 mutations détectées (1 équivalente) | CI 7/7 verte
+**Reviews :** reviewer groupé : 0 CRITIQUE / 0 MAJEUR / 3 MINEURS non corrigés (condition redondante `ProductDetailView:426`, `process.cwd()` des tests de scan, compteurs 13 px)
+**Audit tests :** `docs/memory/audits/sprint-109-test-coverage.md`
+**Harnais E2E :** backend `:8086` ; front `next build` + `next start` `:3107` derrière un relais `:8187` qui réécrit l'`Origin` (PIT-S106-003, rejoué sans accroc) ; `sprint-101-fab-landscape:271` (#769), rouge S105-S108, vert dans ce run
+**Vérification visuelle :** sonde jetable fr/de × clair/sombre × 1280/375, données bouchonnées avec noms allemands longs : 0 débordement, `letter-spacing` 0,2 px en `de` contre 0,8 px en `fr` ; a révélé le nom écrasé dans `ProductList` (préexistant → #825)
+**Écarts d'énoncé :** #632 : liste de l'énoncé périmée (S84), motif réel `.16em` et non `.1em` ; #697 : chemins `frontend/src/app/…` faux, consommateur `sprint-100-fab-clearance` non signalé ; #664 : prémisse « sur-titres informatifs » réfutée par la maquette
+**Nouveaux pitfalls / patterns / décisions :** PIT-S109-001 (squelette calé sur un en-tête réduit) · PIT-S109-002 (RTK et `next lint`) · PIT-S109-003 (sauvegarde de mutation, mutant équivalent `formatRange`) · PIT-S109-004 (`\u2009` via Write) · PAT-S109-001 (garde par ligne de code) · PAT-S109-002 (ré-armer une attente E2E) · DEC-S109-001/002 ; packs pitfalls régénérés, `--check` = 0
+**Saturation contexte lead :** non mesurée
+**Follow-ups arbitrés (Phase 4 — 9 signalés, regroupés) :**
+  - Détente `de` de `.mt-drawer__k`, `.mt-badge`, en-têtes de `ProductsListView` + §8 RTL dormante [XS ×3 | frontend/DS] → issue #822 (backlog)
+  - Branche `dashboard-loading` inatteignable + attente vacante, clés `dashboard.*` à prouver orphelines [XS ×2 | frontend/dashboard] → issue #823 (backlog)
+  - Plage de la sous-frise = fenêtre visible [S | frontend/products] → issue #824 (backlog)
+  - Nom de produit écrasé dans « Tes produits » desktop (trouvé par le lead) [S | frontend/dashboard] → issue #825 (backlog, bug P2)
+  - Compteurs 11/10 px (arbitrage designer) [XS] → écarté (13 px entériné, DEC-S109-001)
+  - E2E des compteurs en paysage et 768–1023 px [XS] → écarté (faible risque, disposition identique au desktop)
+  Ratio discard 2/9.
+**Status :** Terminé — PR #821 mergée, issues #632/#664/#697 et milestone #110 fermés après merge
+
+### Sprint 110 — 2026-09-24 → 2026-09-24 (Terminé — merge PR #826 dans dev)
+**Objectif :** 404 en éphéméride datée, référence d'incident sur la 500, portée de `.mt-num` tranchée
+**Milestone GitHub :** #111 (fermé après merge)
+**Issues livrées (3) :** #627 (P3, S), #628 (P3, XS), #516 (P3, XS) — fermées après merge
+**Vagues exécutées :** V1 = #627 (opus) ∥ #516 (sonnet) | V2 = #628 (sonnet) | lead : `next build`, E2E complet, vérification navigateur, review batch
+**Cohésion score :** 0.45
+**Commits :** 7 — #516 `3a99352a` · #627 `9cb3e062` + `0aadfa68` (feuillet `bg-surface`, lead) + `5de8617f` (test a11y, suite de review) · #628 `ce359ede` · docs `cbda0301` · consolidation (ce commit)
+**BR impactées :** aucune (design system / écrans d'erreur)
+**Reviews :** reviewer batch — 0 CRITIQUE / 0 MAJEUR / 3 MINEURS (1 corrigé `5de8617f`, 1 écarté : 2 appels `Intl` sur une page 404, 1 écarté au triage : génération des messages inlinés)
+**Tests :** Vitest 2217/2217 (1 rouge non identifié au 1er de 3 runs complets → PIT-S110-003) | tsc/lint/format OK | `next build` 52/52, `/_not-found` statique sans date servie | E2E local 602 passés / 2 rouges hors sprint (armement visuel `sprint-77` sur darwin, `settings-profile:166` vert en isolé) | CI PR 7/7
+**Nouveaux pitfalls / décisions / patterns :** PIT-S110-001..003 · DEC-S110-001..002 · PAT-S110-001..002
+**Écarts de briefing :** 2 prémisses du lead fausses (voix es, `ink-faint` de la maquette), corrigées par l'agent #627 → PIT-S110-002
+**Absorbé en cours (XS) :** 1 — `e2e/document-lang.spec.ts` suit le nouveau titre allemand du 404 (#627)
+**Follow-ups arbitrés (Phase 4 triage) :**
+  - `[locale]/not-found.tsx` atteint par aucune route [S | frontend] → issue #827 (Sprint 111, label `sprint-111` posé)
+  - « Revenir à aujourd'hui » vers le tableau de bord pour une personne connectée [S | frontend] → issue #828 (backlog)
+  - Générer les messages inlinés `global-*` depuis `errors.json` [S | frontend] → écarté (le test de parité suffit)
+**Saturation contexte lead (mesure) :** non mesurée
+**Status :** Terminé — PR #826 mergée dans `dev`, issues #627/#628/#516 et milestone #111 fermés après merge
+
+### Sprint 111 — 2026-09-24 → 2026-09-24 (Terminé — merge PR #829 dans dev)
+**Objectif :** un seul point d'écriture du thème, puis préférence de thème portée par le compte ; 404 localisé inatteignable retiré
+**Milestone GitHub :** #112 (fermé après merge)
+**Issues livrées (3) :** #655 (P3, S), #653 (P2, M), #827 (P2, S) — fermées après merge
+**Décisions de démarrage (dev) :** #827 → option (b) suppression ; ADR-010 validé tel quel (colonne nullable + `PUT /api/me/preferences`)
+**Vagues exécutées :** V1 = #655 (opus) ∥ #653 backend (opus) ∥ #827 (sonnet) | revues db-expert + security-expert ∥ V2 = #653 frontend (opus) | lead : `next build`, E2E complet, sonde visuelle, review batch ×2 (backend, frontend)
+**Cohésion score :** 0.53
+**Migrations Flyway :** V16 (`users.theme_preference`) — prochaine V17
+**Commits :** 13 — #827 `2d9ac7d8` · #655 `a78d4485` · #653 `f602cd25` + `03dc445e` (backend) + `97d4d8a2` (suites db-expert, lead) + `6fbaa74a` + `a9f1695f` + `1166cdf6` (frontend) + `f20d277d` (helper E2E, lead) + `a18c6e2c` (ADR, revues) + `22738933` (commentaire, revue batch) · docs `56a08225` · consolidation (ce commit)
+**BR impactées :** BR-AUT-013 (nouvelle), BR-AUT-008 (projection `/me`)
+**Reviews :** db-expert 0/0/3 MINEURS (2 appliqués, 1 documenté) · security-expert 0/0/1 (plafond de débit → DEC-S111-005, follow-up #831) · reviewer backend 0/0/2 (1 corrigé, 1 réfuté : le conflit optimiste est déjà mappé en 409) · reviewer frontend 0/0/2 (1 commenté, 1 → #830)
+**Tests :** Backend 667/667 (+ classes ciblées 48/48 après correctifs du lead) | Vitest 2267/2267 | tsc/lint/format verts | `next build` 52/52 | E2E complet contre `next build`+`next start`, backend construit depuis HEAD (V1→V16 base neuve) : 604 passés / 8 sautés / 2 rouges hors sprint (`sprint-77-theme-visual:620` captures darwin ; `sprint-101-fab-landscape:271` = #769, 24/24 isolé) ; 1 erreur hors test du helper E2E du sprint corrigée (`f20d277d`) | CI PR 7/7 sur `56a08225`
+**Nouveaux pitfalls / décisions / patterns :** PIT-S111-001..004 · DEC-S111-001..005 · PAT-S111-001..005 · ADR-010
+**Écarts de briefing :** l'agent #653 front a dû toucher `application-e2e.properties` (commentaires de budget) malgré « pas de backend » → PIT-S111-002 ; un spawn refusé par le hook pour pack abrégé → PIT-S111-004
+**Absorbé en cours (XS) :** 2 — spec #655 sortie du compte partagé (`keepThemeOffSharedAccount`) ; clés i18n de thème regroupées dans `common`
+**Follow-ups arbitrés (Phase 4 triage) :**
+  - Bascule du tiroir mobile 36 → 44 px [XS | frontend] → issue #830 (Sprint 112)
+  - Plafond de débit par utilisateur sur `PUT /api/me/preferences` [S | backend] → issue #831 (Sprint 112)
+  - Budget de connexions E2E à 26/30 au pire cas CI [S | e2e] → issue #832 (Sprint 112)
+  - Pas de toast global sur l'échec du PUT de thème [XS | frontend] → issue #833 (Sprint 112)
+  - `AuthController.register` avec id pré-assigné [XS | auth] → issue #834 (backlog)
+  Ratio discard 0/5.
+**Saturation contexte lead (mesure) :** non mesurée
+**Status :** Terminé — PR #829 mergée dans `dev`, issues #653/#655/#827 et milestone #112 fermés après merge
+
+### Sprint 112 — 2026-09-24 → 2026-09-25 (Terminé — merge PR #835 dans dev)
+**Objectif :** helper de mesure des cibles tactiles unique, dernières cibles mesurées à 375 px, retour du focus vérifié en E2E ; + les 4 suites du S111 (plafond de débit par utilisateur, toast, budget E2E, bascule du tiroir)
+**Milestone GitHub :** #113 (fermé après merge ; #700 détaché, restée ouverte)
+**Issues livrées (6 + 1 partielle) :** #768 (P3, XS), #767 (P2, S), #830 (P3, XS), #831 (P2, S), #832 (P2, S), #833 (P3, XS) — fermées après merge ; #700 (P2, S) : volet E2E livré + bug de focus corrigé, volet VoiceOver/NVDA manuel au dev → issue RESTÉE OUVERTE (grille `sprints/sprint-112/issue-700-sr-checklist.md`)
+**Décisions de démarrage (dev) :** périmètre gardé à 7 issues (~11 pts) ; #832 → helper `storageState`, plafond e2e inchangé ; #700 → E2E ici, lecteur d'écran manuel (DEC-S112-001)
+**Vagues exécutées :** V1 = #768 (seul détenteur de Playwright) ∥ #833 (Vitest) ∥ #831 (backend) | security-expert #831 | V2 = #767 + #830 (un agent) | V3 = #832 | V4 = #700 | lead : backend e2e reconstruit, `next build`, E2E complet, revue batch ×2 (backend, frontend) | correction de revue (#831)
+**Cohésion score :** 0.53
+**Migrations Flyway :** aucune — prochaine V17
+**Commits :** 14 — démarrage `1b1558e6` · #768 `00da5ecf` · #833 `1b604fa5` · #831 `fb09570a` + `fb4654b1` (revue) · #767 `2001e03e` · #830 `e916b5ad` · #832 `4be8ce20` · #700 `b5e717c1` · docs `81ccc3d3` · consolidation `a2087825` · délai du test de budget `508cc031` · historique final (ce commit)
+**BR impactées :** BR-AUT-013 (plafond de débit par utilisateur ; pack `br-auth` corrigé), BR-AUT-005 (cohérence du refus fail-closed)
+**Reviews :** security-expert #831 0/0/4 (1 traité par test des variantes de chemin, 3 documentés) · reviewer backend 0/0/2 (1 corrigé : repli `name:` supprimé → 401 fail-closed ; 1 sans action) · reviewer frontend+e2e 0/0/2 (sans action) · cycle 2 : correctif relu par le lead
+**Tests :** Backend 682/682 (`fb4654b1`) | Vitest 2280/2280 | tsc/lint/format verts | E2E complet contre `next build`+`next start`, backend e2e reconstruit depuis HEAD : 619 passés / 8 sautés / 1 rouge hors sprint (`sprint-77-theme-visual:620`, références Linux) / `rate-limit-armed` rejoué seul 1/1 | CI PR 7/7 sur `81ccc3d3` ; sur `a2087825` (docs seules) `frontend` rouge par DÉLAI : `e2e-rate-limit-budget.test.ts` « les lignes BUDGET… » > 5 s sous couverture (870 ms en local) → délai explicite de 30 s sur le bloc « dépôt réel » (`508cc031`, armement vérifié) ; CI finale sur le SHA mergé
+**Nouveaux pitfalls / décisions / patterns :** PIT-S112-001..010 · DEC-S112-001..005 (DEC-S112-003 remplace DEC-S111-005) · PAT-S112-001..008 · BUG-S112-001..002
+**Écarts de briefing :** la prémisse du lead pour #832 (« `registerAndLogin` appelé par de nombreuses specs ») était fausse — `grep -c` sous RTK, 0 appelant réel (PIT-S112-006) : critères remplis, budget inchangé ; 3 spawns refusés par le hook pour pack abrégé (récidive PIT-S111-004) ; l'agent #700 a ajusté des tests Vitest qui gravaient le comportement faux (écart assumé au « laisser tel quel »)
+**Absorbé en cours (XS) :** 2 — `expectClickableBox` ajouté au helper (#767, le `⋯` n'a pas de `::before`) ; pack `br-auth` corrigé par le lead à la clôture (#831)
+**Follow-ups arbitrés (Phase 4 triage) :**
+  - Focus à la fermeture de tous les dialogues Radix sans Trigger + focus-return en mobile [S | frontend/a11y] → issue #836 (backlog)
+  - Déconnexion du tiroir mobile, `⋯` paysage, sprint-99 → profil complet [XS | frontend/e2e] → issue #837 (backlog)
+  - Pas de bandeau `OfflineBanner` sur 500 du PUT de thème [XS | frontend] → issue #838 (backlog)
+  - Passe 2 CI à un seul compte (login 26→23, register 23→20 au pire cas ; touche `ci.yml`) [S | e2e/ci] → issue #839 (backlog, confirmation dev requise avant merge)
+  - 75 specs → `sessionState(X)` [S | e2e] → issue #840 (backlog)
+  - Import du helper par #767/#830 → discard (déjà fait) ; 429 silencieux sur la bascule de thème → discard (voulu)
+  - Pack `br-auth` « hors rate-limit » → absorbé (lead)
+  Ratio discard 2/12.
+**Saturation contexte lead (mesure) :** non mesurée
+**Status :** Terminé — PR #835 mergée dans `dev`, issues #767/#768/#830/#831/#832/#833 et milestone #113 fermés après merge ; #700 ouverte (volet manuel)

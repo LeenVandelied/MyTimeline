@@ -1,6 +1,13 @@
 import { test, expect, type Locator, type Page, type Route } from '@playwright/test'
 import { ensureAuthenticated, minimalPngBuffer, openSettingsChapter } from './support/auth'
 import { SHARED } from './support/accounts'
+import {
+  BOX_ONLY,
+  EPS,
+  MIN_TARGET,
+  expectAllTouchable,
+  measureControls,
+} from './support/touch-targets'
 
 /**
  * #738 (Sprint 99) — CIBLES TACTILES 44 px des Réglages mobiles (WCAG 2.5.5).
@@ -27,9 +34,12 @@ import { SHARED } from './support/accounts'
  *    clause d'exclusion la nomme pour qu'un futur `role="button"` n'y change rien.
  *
  * INTERRUPTEURS (#763) : le sélecteur couvre `[role="switch"]`, `[role="checkbox"]`
- * et `label.mt-switch` (même liste que `sprint-101-touch-targets.spec.ts`). Aucun
- * réglage n'en monte aujourd'hui ; la sonde « interrupteur injecté » prouve qu'un
- * interrupteur ajouté plus tard serait mesuré ET signalé s'il faisait moins de 44 px.
+ * et `label.mt-switch`. Aucun réglage n'en monte aujourd'hui ; la sonde « interrupteur
+ * injecté » prouve qu'un interrupteur ajouté plus tard serait mesuré ET signalé s'il
+ * faisait moins de 44 px. Depuis #768, ce sélecteur est celui, UNIQUE, de
+ * `support/touch-targets.ts` : la sonde protège donc aussi `sprint-101`/`sprint-102`.
+ *
+ * MESURE : `support/touch-targets.ts` (#768), profil BOÎTE SEULE (cf. `TOUCH`).
  *
  * DONNÉES : le compte partagé n'a en général ni avatar, ni autre session, ni
  * export async. Ces états sont donc FOURNIS par `page.route` (réponses conformes
@@ -38,10 +48,6 @@ import { SHARED } from './support/accounts'
  * gement async, relance, réessai) soient rendus ET mesurés. Aucun appel mutant
  * n'est émis : on ne clique jamais « appliquer », « révoquer » ni « supprimer ».
  */
-
-const MIN_TARGET = 44
-/** Tolérance sous-pixel : `h-11` = 2.75rem = 44 px exacts à dpr 1. */
-const EPS = 0.01
 
 const MOBILE = { width: 375, height: 812 }
 const DESKTOP = { width: 1280, height: 720 }
@@ -58,84 +64,13 @@ const EXPORT_JOB_IDS = {
   'async-expired': '0192f0a0-0000-7000-8000-00000000c098',
 } as const
 
-interface Measured {
-  label: string
-  width: number
-  height: number
-}
-
 /**
- * Mesure TOUS les contrôles interactifs visibles sous `root`. Sélecteur large :
- * boutons natifs et ARIA, champs, combobox Radix, options de listbox, liens.
+ * Profil BOÎTE SEULE (`support/touch-targets.ts`) : pas d'exemption `aria-hidden`, pas
+ * de hitbox `::before`, visibilité = boîte non nulle et `visibility` — exactement ce que
+ * mesurait la copie locale d'avant #768. Aligner les réglages sur le profil complet est
+ * une décision à part, pas un effet de bord de la factorisation.
  */
-async function measureControls(root: Locator): Promise<Measured[]> {
-  return root.evaluate((el) => {
-    const SELECTOR = [
-      'button',
-      'a[href]',
-      'input:not([type="hidden"])',
-      'textarea',
-      'select',
-      '[role="button"]',
-      '[role="combobox"]',
-      '[role="option"]',
-      // #763 — interrupteurs et cases : sans ces entrées, un `Switch` (`ui/switch.tsx`)
-      // ou un `Checkbox` ajouté aux réglages échapperait à la mesure. L'`<input>` du
-      // Switch est à 0×0 (filtré comme invisible) : la cible visible est son label.
-      '[role="switch"]',
-      '[role="checkbox"]',
-      'label.mt-switch',
-    ].join(',')
-    const isExempt = (node: Element): boolean =>
-      // input file `sr-only` de l'avatar (cf. en-tête).
-      node.classList.contains('sr-only') ||
-      // poignée de bottom sheet, DEC-S99-002 (cf. en-tête).
-      (node.getAttribute('data-testid') ?? '').endsWith('-grabber')
-    const nodes = [el, ...Array.from(el.querySelectorAll(SELECTOR))].filter((n) =>
-      n.matches(SELECTOR),
-    )
-    return nodes
-      .filter((n) => !isExempt(n))
-      .map((n) => {
-        const r = n.getBoundingClientRect()
-        const style = getComputedStyle(n)
-        const text = (n.textContent ?? '').trim().slice(0, 30)
-        const label =
-          n.getAttribute('data-testid') ?? n.getAttribute('aria-label') ?? (text || n.tagName)
-        return {
-          label: `${n.tagName.toLowerCase()}[${label}]`,
-          width: r.width,
-          height: r.height,
-          visible: r.width > 0 && r.height > 0 && style.visibility !== 'hidden',
-        }
-      })
-      .filter((m) => m.visible)
-      .map(({ label, width, height }) => ({ label, width, height }))
-  })
-}
-
-/** Log de la mesure (reporter `line`) : sert de tableau au rapport de sprint. */
-function report(step: string, measured: Measured[]): void {
-  const rows = measured.map((m) => `${m.label}=${Math.round(m.width)}x${m.height.toFixed(1)}`)
-  console.log(`[#738 ${step}] ${rows.join(' | ')}`)
-}
-
-/**
- * Asserte : au moins `min` contrôles mesurés (anti-vacuité), et chacun >= 44×44.
- * `expect.soft` : une étape rouge n'interrompt pas le parcours, le rapport liste
- * TOUS les contrôles fautifs d'un coup.
- */
-async function expectAllTouchable(step: string, root: Locator, min: number): Promise<void> {
-  const measured = await measureControls(root)
-  report(step, measured)
-  expect
-    .soft(measured.length, `${step} : nombre de contrôles mesurés (garde anti-vacuité)`)
-    .toBeGreaterThanOrEqual(min)
-  const undersized = measured.filter(
-    (m) => m.height < MIN_TARGET - EPS || m.width < MIN_TARGET - EPS,
-  )
-  expect.soft(undersized, `${step} : contrôles sous 44×44 px`).toEqual([])
-}
+const TOUCH = { tag: '#738', ...BOX_ONLY } as const
 
 /** Hauteur rendue d'un élément par testid (oracle desktop). */
 async function heightOf(page: Page, testId: string): Promise<number> {
@@ -241,7 +176,7 @@ async function expectOptionsTouchable(page: Page, trigger: string, min: number):
   await page.getByTestId(trigger).click()
   const listbox = page.getByRole('listbox')
   await expect(listbox).toBeVisible()
-  await expectAllTouchable(`${trigger} (options ouvertes)`, listbox, min)
+  await expectAllTouchable(`${trigger} (options ouvertes)`, listbox, min, TOUCH)
   await page.keyboard.press('Escape')
   await expect(listbox).toHaveCount(0)
 }
@@ -254,7 +189,7 @@ test.describe('#738 — Réglages mobiles (375 px) : toutes les cibles >= 44 px'
     await page.goto('/fr/settings', { waitUntil: 'domcontentloaded' })
     await expect(page.getByTestId('settings-index')).toBeVisible()
     // 4 lignes de chapitre + le retour vers le tableau de bord (`settings-back`).
-    await expectAllTouchable('index', page.getByTestId('settings-page'), 5)
+    await expectAllTouchable('index', page.getByTestId('settings-page'), 5, TOUCH)
   })
 
   test('profil : champs, zone avatar, suppression, recadrage', async ({ page }) => {
@@ -262,7 +197,7 @@ test.describe('#738 — Réglages mobiles (375 px) : toutes les cibles >= 44 px'
     const root = await openMobileChapter(page, 'profile')
     await expect(page.getByTestId('avatar-delete')).toBeVisible()
     // retour + dropzone + avatar-delete + 3 champs + submit.
-    await expectAllTouchable('profil', root, 7)
+    await expectAllTouchable('profil', root, 7, TOUCH)
 
     // Recadreur (ouvert sans rien envoyer : on annule ensuite) — zoom + 2 boutons.
     await page.getByTestId('avatar-input').setInputFiles({
@@ -271,7 +206,7 @@ test.describe('#738 — Réglages mobiles (375 px) : toutes les cibles >= 44 px'
       buffer: minimalPngBuffer(),
     })
     await expect(page.getByTestId('avatar-cropper')).toBeVisible()
-    await expectAllTouchable('profil (recadrage)', root, 6)
+    await expectAllTouchable('profil (recadrage)', root, 6, TOUCH)
     await page.getByRole('button', { name: 'Annuler' }).click()
     await expect(page.getByTestId('avatar-cropper')).toHaveCount(0)
   })
@@ -282,13 +217,13 @@ test.describe('#738 — Réglages mobiles (375 px) : toutes les cibles >= 44 px'
     await expect(page.getByTestId(`revoke-session-${OTHER_SESSION_ID}`)).toBeVisible()
     await expect(page.getByTestId('revoke-other-sessions')).toBeVisible()
     // retour + 3 champs + submit + révoquer (1) + révoquer les autres.
-    await expectAllTouchable('sécurité', root, 7)
+    await expectAllTouchable('sécurité', root, 7, TOUCH)
   })
 
   test('préférences : 3 menus déroulants + leurs options', async ({ page }) => {
     const root = await openMobileChapter(page, 'preferences')
     // retour + 3 SelectTrigger.
-    await expectAllTouchable('préférences', root, 4)
+    await expectAllTouchable('préférences', root, 4, TOUCH)
     await expectOptionsTouchable(page, 'pref-language', 4)
     await expectOptionsTouchable(page, 'pref-theme', 3)
     await expectOptionsTouchable(page, 'pref-density', 3)
@@ -323,7 +258,7 @@ test.describe('#738 — Réglages mobiles (375 px) : toutes les cibles >= 44 px'
       label.append(input, track)
       el.prepend(label)
     })
-    const measured = await measureControls(root)
+    const measured = await measureControls(root, TOUCH)
     const probe = measured.filter((m) => m.label.includes('zz-probe-switch'))
     console.log(
       `[#763 sonde] ${probe.map((m) => `${m.label}=${m.width.toFixed(1)}x${m.height.toFixed(1)}`).join(' | ')}`,
@@ -343,13 +278,13 @@ test.describe('#738 — Réglages mobiles (375 px) : toutes les cibles >= 44 px'
 
     // Étape 1 : retour + format + lancer + ouvrir la suppression.
     await expect(page.getByTestId('export-step-confirm')).toBeVisible()
-    await expectAllTouchable('compte (export confirm)', root, 4)
+    await expectAllTouchable('compte (export confirm)', root, 4, TOUCH)
     await expectOptionsTouchable(page, 'export-format', 4)
 
     // Sync prêt -> « exporter à nouveau ».
     await page.getByTestId('export-start').click()
     await expect(page.getByTestId('export-ready-sync')).toBeVisible()
-    await expectAllTouchable('compte (export sync prêt)', root, 3)
+    await expectAllTouchable('compte (export sync prêt)', root, 3, TOUCH)
 
     // Async prêt -> « télécharger ». Choix ZIP par l'option (clavier-agnostique).
     await page.getByTestId('export-again').click()
@@ -358,21 +293,21 @@ test.describe('#738 — Réglages mobiles (375 px) : toutes les cibles >= 44 px'
     exportApi.set('async-ready')
     await page.getByTestId('export-start').click()
     await expect(page.getByTestId('export-ready-async')).toBeVisible()
-    await expectAllTouchable('compte (export async prêt)', root, 4)
+    await expectAllTouchable('compte (export async prêt)', root, 4, TOUCH)
 
     // Async expiré -> « relancer ».
     await page.getByTestId('export-again').click()
     exportApi.set('async-expired')
     await page.getByTestId('export-start').click()
     await expect(page.getByTestId('export-expired')).toBeVisible()
-    await expectAllTouchable('compte (export expiré)', root, 4)
+    await expectAllTouchable('compte (export expiré)', root, 4, TOUCH)
 
     // Erreur réseau -> « réessayer ».
     await page.getByTestId('export-relaunch').click()
     exportApi.set('fail')
     await page.getByTestId('export-start').click()
     await expect(page.getByTestId('export-step-error')).toBeVisible()
-    await expectAllTouchable('compte (export erreur)', root, 3)
+    await expectAllTouchable('compte (export erreur)', root, 3, TOUCH)
     await page.getByTestId('export-retry').click()
     await expect(page.getByTestId('export-step-confirm')).toBeVisible()
 
@@ -381,11 +316,11 @@ test.describe('#738 — Réglages mobiles (375 px) : toutes les cibles >= 44 px'
     const sheet = page.getByTestId('delete-account-sheet')
     await expect(sheet).toBeVisible()
     // ✕ + annuler + continuer.
-    await expectAllTouchable('suppression (avertissement)', sheet, 3)
+    await expectAllTouchable('suppression (avertissement)', sheet, 3, TOUCH)
     await page.getByTestId('delete-account-continue').click()
     await expect(page.getByTestId('delete-account-username')).toBeVisible()
     // ✕ + champ + retour + confirmer.
-    await expectAllTouchable('suppression (confirmation)', sheet, 4)
+    await expectAllTouchable('suppression (confirmation)', sheet, 4, TOUCH)
     await page.getByTestId('delete-account-sheet-close').click()
     await expect(sheet).toHaveCount(0)
   })

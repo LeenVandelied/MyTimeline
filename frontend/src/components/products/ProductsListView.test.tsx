@@ -18,6 +18,7 @@ import { ProductsListView } from './ProductsListView'
 
 const useProductsMock = vi.fn()
 const pushMock = vi.fn()
+const prefetchMock = vi.fn()
 const archiveMutateAsync = vi.fn()
 const useArchiveProductSpy = vi.fn()
 
@@ -36,7 +37,7 @@ vi.mock('@/hooks/useArchiveProduct', () => ({
   },
 }))
 vi.mock('next/navigation', () => ({
-  useRouter: () => ({ push: pushMock }),
+  useRouter: () => ({ push: pushMock, prefetch: prefetchMock }),
 }))
 vi.mock('next-intl', () => ({
   useTranslations: (namespace: string) => (key: string) => `${namespace}.${key}`,
@@ -51,9 +52,12 @@ vi.mock('react-hot-toast', () => ({
 
 // Drawers/dialog mockés : on expose leur `open` + le mode pour l'assertion.
 // Review S90 — le bouton « close » rejoue la séquence de fermeture Radix : `onOpenChange(false)`
-// puis `onCloseAutoFocus(event annulable)`. Non annulé, Radix rend le focus à l'élément qui
-// l'avait à l'ouverture (FocusScope) ; un nœud détaché ne prend pas le focus, qui reste
-// alors sur `body`. `drawerClose.lastPrevented` garde la trace de l'interception.
+// puis `onCloseAutoFocus(event annulable)`. `drawerClose.lastPrevented` garde la trace de
+// l'interception. #700 — l'ancienne version de ce mock rendait le focus à l'élément actif à
+// l'ouverture quand l'événement n'était pas annulé : c'est ce que fait `FocusScope` NU, pas
+// `DialogContent` modal, qui annule l'événement et vise un `Dialog.Trigger` absent ici. Le
+// mock donnait donc raison au composant là où le navigateur réel perdait le focus sur `body`
+// (`e2e/sprint-112-focus-return.spec.ts`, rouge avant correctif).
 const drawerClose = vi.hoisted(() => ({ lastPrevented: null as boolean | null }))
 
 vi.mock('./ProductDrawer', async () => {
@@ -72,10 +76,6 @@ vi.mock('./ProductDrawer', async () => {
       onOpenChange: (open: boolean) => void
       onCloseAutoFocus?: (event: Event) => void
     }) => {
-      const triggerRef = React.useRef<Element | null>(null)
-      React.useEffect(() => {
-        if (open) triggerRef.current = document.activeElement
-      }, [open])
       return open ? (
         <div data-testid={`product-drawer-${mode}`} data-product={product?.id ?? ''}>
           drawer
@@ -87,8 +87,10 @@ vi.mock('./ProductDrawer', async () => {
               const event = new Event('focusScope.autoFocusOnUnmount', { cancelable: true })
               onCloseAutoFocus?.(event)
               drawerClose.lastPrevented = event.defaultPrevented
-              const trigger = triggerRef.current
-              if (!event.defaultPrevented && trigger instanceof HTMLElement) trigger.focus()
+              // #700 — fidèle à Radix Dialog 1.1.6 (`DialogContentModal`) : non annulé,
+              // Radix appelle `triggerRef.current?.focus()` — ref NULLE sans
+              // `Dialog.Trigger` — donc ne rend le focus à RIEN. Le bouton qui détenait le
+              // focus se démonte : il tombe sur `body`.
             }}
           >
             close
@@ -206,6 +208,67 @@ describe('ProductsListView', () => {
       'products.list.columns.events',
       'products.list.columns.actions',
     ])
+  })
+
+  it('#609 — en-têtes au motif DS `.mt-table th` : mono 9 px capitales, ink-muted, filet rule-strong', () => {
+    render(<ProductsListView />)
+    const headers = screen.getAllByRole('columnheader')
+    expect(headers).toHaveLength(5)
+    for (const th of headers) {
+      expect(th).toHaveAttribute('scope', 'col')
+      expect(th).toHaveClass(
+        'font-mono',
+        'text-[9px]',
+        'uppercase',
+        'tracking-[.1em]',
+        'text-ink-muted',
+        'font-medium',
+        'border-b-[1.5px]',
+        'border-rule-strong',
+      )
+    }
+    // Colonnes numérique et actions : alignement à droite conservé.
+    expect(headers[3]).toHaveClass('text-right')
+    expect(headers[4]).toHaveClass('text-right')
+    expect(headers[0]).not.toHaveClass('text-right')
+  })
+
+  it('#608 — la mini-frise est rendue à tous les paliers : compacte 64×24 sous md, 220×40 dès md', () => {
+    mockProducts({
+      data: [
+        {
+          id: 'p-delta',
+          name: 'Delta',
+          color: '#224466',
+          category: { id: 'c-1', name: 'Véhicules', color: '#445566' },
+          // Deux ponctuels PASSÉS dans la fenêtre de 90 j (15 sept. figé).
+          events: [mkEvent('d1', '2026-08-01'), mkEvent('d2', '2026-09-10')],
+        },
+      ],
+    })
+    render(<ProductsListView />)
+    const activityTh = screen.getAllByRole('columnheader')[2]
+    expect(activityTh).toHaveTextContent('products.list.columns.activity')
+    expect(activityTh).not.toHaveClass('hidden')
+
+    const cell = screen.getByTestId('products-row-activity-p-delta')
+    expect(cell).not.toHaveClass('hidden')
+    const svgs = within(cell).getAllByRole('img', { name: 'products.list.sparklineLabel' })
+    expect(svgs).toHaveLength(2)
+    const [compact, full] = svgs
+    // Compacte : bascule CSS `md:hidden`, géométrie recalculée à 64×24 (pas un 220 étiré).
+    expect(compact).toHaveClass('block', 'md:hidden')
+    expect(compact).toHaveAttribute('viewBox', '0 0 64 24')
+    expect(compact).toHaveAttribute('width', '64')
+    expect(compact).not.toHaveAttribute('preserveAspectRatio')
+    // Pleine : identique à l'aperçu du drawer, affichée dès md.
+    expect(full).toHaveClass('hidden', 'md:block')
+    expect(full).toHaveAttribute('viewBox', '0 0 220 40')
+    for (const svg of svgs) {
+      const circles = svg.querySelectorAll('circle')
+      expect(circles).toHaveLength(2)
+      circles.forEach((c) => expect(c).toHaveAttribute('r', '3'))
+    }
   })
 
   it('#603 — trie par prochain événement par défaut (le plus proche d’abord, sans échéance en dernier)', () => {
@@ -341,7 +404,7 @@ describe('ProductsListView', () => {
     await user.click(screen.getByTestId('products-empty-cta'))
     await user.click(screen.getByTestId('product-drawer-create-close'))
     // Invalidation non attendue par la mutation : à la fermeture, le CTA est encore là.
-    expect(drawerClose.lastPrevented).toBe(false)
+    expect(drawerClose.lastPrevented).toBe(true)
     expect(document.activeElement).toBe(screen.getByTestId('products-empty-cta'))
     mockProducts()
     rerender(<ProductsListView />)
@@ -349,24 +412,24 @@ describe('ProductsListView', () => {
     expect(document.activeElement).toBe(screen.getByTestId('products-new-button'))
   })
 
-  it('review S90 — ouvert depuis le CTA d’état vide puis annulé : Radix rend le focus au CTA', async () => {
+  it('review S90, #700 — ouvert depuis le CTA d’état vide puis annulé : le composant rend le focus au CTA', async () => {
     const user = userEvent.setup()
     mockProducts({ data: [] })
     render(<ProductsListView />)
     await user.click(screen.getByTestId('products-empty-cta'))
     await user.click(screen.getByTestId('product-drawer-create-close'))
     expect(screen.queryByTestId('product-drawer-create')).not.toBeInTheDocument()
-    expect(drawerClose.lastPrevented).toBe(false)
+    expect(drawerClose.lastPrevented).toBe(true)
     expect(document.activeElement).toBe(screen.getByTestId('products-empty-cta'))
   })
 
-  it('review S90 — drawer ouvert depuis « Nouveau produit » : focus rendu par Radix, sans interception', async () => {
+  it('review S90, #700 — drawer ouvert depuis « Nouveau produit » : le composant lui rend le focus (Radix ne le fait pas)', async () => {
     const user = userEvent.setup()
     mockProducts({ data: [] })
     render(<ProductsListView />)
     await user.click(screen.getByTestId('products-new-button'))
     await user.click(screen.getByTestId('product-drawer-create-close'))
-    expect(drawerClose.lastPrevented).toBe(false)
+    expect(drawerClose.lastPrevented).toBe(true)
     expect(document.activeElement).toBe(screen.getByTestId('products-new-button'))
   })
 
@@ -413,6 +476,32 @@ describe('ProductsListView', () => {
     row.focus()
     await user.keyboard('{Enter}')
     expect(pushMock).toHaveBeenCalledWith('/fr/products/p-beta')
+  })
+
+  // #698 — la ligne navigue par `router.push` (aucun `<Link>`) : sans préchargement,
+  // l'écran de liste restait affiché pendant tout l'aller-retour RSC.
+  it('#698 — précharge la fiche au survol d’une ligne, une seule fois', async () => {
+    const user = userEvent.setup()
+    render(<ProductsListView />)
+    const row = screen.getByTestId('products-row-p-alpha')
+    expect(prefetchMock).not.toHaveBeenCalled()
+    await user.hover(row)
+    expect(prefetchMock).toHaveBeenCalledWith('/fr/products/p-alpha')
+    await user.unhover(row)
+    await user.hover(row)
+    expect(prefetchMock).toHaveBeenCalledTimes(1)
+    expect(pushMock).not.toHaveBeenCalled()
+  })
+
+  it('#698 — précharge la fiche au focus clavier d’une ligne', async () => {
+    const user = userEvent.setup()
+    render(<ProductsListView />)
+    const row = screen.getByTestId('products-row-p-beta')
+    // Tabule jusqu'à la ligne (vrai parcours clavier, pas `row.focus()`).
+    for (let i = 0; i < 30 && document.activeElement !== row; i += 1) await user.tab()
+    expect(row).toHaveFocus()
+    expect(prefetchMock).toHaveBeenCalledWith('/fr/products/p-beta')
+    expect(pushMock).not.toHaveBeenCalled()
   })
 
   it('affiche l’état vide quand aucun produit', () => {

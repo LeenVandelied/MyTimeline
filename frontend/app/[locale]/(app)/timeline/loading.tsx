@@ -29,9 +29,9 @@ export default function TimelineLoading() {
   return (
     <section className="flex min-h-screen w-full flex-col gap-6 px-6 py-8">
       <header className="flex flex-col gap-1">
-        <span className="text-ink-muted text-2xs font-mono tracking-widest uppercase">
-          {t('eyebrow')}
-        </span>
+        {/* #632 — `.mt-eyebrow` (DS, se détend en `de`) ; identique à `page.tsx` :
+            pas de saut au chargement. */}
+        <span className="mt-eyebrow">{t('eyebrow')}</span>
         <h1 className="text-ink flex items-center gap-3 text-2xl font-semibold tracking-tight">
           <GanttChartSquare className="text-accent h-6 w-6" aria-hidden="true" />
           {t('title')}

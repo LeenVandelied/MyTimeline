@@ -95,17 +95,20 @@ describe('#335 — palette et unicité des règles de la landing', () => {
   })
 
   describe('règles jadis dupliquées — une seule déclaration (critères 3 & 4)', () => {
-    // `.section-animation` et `.cta-button` sont nommés par l'issue ; `.feature-icon`
-    // et `.card-gradient-border` étaient dupliqués de la même façon, trouvés au passage.
-    for (const selector of [
-      '.section-animation',
-      '.section-animation.visible',
-      '.cta-button',
-      '.feature-icon',
-      '.card-gradient-border',
-    ]) {
+    // `.section-animation` et `.cta-button` sont nommés par l'issue. `.feature-icon`
+    // et `.card-gradient-border` étaient dupliqués de la même façon, trouvés au passage —
+    // puis RETIRÉS avec `FeaturesSection` (#612), leur seul consommateur (cf. plus bas).
+    for (const selector of ['.section-animation', '.section-animation.visible', '.cta-button']) {
       it(`${selector} n'est déclaré qu'une fois`, () => {
         expect(countSelector(selector)).toBe(1)
+      })
+    }
+
+    // #612 — `FeaturesSection` supprimée : ses règles ne doivent pas survivre en CSS mort
+    // (aucun consommateur dans `src/`, vérifié par grep au retrait).
+    for (const selector of ['.feature-card', '.feature-icon', '.card-gradient-border']) {
+      it(`${selector} n'est plus déclaré (#612 — consommateur supprimé)`, () => {
+        expect(countSelector(selector)).toBe(0)
       })
     }
 

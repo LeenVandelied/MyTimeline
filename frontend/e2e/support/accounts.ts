@@ -14,9 +14,10 @@ import path from 'node:path'
  * Le projet `setup` s'exécute UNE fois (dépendance de `chromium` et `firefox`) et
  * n'est PAS re-joué quand un test échoue et retry. Le nombre de registers de TOUTE
  * la suite est donc borné à `ALL_ACCOUNTS.length` (4) + le self-register du
- * golden-path (1) + les 3 appels au helper `support/auth.ts#registerOnly`
- * (`forgot-password.spec.ts` x1, `reset-password-failures.spec.ts` x2)
- * = **8 registers par run**.
+ * golden-path (1) + les 4 appels au helper `support/auth.ts#registerOnly`
+ * (`forgot-password.spec.ts` x1, `reset-password-failures.spec.ts` x2,
+ * `sprint-111-theme-account-preference.spec.ts` x1 depuis #653)
+ * = **9 registers par run**.
  *
  * ─────────────────────────────────────────────────────────────────────────────
  * LE BUDGET, EN CHIFFRES — #475, et ce que les versions précédentes de ce
@@ -31,10 +32,10 @@ import path from 'node:path'
  *
  * ÉTAT RÉEL depuis #547 (S88) — le filtre est ARMÉ pendant les runs E2E :
  *   passe 1 CI    =  4 (ALL_ACCOUNTS) + 1 (golden-path)
- *                    + 3 (helper `registerOnly`)           =  8
+ *                    + 4 (helper `registerOnly`, dont #653)  =  9
  *   passe 2 CI    =  4 (`auth.setup.ts` rejoué contre le MÊME backend)
- *   nominal CI    =                                          12 / min / IP
- *   pire cas CI   =  4 + 4 x 3 (retries: 2) + 4            = 20
+ *   nominal CI    =                                          13 / min / IP
+ *   pire cas CI   =  4 + 5 x 3 (retries: 2) + 4            = 23
  *   plafond e2e   =  app.rate-limit.register-per-minute    = 30 / min / IP
  *                    (backend/src/main/resources/application-e2e.properties)
  *

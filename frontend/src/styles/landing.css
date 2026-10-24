@@ -11,9 +11,11 @@
  * fichier reste franc (et par PIT-S48-002 : ce qui traîne en commentaire revient).
  *
  * Les règles de MOUVEMENT dupliquées avec `animations.css` (`.section-animation`,
- * `.cta-button`, `.card-gradient-border`, `.feature-icon`) ont été retirées d'ici :
- * `animations.css` en est la source unique. Ce fichier ne porte plus que le style
- * statique de la landing.
+ * `.cta-button`) ont été retirées d'ici : `animations.css` en est la source unique.
+ * Ce fichier ne porte plus que le style statique de la landing.
+ *
+ * #612 (Sprint 103) — `.feature-card` (et son palier `max-width: 768px`) est retirée
+ * avec `FeaturesSection`, son seul consommateur.
  */
 
 /* Titre en dégradé — pages légales (`privacy`, `terms`).
@@ -41,54 +43,11 @@
   }
 }
 
-/* Cartes de fonctionnalités.
- * Bordure DÉCORATIVE (cadre de carte, son retrait ne coûte aucune information) :
- * tier `rule`, et `rule-strong` d'un cran au survol — cf. tableau des tiers de
- * bordure du DS (readme). Ce n'est PAS `rule-emphasis` : la bordure n'est ici
- * l'affordance d'aucun contrôle.
- *
- * ⚠ PROPRIÉTAIRE UNIQUE DU MOUVEMENT (#384). Le `transform` de `:hover` ci-dessous est la SEULE
- * déclaration qui lève la carte. `FeaturesSection.tsx` portait en plus `hover:-translate-y-2` :
- * en Tailwind 4 cette utilitaire compile vers la propriété `translate`, distincte de `transform`,
- * donc les deux s'appliquaient et se COMPOSAIENT — -18px au survol au lieu de -10, -13px sous
- * 768px. L'utilitaire a été retirée du composant ; ne pas la réintroduire, et ne pas dupliquer
- * cette élévation par une utilitaire `translate-*`/`transform` côté TSX.
- *
- * ⚠ NE PAS LAYERISER ce bloc (PIT-S53-004) : `border-rule` est posée sur le même élément SANS
- * variante `hover:`. Sous `@layer`, l'utilitaire gagnerait en permanence et le passage à
- * `rule-strong` au survol disparaîtrait — la « correction » créerait la régression.
- * Cf. `sprint-53/audit-css-layers-340.md` §3.5.
- * Le `box-shadow` ci-dessous est désormais la SEULE ombre de la carte : #574 a retiré le
- * `shadow-lg` au repos (charte : surface au repos = filet, l'élévation est réservée aux
- * popovers/modales), qui faisait de surcroît DIMINUER l'ombre au survol. */
-.feature-card {
-  transition: all 0.3s ease;
-  border-color: var(--color-rule);
-}
-
-.feature-card:hover {
-  transform: translateY(-10px);
-  box-shadow: var(--shadow-md);
-  border-color: var(--color-rule-strong);
-}
-
 /* #610 — le halo flou `.hero-image-container` (+ son keyframe `hero-halo-pulse`) est
  * retiré avec l'image statique du hero : le panneau de la frise qui la remplace est une
  * surface au repos, donc un filet sans halo ni ombre (#574). ⚠ Si un keyframe revient
  * ici, le PRÉFIXER : un `@keyframes pulse` dans cette feuille (chargée après
  * `globals.css`) a déjà écrasé l'`animate-pulse` de Tailwind dans toute l'application. */
-
-/* Cartes de témoignages — même tier de bordure décorative que `.feature-card`. */
-.testimonial-card {
-  transition: all 0.3s ease;
-  border-color: var(--color-rule);
-}
-
-.testimonial-card:hover {
-  transform: translateY(-5px);
-  box-shadow: var(--shadow-sm);
-  border-color: var(--color-rule-strong);
-}
 
 /* Liens de navigation — le soulignement au survol est l'affordance de lien, donc
  * `accent` (rôle « today / active / links » du DS). Trait plein : le DS proscrit les
@@ -113,11 +72,63 @@
   width: 100%;
 }
 
-/* Médias requêtes pour la réactivité */
-@media (max-width: 768px) {
-  /* Palier réduit du MÊME propriétaire que la règle ligne 54 — il n'a de sens que tant que la
-   * lévitation reste portée par `transform` ici (cf. #384). */
-  .feature-card:hover {
-    transform: translateY(-5px);
-  }
+/* #614 — BARRE DE NAVIGATION COLLANTE DE LA LANDING (handoff §1 : « nav sticky »).
+ *
+ * Trois grandeurs — la barre, le décalage hors ligne et le `scroll-padding` des
+ * ancres les lisent toutes :
+ *   · `--landing-bar-min-height` : hauteur PLANCHER de la barre, filet bas compris
+ *     (92 px de header + 1 px de filet). C'est un `min-height`, PAS une hauteur figée
+ *     (correctif de review #614) : sous agrandissement du TEXTE SEUL (WCAG 1.4.4 —
+ *     zoom « texte seulement », ou tailles DS doublées), la nav passe sur deux lignes
+ *     à 1024 px (`de`) et son texte sortait de 11,5 px en haut ET en bas d'une barre
+ *     de 93 px figée (par-dessus la page). Avec le plancher, la barre grandit.
+ *   · `--landing-bar-height` : hauteur RÉELLE, écrite sur `<html>` par
+ *     `HeaderSection` (ResizeObserver) ; repli sur le plancher avant hydratation ou
+ *     sans JS. Le `scroll-padding-top` la lit : les ancres suivent la barre même
+ *     quand elle grandit.
+ *     ⚠ `html{font-size:200%}` ne change RIEN ici : l'échelle typo et l'espacement
+ *     du DS sont en px (`ds/tokens/typography.css`), pas en rem — mesuré, barre
+ *     93 px inchangée. Le zoom navigateur global, lui, agrandit aussi les px : il
+ *     équivaut à une fenêtre plus étroite (palier mobile), déjà couvert.
+   · `--landing-sticky-top` : 0 en temps normal ; la hauteur de la bannière réseau
+ *     (`--sysbanner-height`, DS `i18n.css`) quand elle est montée. La bannière est
+ *     elle aussi collée à `top:0` (`--z-netbanner`, au-dessus de tout) : sans ce
+ *     décalage, la barre passait DESSOUS et perdait ses 32 px du haut.
+ *   · le `scroll-padding-top` du document = les deux sommés. Posé sur le
+ *     SCROLLPORT (`html`) et non en `scroll-margin` sur chaque section : il couvre
+ *     les ancres (`#how-it-works`, desktop ET burger), mais aussi tout
+ *     `scrollIntoView` et le défilement au focus clavier (WCAG 2.4.11, focus non
+ *     masqué) — une section ajoutée plus tard n'a rien à déclarer.
+ *     Borné à la landing par `:has(.landing-sticky-bar)` : aucune autre page
+ *     n'hérite d'un décalage pour une barre qu'elle n'a pas.
+ *
+ * La barre est PLEINE LARGEUR (fond opaque `bg` + filet sur toute la fenêtre) ;
+ * c'est le `<header>` qu'elle contient qui reste plafonné à 1340 px
+ * (`container-landing`, #616). Elle est l'enfant d'un bloc de la hauteur de toute
+ * la page (`HomePage`), donc elle a toute la course nécessaire pour glisser
+ * (PIT-S85-001 / PIT-S100-003 : un sticky sans course ne colle jamais). */
+:root {
+  --landing-bar-min-height: 93px;
+  --landing-sticky-top: 0px;
+}
+
+:root:has(.mt-sysbanner--sticky) {
+  --landing-sticky-top: var(--sysbanner-height);
+}
+
+html:has(.landing-sticky-bar) {
+  scroll-padding-top: calc(
+    var(--landing-sticky-top) + var(--landing-bar-height, var(--landing-bar-min-height))
+  );
+}
+
+.landing-sticky-bar {
+  position: sticky;
+  top: var(--landing-sticky-top);
+  z-index: var(--z-sticky);
+  /* `flex` : le `<header>` (item étiré) remplit le plancher et y centre son contenu,
+     puis pousse la barre quand son contenu dépasse. Jamais d'`overflow:hidden` ici :
+     il couperait le texte agrandi (échec 1.4.4). */
+  display: flex;
+  min-height: var(--landing-bar-min-height);
 }

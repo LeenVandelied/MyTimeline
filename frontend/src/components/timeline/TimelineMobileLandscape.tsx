@@ -287,7 +287,13 @@ export const TimelineMobileLandscape: React.FC<TimelineMobileLandscapeProps> = (
                     return (
                       <div
                         key={resource.id}
-                        className="mt-tlm__lane"
+                        // #596 — zébrure : une lane sur deux dans sa catégorie, d'après
+                        // le rang STABLE (pas `:nth-child`, faussé par la cale #69).
+                        className={
+                          (laneWindow.startIndex + i) % 2 === 1
+                            ? 'mt-tlm__lane mt-tlm__lane--alt'
+                            : 'mt-tlm__lane'
+                        }
                         role="listitem"
                         aria-posinset={laneWindow.startIndex + i + 1}
                         aria-setsize={resList.length}

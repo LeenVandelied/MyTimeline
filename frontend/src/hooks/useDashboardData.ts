@@ -5,7 +5,9 @@ import { useProductsWithEvents } from '@/hooks/useProductsWithEvents'
 import { mapToFullCalendarEvent, type FullCalendarEvent } from '@/types/event'
 import type { Product } from '@/types/product'
 import type { Resource } from '@/components/timeline'
-import { parseLocalDate } from '@/lib/date-iso'
+import { computeDashboardKpis, type DashboardKpis } from '@/components/dashboard/kpis'
+
+export type { DashboardKpis } from '@/components/dashboard/kpis'
 
 /**
  * #80 — Source de données UNIQUE du dashboard desktop (TanStack Query).
@@ -17,18 +19,11 @@ import { parseLocalDate } from '@/lib/date-iso'
  *   - `events`    : événements aplatis en `FullCalendarEvent` (réutilisables par
  *                   DensityRibbon / WeekAgenda via les briques timeline).
  *   - `resources` : produits en `Resource` (pour la frise existante si besoin).
- *   - KPIs        : produits actifs, événements ce mois (non archivés — BR-EVE-011),
- *                   série courante (jours consécutifs avec ≥1 event finissant à
- *                   aujourd'hui).
+ *   - KPIs        : les 4 métriques de « En bref » (#640, `components/dashboard/kpis.ts`),
+ *                   calculées sur les événements NON archivés (BR-EVE-011).
  *
  * Les dérivations sont mémoïsées sur la référence `products` renvoyée par le cache.
  */
-export interface DashboardKpis {
-  activeProducts: number
-  eventsThisMonth: number
-  currentStreak: number
-}
-
 export interface DashboardData {
   products: Product[]
   events: FullCalendarEvent[]
@@ -37,27 +32,6 @@ export interface DashboardData {
   isLoading: boolean
   isError: boolean
   refetch: () => void
-}
-
-/**
- * Série courante : nombre de jours calendaires consécutifs, en remontant depuis
- * aujourd'hui, où au moins un event (non archivé) débute. S'arrête au premier
- * jour vide. `now` injectable pour les tests.
- */
-function computeStreak(events: FullCalendarEvent[], now: Date): number {
-  const daysWithEvent = new Set(
-    events.map((e) => {
-      const d = parseLocalDate(e.start)
-      return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime()
-    }),
-  )
-  let streak = 0
-  const cursor = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-  while (daysWithEvent.has(cursor.getTime())) {
-    streak += 1
-    cursor.setDate(cursor.getDate() - 1)
-  }
-  return streak
 }
 
 export function useDashboardData(
@@ -92,20 +66,14 @@ export function useDashboardData(
     [products],
   )
 
-  const kpis = useMemo<DashboardKpis>(() => {
-    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
-    const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999)
-    const eventsThisMonth = events.filter((e) => {
-      const s = parseLocalDate(e.start)
-      return s >= monthStart && s <= monthEnd
-    }).length
-
-    return {
-      activeProducts: products.length,
-      eventsThisMonth,
-      currentStreak: computeStreak(events, now),
-    }
-  }, [products, events, now])
+  // #640 — les KPIs ne dépendent que du JOUR CIVIL de `now` : mémoïser sur ce jour (et non
+  // sur la référence `now`, recréée à chaque rendu par le paramètre par défaut) évite de
+  // recalculer les récurrences à chaque rendu de la page.
+  const todayKey = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
+  const kpis = useMemo<DashboardKpis>(
+    () => computeDashboardKpis(events, new Date(todayKey)),
+    [events, todayKey],
+  )
 
   return {
     products,

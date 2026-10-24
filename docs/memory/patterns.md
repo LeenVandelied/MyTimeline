@@ -238,7 +238,7 @@ En S38 (#127), le champ `error` d'un corps d'erreur structuré ne doit JAMAIS po
 En S40 (#245), la suppression de catégorie (avec réassignation) impacte la liste produits, dont la clé est `queryKeys.products.withEvents(userId)`. Certains call sites (`CategoryDrawer`) n'ont PAS le `userId` sous la main. Pattern : invalider le **préfixe** `queryKeys.products.all` (`['products']`) plutôt que la sous-clé exacte — le matching de préfixe TanStack v5 couvre TOUTES les sous-clés produits, y compris `withEvents(userId)`. Même convention que `useUpdateCategory`. Le fix passe par un hook `useDeleteCategory` (`useMutation`, `onSuccess: invalidate categories.all + products.all`) câblé sur les 2 call sites, `mutateAsync` propageant le rejet au dialog. **Anti-pattern : threader `userId` juste pour l'invalidation, ou éparpiller des littéraux de query key hors `query-keys.ts`.** (Sprint 40 #245)
 
 ## PAT-S40-002 — Nouvelle largeur de layout fixe → token dédié `spacing.css` + mapping `@theme inline`, jamais `w-[Npx]`
-En S40 (#210), la sidebar shell 248px n'a aucun token (l'échelle `spacing.css` est odd-4 : 3/5/7/9…, 248 hors grille). Pattern (précédent `--lane-header-w: 168px`) : déclarer `--sidebar-width: 248px;` dans `ds/tokens/spacing.css` (section layout-specific) PUIS le mapper dans `globals.css` `@theme inline` (`--spacing-sidebar: var(--sidebar-width);`) pour obtenir l'utilitaire Tailwind `w-sidebar`. **Anti-pattern : `w-[248px]` arbitraire sans backing token (viole la charte tokens-only).** (Sprint 40 #210)
+En S40 (#210), la sidebar shell 248px n'a aucun token (l'échelle `spacing.css` est odd-4 : 3/5/7/9…, 248 hors grille). Pattern (précédent `--lane-header-w: 168px` — 176 px depuis #674, S105) : déclarer `--sidebar-width: 248px;` dans `ds/tokens/spacing.css` (section layout-specific) PUIS le mapper dans `globals.css` `@theme inline` (`--spacing-sidebar: var(--sidebar-width);`) pour obtenir l'utilitaire Tailwind `w-sidebar`. **Anti-pattern : `w-[248px]` arbitraire sans backing token (viole la charte tokens-only).** (Sprint 40 #210)
 
 ## PAT-S40-003 — Envelopper un écran connecté existant dans un shell sans le réécrire : route group `(app)` + `git mv` + `lg:hidden` anti double-chrome
 En S40 (#210), pour insérer un shell applicatif (AppShell) autour d'écrans déjà livrés (dashboard #80, produits #68) sans réécrire leurs composants : (a) créer un layout de **route group** Next `app/[locale]/(app)/layout.tsx` qui monte `<AppShell>` — les parenthèses rendent le groupe transparent pour l'URL ; (b) `git mv` les segments (`dashboard/`, `products/`) sous `(app)/` → URLs publiques INCHANGÉES (vérifié via `app-path-routes-manifest.json`) ; (c) gate `lg:hidden` sur le chrome PROPRE de l'écran (header/nav) pour éviter le double-chrome en desktop, la nav mobile de l'écran restant active `< lg` (délégation). **Anti-pattern : shell qui re-rend `CompactRail`/`MobileDrawer` → duplication de la nav mobile.** Conséquence à surveiller : un `data-testid` du header d'écran devenu `lg:hidden` casse tout E2E desktop qui le cliquait (cf. [[PIT-S40-003]]). (Sprint 40 #210)
@@ -427,7 +427,7 @@ diagnostic sur un `ERR_CONNECTION_REFUSED`. Ne colle jamais une cause en dur dan
 ## PAT-S54-002 — Contourner un bug produit dans une spec SANS effacer son assertion
 Quand un défaut réel empêche le **mode d'interaction** mais pas le **comportement** visé, changer de mode
 d'activation en conservant l'assertion — et signaler le défaut en follow-up. Au S54, une pastille proche de
-`rangeStart` est inatteignable à la souris (en-tête de lane sticky `--lane-header-w=168px` recouvrant un event
+`rangeStart` est inatteignable à la souris (en-tête de lane sticky `--lane-header-w=168px` à l'époque — 176 px depuis #674, S105 — recouvrant un event
 posé à 150 px) : la spec `live-region` active la pastille au **clavier** (`Enter`, même `onSelect` que le
 clic) tout en gardant l'assertion sur le contenu annoncé. La spec reste vraie ET le bug reste visible.
 Anti-pattern : affaiblir l'assertion en `toBeVisible()`, ce qui rendrait la spec verte **et muette**. Corollaire
@@ -979,3 +979,93 @@ Problème : un intercepteur (toast d'erreur) doublonne un écran qui affiche dé
 
 ## PAT-S102-002 — Prouver qu'un sélecteur de mesure couvre un composant absent de l'écran aujourd'hui
 Sonde : injecter le balisage exact du composant avec une taille FIXE inline sous le seuil (ne pas dépendre du CSS de production, qui peut légitimement grandir), asserter qu'il est vu une fois ET signalé ; puis rejouer une fois avec l'ancien sélecteur pour voir la sonde rougir (0 contrôle vu). Test séparé des mesures réelles. Anti-pattern : affirmer « un interrupteur ajouté serait mesuré » sur la seule lecture du sélecteur. Exemple : `e2e/sprint-99-touch-targets.spec.ts`. (Sprint 102, #763)
+
+## PAT-S103-001 — Prouver qu'un changement de ciblage E2E ne perd aucune mesure : compter les annotations, puis « déplacer » et « retirer l'id »
+Émettre une annotation par mesure, lire le reporter JSON (`--reporter=line,json` + `PLAYWRIGHT_JSON_OUTPUT_NAME`) avant ET après, et comparer les noms mesurés (S103 : 52 = 52). Puis deux contrôles négatifs : déplacer un CTA dans un autre conteneur (l'ancien sélecteur tombe à 0, le nouveau garde la mesure) et retirer temporairement un testid (la spec doit rougir). Anti-pattern : comparer seulement « N passed ». (Sprint 103, #354)
+
+## PAT-S103-002 — Frise à filet continu en 1, 2×2 et 4 colonnes : un segment de filet PAR élément, rogné par le conteneur
+Chaque jalon porte son propre segment, prolongé sur la gouttière (`-right-<gap>` / `-bottom-<gap>`), et la liste a `overflow-hidden` pour couper le dernier. Anti-pattern : une ligne unique en `absolute` sur le conteneur (elle traverse la 2ᵉ rangée en 2×2) ou des `nth-child` par breakpoint. Exemple : `components/landing/HowItWorksSection.tsx`. (Sprint 103, #612)
+
+## PAT-S103-003 — Verrouiller « l'accent n'est qu'un signal » sur le DOM RENDU, avec dérogations nommées
+Balayer le DOM rendu (menus ouverts compris) et exiger, pour chaque utilitaire d'accent, un ancêtre `a`/`button`, une section CTA reconnue par son testid, ou une dérogation NOMMÉE assortie d'un test de péremption. Anti-pattern : un grep de classes par fichier, dont la liste blanche ne dit pas pourquoi et rate le panneau fermé par défaut. Exemple : `components/pages/HomePage.accent-roles.test.tsx`. (Sprint 103, #615)
+
+## PAT-S104-001 — Plafonner un conteneur Tailwind 4 hors paliers sans toucher `container`
+`@utility x { @apply container; margin-inline:auto; @media (width >= --theme(--token)) { max-width: --theme(--token) } }`, le token déclaré dans `@theme` (namespace `--container-*`) : la règle du seuil est émise après les paliers, donc gagne. Anti-pattern : `container max-w-(--token)` (deux `max-width` concurrents, issue dépendante du tri) ou un `max-w-[…]` répété. Exemple : `styles/globals.css` `container-landing` (1340 px), vérifié non fuitant sur `/fr/privacy`. (Sprint 104, #616)
+
+## PAT-S104-002 — Décaler les ancres sous une barre collante, bannière optionnelle comprise
+Hauteur de barre en variable CSS (plancher en CSS, hauteur réelle publiée par `ResizeObserver` pour le texte agrandi), `top` de la barre = variable qui vaut la hauteur de bannière via `:root:has(.bannière)`, et `html:has(.barre) { scroll-padding-top: calc(top + hauteur) }` — ce qui couvre d'un coup les ancres, `scrollIntoView` et le focus clavier (WCAG 2.4.11). Anti-pattern : un `scroll-margin-top` section par section, qui oublie le focus et les sections futures. Exemple : `styles/landing.css` + `HeaderSection.tsx`. (Sprint 104, #614)
+
+## PAT-S104-003 — Une liste rendue, ciblée par les tests sans dépendre de l'ordre
+Déclarer la liste dans un module TS pur (`components/landing/landing-nav.ts`) importé par le composant ET par Playwright, avec une fonction qui dérive le `data-testid` de chaque entrée ; cibles et compte attendu dérivent alors de la liste. Anti-pattern : `nav a`.nth(i) + `toHaveCount(N)` littéral, qui oblige à modifier deux fichiers de test à chaque retrait de lien (PIT-S103-003). (Sprint 104, #793)
+
+## PAT-S105-001 — Une valeur de token lue par les E2E, jamais recopiée
+Un helper E2E lit le token dans la feuille (`LANE_GUTTER_PX` dans `e2e/support/timeline-lanes.ts`, même regex que le test de dérive Vitest du miroir JS `LANE_TRACK_OFFSET_PX`) ; les assertions restent comparées à une mesure de rendu. Anti-pattern : recopier la valeur en dur dans N specs (168 à 3 endroits a survécu au changement du token) ou importer le composant TSX dans Playwright pour une constante. (Sprint 105, #674)
+
+## PAT-S105-002 — Vérifier une couleur semi-transparente issue de `color-mix` en E2E
+Lire `getComputedStyle(el).backgroundColor`, parser localement la forme `color(srgb r g b / a)` (flottants 0-1), et comparer à la valeur attendue résolue par un élément témoin `background-color:var(--token)`. Anti-pattern : le canvas 1×1 (PIT-S105-004). Exemple : `frontend/e2e/sprint-105-lane-zebra.spec.ts`. (Sprint 105, #596)
+
+## PAT-S106-001 — Réutiliser le motif clé/valeur `.mt-drawer__row` hors du tiroir avec des valeurs longues
+`min-width:0` + `overflow-wrap:anywhere` sur `.mt-drawer__v`, `flex-shrink:0` sur `.mt-drawer__k` (ajout commenté au DS) : `break-word` ne suffit pas, il n'abaisse pas la largeur min-content qui compte pour le rétrécissement flex. Vérifié en `de` à 390 px, sans régression sur le drawer d'événement ni sur le bottom sheet. Anti-pattern : `truncate` sur la valeur, ou règle Tailwind locale concurrente au DS. Alias neutre `.mt-kv*` en follow-up. (Sprint 106, #606)
+
+## PAT-S107-001 — Prouver qu'un contour de focus n'est PAS rogné : deux oracles concordants et une mutation qui doit les rougir
+Complète [[PAT-S74-004]] pour le cas négatif. Oracle 1 : géométrie, rect du contour (`rect ± (offset + width)`) face par face contre chaque ancêtre qui clippe. Oracle 2 : lecture des pixels sur les 4 côtés, comparée à l'`outlineColor` calculée ; il attrape aussi un frère peint par-dessus, que la géométrie ignore. Contre-épreuve : injecter `overflow-x:auto` sur le conteneur doit faire rougir les DEUX oracles. Sans elle, « non rogné » peut venir d'un oracle vacant. Garder une spec E2E légère quand le seul remède possible est de ne jamais rogner (offset négatif exclu). (Sprint 107 #524, `e2e/sprint-107-tab-focus-outline.spec.ts`)
+
+## PAT-S107-002 — Appliquer un motif DS à une partie d'un composant : une constante de classes Tailwind, pas une classe DS
+Besoin : le motif `.mt-table th` sur les seuls en-têtes, sans `.mt-table` qui change aussi `td`, le zébrage et la police. Solution : une constante `TH` de classes Tailwind équivalentes, avec un commentaire qui pointe vers `core.css`. Anti-pattern : créer une classe DS `.mt-th`. `core.css` est hors `@layer`, donc elle écraserait les utilitaires (`text-right`, `px-*`) posés sur la même cellule. (Sprint 107 #609)
+
+## PAT-S108-001 — Un contrôle superposé à un graphique `role="img"` en est le frère, jamais l'enfant
+Les descendants d'un `role="img"` sont présentationnels : un `role="slider"` placé dedans disparaît de l'arbre d'accessibilité. Solution : un conteneur `relative` qui porte le graphique `role="img"` ET, à côté, le contrôle positionné en `absolute`. Test RTL : `expect(img).not.toContainElement(slider)`. (Sprint 108 #623, viewport du ruban)
+
+## PAT-S108-002 — Un compteur qui doit égaler une liste rendue ailleurs partage son filtre, en fonction pure
+Problème : « Tu as X événements cette semaine » doit égaler les lignes de « Cette semaine ». Solution : extraire le filtre de la liste (`currentWeekEvents`) en fonction pure, appelée par la liste ET par le calcul du compteur ; un test rend les deux et compare. Anti-pattern : recoder le filtre dans le hook de données, ce qui produit une divergence silencieuse au premier changement de règle. (Sprint 108 #640)
+
+## PAT-S109-001 — Bannir un motif Tailwind fait main : garde par ligne de code, pas par littéral
+Problème : empêcher le retour de `font-mono tracking-widest uppercase` hors `.mt-eyebrow`. Solution : test statique qui balaie le source LIGNE par ligne (commentaires exclus) + contrôle négatif + anti-vacuité + liste blanche elle-même testée (rougit quand une entrée meurt) — `frontend/src/styles/__tests__/eyebrow-consumers.test.tsx`. Anti-pattern : balayer les littéraux entre guillemets : les apostrophes des commentaires FR désapparient les paires (faux négatifs). (Sprint 109 #632)
+
+## PAT-S109-002 — Testid d'une branche morte supprimé : ré-armer l'attente E2E, ne pas la vider
+Quand une spec attend `toHaveCount(0)` sur un testid de chargement qu'on supprime, la re-cibler sur le testid de chargement des DONNÉES monté sous le `ready` (`products-loading`, `product-detail-loading`), pas `loading: ''` qui supprime l'attente. (Sprint 109 #697, `sprint-100-fab-clearance`)
+
+## PAT-S110-001 — « Aujourd'hui » dans un écran prérendu : rendu neutre, date en effet, barrière `data-*-ready`
+`/_not-found` est prérendu au build : un `new Date()` pendant le rendu servirait indéfiniment la date du build et provoquerait un mismatch d'hydratation. Premier rendu neutre à dimensions réservées (espaces insécables), date du navigateur posée en `useEffect`, attribut `data-ephemeris-ready` comme barrière E2E nommée. Preuves : `renderToString` et `request.get` sans chiffre dans le TEXTE du composant (PIT-S110-001), jour du feuillet = `page.evaluate(() => new Date().getDate())`. (Sprint 110 #627, `EphemerisLeaf.tsx`)
+
+## PAT-S110-002 — Traitement identique sur deux écrans hors provider : composant pur partagé + test de parité des messages inlinés
+`[locale]/error.tsx` (dans next-intl) et `global-error.tsx` (hors provider, `MESSAGES` inlinés) affichent la même référence d'incident : un composant pur (`IncidentReference`, `StateScreen.tsx`) qui reçoit libellé et valeur déjà résolus garantit l'identité par construction ; un test `it.each` compare les `MESSAGES` inlinés aux 4 `errors.json` et rougit à la moindre dérive (même motif pour `global-not-found-screen.tsx`). (Sprint 110 #627, #628)
+
+## PAT-S111-001 — Champ écrit par un seul cas d'usage : port dédié, exclu de la recopie générique
+Ajouter `themePreference` à `User`, reconstruit puis sauvé par 5 chemins (PATCH, change/reset-password, avatar ×2) via `copyMutableFields`, l'aurait effacé sur chaque chemin oublié. Le champ s'écrit par `UserRepository.updateThemePreference` et la recopie générique l'exclut ; un test d'intégration armé (`patchProfile_afterPreference_doesNotEraseIt`) prouve la non-régression sur un autre chemin. Anti-motif : mettre à jour les N `new User(...)` à la main. (Sprint 111 #653)
+
+## PAT-S111-002 — Nouveau champ d'entité : hydratation dans l'adaptateur JPA, pas dans le `UserMapper` gelé
+`UserMapper` (application) porte une dette figée par ArchUnit ; tout nouvel accès à l'entité y ajoute une violation (666/667). Hydrater dans `UserRepositoryJpaImpl.toDomain` (+ `withX` côté domaine), comme `toDomainWithoutEvents` (#711). Anti-motif : régénérer le store de gel ArchUnit. (Sprint 111 #653)
+
+## PAT-S111-003 — Garde `mounted` par `useSyncExternalStore`, pas `useState` + `useEffect`
+`useSyncExternalStore(noop, () => true, () => false)` vaut `false` au SSR et à l'hydratation, `true` dès le premier rendu d'un montage client (tiroir, dialog ouverts après coup) — là où `useEffect(() => setMounted(true))` impose un rendu « non monté » à chaque ouverture. Testable par `renderToString`. (Sprint 111 #655, `useThemeChoice.ts`)
+
+## PAT-S111-004 — PUT idempotent dédupliqué sur la valeur ATTENDUE, avec numéro de séquence
+Dédupliquer sur la valeur serveur confirmée saute l'aller-retour rapide (A en vol, retour à B confirmé → sauté, le serveur finit sur A). Comparer à la valeur attendue (confirmée ou dernière en vol), ignorer les réponses périmées par un numéro de séquence, revenir à la valeur confirmée sur échec du dernier PUT. (Sprint 111 #653, `AuthContext.persistThemeChoice`)
+
+## PAT-S111-005 — Avant de croire un `not-found.tsx` de segment atteint, trouver l'appelant de `notFound()`
+Un `notFound()` levé dans un `layout.tsx` remonte au 404 racine (PIT-S62-005) ; seul un `notFound()` de **page** rend le `not-found.tsx` du segment. `/usr/bin/grep -rn "notFound()" frontend/app` et regarder si chaque appel est dans une page ou un layout. (Sprint 111 #827)
+
+## PAT-S112-001 — `onCloseAutoFocus` qui place le focus lui-même : CTA encore affiché, sinon bouton permanent
+`event.preventDefault()` systématique puis `ref.focus()` sur le CTA d'état vide s'il est encore monté, sinon sur le bouton permanent (l'état vide disparaît après création). Couvert en E2E dans les 3 chemins : annulation, création, création avec rechargement lent. (Sprint 112 #700, `ProductsListView`, `CategoriesView`)
+
+## PAT-S112-002 — `page.route` à phases pour tester un état intermédiaire pendant un rechargement lent
+Stub à phases (`empty` → `[]`, `network` → `continue`, `gated` → retenu jusqu'à `release()`), promesse `held` pour savoir que la requête est retenue ; `afterEach` : `release()` PUIS `unrouteAll({ behavior: 'wait' })`. Anti-pattern : `setTimeout` dans le gestionnaire (état non garanti, gestionnaire qui survit au test, cf. PIT-S111-003). Et pour purger des entités créées À LA SOURIS : `page.on('response')` sur les POST 201 → `trackSeed` en `afterEach` inconditionnel. (Sprint 112 #700)
+
+## PAT-S112-003 — `expectClickableBox` : prouver qu'une cible sans pseudo-hitbox n'est ni recouverte ni rognée
+8 points de bord (milieux à 1 px, coins rentrés du rayon, PIT-S112-003) sondés par `elementFromPoint`, contrôle négatif par un voisin injecté qui recouvre 10 px (vu rouge). `expectHitbox` reste réservé aux cibles à `::before`. (Sprint 112 #767, `e2e/support/touch-targets.ts`)
+
+## PAT-S112-004 — Prouver qu'une factorisation E2E ne change pas ce qui est mesuré : logs de mesure normalisés avant/après
+Logs structurés `[tag étape] libellé=LxH | …`, normalisés (UUID, suffixes uniques, arrondi) puis comparés en nombre de lignes et de contrôles (#768 : 40 lignes, 226 contrôles identiques). « Même nombre de tests verts » ne prouve rien : la garde anti-vacuité n'est qu'un minimum. (Sprint 112 #768)
+
+## PAT-S112-005 — Plafond « par utilisateur » dans Spring Security : filtre avant `AuthorizationFilter`, ordre prouvé par mutation
+Filtre ancré `addFilterBefore(…, AuthorizationFilter.class)` (donc après `JwtFilter`), clé = id de compte, anonyme laissé passer (401 en aval), map LRU bornée. Preuve d'ordre : remonter le filtre avant l'auth fait rougir les tests. Anti-pattern : lire le `SecurityContext` dans un filtre monté avant `JwtFilter` (toujours vide, jamais de 429 — vert si l'on n'asserte que « sous le plafond »). (Sprint 112 #831)
+
+## PAT-S112-006 — Tester qu'une variante de chemin ne contourne pas un filtre : vrai serveur + URI brute
+`@SpringBootTest(RANDOM_PORT)` + `HttpClient` + `URI.create` (chemin non ré-encodé), oracle « jetons canoniques restants » (plafond − 1 si la variante est routée ET comptée) + statut seau vide ; armer par mutation `getRequestURI()`. Anti-pattern : MockMvc (saute Tomcat et son pare-feu) ou `put(String)` qui ré-encode `%70` en `%2570`. (Sprint 112, revue #831)
+
+## PAT-S112-007 — `storageState` par fixture-FONCTION contrôlée au démarrage du test
+`test.use({ storageState: async ({}, use) => { check; await use(path) } })` (`e2e/support/session.ts#sessionState`) : échoue avec la cause (fichier absent / sans `jwt` / périmé) au lieu de « dashboard introuvable ». Contrôle au démarrage du test, pas au scope module (le runner charge les specs avant le setup, et `--list` casserait). (Sprint 112 #832)
+
+## PAT-S112-008 — Un test « aucun toast » sur un statut que l'intercepteur ne toaste jamais se libelle en garde-fou, avec témoin
+409 sur `PUT /api/me/preferences` : vacant par construction comme preuve d'opt-out. Le garder comme non-régression (rougira si une branche 409 toastante apparaît) avec un témoin « même statut sans opt-out = 0 toast » qui documente la mesure. (Sprint 112 #833)

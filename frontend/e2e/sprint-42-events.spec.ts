@@ -18,7 +18,9 @@ import { getUserId, seedCategory, seedProduct, todayIsoDate, unique } from './su
  * atteignable. Deux causes, désormais corrigées :
  *
  *   (1) SURFACE D'ÉDITION MONTÉE (gap A). `TimelineEditHost` wrappe `TimelineResponsive`
- *       sur les pages routées (`dashboard`, détail produit) et câble `onEditEvent` :
+ *       sur les deux écrans routés qui montent la frise (`/timeline` et le détail
+ *       produit — ce dernier est celui que pilotent ces specs ; le dashboard n'en monte
+ *       plus depuis #624, S90) et câble `onEditEvent` :
  *       desktop `EventDrawer` -> bouton `event-drawer-edit` -> `EventEditForm`
  *       (`event-form`), mobile via `TimelineActionSheet`. `ConflictDialog`
  *       (`event-form-conflict`, `conflict-dialog-*`) réutilisé tel quel.

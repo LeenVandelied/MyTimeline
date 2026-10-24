@@ -10,6 +10,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 vi.mock('../src/styles/globals.css', () => ({}))
 
 import GlobalError from './global-error'
+import deErrors from '../public/locales/de/errors.json'
+import enErrors from '../public/locales/en/errors.json'
+import esErrors from '../public/locales/es/errors.json'
+import frErrors from '../public/locales/fr/errors.json'
 
 /**
  * #57 / #413 — Filet global racine (hors NextIntlClientProvider). Messages
@@ -77,5 +81,37 @@ describe('GlobalError', () => {
     render(<GlobalError error={new Error('boom')} reset={reset} />)
     await userEvent.click(screen.getByTestId('global-error-retry'))
     expect(reset).toHaveBeenCalledOnce()
+  })
+
+  // #628 — le digest n'existe QUE pour les erreurs SERVEUR (prod) : absent en
+  // dev/tests par défaut. Sans lui, ni libellé orphelin ni espace réservé.
+  it('sans digest → aucune référence d’incident, actions intactes', () => {
+    render(<GlobalError error={new Error('boom')} reset={vi.fn()} />)
+    expect(screen.queryByTestId('global-error-incident-ref')).not.toBeInTheDocument()
+    expect(screen.getByTestId('global-error-retry')).toBeInTheDocument()
+    expect(screen.getByTestId('global-error-home-link')).toBeInTheDocument()
+  })
+
+  it('avec digest → référence affichée avec le libellé et la valeur brute', () => {
+    const error = Object.assign(new Error('boom'), { digest: 'abc123' })
+    render(<GlobalError error={error} reset={vi.fn()} />)
+    expect(screen.getByTestId('global-error-incident-ref')).toHaveTextContent(
+      'Référence à communiquer au support :',
+    )
+    expect(screen.getByTestId('global-error-incident-ref-value')).toHaveTextContent('abc123')
+  })
+
+  // Les messages sont INLINÉS ici (aucun provider next-intl) : ce test échoue
+  // dès que `incidentRef` diverge de `errors.json` → `crash.incidentRef`.
+  it.each([
+    ['fr', frErrors.crash.incidentRef],
+    ['en', enErrors.crash.incidentRef],
+    ['es', esErrors.crash.incidentRef],
+    ['de', deErrors.crash.incidentRef],
+  ])('%s : incidentRef identique à errors.json → crash.incidentRef', (locale, expected) => {
+    window.history.pushState({}, '', `/${locale}/anything`)
+    const error = Object.assign(new Error('boom'), { digest: 'abc123' })
+    render(<GlobalError error={error} reset={vi.fn()} />)
+    expect(screen.getByTestId('global-error-incident-ref').textContent).toBe(`${expected} abc123`)
   })
 })

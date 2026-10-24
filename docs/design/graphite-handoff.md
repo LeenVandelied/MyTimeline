@@ -185,6 +185,10 @@ Finances `#DD5C97`.
   catégorie mono) · Prochain événement (titre + date ISO) · **mini-frise 90 j** par
   ligne · nb d'événements. Recherche, tri Nom / Prochain événement. Clic ligne →
   détail.
+  *Densité mobile (#608, S107)* : la mini-frise est **conservée sous `md`** en version
+  compacte 64×24 px (fenêtre 90 j, points r=3 non déformés), 220×40 px dès `md` ; à 390 px
+  la table tient sans défilement horizontal (le nom du produit se tronque, le compteur
+  d'événements n'apparaît qu'à partir de `sm`).
 - **Détail** : en-tête type **fiche d'inventaire** (libellés mono à gauche, valeurs à
   droite, filets) ; **sous-frise dédiée** au produit (fit largeur, TODAY) ; section
   **Historique** (événements passés en gris-désaturé). Actions Nouvel événement /

@@ -76,6 +76,12 @@ import jakarta.servlet.http.HttpServletResponse;
  *   <li>{@code DELETE /api/me} — terminal, single-shot, guarded by a username re-type;</li>
  *   <li>{@code DELETE /api/me/avatar} — idempotent no-op reset.</li>
  * </ul>
+ * <p><b>Theme preference (#653 → #831):</b> {@code PUT /api/me/preferences} is NOT in this
+ * table, but it IS throttled — PER AUTHENTICATED USER, by {@link UserRateLimitingFilter}
+ * (ADR-010 § 7, amended S112). A per-IP slot here was rejected (DEC-S111-005): this filter runs
+ * BEFORE {@link JwtFilter}, so it can only key on the IP, and the E2E suite (armed since #547)
+ * sends every authenticated spec through one IP behind the Next proxy — a shared bucket would
+ * produce silent 429s. Shared-NAT users would suffer the same in prod.
  * <p><b>Avatar upload (#499):</b> {@code POST /api/me/avatar} (multipart upload, 5 MiB cap,
  * magic-byte validation + disk write + delete of the previous file) IS now throttled — it was
  * the follow-up left open by #134, whose scope was anti-enumeration + credential brute-force.
@@ -549,6 +555,14 @@ public class RateLimitingFilter extends OncePerRequestFilter {
     }
 
     private Bucket newBucket(int permitsPerMinute) {
+        return newMinuteBucket(permitsPerMinute, timeMeter);
+    }
+
+    /**
+     * Builds an "N per minute" bucket on {@code meter}. Package-private and static so that
+     * {@link UserRateLimitingFilter} (#831) shares the exact same bucket semantics.
+     */
+    static Bucket newMinuteBucket(int permitsPerMinute, TimeMeter meter) {
         // intervally(): the whole quota is restored once per fixed window, giving
         // clean "N per minute" semantics (rather than a trickle refill).
         Bandwidth limit = Bandwidth.classic(
@@ -556,7 +570,7 @@ public class RateLimitingFilter extends OncePerRequestFilter {
                 Refill.intervally(permitsPerMinute, WINDOW));
         return Bucket.builder()
                 .addLimit(limit)
-                .withCustomTimePrecision(timeMeter)
+                .withCustomTimePrecision(meter)
                 .build();
     }
 
@@ -584,7 +598,12 @@ public class RateLimitingFilter extends OncePerRequestFilter {
         return request.getRemoteAddr();
     }
 
-    private void writeTooManyRequests(HttpServletResponse response) throws IOException {
+    /**
+     * The single 429 of the API's rate limiting: status, JSON content type, UTF-8 and the
+     * generic {@code {"error":"too_many_requests"}} body. Package-private and static so that
+     * {@link UserRateLimitingFilter} (#831) emits a byte-identical response.
+     */
+    static void writeTooManyRequests(HttpServletResponse response) throws IOException {
         response.setStatus(429);
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setCharacterEncoding(StandardCharsets.UTF_8.name());

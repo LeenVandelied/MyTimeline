@@ -1,4 +1,29 @@
+import fs from 'node:fs'
+import path from 'node:path'
 import { expect, type Page } from '@playwright/test'
+
+/**
+ * #674 — Gouttière de piste DESKTOP (px), LUE dans le token `--lane-header-w`
+ * (`src/styles/ds/tokens/spacing.css`) plutôt que recopiée en dur dans chaque spec :
+ * le passage 168 → 176 px avait laissé 168 figé à quatre endroits de la suite. Même
+ * lecture (même expression) que le test de dérive `TimelineView.test.tsx`, qui
+ * verrouille déjà `LANE_TRACK_OFFSET_PX` sur ce token — la spec, le JS et le CSS
+ * lisent donc une seule valeur. `TimelineView.tsx` n'est PAS importé : c'est un
+ * composant client (React, lucide, next-intl) que le runner Playwright n'a pas à
+ * charger pour une constante.
+ *
+ * ⚠ C'est la valeur DÉCLARÉE : les assertions qui la comparent à une mesure de
+ * rendu (largeur d'en-tête, écart pastille ↔ viewport) restent le vrai verdict.
+ */
+export const LANE_GUTTER_PX: number = (() => {
+  const spacing = fs.readFileSync(
+    path.join(__dirname, '..', '..', 'src', 'styles', 'ds', 'tokens', 'spacing.css'),
+    'utf8',
+  )
+  const match = spacing.match(/--lane-header-w:\s*(\d+(?:\.\d+)?)px/)
+  if (!match) throw new Error('--lane-header-w introuvable dans ds/tokens/spacing.css')
+  return Number(match[1])
+})()
 
 /**
  * #467 — PARADE à la VIRTUALISATION VERTICALE pour les specs qui asservissent une

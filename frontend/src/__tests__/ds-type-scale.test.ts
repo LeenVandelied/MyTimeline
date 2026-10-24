@@ -54,9 +54,9 @@ const SELF = fileURLToPath(import.meta.url)
 /**
  * Retire commentaires de bloc et de ligne AVANT le balayage.
  *
- * Nécessaire, et vérifié en écrivant ce test : les JSDoc de `HeroSection` et de
- * `HowItWorksSection` CITENT `text-4xl md:text-5xl` pour expliquer POURQUOI ces
- * classes sont parties. Sans ce filtrage, le garde-fou rougit sur sa propre
+ * Nécessaire, et vérifié en écrivant ce test : le JSDoc de `HeroSection` CITE
+ * `text-4xl md:text-5xl` pour expliquer POURQUOI ces classes sont parties (celui de
+ * `HowItWorksSection` aussi, jusqu'à sa réécriture en frise, #612). Sans ce filtrage, le garde-fou rougit sur sa propre
  * documentation et pousse à effacer l'explication — l'inverse du but.
  *
  * ⚠ Approximation assumée : un découpage lexical, pas un parseur. Le `[^:]` devant

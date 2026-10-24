@@ -55,7 +55,7 @@ export function FooterSection({ locale }: FooterSectionProps = {}) {
 
   return (
     <footer className="bg-bg border-rule border-t py-12">
-      <div className="container mx-auto px-4">
+      <div className="container-landing px-4">
         <div className="flex flex-col items-center justify-between md:flex-row">
           <div className="mb-6 md:mb-0">
             <div className="text-accent text-md mb-2 font-bold sm:text-lg">Ma Timeline</div>
@@ -66,18 +66,8 @@ export function FooterSection({ locale }: FooterSectionProps = {}) {
               <h4 className="text-ink mb-3 font-bold">{t('common.landing.footer.product')}</h4>
               <ul className="text-ink-muted space-y-2">
                 <li>
-                  <a href="#features" className="hover:text-accent transition">
-                    {t('common.landing.footer.features')}
-                  </a>
-                </li>
-                <li>
                   <a href="#how-it-works" className="hover:text-accent transition">
                     {t('common.landing.footer.howItWorks')}
-                  </a>
-                </li>
-                <li>
-                  <a href="#testimonials" className="hover:text-accent transition">
-                    {t('common.landing.footer.testimonials')}
                   </a>
                 </li>
               </ul>

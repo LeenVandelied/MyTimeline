@@ -3,6 +3,7 @@ import { expect, test } from './support/fixtures'
 import { PROD } from './support/accounts'
 import { ensureAuthenticated } from './support/auth'
 import { neutralizeDevToolingPointerEvents } from './support/dev-tooling'
+import { expectAllTouchable } from './support/touch-targets'
 import { getUserId, seedCategory, seedProduct, todayIsoDate, unique } from './support/products'
 import { revealSeededLane } from './support/timeline-lanes'
 
@@ -27,8 +28,8 @@ import { revealSeededLane } from './support/timeline-lanes'
  *     y apparaissent, la spec rougit et il faudra les mesurer ici.
  *
  * ORACLE : boîte RENDUE (`getBoundingClientRect`) de TOUS les contrôles sous la
- * racine, liste construite par REQUÊTE DOM (même sélecteur que
- * `sprint-101-touch-targets.spec.ts`), garde anti-vacuité par surface.
+ * racine, liste construite par REQUÊTE DOM (`support/touch-targets.ts`, profil
+ * complet, comme `sprint-101-touch-targets.spec.ts`), garde anti-vacuité par surface.
  *
  * EXEMPTIONS : `sr-only`, `aria-hidden="true"`, poignées `*-grabber` (DEC-S99-002 :
  * la poignée de l'action sheet est un `<span aria-hidden>`, celle du bottom sheet
@@ -40,86 +41,11 @@ import { revealSeededLane } from './support/timeline-lanes'
  * « un produit sans événement » ne sont pas des états déterministes du compte PROD.
  */
 
-const MIN_TARGET = 44
-/** Tolérance sous-pixel : `h-11` = 2.75rem = 44 px exacts à dpr 1. */
-const EPS = 0.01
 const MOBILE = { width: 375, height: 812 } as const
 const BUDGET = 15_000
 
-interface Measured {
-  label: string
-  width: number
-  height: number
-}
-
-/** Mesure TOUS les contrôles interactifs visibles sous `root` (motif PAT-S99-001). */
-async function measureControls(root: Locator): Promise<Measured[]> {
-  return root.evaluate((el) => {
-    const SELECTOR = [
-      'button',
-      'a[href]',
-      'input:not([type="hidden"])',
-      'textarea',
-      'select',
-      '[role="button"]',
-      '[role="combobox"]',
-      '[role="option"]',
-      '[role="switch"]',
-      '[role="checkbox"]',
-      'label.mt-switch',
-    ].join(',')
-    const isExempt = (node: Element): boolean =>
-      node.classList.contains('sr-only') ||
-      node.closest('[aria-hidden="true"]') !== null ||
-      (node.getAttribute('data-testid') ?? '').endsWith('-grabber')
-    const nodes = [el, ...Array.from(el.querySelectorAll(SELECTOR))].filter((n) =>
-      n.matches(SELECTOR),
-    )
-    return nodes
-      .filter((n) => !isExempt(n))
-      .map((n) => {
-        const r = n.getBoundingClientRect()
-        const style = getComputedStyle(n)
-        const pseudo = getComputedStyle(n, '::before')
-        const extended = pseudo.content !== 'none' && pseudo.position === 'absolute'
-        const text = (n.textContent ?? '').trim().slice(0, 30)
-        const label =
-          n.getAttribute('data-testid') ?? n.getAttribute('aria-label') ?? (text || n.tagName)
-        return {
-          label: `${n.tagName.toLowerCase()}[${label}]${extended ? '(::before)' : ''}`,
-          width: extended ? Math.max(r.width, parseFloat(pseudo.width) || 0) : r.width,
-          height: extended ? Math.max(r.height, parseFloat(pseudo.height) || 0) : r.height,
-          visible:
-            r.width > 0 &&
-            r.height > 0 &&
-            style.visibility !== 'hidden' &&
-            style.opacity !== '0' &&
-            style.display !== 'none',
-        }
-      })
-      .filter((m) => m.visible)
-      .map(({ label, width, height }) => ({ label, width, height }))
-  })
-}
-
-/** Log de la mesure (reporter `line`) : sert de tableau au rapport de sprint. */
-function report(step: string, measured: Measured[]): void {
-  const rows = measured.map((m) => `${m.label}=${m.width.toFixed(1)}x${m.height.toFixed(1)}`)
-  console.log(`[#764 ${step}] ${rows.join(' | ')}`)
-}
-
-/** Au moins `min` contrôles mesurés (anti-vacuité), chacun >= 44×44. */
-async function expectAllTouchable(step: string, root: Locator, min: number): Promise<void> {
-  const measured = await measureControls(root)
-  report(step, measured)
-  expect
-    .soft(measured.length, `${step} : nombre de contrôles mesurés (garde anti-vacuité)`)
-    .toBeGreaterThanOrEqual(min)
-  const undersized = measured.filter(
-    (m) => m.height < MIN_TARGET - EPS || m.width < MIN_TARGET - EPS,
-  )
-  expect.soft(undersized, `${step} : contrôles sous 44×44 px`).toEqual([])
-}
+/** Profil COMPLET de `support/touch-targets.ts` (#768) : `aria-hidden` exempté, hitbox `::before` comptée. */
+const TOUCH = { tag: '#764' } as const
 
 /* ------------------------------------------------------------------------- */
 /* Frise portrait                                                             */
@@ -169,7 +95,7 @@ test.describe('#764 — frise mobile (375 px) : feuilles de lecture et d’actio
     await seededEvent(page, title).click({ timeout: BUDGET })
     const sheet = page.getByTestId('timeline-sheet')
     await expect(sheet).toBeVisible({ timeout: BUDGET })
-    await expectAllTouchable('TimelineBottomSheet (lecture)', sheet, 1)
+    await expectAllTouchable('TimelineBottomSheet (lecture)', sheet, 1, TOUCH)
     await page.getByTestId('timeline-sheet-close').click({ timeout: BUDGET })
     await expect(sheet).toHaveCount(0)
 
@@ -177,7 +103,7 @@ test.describe('#764 — frise mobile (375 px) : feuilles de lecture et d’actio
     await seededEventMore(page, title).click({ timeout: BUDGET })
     const actions = page.getByTestId('timeline-actionsheet')
     await expect(actions).toBeVisible({ timeout: BUDGET })
-    await expectAllTouchable('TimelineActionSheet', actions, 3)
+    await expectAllTouchable('TimelineActionSheet', actions, 3, TOUCH)
     await page.getByTestId('timeline-actionsheet-cancel').click({ timeout: BUDGET })
     await expect(actions).toHaveCount(0)
   })
@@ -238,13 +164,13 @@ test.describe('#764 — tableau de bord mobile (375 px) : CTA d’état vide', (
     await openMobileDashboard(page, [])
     const empty = page.getByTestId('dashboard-product-carousel-empty')
     await expect(page.getByTestId('dashboard-product-carousel-empty-cta')).toBeVisible()
-    await expectAllTouchable('ProductCarousel (vide)', empty, 1)
+    await expectAllTouchable('ProductCarousel (vide)', empty, 1, TOUCH)
   })
 
   test('un produit sans événement : CTA de l’agenda compact', async ({ page }) => {
     await openMobileDashboard(page, [PRODUCT_WITHOUT_EVENTS])
     const empty = page.getByTestId('dashboard-compact-agenda-empty')
     await expect(page.getByTestId('dashboard-compact-agenda-empty-cta')).toBeVisible()
-    await expectAllTouchable('CompactAgenda (vide)', empty, 1)
+    await expectAllTouchable('CompactAgenda (vide)', empty, 1, TOUCH)
   })
 })

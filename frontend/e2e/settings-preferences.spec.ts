@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { openSettingsChapter } from './support/auth'
 import { SHARED } from './support/accounts'
+import { keepThemeOffSharedAccount } from './support/theme-preference'
 
 /**
  * #86 — E2E chapitre Préférences (desktop) : thème (classe `.dark` sur <html>
@@ -13,11 +14,14 @@ import { SHARED } from './support/accounts'
  */
 
 // Comptes fixes réutilisés (storageState) : ZÉRO register par test (anti rate-limit).
-// Mutations client-only (thème/densité/langue) : aucun conflit d'état backend.
+// Mutations client-only (densité/langue). Le thème est persisté SUR LE COMPTE
+// depuis #653 : son `PUT` est répondu dans le navigateur (`keepThemeOffSharedAccount`)
+// pour que le compte partagé reste sans préférence (non restaurable à `null`).
 test.use({ storageState: SHARED.storageState })
 
 test.describe('Réglages — Préférences', () => {
   test('thème sombre appliqué sans reload (classe .dark sur <html>)', async ({ page }) => {
+    const themeWrites = await keepThemeOffSharedAccount(page)
     await openSettingsChapter(page, 'preferences')
 
     const html = page.locator('html')
@@ -34,6 +38,9 @@ test.describe('Réglages — Préférences', () => {
     await page.getByTestId('pref-theme').click()
     await page.getByTestId('pref-theme-option-light').click()
     await expect(html).not.toHaveClass(/dark/)
+
+    // #653 — le sélecteur des Réglages confie aussi le choix au compte.
+    await expect.poll(() => [...themeWrites]).toEqual(['dark', 'light'])
   })
 
   test('densité appliquée via data-density sur <html>', async ({ page }) => {

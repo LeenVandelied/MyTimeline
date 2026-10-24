@@ -11,6 +11,10 @@
  * En production Next masque le message des erreurs SERVEUR (seul `digest`
  * survit) ; on teste donc les deux. Les erreurs levées CÔTÉ CLIENT conservent
  * leur message.
+ *
+ * #628 — `digest` ne sert plus qu'à cette classification : il est aussi rendu
+ * tel quel dans la rangée d'actions (`IncidentReference`, `[locale]/error.tsx`,
+ * `global-error.tsx`) comme référence d'incident à communiquer au support.
  */
 export interface StateErrorLike {
   message?: string

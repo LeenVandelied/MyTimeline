@@ -29,6 +29,54 @@ describe('StateScreen', () => {
     expect(screen.getByRole('link', { name: 'Retour' })).toBeInTheDocument()
   })
 
+  // #627 — l'extension `eyebrow`/`aside` ne doit PAS toucher les écrans 500/403,
+  // qui n'en passent aucun : rendu centré d'origine, code en gros, pas de sur-titre.
+  it('sans aside : mise en page centrée d’origine inchangée (500 / 403)', () => {
+    render(<StateScreen code="500" title="Erreur" description="d" icon={<svg />} />)
+    const main = screen.getByRole('main')
+    expect(main.className).toContain('text-center')
+    expect(screen.queryByTestId('state-screen-with-aside')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('state-screen-eyebrow')).not.toBeInTheDocument()
+    expect(screen.getByTestId('state-screen-code')).toHaveTextContent('500')
+    expect(screen.getByRole('heading', { level: 1 }).className).toContain('text-2xl')
+  })
+
+  it('avec aside : feuillet + texte aligné à gauche, colonne puis rangée à sm, sur-titre', () => {
+    render(
+      <StateScreen
+        code="404"
+        icon={<svg data-testid="icon" />}
+        eyebrow="Erreur 404"
+        aside={<div data-testid="leaf" aria-hidden="true" />}
+        title="Cette page n'a pas de date dans l'almanach."
+        description="Perdu"
+        actions={<a href="#retour">Retour</a>}
+      />,
+    )
+    const main = screen.getByRole('main')
+    expect(main.className).not.toContain('text-center')
+
+    const row = screen.getByTestId('state-screen-with-aside')
+    expect(row.className).toContain('flex-col')
+    expect(row.className).toContain('sm:flex-row')
+    // Le feuillet précède le texte (à gauche en rangée, au-dessus en colonne).
+    expect(row.firstElementChild).toBe(screen.getByTestId('leaf'))
+
+    const eyebrow = screen.getByTestId('state-screen-eyebrow')
+    expect(eyebrow).toHaveTextContent('Erreur 404')
+    expect(eyebrow.className).toBe('mt-eyebrow')
+    // Le titre reste le `<h1>` de la page ; le code et l'icône ne sont plus rendus.
+    expect(
+      screen.getByRole('heading', {
+        level: 1,
+        name: "Cette page n'a pas de date dans l'almanach.",
+      }),
+    ).toBeInTheDocument()
+    expect(screen.queryByTestId('state-screen-code')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('icon')).not.toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Retour' })).toBeInTheDocument()
+  })
+
   it("classes d'action exposées (accent primaire / bordure secondaire)", () => {
     expect(stateActionPrimary).toContain('bg-accent')
     // #336 — l'action secondaire est un bouton outline : sa bordure EST

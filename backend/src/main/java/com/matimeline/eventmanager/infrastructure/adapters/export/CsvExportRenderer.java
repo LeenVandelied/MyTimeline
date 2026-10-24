@@ -41,10 +41,10 @@ public class CsvExportRenderer implements ExportRenderer {
 
     private static void appendProfileSection(StringBuilder csv, UserDataExport data) {
         csv.append("# PROFILE\n");
-        csv.append("id,username,name,email,role,avatarPresent\n");
+        csv.append("id,username,name,email,role,avatarPresent,themePreference\n");
         UserDataExport.ExportedProfile p = data.profile();
         csv.append(row(str(p.id()), p.username(), p.name(), p.email(), p.role(),
-                String.valueOf(p.avatarPresent())));
+                String.valueOf(p.avatarPresent()), p.themePreference()));
     }
 
     private static void appendCategoriesSection(StringBuilder csv, UserDataExport data) {

@@ -170,6 +170,7 @@
     "historyEmpty": "Keine Ereignisse erfasst.",
     "archivedEmpty": "Keine archivierten Ereignisse.",
     "archivedBadge": "Archiviert",
+    "pastLabel": "Vergangen",
     "unarchive": "Wiederherstellen",
     "unarchiving": "Wird wiederhergestellt…",
     "unarchiveError": "Wiederherstellen fehlgeschlagen. Bitte erneut versuchen.",

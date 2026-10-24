@@ -3,6 +3,7 @@ import { type Locator, type Page, type Route } from '@playwright/test'
 import { ensureAuthenticated } from './support/auth'
 import { PROD } from './support/accounts'
 import { readAtRest, describeRendering, WCAG_AA_NORMAL } from './support/contrast'
+import { LANE_GUTTER_PX } from './support/timeline-lanes'
 
 /**
  * #601 (Sprint 85) — En-tête de catégorie de la frise : pastille, compteur de
@@ -38,8 +39,8 @@ test.use({ storageState: PROD.storageState })
 
 const PRODUCTS_LIST_RE = /\/api\/users\/[^/]+\/products(\?.*)?$/
 
-/** Gouttière de piste = `--lane-header-w` = `LANE_TRACK_OFFSET_PX`. */
-const GUTTER_PX = 168
+/** Gouttière de piste = `--lane-header-w` = `LANE_TRACK_OFFSET_PX` (#674 : lue dans le token). */
+const GUTTER_PX = LANE_GUTTER_PX
 const HEAD_HEIGHT_PX = 40
 
 type Category = { id: string; name: string; color: string | null }

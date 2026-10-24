@@ -1,6 +1,9 @@
 package com.matimeline.eventmanager.infrastructure.entities;
 
 import jakarta.persistence.*;
+
+import com.matimeline.eventmanager.domain.models.ThemePreference;
+import com.matimeline.eventmanager.infrastructure.entities.converters.ThemePreferenceConverter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -32,6 +35,13 @@ public class UserEntity {
     private String email;
 
     private String avatar;
+
+    // #653 (V16, ADR-010) : NULLABLE, null = aucun choix explicite. Valeur en minuscules
+    // via le convertisseur (CHECK ck_users_theme_preference). ddl-auto=validate : nom et
+    // type (varchar) DOIVENT correspondre à V16.
+    @Convert(converter = ThemePreferenceConverter.class)
+    @Column(name = "theme_preference", length = 16)
+    private ThemePreference themePreference;
 
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -99,6 +109,14 @@ public class UserEntity {
 
     public void setAvatar(String avatar) {
         this.avatar = avatar;
+    }
+
+    public ThemePreference getThemePreference() {
+        return themePreference;
+    }
+
+    public void setThemePreference(ThemePreference themePreference) {
+        this.themePreference = themePreference;
     }
 
     public LocalDateTime getCreatedAt() {

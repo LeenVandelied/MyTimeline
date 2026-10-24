@@ -3,6 +3,8 @@
  * corrige A12). On les ré-exporte ici pour préserver les imports historiques
  * (`@/types/auth` → `LoginSchema`, `LoginData`, `RegisterSchema`, `RegisterData`).
  */
+import type { ThemeOption } from '@/types/settings'
+
 export { LoginSchema, RegisterSchema, type LoginData, type RegisterData } from '@/lib/schemas/auth'
 
 export interface User {
@@ -15,6 +17,9 @@ export interface User {
   // `null`. Peuplée par `getUserProfile` (parse `UserSchema`) et propagée via
   // AuthContext. Le backend renvoie toujours le champ (nullable).
   avatarUrl: string | null
+  // #653 — préférence de thème du compte ; `null` = aucun choix explicite
+  // (≠ `system`). Arbitrée à la connexion par `AuthProvider` (BR-AUT-013).
+  themePreference: ThemeOption | null
 }
 
 export interface AuthContextType {

@@ -1,5 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { HANDLES_FORBIDDEN_INLINE, handlesStatusInline } from './inlineErrorHandling'
+import {
+  HANDLES_FORBIDDEN_INLINE,
+  HANDLES_SERVER_ERROR_INLINE,
+  handlesStatusInline,
+} from './inlineErrorHandling'
 
 /**
  * #761 — Transport de l'opt-out 403 : écran → hook → service → config axios.
@@ -37,6 +41,14 @@ describe('handlesStatusInline', () => {
   it("HANDLES_FORBIDDEN_INLINE est gelé (un appelant ne peut pas l'élargir)", () => {
     expect(Object.isFrozen(HANDLES_FORBIDDEN_INLINE)).toBe(true)
     expect(Object.isFrozen(HANDLES_FORBIDDEN_INLINE.inlineHandledStatuses)).toBe(true)
+  })
+
+  it('#833 — HANDLES_SERVER_ERROR_INLINE : 500 seul, gelé, sans effet sur le 403', () => {
+    expect(handlesStatusInline(HANDLES_SERVER_ERROR_INLINE, 500)).toBe(true)
+    expect(handlesStatusInline(HANDLES_SERVER_ERROR_INLINE, 403)).toBe(false)
+    expect(handlesStatusInline(HANDLES_FORBIDDEN_INLINE, 500)).toBe(false)
+    expect(Object.isFrozen(HANDLES_SERVER_ERROR_INLINE)).toBe(true)
+    expect(Object.isFrozen(HANDLES_SERVER_ERROR_INLINE.inlineHandledStatuses)).toBe(true)
   })
 })
 

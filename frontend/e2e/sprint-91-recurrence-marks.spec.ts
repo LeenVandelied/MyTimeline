@@ -2,6 +2,7 @@ import { test, expect } from './support/fixtures'
 import { type Locator, type Page, type Route } from '@playwright/test'
 import { ensureAuthenticated } from './support/auth'
 import { PROD } from './support/accounts'
+import { LANE_GUTTER_PX } from './support/timeline-lanes'
 
 /**
  * #595 (Sprint 91) — Frise : une série récurrente est identifiable SANS lecteur d'écran.
@@ -636,7 +637,7 @@ test.describe('#595 frise desktop — ↻, fantômes et connecteur de série', (
     await expect(legend.locator('[data-legend="recurrence"]')).toContainText('↻')
 
     await assertSeriesIdentifiable(page, 'desktop Mois')
-    await assertRealOccurrencesOnTop(page, 'desktop Mois', 168)
+    await assertRealOccurrencesOnTop(page, 'desktop Mois', LANE_GUTTER_PX)
     await assertGhostBounds(page, 'desktop Année')
 
     // VIRTUALISATION : au zoom Jour (96 px/j, piste ≈ 80 000 px), seuls les fantômes de C

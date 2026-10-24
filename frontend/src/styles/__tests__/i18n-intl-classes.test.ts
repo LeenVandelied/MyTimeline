@@ -18,6 +18,12 @@ import tailwind from '@tailwindcss/postcss'
  * Ces deux faits sont la JUSTIFICATION des substitutions faites dans
  * `WeekAgenda`, `KpiMarginalia`, `ProductList`, `ProductCarousel`, `StateScreen`.
  *
+ * #516 — La neutralisation `color`/`text-decoration` (`time.mt-date--short,
+ * time.mt-date--long, time.mt-num`) ne cible QUE le sélecteur préfixé `time` :
+ * elle ne prétend rien couvrir sur les `<span>`/`<p>` qui portent `.mt-num`
+ * nu (KpiMarginalia, ProductList, ProductCarousel, ProductsListView,
+ * StateScreen). Voir le test dédié plus bas.
+ *
  * CE QUE CE TEST NE PROUVE PAS. Aucun rendu : ni pixels, ni contraste, ni
  * largeur de colonne. Il compile la vraie chaîne CSS et raisonne sur l'AST.
  * jsdom n'applique aucune de ces feuilles — un test RTL sur `className` ne
@@ -116,9 +122,51 @@ describe('#72 — ce que les classes Intl imposent (justification des substituti
     for (const forbidden of ['font-size', 'text-transform', 'font-weight', 'letter-spacing']) {
       expect(props.has(forbidden), `.mt-num ne doit pas déclarer ${forbidden}`).toBe(false)
     }
-    // `color` n'apparaît que via `time.mt-num { color: inherit }` — donc jamais
-    // une couleur en dur qui écraserait `text-ink-*`.
+    // `propsOf` fusionne TOUTES les règles dont un sélecteur simple contient
+    // `mt-num` (donc aussi `time.mt-num`) : cette assertion ne prouve PAS que
+    // `.mt-num` nu est neutre en couleur, seulement que la valeur fusionnée
+    // reste `inherit`. La preuve stricte (aucune couleur sur `.mt-num` nu, sur
+    // aucun `span.mt-num`) est le test dédié ci-dessous (#516).
     expect(props.get('color') ?? 'inherit').toBe('inherit')
+  })
+
+  it('#516 — `color`/`text-decoration` ne sont neutralisés QUE sur `time.mt-num` (jamais `.mt-num` nu ni `span.mt-num`)', async () => {
+    const root = await compile()
+    const bareDecls = new Map<string, string>()
+    let sawTimePrefixed = false
+    root.walkRules((rule) => {
+      for (const raw of rule.selector.split(',')) {
+        const sel = raw.trim()
+        if (sel === '.mt-num') {
+          rule.walkDecls((d) => {
+            bareDecls.set(d.prop, d.value.trim())
+          })
+        }
+        // Aucun autre élément ne doit jamais porter cette neutralisation : elle
+        // écraserait les utilitaires `text-ink-*`/`text-accent` posés sur les
+        // mêmes `<span>`/`<p>` (KpiMarginalia, ProductList, ProductCarousel,
+        // ProductsListView, StateScreen) — `i18n.css` est hors `@layer`.
+        expect(
+          /^(span|p|div|a)\.mt-num$/.test(sel),
+          `sélecteur inattendu ${sel} : la neutralisation color/text-decoration ne doit exister que sur time.mt-num`,
+        ).toBe(false)
+        if (sel === 'time.mt-num') {
+          sawTimePrefixed = true
+          const decls = new Map<string, string>()
+          rule.walkDecls((d) => {
+            decls.set(d.prop, d.value.trim())
+          })
+          expect(decls.get('color')).toBe('inherit')
+          expect(decls.get('text-decoration')).toBe('none')
+        }
+      }
+    })
+    expect(sawTimePrefixed, 'aucune règle `time.mt-num` compilée').toBe(true)
+    expect(bareDecls.has('color'), '.mt-num nu ne doit pas déclarer `color`').toBe(false)
+    expect(
+      bareDecls.has('text-decoration'),
+      '.mt-num nu ne doit pas déclarer `text-decoration`',
+    ).toBe(false)
   })
 
   it('`.mt-date--long` pose exactement `--text-2xs` (13px) → WeekAgenda ne change pas de taille', async () => {

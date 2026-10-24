@@ -238,4 +238,18 @@ describe('MobileDrawer', () => {
     fireEvent.click(screen.getByTestId('dashboard-mobile-drawer-theme-toggle'))
     expect(setTheme).toHaveBeenCalledWith('dark')
   })
+
+  // #655 — le tiroir monte la bascule UNIQUE (`ui/theme-toggle.tsx`, gabarit
+  // `labeled`) : libellé visible = thème de destination, lu dans `common`.
+  it.each([
+    ['light', 'common.theme.dark', 'false'],
+    ['dark', 'common.theme.light', 'true'],
+  ])('#655 — en thème %s, le libellé visible nomme la destination', (theme, label, pressed) => {
+    mockResolvedTheme = theme
+    render(<MobileDrawer open onClose={vi.fn()} onLogout={vi.fn()} />)
+    const toggle = screen.getByTestId('dashboard-mobile-drawer-theme-toggle')
+    expect(toggle).toHaveTextContent(label)
+    expect(toggle).toHaveAttribute('aria-pressed', pressed)
+    expect(toggle).not.toHaveAttribute('aria-label')
+  })
 })

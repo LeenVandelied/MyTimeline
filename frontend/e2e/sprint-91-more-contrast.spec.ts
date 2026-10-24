@@ -21,11 +21,12 @@ import { readStable, WCAG_AA_NON_TEXT } from './support/contrast'
  * FIXTURE — listing produits STUBBÉ (motif `sprint-91-event-pin`), aucune écriture sur le
  * compte PROD. Deux barres de 3 j à aujourd'hui + 5 j (PIT-S91-005 : dans la bande rendue).
  *
- * MESURE — `readStable` (fond composité des ancêtres). Seule adaptation : la lane porte la
- * grille en `background-image` (filet `--color-rule` de 1 px), que le helper refuse de
- * traverser (il ne sait compositer que des aplats). On neutralise CE SEUL dégradé, après
- * avoir vérifié que c'est bien lui, pour mesurer contre l'aplat de lane — le filet est
- * décoratif et ne passe pas sous le glyphe centré.
+ * MESURE — `readStable` (fond composité des ancêtres). Jusqu'au S105 la lane portait une
+ * grille de jours en `background-image`, que le helper refuse de traverser : la spec la
+ * neutralisait le temps de la mesure (PIT-S91-011). #596 a remplacé cette grille par une
+ * ZÉBRURE en APLAT (`background-color`, encre 2,6 % une lane sur deux) : plus aucun dégradé
+ * n'est traversé, et le helper composite désormais le fond RÉEL. La 2e barre est posée sur
+ * une lane zébrée (`--alt`) — asserté, pour que la mesure couvre bien ce fond-là.
  */
 
 test.use({ storageState: PROD.storageState })
@@ -123,23 +124,19 @@ for (const scheme of ['light', 'dark'] as const) {
             el.scrollIntoView({ block: 'center', inline: 'center', behavior: 'instant' }),
           )
 
-          // Neutralise la grille de la lane (seul dégradé traversé), après l'avoir identifiée.
-          const gradients = await more.evaluate((el) => {
+          // #596 — aucun dégradé traversé : la lane est un aplat (zébrure), mesuré tel quel.
+          const { gradients, zebra } = await more.evaluate((el) => {
             const found: string[] = []
             for (let n: Element | null = el; n; n = n.parentElement) {
               const img = getComputedStyle(n).backgroundImage
-              if (img !== 'none') {
-                found.push(`${n.className}|${img.slice(0, 16)}`)
-                if (n.classList.contains('mt-tlm__lane')) {
-                  ;(n as HTMLElement).style.backgroundImage = 'none'
-                }
-              }
+              if (img !== 'none') found.push(`${n.className}|${img.slice(0, 16)}`)
             }
-            return found
+            const lane = el.closest('.mt-tlm__lane')
+            return { gradients: found, zebra: lane?.classList.contains('mt-tlm__lane--alt') }
           })
-          expect(gradients, `${tag} seul dégradé traversé = grille de lane`).toEqual([
-            expect.stringMatching(/^mt-tlm__lane\|linear-gradient/),
-          ])
+          expect(gradients, `${tag} aucun dégradé traversé (grille retirée, #596)`).toEqual([])
+          // Barre 1 sur la 1re lane (claire), barre 2 sur la 2e (zébrée) : les DEUX fonds.
+          expect(zebra, `${tag} lane zébrée ?`).toBe(bar === BARS[1])
 
           // Le glyphe hérite bien de la couleur du bouton (stroke = currentColor).
           const { buttonColor, stroke, inline } = await more.evaluate((el) => ({

@@ -157,7 +157,9 @@ test.describe('#592 /timeline — sidebar ≥ 1024 px (permanente)', () => {
     const keys = page.getByTestId('timeline-sidebar-shortcuts')
     await expect(keys).toBeVisible()
     await expect(keys).toContainText('Aller à aujourd’hui')
-    await expect(keys).toContainText('Plein écran')
+    // #597 — `F` recadre ; le plein écran n'a plus de raccourci (bouton seul).
+    await expect(keys).toContainText('Recadrer sur les événements')
+    await expect(keys).not.toContainText('Plein écran')
   })
 
   test('masquer / réafficher une catégorie : en-tête ET lanes disparaissent puis reviennent', async ({

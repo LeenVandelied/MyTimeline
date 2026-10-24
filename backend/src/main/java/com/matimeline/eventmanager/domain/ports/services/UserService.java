@@ -3,6 +3,7 @@ package com.matimeline.eventmanager.domain.ports.services;
 import java.util.Optional;
 import java.util.UUID;
 
+import com.matimeline.eventmanager.domain.models.ThemePreference;
 import com.matimeline.eventmanager.domain.models.User;
 
 public interface UserService {
@@ -36,6 +37,16 @@ public interface UserService {
      *         si {@code confirmUsername != caller.getUsername()}.
      */
     void deleteAccount(User caller, String confirmUsername);
+
+    /**
+     * #653 (BR-AUT-013, ADR-010) : pose la préférence de thème du compte du {@code caller}
+     * (identité dérivée du JWT). Remplacement idempotent ; les autres champs du profil ne
+     * sont pas touchés.
+     *
+     * @throws com.matimeline.eventmanager.domain.exceptions.UserNotFoundException
+     *         si le compte a disparu entre la résolution du caller et l'écriture.
+     */
+    User updateThemePreference(User caller, ThemePreference preference);
 
     Optional<User> findDomainUserById(UUID id);
     Optional<User> findDomainUserByUsername(String username);

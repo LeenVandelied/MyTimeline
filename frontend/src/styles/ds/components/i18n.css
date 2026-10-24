@@ -2,7 +2,30 @@
    Règles de fallback pour l'élasticité linguistique (allemand +30%,
    mots composés). Formalisées en v3.5 — voir « Audit Multilingue.dc.html ».
    Toutes les règles sont OPT-IN (classes utilitaires) sauf l'auto-tracking
-   des eyebrows qui se déclenche sur [lang="de"] / :lang(de). */
+   des eyebrows qui se déclenche sur [lang="de"] / :lang(de).
+
+   #632 (S109) — CONSOMMATION. Câblées : `.mt-eyebrow` (sur-titres du dashboard,
+   de la Frise, de l'agenda compact, du tiroir mobile ; verrouillée par
+   `eyebrow-consumers.test.tsx`), `.mt-nav-label`, `.mt-sysbanner*`, `.mt-num`,
+   `.mt-date--*`. Hors périmètre #632 et sans consommateur non plus : §8 RTL
+   (`.mt-timeline-ltr`, `.mt-dir-icon`, `.mt-sheet-accent`) — aucune locale RTL livrée.
+   VOLONTAIREMENT DORMANTES (0 consommateur, grep S109 ; CSS conservée telle quelle,
+   à câbler le jour où le cas d'usage apparaît) :
+   • `.mt-seg*` — aucun contrôle segmenté dans le produit : les bascules passent par
+     `ui/tabs.tsx` (`.mt-tabs`) ; la bascule bar→select exige une double vue + mesure JS.
+   • `.mt-tabs--collapsible` / `--de-menu` — aucune rangée d'onglets n'a plus de 3 items
+     sauf `SettingsShell` (4), qui a retenu le DÉFILEMENT (`.mt-tablist-scroll`, #417,
+     DEC-S84-002) plutôt qu'un menu : pas de double vue à maintenir.
+   • `.mt-btn--wrap` — le seul CTA concerné (hero de la landing) en recopie les règles
+     dans `globals.css` (gabarit `lg` du hero, #682) sans poser la classe ; aucun autre CTA
+     à libellé long n'a été relevé (NON mesuré en `de` : à câbler au premier débordement).
+   • `.mt-truncate` — les valeurs tronquées utilisent l'utilitaire Tailwind `truncate`
+     (mêmes 3 déclarations) ; le trigger de `ui/select.tsx` coupe déjà sa valeur par
+     `[&>span]:line-clamp-1`.
+   • `.mt-eyebrow--wrap` — tous les eyebrows câblés ont un libellé court dans les 4
+     locales (le plus long : « AUJOURD'HUI », « ÜBERBLICK ») : `nowrap` ne déborde pas.
+   • `.mt-eyebrow--title` — l'allemand reste lisible en capitales sur ces libellés
+     courts ; la casse douce serait un écart visible à la maquette sans gain. */
 
 /* ============================================================
    1 · SEGMENTED ADAPTATIF  →  bascule en Select au-delà du seuil
@@ -114,8 +137,11 @@
    droite (flex:0 0 auto). Le message complet vit dans title + l'écran
    d'état dédié.
    ============================================================ */
+/* #614 — la hauteur est une variable : la barre collante de la landing (`landing.css`)
+   se décale d'autant quand la bannière est montée, pour ne pas passer dessous. */
+:root{--sysbanner-height:32px;}
 .mt-sysbanner{
-  display:flex; align-items:center; gap:10px; height:32px; padding:0 12px;
+  display:flex; align-items:center; gap:10px; height:var(--sysbanner-height); padding:0 12px;
   border-bottom:1px solid var(--color-rule-strong);
   background:var(--color-surface-2); overflow:hidden;
 }
@@ -168,7 +194,19 @@
 }
 .mt-date--short{font-size:11px; text-transform:uppercase; letter-spacing:.06em;}
 .mt-date--long{font-size:13px;}
-/* time[] hérite des couleurs ; on neutralise l'éventuel style natif. */
+/* #516 — Neutralisation VOLONTAIREMENT limitée au sélecteur préfixé `time`.
+   `<time>` n'a en réalité aucun style natif de couleur/soulignement (contrairement
+   à `<a>`) : la règle est défensive, pour le jour où un `<time class="mt-num">`
+   se retrouverait DANS un lien (ex. une carte cliquable) — le bleu et le
+   soulignement de l'ancre traverseraient sinon visuellement le `<time>` enfant.
+   Aujourd'hui aucun `<time>` du dépôt n'est imbriqué dans un `<a>` (vérifié) :
+   impact visuel nul, la règle attend un cas encore hypothétique.
+   Sciemment PAS élargi à `.mt-num` nu (donc pas aux `<span>`/`<p>` qui le
+   portent dans KpiMarginalia/ProductList/ProductCarousel/ProductsListView/
+   StateScreen) : `i18n.css` est chargé HORS layer (`globals.css`), donc un
+   `color:inherit` non préfixé y battrait toujours les utilitaires Tailwind
+   `text-ink-muted`/`text-ink`/`text-accent` posés sur ces mêmes éléments,
+   quelle que soit leur spécificité — régression de couleur immédiate. */
 time.mt-date--short, time.mt-date--long, time.mt-num{text-decoration:none; color:inherit;}
 
 /* ============================================================

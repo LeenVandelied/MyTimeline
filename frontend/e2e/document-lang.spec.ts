@@ -124,7 +124,10 @@ test.describe('#413 — 404 des URL non matchées (document complet)', () => {
       })
       .toBe('de')
     await expect(page.getByTestId('global-not-found-screen')).toBeVisible()
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Seite nicht gefunden')
+    // #627 — titre « éphéméride » (`errors.json` de → `notFound.title`).
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+      'Für diese Seite gibt es kein Kalenderblatt.',
+    )
     await expect(page.getByTestId('global-not-found-home-link')).toHaveAttribute('href', '/de')
   })
 })

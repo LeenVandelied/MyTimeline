@@ -296,6 +296,37 @@ describe('apiClient response interceptor', () => {
   })
 
   /**
+   * #833 — opt-out 500 PAR REQUÊTE (`PUT /me/preferences`, `persistThemeChoice`).
+   * Les deux bords : l'opt-out 500 tait le toast serveur ; il ne tait PAS un 403
+   * (chaque statut est lu dans sa seule branche).
+   */
+  it('500 avec inlineHandledStatuses [500] : aucun toast, promesse rejetée', async () => {
+    const error = {
+      response: { status: 500 },
+      config: { url: '/me/preferences', method: 'put', inlineHandledStatuses: [500] },
+    }
+    await expect(rejectionHandler!(error)).rejects.toBe(error)
+    expect(toastErrorMock).not.toHaveBeenCalled()
+    vi.useRealTimers()
+  })
+
+  it('403 avec inlineHandledStatuses [500] : le toast « accès refusé » est conservé', async () => {
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    try {
+      const error = {
+        response: { status: 403 },
+        config: { url: '/me/preferences', method: 'put', inlineHandledStatuses: [500] },
+      }
+      await expect(rejectionHandler!(error)).rejects.toBe(error)
+      expect(toastErrorMock).toHaveBeenCalledTimes(1)
+      expect(toastErrorMock.mock.calls[0][0]).toMatch(/accès refusé/i)
+    } finally {
+      consoleErrorSpy.mockRestore()
+      vi.useRealTimers()
+    }
+  })
+
+  /**
    * #713 — Règle du 400 : UN SEUL signalement.
    *
    * L'opt-out est CIBLÉ, pas global : supprimer le toast 400 pour tout le monde

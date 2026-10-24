@@ -49,8 +49,21 @@ export const ProductCarousel: React.FC<ProductCarouselProps> = ({
 
   return (
     <section className="flex flex-col gap-3" data-testid="dashboard-product-carousel-section">
-      {/* #575 — vrai titre de section (cf. `WeekAgenda`). */}
-      <h2 className="text-ink font-display text-sm font-semibold">{t('title')}</h2>
+      {/* #575 — vrai titre de section (cf. `WeekAgenda`).
+          #664 — Maquette `Mobile Dashboard.dc.html` (relevé S109) : AUCUN sur-titre
+          sur « Tes produits » (absence voulue) ; compteur « {n} produits » à droite,
+          même clé que `ProductList` (même namespace). Classes : cf. `WeekAgenda`. */}
+      <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+        <h2 className="text-ink font-display min-w-0 text-sm font-semibold">{t('title')}</h2>
+        {products.length > 0 && (
+          <p
+            className="text-ink-muted text-2xs font-mono whitespace-nowrap"
+            data-testid="dashboard-product-carousel-count"
+          >
+            {t('count', { count: products.length })}
+          </p>
+        )}
+      </div>
       {products.length === 0 ? (
         // #630 — Miroir mobile de `ProductList` : même état vide compact, même CTA
         // vers la liste produits (seul chemin de création depuis le dashboard, #624).

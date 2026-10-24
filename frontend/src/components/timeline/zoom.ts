@@ -53,6 +53,8 @@ export type ZoomAction =
   | { type: 'GO_TO_TODAY'; todayOffsetDays: number }
   | { type: 'PREV_PERIOD' }
   | { type: 'NEXT_PERIOD' }
+  /** #597 — recadrage (touche `F`) : niveau ET décalage posés d'un coup (`computeFit`). */
+  | { type: 'FIT'; level: ZoomLevel; offsetDays: number }
 
 /** Nombre de jours « sautés » par [ / ] selon le niveau (une « période »). */
 export const PERIOD_STEP_DAYS: Record<ZoomLevel, number> = {
@@ -87,9 +89,72 @@ export function zoomReducer(state: ZoomState, action: ZoomAction): ZoomState {
       return { ...state, offsetDays: state.offsetDays - PERIOD_STEP_DAYS[state.level] }
     case 'NEXT_PERIOD':
       return { ...state, offsetDays: state.offsetDays + PERIOD_STEP_DAYS[state.level] }
+    case 'FIT':
+      // Objet TOUJOURS neuf, même à valeurs égales : un 2e `F` après un défilement
+      // manuel doit re-rendre pour que la frise ré-applique le cadrage (`TimelineView`).
+      return { level: action.level, offsetDays: action.offsetDays }
     default:
       return state
   }
+}
+
+/**
+ * #597 — Étendue en JOURS (repère `rangeStart`) des événements AFFICHÉS : ceux des
+ * seules ressources `displayedResourceIds` (l'appelant y applique masquage et repli).
+ * Calculée sur les DONNÉES, jamais sur le DOM (la virtualisation ne monte qu'une bande).
+ * Une durée court jusqu'à la fin de sa barre (`dayOffset + spanDays`) ; un ponctuel
+ * s'arrête à sa date (son pin y est centré). `null` : rien d'affiché.
+ */
+export function displayedEventDayExtent(
+  indexed: Map<string, EventGeometry[]>,
+  displayedResourceIds: Iterable<string>,
+): { startDay: number; endDay: number } | null {
+  let startDay = Infinity
+  let endDay = -Infinity
+  for (const resourceId of displayedResourceIds) {
+    const geometries = indexed.get(resourceId)
+    if (!geometries) continue
+    for (const g of geometries) {
+      const end = eventKind(g.event) === 'single' ? g.dayOffset : g.dayOffset + g.spanDays
+      if (g.dayOffset < startDay) startDay = g.dayOffset
+      if (end > endDay) endDay = end
+    }
+  }
+  return startDay === Infinity ? null : { startDay, endDay }
+}
+
+/**
+ * #597 — Marge (px) laissée de chaque côté de l'étendue recadrée, dans la largeur
+ * utile de la piste (viewport − gouttière `LANE_TRACK_OFFSET_PX`). Couvre la
+ * demi-largeur du pin (5 px) avec de l'air ; le libellé d'un pin en bout d'étendue
+ * peut, lui, être coupé par le bord droit.
+ */
+export const FIT_MARGIN_PX = 40
+
+/**
+ * #597 — Cadrage `F` : niveau le plus FIN dont l'échelle fait tenir `extent` dans
+ * `viewportTrackWidthPx − 2 × FIT_MARGIN_PX`, et `offsetDays` (même repère que
+ * `PAN`/`GO_TO_TODAY` : jour affleurant la gouttière) qui CENTRE l'étendue — alignée
+ * à gauche (marge comprise) si elle déborde même en `year`. Borné à 0 à gauche ; le
+ * bord droit est rabattu par le navigateur. `null` (no-op) : rien d'affiché ou
+ * viewport sans largeur.
+ */
+export function computeFit(
+  extent: { startDay: number; endDay: number } | null,
+  viewportTrackWidthPx: number,
+): { level: ZoomLevel; offsetDays: number } | null {
+  if (!extent || !(viewportTrackWidthPx > 0)) return null
+  const usablePx = Math.max(0, viewportTrackWidthPx - 2 * FIT_MARGIN_PX)
+  const spanDays = Math.max(0, extent.endDay - extent.startDay)
+  // #593 (zoom continu) : px/jour IDÉAL d'abord — c'est lui qu'un zoom continu
+  // retiendra tel quel ; aujourd'hui il est ramené au niveau discret qui le respecte.
+  const idealPxPerDay = spanDays === 0 ? Infinity : usablePx / spanDays
+  const level =
+    ZOOM_LEVELS.find((l) => DAY_WIDTH_PX[l] <= idealPxPerDay) ?? ZOOM_LEVELS[ZOOM_LEVELS.length - 1]
+  const dayWidth = DAY_WIDTH_PX[level]
+  const spanPx = spanDays * dayWidth
+  const leadPx = FIT_MARGIN_PX + Math.max(0, (usablePx - spanPx) / 2)
+  return { level, offsetDays: Math.max(0, extent.startDay - leadPx / dayWidth) }
 }
 
 /** Ramène une date à minuit (comparaisons/arithmétique de jours stables). */

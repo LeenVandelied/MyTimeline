@@ -236,7 +236,12 @@ test.describe('#603 — liste Produits : prochain événement (récurrences comp
 test.describe('#603 — liste Produits en portrait mobile', () => {
   test.use({ viewport: { width: 390, height: 844 } })
 
-  test('la prochaine échéance reste visible ; compteur et mini-frise masqués', async ({ page }) => {
+  // #608 (S107) — la mini-frise est désormais CONSERVÉE sous `md` (compacte, 64 px) :
+  // une seule frise affichée par ligne ; sa géométrie est gardée par
+  // `sprint-107-products-list-mobile.spec.ts`.
+  test('la prochaine échéance reste visible ; compteur masqué, mini-frise compacte', async ({
+    page,
+  }) => {
     await stubProductsList(page)
     await gotoProducts(page)
 
@@ -246,6 +251,6 @@ test.describe('#603 — liste Produits en portrait mobile', () => {
     await expect(page.getByTestId(`products-row-events-count-${MONTHLY_ID}`)).toBeHidden()
     await expect(
       page.getByTestId(`products-row-${MONTHLY_ID}`).getByRole('img', { includeHidden: false }),
-    ).toHaveCount(0)
+    ).toHaveCount(1)
   })
 })

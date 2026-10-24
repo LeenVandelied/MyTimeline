@@ -48,6 +48,22 @@ describe('LocaleError — branche 500', () => {
     render(<LocaleError error={new Error('boom')} reset={vi.fn()} />)
     expect(errorSpy).toHaveBeenCalled()
   })
+
+  // #628 — le digest n'existe QUE pour les erreurs SERVEUR (prod) : absent en
+  // dev/tests par défaut. Sans lui, ni libellé orphelin ni espace réservé.
+  it('sans digest → aucune référence d’incident, actions intactes', () => {
+    render(<LocaleError error={new Error('boom')} reset={vi.fn()} />)
+    expect(screen.queryByTestId('error-incident-ref')).not.toBeInTheDocument()
+    expect(screen.getByTestId('error-retry')).toBeInTheDocument()
+    expect(screen.getByTestId('error-home-link')).toBeInTheDocument()
+  })
+
+  it('avec digest → référence affichée avec le libellé et la valeur brute', () => {
+    const error = Object.assign(new Error('boom'), { digest: 'abc123' })
+    render(<LocaleError error={error} reset={vi.fn()} />)
+    expect(screen.getByTestId('error-incident-ref')).toHaveTextContent('errors.crash.incidentRef')
+    expect(screen.getByTestId('error-incident-ref-value')).toHaveTextContent('abc123')
+  })
 })
 
 describe('LocaleError — branche 403', () => {
@@ -58,5 +74,21 @@ describe('LocaleError — branche 403', () => {
     expect(screen.getByText('errors.forbidden.title')).toBeInTheDocument()
     expect(screen.queryByTestId('error-retry')).not.toBeInTheDocument()
     expect(screen.getByTestId('error-home-link')).toHaveAttribute('href', '/fr')
+  })
+
+  // #628 — même traitement sur la branche 403 (la maquette montre la référence
+  // sur les deux écrans).
+  it('sans digest → aucune référence d’incident (403)', () => {
+    render(<LocaleError error={new Error('403 Forbidden')} reset={vi.fn()} />)
+    expect(screen.queryByTestId('error-incident-ref')).not.toBeInTheDocument()
+  })
+
+  it('avec digest → référence affichée (403)', () => {
+    const error = Object.assign(new Error('403 Forbidden'), { digest: 'xyz789' })
+    render(<LocaleError error={error} reset={vi.fn()} />)
+    expect(screen.getByTestId('error-incident-ref')).toHaveTextContent(
+      'errors.forbidden.incidentRef',
+    )
+    expect(screen.getByTestId('error-incident-ref-value')).toHaveTextContent('xyz789')
   })
 })
