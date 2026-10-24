@@ -24,6 +24,6 @@
 ## Recommandations suite
 - RECOMMAND_FOLLOWUP: retour de focus après une confirmation RÉUSSIE quand le déclencheur a disparu (bouton « nouveau » ou ligne voisine) — ProductsListView, CategoriesView, ArchivedProductsView [triage S | products/categories].
 - RECOMMAND_FOLLOWUP: BottomSheet/useFocusTrap a `onEscape` dans les deps de son effet et AccountSection passe une fonction inline → l'effet se rejoue à chaque rendu, peut déplacer le focus pendant la saisie. Non mesuré [triage S | settings].
-- RECOMMAND_TEST_RUNNER: sprint-106-product-detail contre next build + next start → pris en charge par le lead (Phase 6, pas de délégation E2E sur ce projet).
+- Pas de RECOMMAND_TEST_RUNNER ouvert : demande traitée par le lead (pas de délégation E2E sur ce projet) — suite complète contre next build + next start, 638 passed / 1 failed (sprint-77-theme-visual:620, armement darwin connu) / 8 skipped ; les 3 sprint-106-product-detail passent (cf. audits/sprint-113-test-coverage.md).
 
 STATUS: COMPLETED

@@ -974,6 +974,9 @@ Sortie `command not found` (exit 127) avalée par un `;`, puis la sonde `/api/au
 `pgrep -f` lit la ligne de commande complète, y compris celle du shell qui exécute la boucle : l'attente s'apparie à elle-même (tâche coupée à 10 min). Attendre sur un PID (`while kill -0 $PID`) ou sur un fichier produit, jamais sur un motif présent dans la commande. (Sprint 112, lead)
 
 
+## PIT-S113-003 — Sous le hook RTK, `vitest run` ne donne que `PASS (n) FAIL (n)`, même redirigé vers un fichier
+Aucun nom de test : impossible de savoir QUEL test a rougi lors d'un test de mutation. `rtk proxy npx vitest run --reporter=verbose`. À mettre dans tout briefing qui demande une preuve de non-vacuité. (Sprint 113, review)
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)

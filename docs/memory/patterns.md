@@ -1069,3 +1069,12 @@ Filtre ancré `addFilterBefore(…, AuthorizationFilter.class)` (donc après `Jw
 
 ## PAT-S112-008 — Un test « aucun toast » sur un statut que l'intercepteur ne toaste jamais se libelle en garde-fou, avec témoin
 409 sur `PUT /api/me/preferences` : vacant par construction comme preuve d'opt-out. Le garder comme non-régression (rougira si une branche 409 toastante apparaît) avec un témoin « même statut sans opt-out = 0 toast » qui documente la mesure. (Sprint 112 #833)
+
+## PAT-S113-001 — Retour de focus centralisé dans `DialogContent` : capturer dans `onOpenAutoFocus`
+`hooks/useReturnFocus.ts` branché dans `ui/dialog.tsx` : `document.activeElement` est lu dans `onOpenAutoFocus` (FocusScope 1.1.2 l'émet AVANT de déplacer le focus) et restauré dans `onCloseAutoFocus` s'il est encore `isConnected` ; le handler de l'hôte passe en premier et un `preventDefault` de sa part fait abstenir le hook (#700 intact). Couvre les dialogues contrôlés sans `Dialog.Trigger` (PIT-S112-001). Anti-pattern : capturer dans un `useEffect` de l'hôte, qui s'exécute après l'autofocus et capture le dialogue lui-même. (Sprint 113 #836)
+
+## PAT-S113-002 — Un mock de hook relaie ses arguments au vrai hook
+`fake(userId)` à signature figée avale tout paramètre ajouté plus tard (ici les `InlineErrorOptions`), et l'assertion sur le service échoue avec `undefined`. Écrire `(...args: Parameters<typeof actual.useX>) => actual.useX(...args)`. (Sprint 113 #766)
+
+## PAT-S113-003 — Cible de repli de focus en `tabIndex={-1}` sans `outline-none`
+Un élément focalisé par script (repli `<form>`) garde le contour `:focus-visible` du DS : `focus:outline-none` est refusé par le garde-fou `tsx-focus-utility.test.ts` (DEC-S58-001). (Sprint 113, review)
