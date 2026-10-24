@@ -183,6 +183,9 @@ export function CategoriesView() {
                   aria-label={t('openEdit', { name: category.name })}
                   onClick={() => setEditCategory(category)}
                   onKeyDown={(e) => {
+                    // #836 — Entrée/Espace sur la corbeille remontaient jusqu'ici :
+                    // `preventDefault` annulait la suppression et ouvrait l'ÉDITION.
+                    if (e.target !== e.currentTarget) return
                     if (e.key === 'Enter' || e.key === ' ') {
                       e.preventDefault()
                       setEditCategory(category)

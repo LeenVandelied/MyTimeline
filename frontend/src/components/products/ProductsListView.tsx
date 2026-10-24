@@ -371,6 +371,10 @@ export function ProductsListView() {
                     onMouseEnter={() => prefetchDetail(product.id)}
                     onFocus={() => prefetchDetail(product.id)}
                     onKeyDown={(e) => {
+                      // #836 — Entrée/Espace sur « Éditer » / « Archiver » remontaient
+                      // jusqu'ici : `preventDefault` annulait l'activation du bouton et la
+                      // ligne naviguait vers le détail. Seule la ligne elle-même réagit.
+                      if (e.target !== e.currentTarget) return
                       if (e.key === 'Enter' || e.key === ' ') {
                         e.preventDefault()
                         goToDetail(product.id)

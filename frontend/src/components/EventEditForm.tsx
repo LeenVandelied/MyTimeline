@@ -19,7 +19,7 @@ import { Card, CardContent } from './ui/card'
 import { Spinner } from './ui/spinner'
 import { PaletteColorPicker } from './ui/palette-color-picker'
 import { DeleteConfirmDialog } from './shared/DeleteConfirmDialog'
-import { ConflictDialog } from './shared/ConflictDialog'
+import { ConflictDialog, type ConflictDialogProps } from './shared/ConflictDialog'
 import { ArchiveConfirmDialog } from './events/ArchiveConfirmDialog'
 import { EventPreviewTimeline } from './events/EventPreviewTimeline'
 import type { PreviewEventType } from './events/previewTimeline'
@@ -259,6 +259,23 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
 
   const submitting = submitState === 'submitting'
   const isEdit = Boolean(onDelete)
+
+  /**
+   * #836 — Retour du focus à la fermeture du `ConflictDialog`. Le 409 répond à une
+   * soumission : « Enregistrer » était DÉSACTIVÉ (`submitting`) à l'ouverture du
+   * dialogue, Chromium avait donc rendu le focus à `body` et `DialogContent` n'a rien
+   * capturé (mesuré, `e2e/sprint-113-focus-return.spec.ts`). On le rend au bouton qui a
+   * déclenché la soumission, s'il est de nouveau actionnable ; sinon, défaut Radix.
+   */
+  const submitButtonRef = React.useRef<HTMLButtonElement>(null)
+  const handleConflictCloseAutoFocus: NonNullable<ConflictDialogProps['onCloseAutoFocus']> = (
+    event,
+  ) => {
+    const submit = submitButtonRef.current
+    if (!submit?.isConnected || submit.disabled) return
+    event.preventDefault()
+    submit.focus({ preventScroll: true })
+  }
   // #300 — champs gouvernés par l'asymétrie du contrat create/update (cf. `EventFormMode`).
   const isCreate = mode === 'create'
 
@@ -473,6 +490,7 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
           {tCommon('buttons.cancel')}
         </Button>
         <Button
+          ref={submitButtonRef}
           type="submit"
           form={formId}
           className={cn('bg-accent hover:bg-accent-hover text-accent-ink', TOUCH_TARGET_BUTTON)}
@@ -1005,6 +1023,7 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
         onTakeServer={() => onTakeServer?.()}
         isSubmitting={submitting}
         keepMineExhausted={keepMineExhausted}
+        onCloseAutoFocus={handleConflictCloseAutoFocus}
         testId="event-form-conflict"
       />
     </>
