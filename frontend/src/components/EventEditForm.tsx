@@ -29,6 +29,7 @@ import {
   createEventEditSchema,
   HEX_COLOR_REGEX,
   type Event,
+  type EventEditFormInput,
   type EventEditFormValues,
 } from '@/types/event'
 
@@ -232,7 +233,7 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
   // pour éviter une soumission « dans le vide ». La bannière réseau explique le pourquoi.
   const { isOnline } = useNetworkStatus()
 
-  const form = useForm<EventEditFormValues>({
+  const form = useForm<EventEditFormInput, unknown, EventEditFormValues>({
     resolver: zodResolver(createEventEditSchema((key) => tErr(key))),
     defaultValues,
     mode: 'onTouched', // validations inline dès qu'un champ est touché (sans submit).

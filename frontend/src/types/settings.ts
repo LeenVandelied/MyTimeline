@@ -19,7 +19,7 @@ import { SUPPORTED_LOCALES, type Locale } from '@/i18n/locales'
    --------------------------------------------------------------------------- */
 
 export const SessionSchema = z.object({
-  id: z.string().uuid(),
+  id: z.guid(),
   deviceInfo: z.string().nullable(),
   ipAddress: z.string().nullable(),
   lastActivity: z.string(),
