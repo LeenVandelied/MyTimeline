@@ -1215,3 +1215,6 @@ La factorisation ne devait rien changer à ce que mesure une spec : les 3 diverg
 
 ## DEC-S112-005 — Session E2E : `sessionState(X)` pour toute spec qui ne teste pas la connexion ; aucun helper de support ne se connecte par formulaire
 `registerAndLogin` supprimé (0 appelant) ; le Vitest de budget refuse tout helper de `e2e/support/` qui émet `login`. Aucune session ne s'obtient sans `POST /api/auth/login`, la seule économie est de ne pas se reconnecter. Budget inchangé (login 14/26/30) ; le vrai levier (passe 2 CI à un seul compte) touche `ci.yml` → suite soumise au dev. (Sprint 112 #832)
+
+## DEC-S114-001 — Liste produits : frise pleine (220×40) à partir de `xl` seulement, compacte (64×24) en dessous
+Le handoff §5 la plaçait dès `md`, ce qui laissait ~27 px au nom à 768 px (même défaut que #825) et contredisait son propre invariant (table sans débordement, nom lisible). Arbitré par ui-design (APPROUVE), `docs/design/graphite-handoff.md` §5 amendé ; titre du prochain événement plafonné à 80 px sous `xl`, texte complet en `title`. (Sprint 114 #816)

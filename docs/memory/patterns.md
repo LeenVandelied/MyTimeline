@@ -1078,3 +1078,12 @@ Filtre ancré `addFilterBefore(…, AuthorizationFilter.class)` (donc après `Jw
 
 ## PAT-S113-003 — Cible de repli de focus en `tabIndex={-1}` sans `outline-none`
 Un élément focalisé par script (repli `<form>`) garde le contour `:focus-visible` du DS : `focus:outline-none` est refusé par le garde-fou `tsx-focus-utility.test.ts` (DEC-S58-001). (Sprint 113, review)
+
+## PAT-S114-001 — Ligne flex : l'élément prioritaire en base auto plafonnée, le sacrifiable en `flex-1 min-w-0 truncate`
+Nom + texte secondaire tronqués sur une ligne : le prioritaire en base auto plafonnée (`sm:max-w-[60%]`), le sacrifiable en `flex-1 min-w-0 truncate` (base 0), le bout de ligne en `ms-auto shrink-0`. Anti-pattern : `flex-1` sur l'élément à protéger face à un voisin en base auto — il est écrasé jusqu'à une lettre. (Sprint 114 #825)
+
+## PAT-S114-002 — Onglets à focus itinérant : `.focus()` dans le gestionnaire clavier, jamais dans un effet
+Refs par onglet scopées à l'instance ; `onKeyDown` fait `select(next)` puis `ref.focus()`. Un `useEffect(() => ref.focus(), [value])` volerait le focus au clic et à tout changement venu du parent. Le `.focus()` déclenché par une touche garde `:focus-visible` dans Chromium. (Sprint 114 #815)
+
+## PAT-S114-003 — Sonder un layout Tailwind sans `next dev` ni `next build`
+En vague parallèle (serveur Next réservé au lead), compiler `globals.css` via `postcss` + `@tailwindcss/postcss` (`createRequire` depuis `frontend/package.json`, `@source` vers la sonde), copier le balisage dans un HTML statique et le mesurer à la largeur réelle de la boîte. C'est une sonde, pas l'app : la spec E2E du lead tranche. (Sprint 114 #816)
