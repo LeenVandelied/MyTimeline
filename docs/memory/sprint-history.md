@@ -7230,3 +7230,67 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
   Ratio discard 2/12.
 **Saturation contexte lead (mesure) :** non mesurée
 **Status :** Terminé — PR #835 mergée dans `dev`, issues #767/#768/#830/#831/#832/#833 et milestone #113 fermés après merge ; #700 ouverte (volet manuel)
+
+> **Plan S113 → S117 (2026-10-24)** — `/sprint plan 5` (déroulé à la main par le lead, skill non invocable par le modèle), base `86337a24`.
+> Reprise après un mois d'arrêt. Axe arbitré par le dev : **bugs visibles + suites du S112** (consolider S103-S112) ;
+> exclus : milestone « Mise en ligne (GELÉ) », montées majeures de dépendances (zod 4, vitest 5, Next 16, Spring Boot 4), features maquette nouvelles.
+> 29 candidates (bugs ouverts + #836-#840 + #700) ; détection NO-OP : 0 PR fermante mergée. Phase 0.5 scriptée **sautée** :
+> contre-vérification manuelle par l'architect sur chaque issue retenue, puis par le lead sur 8 affirmations clés (toutes confirmées).
+> 14 issues, 26 pts nominaux, aucune migration (V17 libre). Split S113 appliqué (#838 → S116, #755 → backlog) : cohésion moyenne 0.80.
+> Fermées au plan : #403 (déjà livrée, `27cba3ae`), #444 (livrée en pratique, seul appelant `palette-color-picker.tsx:239` passe un `<button>`).
+> Backlog motivé : #558 (prémisse fausse, ~30 specs naviguent vers un produit), #700 (reste la vérif lecteur d'écran, manuelle dev),
+> #563 (couplée à la mise en ligne), #620 (décision produit), #755, #741, #722, #707, #406, #364, #500, #272, #471.
+> Correctifs de briefing à reporter : catalogues i18n = `frontend/public/locales/{fr,en,es,de}/*.json` (pas `frontend/messages/`) ;
+> mesures avec `/usr/bin/grep` (RTK fausse `grep`, `grep -c`, `wc -l`). Branche : aucune créée au plan (convention S85).
+> Ordre imposé : S113 → S114 (`ProductsListView`, `ProductDetailView`) ; S115 → S117 (#840 migre `sprint-105-fit-shortcut.spec.ts`).
+> Mini-plans : `docs/memory/sprints/sprint-<N>/architect-plans.md`.
+
+### Sprint 113 — 2026-10-24 (PLANIFIÉ — cohésion 1.00, Dialogues : focus rendu et 403 expliqués)
+**Objectif :** le focus revient au déclencheur à la fermeture de tous les dialogues (édition comprise, mobile compris) ; un 403 sur l'édition d'un événement ou une confirmation de suppression est expliqué dans le dialogue, pas seulement par le toast
+**Milestone GitHub :** #114
+**Issues :** #836 (P2, S — plutôt M : 7 dialogues + viewport mobile), #766 (P2, S — 7 appelants de `DeleteConfirmDialog`) — 4 pts nominaux
+**Vagues :** V1 = #766 (Vitest) | V2 = #836 (E2E réel, après #766 : `DeleteConfirmDialog.tsx`, `EventEditForm.tsx` et les hôtes communs)
+**Migrations Flyway :** aucune
+**Dépend de :** aucune
+**À confirmer au démarrage :** component-guardian avant tout nouveau hook de retour de focus ; #766 : clés i18n `common.deleteDialog.errors.forbidden` ×4 AVANT l'opt-out `HANDLES_FORBIDDEN_INLINE`
+**Status :** Planifié
+
+### Sprint 114 — 2026-10-24 (PLANIFIÉ — cohésion 1.00, Liste produits et onglets lisibles au clavier)
+**Objectif :** nom de produit lisible dans « Tes produits » du tableau de bord ; les flèches des onglets du DS déplacent le focus ; plus de débordement de la liste produits au-delà de sm
+**Milestone GitHub :** #115
+**Issues :** #825 (P2, S), #815 (P2, S), #816 (P3, S) — 6 pts
+**Vagues :** V1 = #816 (code + E2E) ∥ #815 (code + Vitest) ∥ #825 (code + Vitest) | V2 = E2E #825 puis E2E #815 (un seul run Playwright à la fois : `support/products.ts`)
+**Migrations Flyway :** aucune
+**Dépend de :** Sprint 113 (#836 touche `ProductsListView.tsx` et `ProductDetailView.tsx`)
+**À confirmer au démarrage :** #815 — retirer `SettingsShell` du critère d'acceptation (déjà conforme, `SettingsShell.tsx:74`)
+**Status :** Planifié
+
+### Sprint 115 — 2026-10-24 (PLANIFIÉ — cohésion 0.00 ⚠ hors br-packs, Landing honnête et lisible à 200 %, sessions E2E contrôlées)
+**Objectif :** la landing ne promet plus de rappels qui n'existent pas ; header sans débordement à texte ×2 ; specs E2E migrées vers `sessionState(X)`
+**Milestone GitHub :** #116
+**Issues :** #797 (P2, S — 3 chaînes par locale), #799 (P2, S), #840 (P3, S — plutôt M : 96 sites dans 70 specs) — 6 pts
+**Vagues :** V1 = #797 (i18n + rejeu `sprint-103-use-case-frieze`) ∥ #799 (Playwright ; ne touche pas aux locales) | V2 = #840 seul (lots de ~10 specs rejoués)
+**Migrations Flyway :** aucune
+**Dépend de :** Sprints 113 et 114 (#840 migre aussi leurs specs)
+**À confirmer au démarrage :** **décision produit #797** (reformuler recommandé ; implémenter des rappels sort de l'axe)
+**Status :** Planifié
+
+### Sprint 116 — 2026-10-24 (PLANIFIÉ — cohésion 1.00, Débit et harnais auth : 429 informatif, budget E2E, thème sans bandeau)
+**Objectif :** un 429 dit quand retenter ; la passe 2 CI ne recrée qu'un compte ; un 500 du PUT de thème traité inline n'allume plus la bannière serveur
+**Milestone GitHub :** #117
+**Issues :** #839 (P2, S), #567 (P2, S — + `UserRateLimitingFilter`, 12 slots), #838 (P3, XS) — 5 pts
+**Vagues :** V1 = #839 ∥ #567 ∥ #838 (fichiers disjoints ; #838 seul détenteur de Playwright)
+**Migrations Flyway :** aucune
+**Dépend de :** aucune
+**À confirmer au démarrage :** #567 — `Retry-After` seul ou aussi `X-RateLimit-*` (security-expert, ADR-010 §7) ; #838 — ne plus alimenter le bus #76 sur un 500 inline ([MEMORY:decision]) ; **#839 modifie `ci.yml` : confirmation explicite du dev avant merge** ; #406 (commentaire faux de `ci.yml`) à joindre si le dev l'accepte
+**Status :** Planifié
+
+### Sprint 117 — 2026-10-24 (PLANIFIÉ — cohésion 1.00, Frise : défilement et cadrage justes, cibles tactiles restantes)
+**Objectif :** plus de dérive de position sur `[ ]` combinés à `+/-` ; libellé de pin entier après F ; dernières cibles tactiles mesurées
+**Milestone GitHub :** #118
+**Issues :** #805 (P2, S), #804 (P3, XS), #837 (P3, XS) — 4 pts
+**Vagues :** V1 = #837 (Playwright) ∥ #804 (code + `zoom.test.ts`) | V2 = #805 (Playwright) + E2E #804, même agent (`sprint-105-fit-shortcut.spec.ts`)
+**Migrations Flyway :** aucune
+**Dépend de :** Sprint 115 (#840 a migré `sprint-105-fit-shortcut.spec.ts`)
+**À confirmer au démarrage :** #805 — reproduire la dérive en navigateur avant de corriger (jsdom ne clampe pas `scrollLeft`) ; si non reproduite, fermer avec la mesure
+**Status :** Planifié
