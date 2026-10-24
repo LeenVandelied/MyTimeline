@@ -186,9 +186,15 @@ Finances `#DD5C97`.
   ligne · nb d'événements. Recherche, tri Nom / Prochain événement. Clic ligne →
   détail.
   *Densité mobile (#608, S107)* : la mini-frise est **conservée sous `md`** en version
-  compacte 64×24 px (fenêtre 90 j, points r=3 non déformés), 220×40 px dès `md` ; à 390 px
+  compacte 64×24 px (fenêtre 90 j, points r=3 non déformés) ; à 390 px
   la table tient sans défilement horizontal (le nom du produit se tronque, le compteur
   d'événements n'apparaît qu'à partir de `sm`).
+  *Densité desktop (#816, S114)* : la version compacte 64×24 px reste en place **sous `xl`**,
+  la frise 220×40 px n'apparaît **qu'à partir de `xl`** (et non plus dès `md`) ; le titre du
+  prochain événement est plafonné à 80 px (`max-w-20`) sous `xl`, texte complet en `title`.
+  Motif : à 768 px, une frise de 220 px ne laissait que ~27 px au nom (même défaut que #825).
+  Invariant à toutes les largeurs : la table tient dans son conteneur, la page ne défile pas
+  horizontalement, le nom reste lisible.
 - **Détail** : en-tête type **fiche d'inventaire** (libellés mono à gauche, valeurs à
   droite, filets) ; **sous-frise dédiée** au produit (fit largeur, TODAY) ; section
   **Historique** (événements passés en gris-désaturé). Actions Nouvel événement /
