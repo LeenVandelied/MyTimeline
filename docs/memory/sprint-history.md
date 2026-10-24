@@ -7270,15 +7270,23 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
 **Saturation contexte lead (mesure) :** non mesurée
 **Status :** Terminé
 
-### Sprint 114 — 2026-10-24 (PLANIFIÉ — cohésion 1.00, Liste produits et onglets lisibles au clavier)
+### Sprint 114 — 2026-10-24 → 2026-10-25 (Terminé — merge PR #862 dans dev)
 **Objectif :** nom de produit lisible dans « Tes produits » du tableau de bord ; les flèches des onglets du DS déplacent le focus ; plus de débordement de la liste produits au-delà de sm
-**Milestone GitHub :** #115
-**Issues :** #825 (P2, S), #815 (P2, S), #816 (P3, S) — 6 pts
-**Vagues :** V1 = #816 (code + E2E) ∥ #815 (code + Vitest) ∥ #825 (code + Vitest) | V2 = E2E #825 puis E2E #815 (un seul run Playwright à la fois : `support/products.ts`)
-**Migrations Flyway :** aucune
-**Dépend de :** Sprint 113 (#836 touche `ProductsListView.tsx` et `ProductDetailView.tsx`)
-**À confirmer au démarrage :** #815 — retirer `SettingsShell` du critère d'acceptation (déjà conforme, `SettingsShell.tsx:74`)
-**Status :** Planifié
+**Milestone GitHub :** #115 (fermé après merge)
+**Issues livrées (3) :** #825 (P2, S), #815 (P2, S), #816 (P3, S — réel M après review) — fermées après merge
+**Vagues exécutées :** V1 = #825 ∥ #815 ∥ #816 (Vitest seul, specs E2E écrites et validées par `--list`) | lead : `next build` + `next start`, E2E complet | reviewer batch | correction de review #816 (même agent, SendMessage) | ui-design (arbitrage seuil de frise) | lead : base e2e recréée, E2E complet rejoué
+**Cohésion score :** 1.00
+**Migrations Flyway :** aucune — prochaine V17
+**Commits :** 9 — démarrage `2f36ab57` · #815 `09b72861` · #825 `24c0f4e5` · #816 `77126b1a` + review `be209310` · docs a11y `d1ce0192` · handoff §5 `32aaff7c` · artefacts `2238c8c6` · clôture (ce commit)
+**BR impactées :** aucune (présentation et accessibilité clavier)
+**Reviews :** reviewer batch 0 CRITIQUE / 1 MAJEUR / 5 MINEURS — MAJEUR (nom à ~27 px de 768 à 1023 px) et 4 MINEURS corrigés en `be209310` ; 1 MINEUR accepté (focus inconditionnel si un parent refusait le changement d'onglet, aucun consommateur ne refuse) · ui-design APPROUVE sous condition d'amender le handoff §5 (fait)
+**Tests :** Backend non concerné | Vitest 2322/2322 | `next build`, tsc, lint, `format:check` verts | E2E complet contre `next build`+`next start`, base e2e neuve : 653 passés / 8 sautés / 1 rouge hors sprint (`sprint-77-theme-visual:620`, armement darwin) ; sprint-114 4+4+7 verts | CI PR : 7/7 verts
+**Nouveaux pitfalls / décisions / patterns :** PIT-S114-001 · PAT-S114-001..003 · DEC-S114-001 · PIT-S107-001/002 marqués corrigés · packs pit régénérés
+**Écarts de briefing :** branche du worktree basée sur `main` → `sprint/114` recréée depuis `origin/dev` ; E2E non délégués (lead seul détenteur de la pile, agents en `--list`) ; `SettingsShell` retiré du périmètre de #815 (tablist propre déjà conforme) ; backend e2e réutilisé depuis l'image S113 (0 commit `backend/` depuis)
+**Absorbé en cours (XS) :** 2 — `a11y-audit.md` §8ter marqué corrigé (#815) ; densité md..xl de la liste produits (follow-up S de #816, absorbé par la review)
+**Follow-ups arbitrés (Phase 4 triage) :** aucun ouvert — les 2 signalés ont été absorbés dans la PR. Ratio discard 0/2.
+**Saturation contexte lead (mesure) :** non mesurée
+**Status :** Terminé
 
 ### Sprint 115 — 2026-10-24 (PLANIFIÉ — cohésion 0.00 ⚠ hors br-packs, Landing honnête et lisible à 200 %, sessions E2E contrôlées)
 **Objectif :** la landing ne promet plus de rappels qui n'existent pas ; header sans débordement à texte ×2 ; specs E2E migrées vers `sessionState(X)`

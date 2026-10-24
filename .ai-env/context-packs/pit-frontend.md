@@ -1790,11 +1790,11 @@ Front sur `:3106` contre un backend `:8086` lancé ailleurs : son CORS dev n'aut
 
 
 ## PIT-S107-001 — Tabs du DS : les flèches changent `aria-selected` sans déplacer le focus
-Dans `frontend/src/components/ui/tabs.tsx`, `→`/`←` sélectionnent l'onglet voisin mais n'appellent aucun `.focus()` : le focus reste sur l'onglet précédent, devenu `tabIndex=-1` et non sélectionné (8/8 configurations mesurées, `/products` et fiche produit). Contraire au motif APG « tablist à activation automatique ». Prévention : tout test clavier de Tabs vérifie `toBeFocused()` sur l'onglet NOUVELLEMENT sélectionné, pas seulement `aria-selected`. Correctif suivi en #815. (Sprint 107 #524)
+Dans `frontend/src/components/ui/tabs.tsx`, `→`/`←` sélectionnent l'onglet voisin mais n'appellent aucun `.focus()` : le focus reste sur l'onglet précédent, devenu `tabIndex=-1` et non sélectionné (8/8 configurations mesurées, `/products` et fiche produit). Contraire au motif APG « tablist à activation automatique ». Prévention : tout test clavier de Tabs vérifie `toBeFocused()` sur l'onglet NOUVELLEMENT sélectionné, pas seulement `aria-selected`. Correctif suivi en #815. (Sprint 107 #524) — **Corrigé au Sprint 114 (#815)** : `.focus()` posé dans le gestionnaire clavier ; gardes `ui/tabs.test.tsx` et `e2e/sprint-114-tabs-focus-follows.spec.ts` (PAT-S114-002).
 
 
 ## PIT-S107-002 — Un `sr-only` dans un conteneur `overflow-x-auto` NON positionné fait défiler la page
-`sr-only` est `position:absolute` : son bloc conteneur est le premier ancêtre positionné, pas la boîte de défilement. Si celle-ci n'est pas `relative`, le texte masqué échappe à son clip et élargit le DOCUMENT (1535 px mesurés à 1280 avec un nom de produit long dans `ProductsListView`). Prévention : `relative` sur tout conteneur `overflow-*` qui contient des cellules avec `sr-only` ; sonder `document.documentElement.scrollWidth == innerWidth`, pas seulement le conteneur. Correctif suivi en #816. (Sprint 107 #608)
+`sr-only` est `position:absolute` : son bloc conteneur est le premier ancêtre positionné, pas la boîte de défilement. Si celle-ci n'est pas `relative`, le texte masqué échappe à son clip et élargit le DOCUMENT (1535 px mesurés à 1280 avec un nom de produit long dans `ProductsListView`). Prévention : `relative` sur tout conteneur `overflow-*` qui contient des cellules avec `sr-only` ; sonder `document.documentElement.scrollWidth == innerWidth`, pas seulement le conteneur. Correctif suivi en #816. (Sprint 107 #608) — **Corrigé au Sprint 114 (#816)** : `relative` sur la boîte de défilement ; garde `e2e/sprint-114-products-list-overflow.spec.ts` (`offsetParent` des `sr-only` asserté).
 
 
 ## PIT-S108-001 — jsdom n'a pas de `PointerEvent` : un test de glisser passe vert sans rien prouver
@@ -1896,6 +1896,10 @@ Le `ConflictDialog` s'ouvre sur un 409 alors qu'« Enregistrer » est `disabled`
 
 ## PIT-S113-003 — Sous le hook RTK, `vitest run` ne donne que `PASS (n) FAIL (n)`, même redirigé vers un fichier
 Aucun nom de test : impossible de savoir QUEL test a rougi lors d'un test de mutation. `rtk proxy npx vitest run --reporter=verbose`. À mettre dans tout briefing qui demande une preuve de non-vacuité. (Sprint 113, review)
+
+
+## PIT-S114-001 — Plafonner UNE colonne de table ne suffit pas si les AUTRES dépassent déjà la boîte
+#816 demandait de « plafonner la colonne Produit » : à 1024 px la table débordait même avec la colonne Produit à 0, car frise 220 px + titre 256 px + compteur + actions = 751 px pour une boîte de 710 px. Et le correctif `w-full max-w-0` réduisait alors le nom à ~27 px entre 768 et 1023 px (attrapé par la review, pas par l'énoncé). Prévention : sommer les min-content des autres colonnes à CHAQUE palier (sm/md/lg/xl) avec un contenu long dans toutes, et asserter une largeur VISIBLE minimale de la colonne protégée, pas seulement l'absence de débordement. (Sprint 114 #816)
 
 ---
 
