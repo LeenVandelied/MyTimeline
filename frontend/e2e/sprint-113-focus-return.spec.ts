@@ -1,4 +1,4 @@
-import { type Locator, type Page } from '@playwright/test'
+import { type Locator, type Page, type Response } from '@playwright/test'
 import { expect, test } from './support/fixtures'
 import { PROD } from './support/accounts'
 import { openSettingsChapter, openSettingsPage } from './support/auth'
@@ -58,16 +58,22 @@ interface FocusReturnCase {
   cancel: (dialog: Locator) => Promise<void>
   /** Touche d'ouverture au clavier : Entrée (bouton) ou Espace (case à cocher). */
   openKey?: 'Enter' | ' '
-  /** Attente supplémentaire après l'ouverture (ex. réponse 409). */
-  afterOpen?: () => Promise<void>
+  /**
+   * Réponse réseau que l'ouverture DÉCLENCHE (ex. le PATCH qui renvoie 409). L'attente est
+   * ARMÉE AVANT la touche : armée après, une réponse locale rapide arrive
+   * avant l'écoute et l'attente court jusqu'au timeout (course, review S113).
+   */
+  openResponse?: (response: Response) => boolean
 }
 
 /** Ouvre AU CLAVIER : focus sur le déclencheur puis touche, comme un utilisateur clavier. */
 async function openWithKeyboard(c: FocusReturnCase): Promise<void> {
   await c.trigger.focus()
   await expect(c.trigger).toBeFocused()
+  // Écoute armée AVANT la touche, puis attendue après (cf. `openResponse`).
+  const response = c.openResponse ? c.page.waitForResponse(c.openResponse) : null
   await c.page.keyboard.press(c.openKey ?? 'Enter')
-  if (c.afterOpen) await c.afterOpen()
+  if (response) await response
   await expect(c.dialog).toBeVisible()
 }
 
@@ -243,11 +249,7 @@ test.describe('#836 — desktop : le focus revient au déclencheur', () => {
       dialog: page.getByTestId('event-form-conflict'),
       // Mode comparatif : pas de bouton « Annuler », la croix du dialogue ferme.
       cancel: async (dialog) => dialog.getByRole('button', { name: 'Close' }).click(),
-      afterOpen: async () => {
-        await page.waitForResponse(
-          (r) => r.url().includes('/events/') && r.request().method() === 'PATCH',
-        )
-      },
+      openResponse: (r) => r.url().includes('/events/') && r.request().method() === 'PATCH',
     })
   })
 

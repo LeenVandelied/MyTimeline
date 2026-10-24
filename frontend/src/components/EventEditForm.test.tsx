@@ -144,6 +144,9 @@ describe('EventEditForm — submitState (4 états)', () => {
   it('error : message générique inline', () => {
     setup({ submitState: 'error' })
     expect(screen.getByTestId('event-form-error')).toBeInTheDocument()
+    // Review S113 — testid partagé avec `forbidden` : la cause se lit sur `data-reason`.
+    expect(screen.getByTestId('event-form-error')).toHaveAttribute('data-reason', 'error')
+    expect(screen.getByTestId('event-form-error')).toHaveTextContent('validation.event.submitError')
     expect(screen.queryByTestId('event-form-conflict')).not.toBeInTheDocument()
   })
 
@@ -232,6 +235,50 @@ describe('EventEditForm — submitState (4 états)', () => {
     expect(onKeepMine).toHaveBeenCalledOnce()
     await userEvent.click(screen.getByTestId('conflict-dialog-take-server'))
     expect(onTakeServer).toHaveBeenCalledOnce()
+  })
+})
+
+/**
+ * Review S113 (#836) — fermeture du `ConflictDialog` : le focus revient à « Enregistrer »
+ * s'il est actionnable ; sinon (« garder mes modifications » → `submitting` ferme le
+ * dialogue, bouton désactivé) il se replie sur le `<form>`, jamais sur `body`.
+ *
+ * Pas de mock de Radix : le vrai `DialogContent` (FocusScope) émet `onCloseAutoFocus` au
+ * démontage. Le dialogue est ouvert d'emblée (activeElement = body à l'ouverture), donc
+ * `useReturnFocus` n'a rien capturé : seul le gestionnaire du formulaire place le focus.
+ */
+describe('EventEditForm — focus à la fermeture du ConflictDialog (#836)', () => {
+  function renderConflict() {
+    const props = {
+      defaultValues: baseDefaults,
+      onSubmit: vi.fn().mockResolvedValue(undefined),
+      onCancel: vi.fn(),
+      onKeepMine: vi.fn(),
+    }
+    const view = render(<EventEditForm {...props} submitState="conflict" />)
+    const rerenderWith = (submitState: 'idle' | 'submitting') =>
+      view.rerender(<EventEditForm {...props} submitState={submitState} />)
+    return { rerenderWith }
+  }
+
+  it('fermé par « garder mes modifications » (submitting) → repli sur le formulaire', async () => {
+    const { rerenderWith } = renderConflict()
+    expect(screen.getByTestId('event-form-conflict')).toBeInTheDocument()
+
+    rerenderWith('submitting')
+
+    await waitFor(() => expect(screen.queryByTestId('event-form-conflict')).not.toBeInTheDocument())
+    expect(screen.getByTestId('event-form-submit')).toBeDisabled()
+    await waitFor(() => expect(screen.getByTestId('event-form')).toHaveFocus())
+    expect(document.activeElement).not.toBe(document.body)
+  })
+
+  it('témoin : « Enregistrer » actionnable (idle) → c’est lui qui reçoit le focus', async () => {
+    const { rerenderWith } = renderConflict()
+
+    rerenderWith('idle')
+
+    await waitFor(() => expect(screen.getByTestId('event-form-submit')).toHaveFocus())
   })
 })
 

@@ -265,16 +265,24 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
    * soumission : « Enregistrer » était DÉSACTIVÉ (`submitting`) à l'ouverture du
    * dialogue, Chromium avait donc rendu le focus à `body` et `DialogContent` n'a rien
    * capturé (mesuré, `e2e/sprint-113-focus-return.spec.ts`). On le rend au bouton qui a
-   * déclenché la soumission, s'il est de nouveau actionnable ; sinon, défaut Radix.
+   * déclenché la soumission, s'il est de nouveau actionnable.
+   *
+   * REPLI (review S113) : « garder mes modifications » passe `submitState` à `submitting`,
+   * ce qui FERME le dialogue (`open` dérivé de `'conflict'`) alors qu'« Enregistrer » est
+   * encore désactivé. Le défaut Radix viserait un `Dialog.Trigger` absent → `body`, et le
+   * message d'erreur éventuel (403/5xx) arriverait hors de portée du clavier. Le focus va
+   * donc au `<form>` (`tabIndex={-1}`), qui reste dans le panneau hôte.
    */
   const submitButtonRef = React.useRef<HTMLButtonElement>(null)
+  const formRef = React.useRef<HTMLFormElement>(null)
   const handleConflictCloseAutoFocus: NonNullable<ConflictDialogProps['onCloseAutoFocus']> = (
     event,
   ) => {
     const submit = submitButtonRef.current
-    if (!submit?.isConnected || submit.disabled) return
+    const target = submit?.isConnected && !submit.disabled ? submit : formRef.current
+    if (!target?.isConnected) return
     event.preventDefault()
-    submit.focus({ preventScroll: true })
+    target.focus({ preventScroll: true })
   }
   // #300 — champs gouvernés par l'asymétrie du contrat create/update (cf. `EventFormMode`).
   const isCreate = mode === 'create'
@@ -515,8 +523,12 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
     <>
       <Form {...form}>
         <form
+          ref={formRef}
           id={formId}
           onSubmit={form.handleSubmit(onSubmit)}
+          // Cible de REPLI du focus à la fermeture du `ConflictDialog` (cf. `formRef`) :
+          // focalisable par script seulement, hors de l'ordre de tabulation.
+          tabIndex={-1}
           className="space-y-4"
           data-testid="event-form"
         >
@@ -957,7 +969,12 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
 
               {/* Erreur générique 4xx/5xx (le 409 optimistic ouvre le ConflictDialog). */}
               {submitState === 'error' && (
-                <p role="alert" className="text-destructive text-sm" data-testid="event-form-error">
+                <p
+                  role="alert"
+                  className="text-destructive text-sm"
+                  data-testid="event-form-error"
+                  data-reason="error"
+                >
                   {tErr('submitError')}
                 </p>
               )}
@@ -965,7 +982,12 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
               {/* #766 — 403 : cause explicite inline (le toast global est coupé par
                   l'opt-out `HANDLES_FORBIDDEN_INLINE` du PATCH, cf. useEventEditConflict). */}
               {submitState === 'forbidden' && (
-                <p role="alert" className="text-destructive text-sm" data-testid="event-form-error">
+                <p
+                  role="alert"
+                  className="text-destructive text-sm"
+                  data-testid="event-form-error"
+                  data-reason="forbidden"
+                >
                   {tErr('forbidden')}
                 </p>
               )}

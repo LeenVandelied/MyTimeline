@@ -91,25 +91,30 @@ vi.mock('./TimelineResponsive', () => {
 
 const originalAdapter = apiClient.defaults.adapter
 
-/** Adaptateur axios : toute requête reçoit un 403, comme le ferait `EventController`. */
-const forbiddenAdapter = (config: InternalAxiosRequestConfig): Promise<AxiosResponse> => {
-  const response: AxiosResponse = {
-    data: { message: 'Forbidden' },
-    status: 403,
-    statusText: 'Forbidden',
-    headers: {},
-    config,
-  }
-  return Promise.reject(
-    new AxiosError(
-      'Request failed with status code 403',
-      'ERR_BAD_REQUEST',
+/** Adaptateur axios : toute requête reçoit `status` (rejet axios réel, intercepteur compris). */
+const failingAdapter =
+  (status: 403 | 500, statusText: string) =>
+  (config: InternalAxiosRequestConfig): Promise<AxiosResponse> => {
+    const response: AxiosResponse = {
+      data: { message: statusText },
+      status,
+      statusText,
+      headers: {},
       config,
-      null,
-      response,
-    ),
-  )
-}
+    }
+    return Promise.reject(
+      new AxiosError(
+        `Request failed with status code ${status}`,
+        status >= 500 ? 'ERR_BAD_RESPONSE' : 'ERR_BAD_REQUEST',
+        config,
+        null,
+        response,
+      ),
+    )
+  }
+
+/** Toute requête reçoit un 403, comme le ferait `EventController`. */
+const forbiddenAdapter = failingAdapter(403, 'Forbidden')
 
 function renderHost() {
   const client = new QueryClient({
@@ -147,6 +152,8 @@ describe('TimelineEditHost — 403 signalé une seule fois, avec sa cause (#766)
 
     const error = await screen.findByTestId('event-form-error')
     expect(error).toHaveTextContent('validation.event.forbidden')
+    // Review S113 — testid partagé avec l'erreur générique : la cause se lit sur `data-reason`.
+    expect(error).toHaveAttribute('data-reason', 'forbidden')
     expect(screen.queryByText('validation.event.submitError')).not.toBeInTheDocument()
     // L'intercepteur a bien vu le 403 du PATCH (log assaini) mais s'est tu.
     expect(consoleErrorSpy).toHaveBeenCalledWith(
@@ -194,6 +201,23 @@ describe('TimelineEditHost — 403 signalé une seule fois, avec sa cause (#766)
       expect.objectContaining({ url: '/events/evt-desktop', method: 'delete' }),
     )
     expect(toastErrorMock).not.toHaveBeenCalled()
+  })
+
+  /**
+   * Review S113 — l'opt-out ne couvre QUE le 403 : un autre échec de la même suppression
+   * garde le message générique du dialog ET le toast global (500 non déclaré inline).
+   */
+  it('suppression (mobile) : 500 → deleteDialog.errors.generic inline ET toast conservé', async () => {
+    apiClient.defaults.adapter = failingAdapter(500, 'Internal Server Error')
+    renderHost()
+    fireEvent.click(screen.getByTestId('mobile-delete-trigger'))
+    fireEvent.click(await screen.findByTestId('delete-confirm-button'))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('common.deleteDialog.errors.generic')
+    expect(screen.queryByText('common.deleteDialog.errors.forbidden')).not.toBeInTheDocument()
+    await waitFor(() => expect(toastErrorMock).toHaveBeenCalledTimes(1))
+    // Le dialog reste ouvert : rien n'a été supprimé.
+    expect(screen.getByTestId('delete-confirm-button')).toBeInTheDocument()
   })
 
   it('témoin : les mêmes 403 sur des requêtes SANS opt-out déclenchent le toast', async () => {

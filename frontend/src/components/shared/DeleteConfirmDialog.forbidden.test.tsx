@@ -9,6 +9,9 @@ import type { Category } from '@/types/category'
 import type { Product } from '@/types/product'
 import { ProductDrawer } from '@/components/products/ProductDrawer'
 import { CategoryDrawer } from '@/components/categories/CategoryDrawer'
+import { ProductsListView } from '@/components/products/ProductsListView'
+import { ProductDetailView } from '@/components/products/ProductDetailView'
+import { CategoriesView } from '@/components/products/CategoriesView'
 
 /**
  * #766 — 403 sur la confirmation d'archivage d'un PRODUIT et de suppression d'une
@@ -17,14 +20,21 @@ import { CategoryDrawer } from '@/components/categories/CategoryDrawer'
  *
  * La variante `event` est couverte par `TimelineEditHost.forbidden.test.tsx`.
  *
+ * Review S113 — les TROIS VUES qui posent aussi l'opt-out (`ProductsListView`,
+ * `ProductDetailView`, `CategoriesView`) ont chacune leur cas : leurs tests propres
+ * mockent le hook de mutation et le dialog, donc n'y voyaient qu'un
+ * `toHaveBeenCalledWith(..., HANDLES_FORBIDDEN_INLINE)` — rien sur ce que leur `onConfirm`
+ * fait du rejet. Ici : vue → `DeleteConfirmDialog` réel → hook réel → service → intercepteur.
+ *
  * Modèle `ProductDrawer.forbidden.test.tsx` (PIT-S102-001) : drawer →
  * `DeleteConfirmDialog` RÉEL → `useArchiveProduct` / `useDeleteCategory` → service →
  * `apiClient` → intercepteur, seul l'adaptateur HTTP est remplacé (403). Les
  * `*.forbidden.test.tsx` des drawers stubbent `DeleteConfirmDialog` : ils ne voient
  * pas ce chemin.
  *
- * `useCategories` et `useAuth` restent mockés : lectures hors sujet, dont le GET
- * passerait sinon par l'adaptateur 403 et déclencherait un toast parasite.
+ * `useCategories`, `useProductsWithEvents` et `useAuth` restent mockés : lectures hors
+ * sujet, dont le GET passerait sinon par l'adaptateur 403 et déclencherait un toast
+ * parasite. La frise du détail (`@/components/timeline`) est remplacée par un stub inerte.
  *
  * Le témoin (dernier test) prouve que l'intercepteur est câblé dans ce montage.
  */
@@ -37,6 +47,7 @@ vi.mock('react-hot-toast', () => ({
 }))
 vi.mock('next-intl', () => ({
   useTranslations: (namespace: string) => (key: string) => `${namespace}.${key}`,
+  useLocale: () => 'fr',
 }))
 vi.mock('@/services/authService', () => ({
   refreshToken: vi.fn().mockResolvedValue(true),
@@ -53,6 +64,18 @@ vi.mock('@/hooks/useCategories', () => ({
     isSuccess: true,
     isError: false,
   }),
+}))
+// `product` est défini plus bas : la fabrique n'est appelée qu'au rendu (pas de hoisting piégé).
+vi.mock('@/hooks/useProductsWithEvents', () => ({
+  useProductsWithEvents: () => ({
+    data: [product],
+    isLoading: false,
+    isError: false,
+    isSuccess: true,
+  }),
+}))
+vi.mock('@/components/timeline', () => ({
+  TimelineEditHost: () => <div data-testid="timeline-stub" />,
 }))
 vi.mock('@/components/ui/popoverPicker', () => ({
   PopoverPicker: ({ children }: { children?: ReactNode }) => <>{children}</>,
@@ -157,9 +180,65 @@ describe('DeleteConfirmDialog — 403 signalé une seule fois, avec sa cause (#7
     expect(screen.getByTestId('delete-confirm-button')).toBeInTheDocument()
   })
 
+  /**
+   * Les trois vues : même contrat que les drawers. Chaque cas ROUGIT si l'`onConfirm` de la
+   * vue avale le rejet (le dialog croit au succès et se ferme : plus de message) ou si la
+   * vue retire l'opt-out (toast). Vérifié par mutation temporaire, cf. retour de review S113.
+   */
+  it('ProductsListView (archivage depuis la liste) : 403 → errors.forbidden, AUCUN toast', async () => {
+    const user = userEvent.setup()
+    renderWithClient(<ProductsListView />)
+
+    await user.click(screen.getByTestId(`products-archive-${product.id}`))
+    await user.click(await screen.findByTestId('delete-confirm-button'))
+
+    expect(await screen.findByText('common.deleteDialog.errors.forbidden')).toBeInTheDocument()
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      'Erreur 403 - Accès refusé:',
+      expect.objectContaining({ url: '/users/user-1/products/p2', method: 'delete' }),
+    )
+    expect(toastErrorMock).not.toHaveBeenCalled()
+    expect(toastSuccessMock).not.toHaveBeenCalled()
+    expect(screen.getByTestId('delete-confirm-button')).toBeInTheDocument()
+  })
+
+  it('ProductDetailView (archivage depuis la fiche) : 403 → errors.forbidden, AUCUN toast', async () => {
+    const user = userEvent.setup()
+    renderWithClient(<ProductDetailView productId={product.id} />)
+
+    await user.click(screen.getByTestId('product-detail-archive'))
+    await user.click(await screen.findByTestId('delete-confirm-button'))
+
+    expect(await screen.findByText('common.deleteDialog.errors.forbidden')).toBeInTheDocument()
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      'Erreur 403 - Accès refusé:',
+      expect.objectContaining({ url: '/users/user-1/products/p2', method: 'delete' }),
+    )
+    expect(toastErrorMock).not.toHaveBeenCalled()
+    expect(toastSuccessMock).not.toHaveBeenCalled()
+    expect(screen.getByTestId('delete-confirm-button')).toBeInTheDocument()
+  })
+
+  it('CategoriesView (corbeille de la carte) : 403 → errors.forbidden, AUCUN toast', async () => {
+    const user = userEvent.setup()
+    renderWithClient(<CategoriesView />)
+
+    await user.click(screen.getByTestId(`categories-delete-${CAT_A}`))
+    await user.click(await screen.findByTestId('delete-confirm-button'))
+
+    expect(await screen.findByText('common.deleteDialog.errors.forbidden')).toBeInTheDocument()
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      'Erreur 403 - Accès refusé:',
+      expect.objectContaining({ url: `/categories/${CAT_A}`, method: 'delete' }),
+    )
+    expect(toastErrorMock).not.toHaveBeenCalled()
+    expect(screen.getByTestId('delete-confirm-button')).toBeInTheDocument()
+  })
+
   it('témoin : les mêmes DELETE 403 SANS opt-out déclenchent le toast', async () => {
     await expect(apiClient.delete('/users/user-1/products/p2')).rejects.toBeInstanceOf(AxiosError)
     await expect(apiClient.delete(`/categories/${category.id}`)).rejects.toBeInstanceOf(AxiosError)
-    await waitFor(() => expect(toastErrorMock).toHaveBeenCalledTimes(2))
+    await expect(apiClient.delete(`/categories/${CAT_A}`)).rejects.toBeInstanceOf(AxiosError)
+    await waitFor(() => expect(toastErrorMock).toHaveBeenCalledTimes(3))
   })
 })
