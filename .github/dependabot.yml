@@ -1,8 +1,10 @@
 version: 2
 updates:
+  # Toutes les PR visent dev : main ne reçoit que des merges de dev.
   # Backend — dépendances Maven (Spring Boot, etc.)
   - package-ecosystem: maven
     directory: /backend
+    target-branch: dev
     schedule:
       interval: weekly
     open-pull-requests-limit: 10
@@ -12,6 +14,7 @@ updates:
   # Frontend — dépendances npm (Next.js, etc.)
   - package-ecosystem: npm
     directory: /frontend
+    target-branch: dev
     schedule:
       interval: weekly
     open-pull-requests-limit: 10
@@ -21,6 +24,7 @@ updates:
   # Actions GitHub utilisées par les workflows
   - package-ecosystem: github-actions
     directory: /
+    target-branch: dev
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
