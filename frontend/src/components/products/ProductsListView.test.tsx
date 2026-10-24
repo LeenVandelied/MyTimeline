@@ -257,13 +257,14 @@ describe('ProductsListView', () => {
     const svgs = within(cell).getAllByRole('img', { name: 'products.list.sparklineLabel' })
     expect(svgs).toHaveLength(2)
     const [compact, full] = svgs
-    // Compacte : bascule CSS `md:hidden`, géométrie recalculée à 64×24 (pas un 220 étiré).
-    expect(compact).toHaveClass('block', 'md:hidden')
+    // Compacte : bascule CSS `xl:hidden` (#816 : `md` → `xl`), géométrie recalculée à
+    // 64×24 (pas un 220 étiré).
+    expect(compact).toHaveClass('block', 'xl:hidden')
     expect(compact).toHaveAttribute('viewBox', '0 0 64 24')
     expect(compact).toHaveAttribute('width', '64')
     expect(compact).not.toHaveAttribute('preserveAspectRatio')
-    // Pleine : identique à l'aperçu du drawer, affichée dès md.
-    expect(full).toHaveClass('hidden', 'md:block')
+    // Pleine : identique à l'aperçu du drawer, affichée dès xl.
+    expect(full).toHaveClass('hidden', 'xl:block')
     expect(full).toHaveAttribute('viewBox', '0 0 220 40')
     for (const svg of svgs) {
       const circles = svg.querySelectorAll('circle')
@@ -328,8 +329,21 @@ describe('ProductsListView', () => {
   it('#816 — la boîte de défilement de la table est positionnée (clip des sr-only)', () => {
     render(<ProductsListView />)
     const scroller = screen.getByTestId('products-table').parentElement
+    expect(scroller).not.toBeNull()
+    if (!scroller) return
     expect(scroller).toHaveClass('overflow-x-auto', 'relative')
-    expect(within(scroller!).getAllByText('products.list.eventsCount')[0]).toHaveClass('sr-only')
+    expect(within(scroller).getAllByText('products.list.eventsCount')[0]).toHaveClass('sr-only')
+  })
+
+  it('#816 — nom et titre du prochain événement tronqués portent le texte complet en `title`', () => {
+    render(<ProductsListView />)
+    const next = within(screen.getByTestId('products-row-next-p-alpha')).getByText('evt-e1r')
+    expect(next).toHaveClass('truncate')
+    expect(next).toHaveAttribute('title', 'evt-e1r')
+    const row = screen.getByTestId('products-row-p-alpha')
+    const name = row.querySelector('td:first-child .truncate')
+    expect(name).not.toBeNull()
+    expect(name?.getAttribute('title')).toBe(name?.textContent)
   })
 
   it('#603 — nombre d’événements NON archivés, avec forme plurielle accessible', () => {

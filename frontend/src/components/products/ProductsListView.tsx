@@ -402,7 +402,9 @@ export function ProductsListView() {
                           aria-hidden="true"
                         />
                         <div className="flex min-w-0 flex-col">
-                          <span className="text-ink truncate font-medium">{product.name}</span>
+                          <span className="text-ink truncate font-medium" title={product.name}>
+                            {product.name}
+                          </span>
                           {product.category ? (
                             <span
                               className="text-ink-muted truncate font-mono text-xs"
@@ -422,16 +424,18 @@ export function ProductsListView() {
                         (#518, `i18n.css` §7 : `.mt-date--long` = mono + tabular-nums, sans
                         transformation de casse — le texte ISO est rendu tel quel).
                         #816 — titre plafonné à la largeur de la date (`max-w-20`) jusqu'à
-                        `xl` : dès `md` la frise fait 220 px, et un titre long à 256 px
-                        (ancien `sm:max-w-64`) faisait déborder la table à 1024 px à lui seul
-                        (751 px de colonnes fixes pour une boîte de 710). */}
+                        `xl` (palier de la frise pleine) : un titre long à 256 px (ancien
+                        `sm:max-w-64`) faisait déborder la table à 1024 px à lui seul. Titre
+                        complet en `title` (tronqué de 640 à 1279 px). */}
                     <td
                       className="px-2 py-3 sm:px-4"
                       data-testid={`products-row-next-${product.id}`}
                     >
                       {next ? (
                         <div className="flex max-w-20 min-w-0 flex-col xl:max-w-64">
-                          <span className="text-ink truncate text-xs">{next.title}</span>
+                          <span className="text-ink truncate text-xs" title={next.title}>
+                            {next.title}
+                          </span>
                           <time className="mt-date--long text-ink-muted" dateTime={next.start}>
                             {next.start}
                           </time>
@@ -444,7 +448,11 @@ export function ProductsListView() {
                       )}
                     </td>
                     {/* #608 — mini-frise 90 j CONSERVÉE sous `md` (frise = ADN du produit, comme
-                        la Vue Timeline sur mobile) : compacte 64×24 sous `md`, 220×40 dès `md`.
+                        la Vue Timeline sur mobile) : compacte 64×24 sous `xl`, 220×40 dès `xl`.
+                        #816 (review) — bascule repoussée de `md` à `xl` : avec 220 px dès `md`,
+                        la colonne Produit (`w-full max-w-0`) ne gardait que ~27 px de nom à
+                        768 et ~83 px à 1024 (boîtes 654 / 710 px, sidebar comprise) ; en
+                        compacte : ~183 et ~239 px. Dès `xl` (boîte 966) la pleine tient.
                         Deux rendus bascules en CSS (un seul est affiché, donc un seul dans
                         l'arbre d'accessibilité) : sans JS de média, pas de saut à l'hydratation.
                         `px-0` sous `sm` : le SVG porte déjà 4 px de marge interne. */}
@@ -458,13 +466,13 @@ export function ProductsListView() {
                         label={sparkLabel}
                         width={64}
                         height={24}
-                        className="block md:hidden"
+                        className="block xl:hidden"
                       />
                       <ProductSparkline
                         dates={sparkDates}
                         color={effectiveColor}
                         label={sparkLabel}
-                        className="hidden md:block"
+                        className="hidden xl:block"
                       />
                     </td>
                     {/* Nombre d'événements NON archivés : chiffre mono visible, forme plurielle

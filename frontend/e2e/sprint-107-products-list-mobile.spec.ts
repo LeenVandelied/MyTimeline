@@ -13,7 +13,7 @@ import { getUserId, seedCategory, seedProduct, unique } from './support/products
  * #608 — la mini-frise 90 j était `hidden md:table-cell` : elle disparaissait sous
  * 768 px, contre le handoff §5 (« frise = ADN, conservée sur mobile »). Arbitrage :
  * CONSERVÉE sous `md`, en densité compacte (SVG 64×24, géométrie recalculée, points
- * r=3), 220×40 dès `md`. Contrainte : à 390 px la colonne ne doit PAS faire défiler
+ * r=3), 220×40 dès `md` (repoussé à `xl` par #816). Contrainte : à 390 px la colonne ne doit PAS faire défiler
  * le tableau, même avec un nom de produit et un titre d'événement longs.
  * #609 — en-têtes au motif DS `.mt-table th` (mono 9 px, capitales).
  *
@@ -178,7 +178,7 @@ test.describe('#608/#609 — non-régression desktop', () => {
   // Le compte PROD est partagé entre workers : les produits aux noms longs des tests
   // mobiles peuvent être listés ici. Avant #816, ≥ `sm` un nom long faisait déborder la
   // table ; le `scroll` reste une ceinture (la frise est amenée dans le conteneur).
-  test('dès md : frise pleine 220 px, en-têtes DS', async ({ page }) => {
+  test('dès xl : frise pleine 220 px, en-têtes DS', async ({ page }) => {
     const productId = await openListWithProduct(page, 'S107 Robot')
     await expectSparklineInViewport(page, productId, 220, { scroll: true })
     const headers = await expectDsHeaders(page)

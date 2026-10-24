@@ -19,32 +19,53 @@ import { getUserId, seedCategory, seedProduct, unique } from './support/products
  *    (1535 px à 1280).
  * Correctif : `relative` sur la boîte ; `w-full max-w-0` sur la cellule Produit à
  * toutes les largeurs ; titre du prochain événement plafonné à `max-w-20` jusqu'à `xl`
- * (dès `md` la frise fait 220 px et un titre de 256 px débordait seul à 1024).
+ * (un titre de 256 px débordait seul à 1024) ; frise pleine (220 px) repoussée de `md`
+ * à `xl` (review : avec 220 px dès `md`, le nom tombait à ~27 px à 768 et ~83 à 1024).
  *
- * ORACLES (par largeur 640 / 1024 / 1280, plus 375 pour la non-régression #608)
+ * ORACLES (par largeur 640 / 768 / 1024 / 1280, plus 375 pour la non-régression #608)
  *   · page : `documentElement.scrollWidth <= innerWidth` ;
  *   · table : largeur de la table <= `clientWidth` de sa boîte, et
  *     `scrollWidth <= clientWidth` de la boîte (aucun défilement interne) ;
+ *   · lisibilité : largeur VISIBLE du nom tronqué >= `MIN_NAME[width]` (120 px de 768 à
+ *     1280, 96 à 640) — tenir dans la boîte ne suffit pas, un nom de 27 px « tient » ;
  *   · sr-only : son `offsetParent` EST la boîte de défilement (bloc conteneur) ;
  *   · anti-vacuité : le nom long est effectivement TRONQUÉ (`scrollWidth > clientWidth`
  *     du span) — sinon la donnée ne stresserait rien et la spec passerait à vide.
+ * Mesures de la sonde statique (CSS Tailwind compilé, pas l'app) : nom visible 115 /
+ * 183 / 239 / 163 px à 640 / 768 / 1024 / 1280 (titre long présent).
  *
- * AUTO-CONTRÔLE (dernier test) : à 1280, on rend à la cellule Produit son ancien
- * comportement (`max-width:none; width:auto`) et à la boîte `position:static` — les
- * oracles table ET page DOIVENT rougir. Sans lui, une sonde aveugle passerait verte.
+ * AUTO-CONTRÔLES (deux derniers tests) :
+ *   · 1280 : cellule Produit rendue à son ancien comportement (`max-width:none;
+ *     width:auto`), boîte `position:static`, titre au plafond `16rem` — les oracles
+ *     table ET page DOIVENT rougir ;
+ *   · 1024 : titre rendu au plafond `16rem` (régression `xl:max-w-64` → `sm:max-w-64`),
+ *     puis frise pleine forcée (régression `xl:` → `md:`) — chacune DOIT faire passer le
+ *     nom sous 120 px. À 1280 le plafond `16rem` est déjà celui de `xl` : c'est à 1024
+ *     que cette régression se voit.
  *
  * Données : compte PROD partagé entre workers ; les produits d'autres specs peuvent
  * être listés. Les oracles portent sur la table entière, qui doit tenir QUELLES que
  * soient les données (c'est le contrat). Purge par `trackSeed` (fixtures).
  *
- * CE QU'ELLE NE PROUVE PAS : la plage `md`..`lg` (768–1023), où la frise de 220 px
- * réduit le nom visible à ~30 px (la table tient, mais c'est un arbitrage design —
- * cf. done.md) ; les locales autres que `fr` ; le thème sombre ; Firefox/WebKit.
+ * CE QU'ELLE NE PROUVE PAS : les locales autres que `fr` ; le thème sombre ;
+ * Firefox/WebKit ; les largeurs intermédiaires non listées (sonde : 1279 → 494 px).
  */
 
 test.use({ storageState: PROD.storageState, colorScheme: 'light' })
 
 const BUDGET = 60_000
+
+/** Largeur visible minimale du nom tronqué, par largeur de viewport. */
+const MIN_NAME: Record<number, number> = { 640: 96, 768: 120, 1024: 120, 1280: 120 }
+const READABLE = 120
+
+/** Mesures jointes au rapport Playwright plutôt qu'écrites sur la console. */
+async function attachMeasures(label: string, m: unknown) {
+  await test.info().attach(label, {
+    body: JSON.stringify(m, null, 2),
+    contentType: 'application/json',
+  })
+}
 
 // ≤ 100 caractères suffixe `unique()` compris (BR-PRO-001) — 74 + 1 + ~16.
 const LONG_NAME = 'S114 Aspirateur robot laveur de la cuisine du rez-de-chaussée et du garage'
@@ -139,17 +160,18 @@ async function expectSrOnlyContained(page: Page, testId: string, text: string) {
   )
 }
 
-for (const width of [640, 1024, 1280]) {
+for (const width of [640, 768, 1024, 1280]) {
   test.describe(`#816 — liste produits à ${width} px, noms longs`, () => {
     test.use({ viewport: { width, height: 900 } })
 
     test('la table tient dans sa boîte et la page ne défile pas', async ({ page }) => {
       const { withNext, noNext } = await openListWithLongNames(page)
       const m = await measure(page, withNext)
-      console.log(`[#816 ${width}] ${JSON.stringify(m)}`)
+      await attachMeasures(`#816 ${width}`, m)
 
       // Anti-vacuité : le nom est bien plus large que sa cellule.
       expect(m.nameScroll, 'le nom long doit être tronqué').toBeGreaterThan(m.nameClient)
+      expect(m.nameClient, `nom lisible à ${width} px`).toBeGreaterThanOrEqual(MIN_NAME[width])
       expect(m.table, 'la table ne doit pas déborder de sa boîte').toBeLessThanOrEqual(m.boxClient)
       expect(m.boxScroll, 'la boîte ne doit pas défiler').toBeLessThanOrEqual(m.boxClient)
       expect(m.docScroll, 'la page ne doit pas défiler').toBeLessThanOrEqual(m.viewport)
@@ -166,7 +188,7 @@ test.describe('#816 — non-régression #608 sous sm (375 px)', () => {
   test('nom tronqué, ni la table ni la page ne défilent', async ({ page }) => {
     const { withNext, noNext } = await openListWithLongNames(page)
     const m = await measure(page, withNext)
-    console.log(`[#816 375] ${JSON.stringify(m)}`)
+    await attachMeasures('#816 375', m)
     expect(m.nameScroll, 'le nom long doit être tronqué').toBeGreaterThan(m.nameClient)
     expect(m.nameClient, 'le nom doit rester lisible (quelques caractères)').toBeGreaterThan(0)
     expect(m.boxScroll, 'la table ne doit pas défiler à 375').toBeLessThanOrEqual(m.boxClient)
@@ -187,10 +209,54 @@ test.describe('#816 — auto-contrôle à 1280 px', () => {
         td.style.maxWidth = 'none'
         td.style.width = 'auto'
       }
+      // Ancien plafond du titre (`sm:max-w-64`) — inerte à 1280 (= `xl:max-w-64`),
+      // remis pour que l'armement reproduise l'état d'avant #816 à l'identique.
+      for (const div of table.querySelectorAll<HTMLElement>('tbody td:nth-child(2) > div')) {
+        div.style.maxWidth = '16rem'
+      }
     })
     const m = await measure(page, withNext)
-    console.log(`[#816 armement 1280] ${JSON.stringify(m)}`)
+    await attachMeasures('#816 armement 1280', m)
     expect(m.table).toBeGreaterThan(m.boxClient)
     expect(m.docScroll).toBeGreaterThan(m.viewport)
+  })
+})
+
+test.describe('#816 — auto-contrôle à 1024 px (lisibilité)', () => {
+  test.use({ viewport: { width: 1024, height: 900 } })
+
+  test('titre à 16rem OU frise pleine font passer le nom sous le seuil', async ({ page }) => {
+    const { withNext } = await openListWithLongNames(page)
+    const table = page.getByTestId('products-table')
+
+    const before = await measure(page, withNext)
+    expect(before.nameClient).toBeGreaterThanOrEqual(READABLE)
+
+    // Régression simulée 1 : `xl:max-w-64` → `sm:max-w-64` sur le titre.
+    await table.evaluate((t) => {
+      for (const div of t.querySelectorAll<HTMLElement>('tbody td:nth-child(2) > div')) {
+        div.style.maxWidth = '16rem'
+      }
+    })
+    const titleArmed = await measure(page, withNext)
+    await table.evaluate((t) => {
+      for (const div of t.querySelectorAll<HTMLElement>('tbody td:nth-child(2) > div')) {
+        div.style.maxWidth = ''
+      }
+    })
+
+    // Régression simulée 2 : frise pleine dès `md` (bascule `xl:` → `md:`).
+    await table.evaluate((t) => {
+      for (const td of t.querySelectorAll<HTMLElement>('tbody td:nth-child(3)')) {
+        const [compact, full] = Array.from(td.querySelectorAll<SVGElement>('svg'))
+        if (compact) compact.style.display = 'none'
+        if (full) full.style.display = 'block'
+      }
+    })
+    const frieseArmed = await measure(page, withNext)
+
+    await attachMeasures('#816 armement 1024', { before, titleArmed, frieseArmed })
+    expect(titleArmed.nameClient).toBeLessThan(READABLE)
+    expect(frieseArmed.nameClient).toBeLessThan(READABLE)
   })
 })
