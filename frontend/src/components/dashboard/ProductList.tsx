@@ -88,11 +88,28 @@ export const ProductList: React.FC<ProductListProps> = ({ products, locale, now 
                   style={{ background: color }}
                   aria-hidden="true"
                 />
-                <span className="text-ink min-w-0 flex-1 truncate text-xs font-medium">
+                {/* #825 — Partage de largeur (rangée de 280 px dans l'aside à ≥ 1024 px).
+                    Avant : nom `flex-1` (base 0) contre secondaire en base auto SANS
+                    plafond → dès que le secondaire dépasse la ligne, l'espace libre est
+                    négatif et le nom n'en reçoit aucune part (« K. », voire 0 px).
+                    Désormais le NOM est prioritaire : base auto (sa largeur naturelle),
+                    plafonnée à 60 % de la ligne dès `sm` ; le SECONDAIRE est l'élément
+                    élastique (`flex-1`, base 0) : il prend le reste et se rogne avec
+                    « … ». Sous `sm` le secondaire est masqué : pas de plafond, le nom a
+                    toute la ligne. `text-end` garde le secondaire contre le compteur
+                    quand il tient (rendu d'avant) ; s'il déborde, la ligne est alignée
+                    au début (CSS Text §6.1) et l'ellipse tombe en fin. */}
+                <span
+                  className="text-ink min-w-0 truncate text-xs font-medium sm:max-w-[60%]"
+                  data-testid="dashboard-product-list-name"
+                >
                   {product.name}
                 </span>
                 {next ? (
-                  <span className="text-ink-muted text-2xs hidden truncate sm:inline">
+                  <span
+                    className="text-ink-muted text-2xs hidden min-w-0 flex-1 truncate text-end sm:inline"
+                    data-testid="dashboard-product-list-next"
+                  >
                     {next.title} ·{' '}
                     {/* #518 — `<time datetime>` (convention DS `i18n.css` §7) et
                         `.mt-date--long` en lieu et place de `font-mono` : elle pose la
@@ -107,12 +124,19 @@ export const ProductList: React.FC<ProductListProps> = ({ products, locale, now 
                     </time>
                   </span>
                 ) : (
-                  <span className="text-ink-muted text-2xs hidden sm:inline">
+                  <span
+                    className="text-ink-muted text-2xs hidden min-w-0 flex-1 truncate text-end sm:inline"
+                    data-testid="dashboard-product-list-next"
+                  >
                     {t('noUpcoming')}
                   </span>
                 )}
-                {/* #72 — `.mt-num` (DS i18n.css §7) : mono + tabular-nums + isolation bidi. */}
-                <span className="text-ink-muted mt-num text-2xs">{nf.format(count)}</span>
+                {/* #72 — `.mt-num` (DS i18n.css §7) : mono + tabular-nums + isolation bidi.
+                    #825 — `ms-auto` : en bout de ligne même secondaire masqué (< sm), le
+                    nom n'étant plus élastique ; `shrink-0` : jamais rogné. */}
+                <span className="text-ink-muted mt-num text-2xs ms-auto shrink-0">
+                  {nf.format(count)}
+                </span>
               </li>
             )
           })}
