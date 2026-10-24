@@ -99,7 +99,7 @@ export const eventCreationSchema = z
   .superRefine((data, ctx) => {
     if (data.type === 'duration' && (!data.durationValue || data.durationValue <= 0)) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: 'custom',
         message: 'La durée doit être supérieure à 0',
         path: ['durationValue'],
       })
@@ -107,7 +107,7 @@ export const eventCreationSchema = z
     // BR-EVE-006 : recurrenceUnit requis quand isRecurring=true.
     if (data.isRecurring === true && !data.recurrenceUnit) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: 'custom',
         message: 'La fréquence de récurrence est requise',
         path: ['recurrenceUnit'],
       })
@@ -274,7 +274,7 @@ const buildEventEditSchema = (m: EventEditMessages) =>
       // et sur eventCreationSchema.name (min(1)) — le client ne surcontraint pas le back.
       title: z.string().min(1, m.titleRequired).max(100, m.titleMax),
       type: z.string(),
-      durationValue: z.coerce.number().min(1, m.durationMin).optional(),
+      durationValue: z.coerce.number<number>().min(1, m.durationMin).optional(),
       durationUnit: durationUnitEnum.optional(),
       isRecurring: z.boolean().default(false),
       recurrenceUnit: recurrenceUnitEnum.optional(),
@@ -300,7 +300,7 @@ const buildEventEditSchema = (m: EventEditMessages) =>
       // l'edit schema laissait passer une durée sans unité. On l'aligne.
       if (data.type === 'duration' && !data.durationUnit) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: 'custom',
           message: m.durationUnitRequired,
           path: ['durationUnit'],
         })
@@ -308,7 +308,7 @@ const buildEventEditSchema = (m: EventEditMessages) =>
       // BR-EVE-006 : recurrenceUnit requis quand isRecurring=true.
       if (data.isRecurring === true && !data.recurrenceUnit) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: 'custom',
           message: m.recurrenceUnitRequired,
           path: ['recurrenceUnit'],
         })
@@ -316,7 +316,7 @@ const buildEventEditSchema = (m: EventEditMessages) =>
       // BR-EVE-002 : endDate >= startDate (garde service backend → 400/422).
       if (data.startDate && data.endDate && data.endDate < data.startDate) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: 'custom',
           message: m.endBeforeStart,
           path: ['endDate'],
         })
@@ -324,7 +324,7 @@ const buildEventEditSchema = (m: EventEditMessages) =>
       // BR-EVE-012 : recurrenceEndDate >= startDate (garde service backend → 422).
       if (data.recurrenceEndDate && data.startDate && data.recurrenceEndDate < data.startDate) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: 'custom',
           message: m.recurrenceEndBeforeStart,
           path: ['recurrenceEndDate'],
         })
@@ -348,6 +348,11 @@ export const createEventEditSchema = (t: (key: string) => string) =>
   })
 
 export type EventEditFormValues = z.infer<typeof eventEditSchema>
+/**
+ * Valeurs d'ENTRÉE du formulaire (zod 4 distingue entrée et sortie) : `isRecurring`
+ * y est optionnel (`.default(false)`), requis en sortie. `useForm<Input, unknown, Output>`.
+ */
+export type EventEditFormInput = z.input<typeof eventEditSchema>
 
 /* ===========================================================================
    #300 — Chemin CREATE (`POST /api/events`). Source UNIQUE du contrat, à côté
@@ -405,7 +410,7 @@ export const eventCreationPayloadSchema = z.object({
   recurrenceUnit: recurrenceUnitEnum.optional(),
   date: z.string().optional(),
   color: z.string().optional(),
-  productId: z.string().uuid(),
+  productId: z.guid(),
 })
 
 export type EventCreationPayload = z.infer<typeof eventCreationPayloadSchema>
