@@ -4,6 +4,7 @@ import type { ReactNode } from 'react'
 import { QueryClient, QueryClientProvider, MutationCache } from '@tanstack/react-query'
 import { useDeleteCategory } from './useDeleteCategory'
 import { queryKeys } from '@/lib/query-keys'
+import { HANDLES_FORBIDDEN_INLINE } from '@/services/inlineErrorHandling'
 
 /**
  * #245 — Mutation suppression : appelle `deleteCategory(id, reassignToCategoryId)`
@@ -40,7 +41,19 @@ describe('useDeleteCategory', () => {
 
     await result.current.mutateAsync({ id: 'cat-1', reassignToCategoryId: 'cat-2' })
 
-    expect(deleteCategoryMock).toHaveBeenCalledWith('cat-1', 'cat-2')
+    expect(deleteCategoryMock).toHaveBeenCalledWith('cat-1', 'cat-2', undefined)
+  })
+
+  it('#766 — transmet les options de requête (opt-out 403) au service', async () => {
+    deleteCategoryMock.mockResolvedValue(undefined)
+    const client = makeClient()
+    const { result } = renderHook(() => useDeleteCategory(HANDLES_FORBIDDEN_INLINE), {
+      wrapper: makeWrapper(client),
+    })
+
+    await result.current.mutateAsync({ id: 'cat-1' })
+
+    expect(deleteCategoryMock).toHaveBeenCalledWith('cat-1', undefined, HANDLES_FORBIDDEN_INLINE)
   })
 
   it('invalide categories.all + products.all sur succès', async () => {

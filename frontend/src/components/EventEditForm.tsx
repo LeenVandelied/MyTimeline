@@ -48,9 +48,10 @@ export type { EventEditFormValues } from '@/types/event'
  *     (design v3 #44 — plus de border/text). `text-white` hardcodé remplacé par
  *     un ink de contraste calculé (AA sur couleurs claires `--evt-*`).
  *
- * `submitState` (piloté par le parent, ex. mutation TanStack) à 4 états :
+ * `submitState` (piloté par le parent, ex. mutation TanStack) à 5 états :
  *   idle | submitting (spinner + bouton désactivé) | error (message inline) |
- *   conflict (409 optimistic locking). Depuis #77, l'état `conflict` ouvre le
+ *   forbidden (#766 — 403, cause explicite inline) | conflict (409 optimistic
+ *   locking). Depuis #77, l'état `conflict` ouvre le
  *   `ConflictDialog` partagé (Dialog DS Radix : role=dialog, focus-trap, Échap) au
  *   lieu d'un bloc inline. Le conteneur du dialog préserve
  *   `data-testid="event-form-conflict"` (tests existants #66). Le contrat 409 #200
@@ -67,8 +68,12 @@ export type { EventEditFormValues } from '@/types/event'
  * (`NewEventDrawer`/`TimelineEditHost`, pattern `ProductDrawer.tsx:240-244`).
  * Aucun breakpoint custom : `sm:` (640px) unique — bottom-sheet < 640px (portrait
  * ET paysage), drawer >= 640px.
+ *
+ * #766 — `forbidden` : c'est cet état qui permet au PATCH d'édition de passer
+ * `HANDLES_FORBIDDEN_INLINE` ; le supprimer (ou le replier sur `error`) rendrait le
+ * formulaire muet sur un refus d'accès.
  */
-export type EventSubmitState = 'idle' | 'submitting' | 'error' | 'conflict'
+export type EventSubmitState = 'idle' | 'submitting' | 'error' | 'forbidden' | 'conflict'
 
 /**
  * #300 — Mode du formulaire. Le composant reste mode-agnostique sur la mécanique
@@ -95,7 +100,7 @@ interface EventEditFormProps {
   onCancel: () => void
   /** #300 — `'create'` masque les champs PATCH-only. Défaut `'edit'` (non-cassant). */
   mode?: EventFormMode
-  /** État de soumission (idle/submitting/error/conflict). Défaut `idle`. */
+  /** État de soumission (idle/submitting/error/forbidden/conflict). Défaut `idle`. */
   submitState?: EventSubmitState
   /**
    * Rechargement (état `conflict`) : recharge/invalide l'événement à jour.
@@ -936,6 +941,14 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
               {submitState === 'error' && (
                 <p role="alert" className="text-destructive text-sm" data-testid="event-form-error">
                   {tErr('submitError')}
+                </p>
+              )}
+
+              {/* #766 — 403 : cause explicite inline (le toast global est coupé par
+                  l'opt-out `HANDLES_FORBIDDEN_INLINE` du PATCH, cf. useEventEditConflict). */}
+              {submitState === 'forbidden' && (
+                <p role="alert" className="text-destructive text-sm" data-testid="event-form-error">
+                  {tErr('forbidden')}
                 </p>
               )}
 

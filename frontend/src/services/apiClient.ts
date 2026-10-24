@@ -239,10 +239,11 @@ apiClient.interceptors.response.use(
       // affichent `errors.forbidden` dans leur `catch`. Opt-out PAR REQUÊTE et non par
       // URL : un futur appelant de la même route sans gestion inline garde le toast.
       //
-      // ⚠ `TimelineEditHost` (formulaire d'événement) et `DeleteConfirmDialog`
-      // n'affichent PAS la cause d'un 403 : ils rendent un message générique. Sur ces
-      // écrans, ce toast est le SEUL porteur de « accès refusé » — ne pas les faire
-      // opter out tant qu'ils n'affichent pas `errors.forbidden` eux-mêmes.
+      // #766 — même opt-out pour le PATCH d'édition d'événement (`TimelineEditHost` →
+      // `EventEditForm`, état `forbidden`) et pour les suppressions/archivages confirmés
+      // par `DeleteConfirmDialog` (événement, produit, catégorie), qui affiche
+      // `errors.forbidden`. ⚠ Ce dialog ne rend le 403 que si l'`onConfirm` de l'appelant
+      // RELANCE l'erreur : un appelant qui l'avale ne doit pas passer l'opt-out.
       //
       // NE PAS logger error.config.headers : contient l'en-tête Authorization
       // (jeton porteur) + cookies → fuite de credentials dans la console / les

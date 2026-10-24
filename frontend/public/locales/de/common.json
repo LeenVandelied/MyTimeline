@@ -49,7 +49,8 @@
     "errors": {
       "notFound": "Diese Kategorie existiert nicht mehr.",
       "conflict": "Die Produkte können dieser Kategorie nicht neu zugeordnet werden.",
-      "generic": "Beim Löschen ist ein Fehler aufgetreten, bitte versuchen Sie es erneut."
+      "generic": "Beim Löschen ist ein Fehler aufgetreten, bitte versuchen Sie es erneut.",
+      "forbidden": "Aktion verweigert: Sie sind nicht berechtigt, dieses Element zu löschen oder zu archivieren."
     }
   },
   "conflictDialog": {

@@ -85,11 +85,16 @@ export const updateProduct = async (
  *
  * `DELETE /users/{userId}/products/{productId}` → 204. On propage l'erreur axios
  * (`error.response.status`) pour l'affichage inline 404/403/409 via
- * `DeleteConfirmDialog` (#65 : `onConfirm` doit REJETER en cas d'erreur).
+ * `DeleteConfirmDialog` (#65 : `onConfirm` doit REJETER en cas d'erreur). #766 — `options`
+ * (`HANDLES_FORBIDDEN_INLINE`) coupe le toast 403 : le dialog affiche `errors.forbidden`.
  */
-export const deleteProduct = async (userId: string, productId: string): Promise<void> => {
+export const deleteProduct = async (
+  userId: string,
+  productId: string,
+  options?: InlineErrorOptions,
+): Promise<void> => {
   try {
-    await apiClient.delete(`/users/${userId}/products/${productId}`)
+    await apiClient.delete(`/users/${userId}/products/${productId}`, options)
   } catch (error) {
     console.error('Erreur lors de la suppression du produit :', safeErrorMessage(error))
     throw error

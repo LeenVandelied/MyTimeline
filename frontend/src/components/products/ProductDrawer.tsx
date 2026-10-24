@@ -132,7 +132,9 @@ export function ProductDrawer({
   // ces deux requêtes du toast global « accès refusé » (sinon double signalement).
   const createMutation = useCreateProduct(userId, HANDLES_FORBIDDEN_INLINE)
   const updateMutation = useUpdateProduct(userId, HANDLES_FORBIDDEN_INLINE)
-  const archiveMutation = useArchiveProduct(userId)
+  // #766 — `handleDeleteConfirm` relance l'erreur, `DeleteConfirmDialog` affiche
+  // `errors.forbidden` sur un 403 : même opt-out.
+  const archiveMutation = useArchiveProduct(userId, HANDLES_FORBIDDEN_INLINE)
 
   const [colorOverride, setColorOverride] = React.useState<string | null>(null)
   const [deleteOpen, setDeleteOpen] = React.useState(false)

@@ -33,6 +33,7 @@
     "endBeforeStart": "The end date must be on or after the start date",
     "colorInvalid": "Invalid color (hexadecimal format expected, e.g. #3B82F6)",
     "submitError": "An error occurred while saving, please try again.",
+    "forbidden": "Update denied: you are not allowed to edit this event.",
     "conflict": "This event was modified in the meantime. Reload to see the latest version.",
     "reload": "Reload"
   }

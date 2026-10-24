@@ -33,6 +33,7 @@
     "endBeforeStart": "La fecha de fin debe ser posterior o igual a la fecha de inicio",
     "colorInvalid": "Color inválido (se espera formato hexadecimal, p. ej. #3B82F6)",
     "submitError": "Se produjo un error al guardar, inténtalo de nuevo.",
+    "forbidden": "Modificación denegada: no tienes permiso para editar este evento.",
     "conflict": "Este evento se modificó mientras tanto. Recarga para ver la última versión.",
     "reload": "Recargar"
   }

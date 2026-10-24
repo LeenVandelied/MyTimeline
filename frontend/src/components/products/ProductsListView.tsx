@@ -26,6 +26,7 @@ import { LoadingSkeleton } from '@/components/shared/LoadingSkeleton'
 import { useProductsWithEvents } from '@/hooks/useProductsWithEvents'
 import { useAuth } from '@/hooks/useAuth'
 import { useArchiveProduct } from '@/hooks/useArchiveProduct'
+import { HANDLES_FORBIDDEN_INLINE } from '@/services/inlineErrorHandling'
 import type { Product } from '@/types/product'
 
 /**
@@ -137,7 +138,9 @@ export function ProductsListView() {
   }, [hasProducts])
   const [editProduct, setEditProduct] = React.useState<Product | null>(null)
   const [archiveProduct, setArchiveProduct] = React.useState<Product | null>(null)
-  const archiveMutation = useArchiveProduct(userId)
+  // #766 — `handleArchiveConfirm` relance l'erreur et `DeleteConfirmDialog` affiche `errors.forbidden`
+  // sur un 403 : la requête se retire du toast global (sinon double signalement).
+  const archiveMutation = useArchiveProduct(userId, HANDLES_FORBIDDEN_INLINE)
 
   const numberFmt = React.useMemo(() => new Intl.NumberFormat(locale), [locale])
 
