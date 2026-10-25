@@ -7312,7 +7312,7 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
 **Saturation contexte lead (mesure) :** non mesurée
 **Status :** Terminé
 
-### Sprint 116 — 2026-10-24 (PLANIFIÉ — cohésion 1.00, Débit et harnais auth : 429 informatif, budget E2E, thème sans bandeau)
+### Sprint 116 — 2026-10-24 → (En cours — cohésion 1.00, Débit et harnais auth : 429 informatif, budget E2E, thème sans bandeau)
 **Objectif :** un 429 dit quand retenter ; la passe 2 CI ne recrée qu'un compte ; un 500 du PUT de thème traité inline n'allume plus la bannière serveur
 **Milestone GitHub :** #117
 **Issues :** #839 (P2, S), #567 (P2, S — + `UserRateLimitingFilter`, 12 slots), #838 (P3, XS) — 5 pts
@@ -7320,7 +7320,8 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
 **Migrations Flyway :** aucune
 **Dépend de :** aucune
 **À confirmer au démarrage :** #567 — `Retry-After` seul ou aussi `X-RateLimit-*` (security-expert, ADR-010 §7) ; #838 — ne plus alimenter le bus #76 sur un 500 inline ([MEMORY:decision]) ; **#839 modifie `ci.yml` : confirmation explicite du dev avant merge** ; #406 (commentaire faux de `ci.yml`) à joindre si le dev l'accepte
-**Status :** Planifié
+**Arbitré au démarrage (2026-10-25) :** #567 → `Retry-After` seul (pas de `X-RateLimit-*`, ADR-010 §7 amendé) ; #838 → un 500 traité inline n'alimente plus le bus #76 ; #406 absorbé dans #839 (même fichier `ci.yml`) ; #839 autorisé à modifier `ci.yml`, confirmation explicite du dev avant merge
+**Status :** En cours
 
 ### Sprint 117 — 2026-10-24 (PLANIFIÉ — cohésion 1.00, Frise : défilement et cadrage justes, cibles tactiles restantes)
 **Objectif :** plus de dérive de position sur `[ ]` combinés à `+/-` ; libellé de pin entier après F ; dernières cibles tactiles mesurées
