@@ -23,14 +23,21 @@ import type { AxiosRequestConfig } from 'axios'
  * Le 409 n'y figure PAS : l'intercepteur n'a aucune branche 409 (aucun toast,
  * mesuré au S112), un 409 dans ce type ne serait lu nulle part. Ajouter une branche
  * 409 à l'intercepteur = ajouter 409 ici ET le lire dans cette branche.
- * ⚠ L'opt-out 500 ne coupe QUE le toast : le bus réseau (#76,
- * `networkStatusStore.reportServerError`) reste alimenté, la santé serveur est globale.
+ * #838 — L'opt-out 500 coupe le toast ET le bus réseau (#76,
+ * `networkStatusStore.reportServerError`, qui monte la bannière `OfflineBanner`) pour
+ * CETTE requête : un échec déclaré sans conséquence visible ne doit pas afficher
+ * « erreur serveur ». Les autres requêtes continuent d'alimenter le bus (la santé
+ * serveur reste globale) ; l'opt-out ne vaut que pour le 500, pas pour 502/503/504.
+ * Le 403 opt-out, lui, n'a jamais touché le bus (seules les ≥ 500 l'alimentent).
  */
 export type InlineHandledStatus = 403 | 500
 
 declare module 'axios' {
   interface AxiosRequestConfig {
-    /** #761 — statuts que l'appelant affiche lui-même : l'intercepteur ne les toaste pas. */
+    /**
+     * #761 — statuts que l'appelant affiche lui-même : l'intercepteur ne les toaste pas
+     * (#838 : et un 500 déclaré n'alimente pas non plus le bus réseau `OfflineBanner`).
+     */
     inlineHandledStatuses?: readonly InlineHandledStatus[]
   }
 }
@@ -53,6 +60,8 @@ export const HANDLES_FORBIDDEN_INLINE: InlineErrorOptions = Object.freeze({
  * (`AuthContext.tsx`), qui garde le thème choisi localement et journalise l'échec.
  * Un appelant qui laisse l'utilisateur sans retour (formulaire, suppression…) ne
  * doit PAS s'en servir : le toast « erreur serveur » serait son seul signalement.
+ * #838 — l'option tait AUSSI la bannière `OfflineBanner` sur ce 500 (bus réseau #76
+ * non alimenté) : raison de plus pour la réserver aux échecs sans conséquence.
  */
 export const HANDLES_SERVER_ERROR_INLINE: InlineErrorOptions = Object.freeze({
   inlineHandledStatuses: Object.freeze([500] as const),

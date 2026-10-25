@@ -1221,3 +1221,12 @@ Le handoff §5 la plaçait dès `md`, ce qui laissait ~27 px au nom à 768 px (m
 
 ## DEC-S115-001 — Landing : la frise reformulée (l'échéance se voit venir), pas de fonction de rappel
 Décision dev du 2026-10-25 sur #797 : aucune fonction de rappel ou de notification n'existe ni n'est au backlog immédiat, donc la landing ne la promet plus. Le jalon dit qu'on voit l'échéance approcher sur la frise ; clé i18n `reminder` et `data-testid` conservés ; `HowItWorksSection.test.tsx` garde le texte rendu des 4 locales. Développer de vrais rappels reste possible, à rechiffrer séparément. (Sprint 115 #797)
+
+## DEC-S116-001 — 429 : `Retry-After` seul, aucun `X-RateLimit-*`
+Décision dev du 2026-10-25 sur #567 : tout 429 du rate-limit porte `Retry-After` (secondes entières, arrondi supérieur, bornées [1, fenêtre]), exposé au CORS. `X-RateLimit-*` écartés : ils publieraient le plafond et le restant de chaque slot ; la fenêtre (60 s) est déjà observable, la capacité ne l'est pas sans compter les requêtes. Audit sécurité : approuvé. ADR-010 §7 amendé. (Sprint 116 #567)
+
+## DEC-S116-002 — Un 500 traité inline n'alimente plus le bus d'erreurs serveur
+Décision dev du 2026-10-25 sur #838 : si `handlesStatusInline(config, 500)` est vrai, l'intercepteur n'appelle pas `reportServerError()`. Vaut pour le 500 seul (502/503/504 reportent, question au backlog), s'abstient sans `clear()`, les autres requêtes alimentent toujours le bus #76. (Sprint 116 #838)
+
+## DEC-S116-003 — Job CI `e2e` : attente du backend sur `/actuator/health`
+#406 : le poll de disponibilité passe de `/api/auth/me` (un 401 ne prouve que la levée des filtres web) à `/actuator/health` UP, `--max-time 5`, avec sortie immédiate si la JVM meurt (`kill -0`). Endpoint public, hors rate-limit, déjà healthcheck de `backend-e2e` ; vérifié sur la CI de la PR #868 (UP après 6 tentatives). (Sprint 116 #406)

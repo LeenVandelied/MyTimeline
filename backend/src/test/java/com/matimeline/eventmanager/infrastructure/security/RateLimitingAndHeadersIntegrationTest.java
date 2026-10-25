@@ -9,9 +9,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.Duration;
+import java.util.Arrays;
+import java.util.Locale;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.junit.jupiter.api.Test;
@@ -21,6 +26,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -529,6 +535,105 @@ class RateLimitingAndHeadersIntegrationTest extends AbstractPostgresIntegrationT
                         .content(PATCH_ME_BODY))
                 .andReturn().getResponse().getStatus();
         assertNotEquals(429, sc, "le bucket PATCH /api/me est distinct de celui de l'upload d'avatar");
+    }
+
+    // ----- #567 : le 429 dit QUAND retenter (Retry-After seul, aucun X-RateLimit-*) -----
+
+    /**
+     * #567 — lit le {@code Retry-After} d'un 429 et vérifie le contrat commun à tous les slots :
+     * présent, ENTIER (secondes, pas de date HTTP ni de décimale), dans [1, 60] (la fenêtre vaut
+     * une minute), et AUCUN en-tête {@code X-RateLimit-*} (arbitrage ADR-010 § 7 : ils
+     * publieraient le plafond du slot). Renvoie la valeur pour les assertions de décroissance.
+     */
+    static long assertRetryAfterContract(MockHttpServletResponse response) {
+        assertEquals(429, response.getStatus(), "précondition : la réponse doit être un 429");
+        String raw = response.getHeader("Retry-After");
+        assertNotNull(raw, "un 429 doit porter Retry-After (RFC 6585 § 4) — en-têtes reçus : "
+                + response.getHeaderNames());
+        assertTrue(raw.matches("[0-9]+"), "Retry-After doit être un nombre ENTIER de secondes, reçu « " + raw + " »");
+        long seconds = Long.parseLong(raw);
+        assertTrue(seconds >= 1 && seconds <= 60, "Retry-After hors de [1, 60] : " + seconds);
+        for (String name : response.getHeaderNames()) {
+            assertFalse(name.toLowerCase(Locale.ROOT).startsWith("x-ratelimit"),
+                    "aucun X-RateLimit-* ne doit être émis (divulgation du plafond), reçu : " + name);
+        }
+        return seconds;
+    }
+
+    /**
+     * #567 (slot login, 10/min/IP) : le 429 annonce le délai réel du seau, arrondi au SUPÉRIEUR,
+     * et ce délai DÉCROÎT avec le temps. Le TimeMeter est figé pendant l'épuisement, donc le seau
+     * vient d'être créé : il se recharge dans exactement 60 s. Après 20,5 s → 39,5 s restantes
+     * annoncées 40 (jamais 39 : un client qui attend 39 s serait encore refusé). Après 39 s de
+     * plus → 0,5 s annoncée 1 (plancher). Une seconde de plus → le quota revient, ce qui prouve
+     * que la valeur annoncée était tenable.
+     */
+    @Test
+    void login429_retryAfter_isTheBucketRefillDelay_roundedUp_andDecreases() throws Exception {
+        String ip = "10.5.67.1";
+        for (int i = 1; i <= 10; i++) {
+            login(ip);
+        }
+        assertEquals(60, assertRetryAfterContract(login(ip).getResponse()),
+                "seau neuf, temps figé : recharge dans exactement une fenêtre");
+
+        clock.advance(Duration.ofMillis(20_500));
+        assertEquals(40, assertRetryAfterContract(login(ip).getResponse()),
+                "39,5 s restantes doivent être annoncées 40 (arrondi supérieur)");
+
+        clock.advance(Duration.ofSeconds(39));
+        assertEquals(1, assertRetryAfterContract(login(ip).getResponse()),
+                "0,5 s restante doit être annoncée 1 (plancher, jamais 0)");
+
+        clock.advance(Duration.ofSeconds(1));
+        assertNotEquals(429, login(ip).getResponse().getStatus(),
+                "le délai annoncé écoulé, le quota doit être de retour");
+    }
+
+    /**
+     * #567 (2e slot, POST /api/export, 5/min/IP — table distincte du login) : même contrat. Le
+     * slot est choisi pour son plafond différent : une valeur codée en dur sur le seul login
+     * passerait le test précédent.
+     */
+    @Test
+    void exportSubmission429_carriesRetryAfter_noXRateLimit() throws Exception {
+        String ip = "10.5.67.2";
+        for (int i = 1; i <= 5; i++) {
+            mockMvc.perform(post("/api/export").with(req -> { req.setRemoteAddr(ip); return req; }));
+        }
+        MockHttpServletResponse over = mockMvc.perform(post("/api/export")
+                        .with(req -> { req.setRemoteAddr(ip); return req; }))
+                .andReturn().getResponse();
+        assertEquals(60, assertRetryAfterContract(over));
+        assertEquals("{\"error\":\"too_many_requests\"}", over.getContentAsString(),
+                "le corps du 429 est inchangé par #567");
+    }
+
+    /**
+     * #567 — CORS. {@code Retry-After} n'est pas un en-tête de réponse CORS-safelisted : un front
+     * servi sur une autre origine que l'API (dev : :3000 → :8080) ne peut le lire que s'il figure
+     * dans {@code Access-Control-Expose-Headers}. On l'asserte SUR le 429 lui-même (le
+     * {@code CorsFilter} s'exécute avant le limiteur), depuis l'origine autorisée du profil test.
+     */
+    @Test
+    void crossOrigin429_exposesRetryAfter() throws Exception {
+        String ip = "10.5.67.3";
+        for (int i = 1; i <= 10; i++) {
+            login(ip);
+        }
+        MockHttpServletResponse over = mockMvc.perform(post("/api/auth/login")
+                        .with(req -> { req.setRemoteAddr(ip); return req; })
+                        .header("Origin", "http://localhost:3000")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(LOGIN_BODY))
+                .andExpect(header().string("Access-Control-Allow-Origin", "http://localhost:3000"))
+                .andReturn().getResponse();
+        assertRetryAfterContract(over);
+        String exposed = over.getHeader("Access-Control-Expose-Headers");
+        assertNotNull(exposed, "le 429 cross-origin doit porter Access-Control-Expose-Headers");
+        assertTrue(Arrays.stream(exposed.split(","))
+                        .map(String::trim).anyMatch("Retry-After"::equalsIgnoreCase),
+                "Retry-After doit être exposé au JS cross-origin, reçu : " + exposed);
     }
 
     /**

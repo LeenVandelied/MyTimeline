@@ -195,3 +195,6 @@ Annulation ou création depuis le CTA d'état vide ou le bouton permanent : Radi
 
 ## BUG-S112-002 — Trois cibles tactiles mobiles à 36 px de haut
 CTA d'état vide Produits (168×36) et Catégories (182×36) → `TOUCH_TARGET_BUTTON` (44 px en mobile, 36 px conservés sur desktop) ; bascule de thème `labeled` du tiroir mobile (285,75×36) → `h-11`. Mesurés à 375 px avant correction ; désarchiver et `⋯` portrait déjà conformes, non modifiés. (Sprint 112, #767, #830)
+
+## BUG-S116-001 — Le 429 du rate-limit n'indiquait jamais quand retenter
+Ni `Retry-After` ni `X-RateLimit-*` sur les 429 des 11 slots par IP, du seau par jeton de reset-password et du seau par utilisateur `PUT /api/me/preferences` : aucun backoff informé possible. Correctif : `Retry-After` seul (secondes entières arrondies au supérieur, bornées [1, 60], lu dans `ConsumptionProbe`), exposé au CORS ; tests à TimeMeter piloté, contrôles négatifs. (Sprint 116, #567)

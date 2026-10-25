@@ -309,22 +309,37 @@ jobs:
           echo "BACKEND_PID=$!" >> "$GITHUB_ENV"
 
       # Attente de la disponibilité RÉELLE du backend avant de lancer Playwright
-      # (évite le flaky). Pas d'actuator : on poll un endpoint connu — `/api/auth/me`
-      # renvoie 401 sans cookie, ce qui prouve que l'app répond (tout code HTTP < 500
-      # non vide = up). Timeout ~90s (boot Spring + Flyway).
+      # (évite le flaky). Timeout ~90s (boot Spring + Flyway).
+      # #406 (S116) — l'ancien commentaire niait la présence d'Actuator : FAUX depuis #37
+      # (`spring-boot-starter-actuator`, backend/pom.xml). DÉCISION : le poll BASCULE de
+      # `/api/auth/me` vers `/actuator/health`, comme `flyway-smoke` (plus bas) et le
+      # healthcheck du service `backend-e2e` de docker-compose.yml (MÊMES profils dev,e2e).
+      # Pourquoi : un 401 sur `/api/auth/me` prouve que la chaîne de filtres web répond,
+      # pas que l'application est prête ; `{"status":"UP"}` agrège les indicateurs (dont la
+      # base). Exposition vérifiée en profil dev,e2e : `permitAll` sur `/actuator/health`
+      # (SecurityConfig, #37), aucune propriété `management.*` qui le masquerait (défaut
+      # Spring Boot : health exposé sur le web), hors des créneaux de `RateLimitingFilter`,
+      # et l'indicateur `brevo` (seul à pouvoir rendre DOWN sans panne) est `@Profile("prod")`.
+      # En plus : `kill -0` sort AUSSITÔT si la JVM est morte (au lieu d'attendre 90 s).
+      # Pas de preuve sur un run réel avant la PR S116 : c'est le run CI de la PR qui la donne.
       - name: Wait for backend readiness
         working-directory: backend
         run: |
           for i in $(seq 1 45); do
-            code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/api/auth/me || echo 000)
-            if [ "$code" != "000" ] && [ "$code" -lt 500 ]; then
-              echo "Backend up (HTTP $code) après ${i} tentative(s)."
+            if ! kill -0 "$BACKEND_PID" 2>/dev/null; then
+              echo "Backend MORT avant d'être prêt — logs :"
+              tail -n 200 backend.log || true
+              exit 1
+            fi
+            if curl -sf --max-time 5 http://localhost:8080/actuator/health | grep -q '"status":"UP"'; then
+              echo "Backend UP (/actuator/health) après ${i} tentative(s)."
               exit 0
             fi
-            echo "Attente backend... (tentative ${i}, code=$code)"
+            echo "Attente backend... (tentative ${i})"
             sleep 2
           done
-          echo "Backend indisponible après timeout — logs :"
+          echo "Backend jamais UP après timeout — santé et logs :"
+          curl -s http://localhost:8080/actuator/health || true
           tail -n 200 backend.log || true
           exit 1
 
@@ -565,10 +580,17 @@ jobs:
         # deux steps, qui casse silencieusement si la passe 1 est réordonnée ou retirée.
         # ⚠ Depuis #462 ce filtre est ENCORE PLUS nécessaire : le `storageState` de la passe 1
         # porte un cookie posé sur :3000, et cette passe interroge :3001. Re-provisionner est le
-        # seul chemin correct. Le rate-limit (ARMÉ depuis #547) ne s'y oppose pas : ces 4 register
-        # + 4 login s'ajoutent à ceux de la passe 1 dans les MÊMES seaux, et le budget des deux
-        # passes (12 register, 12 login en nominal) tient sous les plafonds du profil `e2e` (30/30).
-        run: npx playwright test auth.setup.ts auth-signature.spec.ts --output=test-results/passe-2-rs256
+        # seul chemin correct.
+        # #839 — `E2E_SETUP_ACCOUNTS=shared` : la passe ne re-provisionne QUE `SHARED`, seul compte
+        # d'`auth-signature.spec.ts` (le setup `persist account identities` reste entier). Ce
+        # register + ce login s'ajoutent à ceux de la passe 1 dans les MÊMES seaux (rate-limit
+        # ARMÉ depuis #547) : budget des deux passes register 10 / login 11 en nominal, 20 / 23
+        # au pire cas, sous les plafonds du profil `e2e` (30/30) — au lieu de 13/14 et 23/26.
+        # ⚠ La variable reste en PRÉFIXE de la commande, pas dans `env:` : c'est là que
+        # `e2e-rate-limit-budget.test.ts` la lit pour compter le setup de CETTE passe, et il
+        # rougit si elle apparaît ailleurs dans ce fichier, ou si une spec de la passe utilise
+        # un compte non provisionné (élargir la liste ET recompter, pas l'inverse).
+        run: E2E_SETUP_ACCOUNTS=shared npx playwright test auth.setup.ts auth-signature.spec.ts --output=test-results/passe-2-rs256
 
       # #461 — DEUX chemins, pas un. Ils portent des choses différentes :
       #   - `playwright-report/` : le rapport HTML, écrit par le reporter `html`

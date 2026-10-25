@@ -7312,15 +7312,29 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
 **Saturation contexte lead (mesure) :** non mesurée
 **Status :** Terminé
 
-### Sprint 116 — 2026-10-24 (PLANIFIÉ — cohésion 1.00, Débit et harnais auth : 429 informatif, budget E2E, thème sans bandeau)
+### Sprint 116 — 2026-10-25 → 2026-10-25 (Terminé — merge PR #868 dans dev)
 **Objectif :** un 429 dit quand retenter ; la passe 2 CI ne recrée qu'un compte ; un 500 du PUT de thème traité inline n'allume plus la bannière serveur
-**Milestone GitHub :** #117
-**Issues :** #839 (P2, S), #567 (P2, S — + `UserRateLimitingFilter`, 12 slots), #838 (P3, XS) — 5 pts
-**Vagues :** V1 = #839 ∥ #567 ∥ #838 (fichiers disjoints ; #838 seul détenteur de Playwright)
-**Migrations Flyway :** aucune
-**Dépend de :** aucune
-**À confirmer au démarrage :** #567 — `Retry-After` seul ou aussi `X-RateLimit-*` (security-expert, ADR-010 §7) ; #838 — ne plus alimenter le bus #76 sur un 500 inline ([MEMORY:decision]) ; **#839 modifie `ci.yml` : confirmation explicite du dev avant merge** ; #406 (commentaire faux de `ci.yml`) à joindre si le dev l'accepte
-**Status :** Planifié
+**Milestone GitHub :** #117 (fermé après merge)
+**Issues livrées (4) :** #567 (P2, S — + `UserRateLimitingFilter`), #838 (P3, XS), #839 (P2, S), #406 (P3, XS — absorbée dans #839, même fichier `ci.yml`) — fermées après merge
+**Arbitré au démarrage (2026-10-25) :** #567 → `Retry-After` seul (DEC-S116-001) ; #838 → un 500 inline n'alimente plus le bus #76 (DEC-S116-002) ; #406 absorbé ; modification de `ci.yml` autorisée, confirmée explicitement par le dev avant merge
+**Vagues exécutées :** V1 = #839+#406 ∥ #567 ∥ #838 (#838 seul détenteur de Playwright) | lead : security-expert sur #567, `next build`, Vitest complet | reviewer batch | lead : corrections des mineurs
+**Cohésion score :** 1.00 (br-auth)
+**Migrations Flyway :** aucune — prochaine V17
+**Commits :** 7 — #839 `4a73e76c` · #406 `1303d711` · #567 `7dc4242b` · #838 `23ebe9ce` · corrections review + audit sécurité `edfdcb4a` · artefacts `64cd6263` · clôture (ce commit)
+**BR impactées :** BR-AUT-013 (rate-limit par utilisateur, #831) ; rate-limit auth/export/me (#567) ; aucune BR métier modifiée par #838/#839
+**Reviews :** audit sécurité #567 APPROUVÉ (pas d'oracle sur le seau par jeton ; durcissement borne haute appliqué) · reviewer batch 0 CRITIQUE / 0 MAJEUR / 6 MINEURS — tous corrigés (`edfdcb4a`)
+**Tests :** Backend 687/687 + rate-limit/CORS rejoués après corrections | Vitest 2341/2341 | `next build`, tsc, prettier verts | E2E local (`next build`+`next start`) : spec neuve 3/3 ×3, 8 specs de surface 74/75 (rouge darwin attendu) | CI PR (SHA `64cd6263`) : 7/7 verts ; passe 1 670 = 662 passés + 8 sautés ; **passe 2 `Running 10 tests`, 10 passés (13 avant, PIT-S88-007 OK)** ; `Backend UP (/actuator/health)` après 6 tentatives
+**Nouveaux pitfalls / décisions / patterns / bugs :** PIT-S116-001..006 · PAT-S116-001..004 · DEC-S116-001..003 · BUG-S116-001 · ADR-010 §7 amendé · packs pit régénérés
+**Écarts de briefing :** branche du worktree basée sur `main` → `sprint/116` créée depuis `origin/dev` ; `node_modules` en zod 3 (`npm ci` par l'agent #838, PIT-S116-003) ; E2E non délégués à un test-runner ; briefings supprimés avant la PR
+**Absorbé en cours (XS) :** #406 (dans #839)
+**Follow-ups arbitrés (Phase 4 triage) :**
+  - borne register « ré-émissions du setup » non recomptée par le test de budget [XS | e2e/ci] → issue #869 (backlog)
+  - exemption inline étendue à 502/503/504 ? [XS | frontend] → issue #870 (backlog)
+  - barrière d'hydratation dans `loginViaForm` (sprint-111 rouge sous `next dev`) [XS | e2e] → issue #871 (backlog)
+  - exploiter `Retry-After` côté frontend [S | frontend/auth] → issue #872 (backlog)
+  Ratio discard 0/4.
+**Saturation contexte lead (mesure) :** non mesurée
+**Status :** Terminé
 
 ### Sprint 117 — 2026-10-24 (PLANIFIÉ — cohésion 1.00, Frise : défilement et cadrage justes, cibles tactiles restantes)
 **Objectif :** plus de dérive de position sur `[ ]` combinés à `+/-` ; libellé de pin entier après F ; dernières cibles tactiles mesurées

@@ -110,6 +110,32 @@ class ResetPasswordTokenRateLimitIntegrationTest extends AbstractPostgresIntegra
                 .andExpect(jsonPath("$.error").value("too_many_requests"));
     }
 
+    /**
+     * #567 — le 429 PAR TOKEN porte le Retry-After du seau PAR TOKEN, pas celui du seau par IP.
+     * Discrimination : le seau du token est créé à t0, la 6e tentative part à t0 + 30 s depuis une
+     * IP NEUVE (seau IP créé à l'instant, il annoncerait 60). Le seul 30 possible est celui du
+     * seau qui a refusé. Même contrat que les autres slots (entier, [1, 60], aucun X-RateLimit-*).
+     */
+    @Test
+    void sameToken_429_retryAfterIsTheTokenBucketDelay() throws Exception {
+        String token = UUID.randomUUID().toString();
+        for (int i = 1; i <= 5; i++) {
+            reset(token, "10.45.0." + i);
+        }
+        clock.advance(Duration.ofSeconds(30));
+
+        String body = "{\"token\":\"" + token + "\",\"newPassword\":\"NewSecret1\"}";
+        org.springframework.mock.web.MockHttpServletResponse over = mockMvc.perform(
+                        post("/api/auth/reset-password")
+                                .with(req -> { req.setRemoteAddr("10.45.0.99"); return req; })
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(body))
+                .andReturn().getResponse();
+
+        assertEquals(30, RateLimitingAndHeadersIntegrationTest.assertRetryAfterContract(over),
+                "le délai annoncé doit être celui du seau par token (créé 30 s plus tôt)");
+    }
+
     /** Sous le seuil (5 tentatives sur un même token) : aucune n'est throttlée. */
     @Test
     void sameToken_underThreshold_neverThrottled() throws Exception {

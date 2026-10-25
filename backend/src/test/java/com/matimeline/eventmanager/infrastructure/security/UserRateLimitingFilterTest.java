@@ -6,8 +6,11 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
+import java.time.Duration;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -111,6 +114,71 @@ class UserRateLimitingFilterTest {
         Outcome over = run(filter, "PUT", PATH);
         assertEquals(429, over.response().getStatus());
         assertFalse(over.reachedChain());
+    }
+
+    /** Horloge pilotable (#567) : aucune attente réelle pour observer la décroissance du délai. */
+    private static final class ManualTimeMeter implements TimeMeter {
+        private final AtomicLong nanos = new AtomicLong();
+
+        @Override
+        public long currentTimeNanos() {
+            return nanos.get();
+        }
+
+        @Override
+        public boolean isWallClockBased() {
+            return false;
+        }
+
+        void advance(Duration d) {
+            nanos.addAndGet(d.toNanos());
+        }
+    }
+
+    /**
+     * #567 — le 429 par utilisateur porte le MÊME Retry-After que le limiteur par IP : entier,
+     * arrondi au supérieur, ≥ 1, décroissant, et aucun X-RateLimit-*.
+     */
+    @Test
+    void overTheCeiling_429_carriesRetryAfter_roundedUp_andDecreasing() throws Exception {
+        ManualTimeMeter meter = new ManualTimeMeter();
+        UserRateLimitingFilter timed = new UserRateLimitingFilter(meter, true);
+        authenticate(customUser(UUID.randomUUID()));
+        for (int i = 1; i <= UserRateLimitingFilter.DEFAULT_PREFERENCES_PER_MINUTE; i++) {
+            assertTrue(run(timed, "PUT", PATH).reachedChain(), "PUT #" + i + " sous le plafond");
+        }
+
+        assertEquals("60", retryAfterOf(run(timed, "PUT", PATH)), "seau neuf, temps figé : une fenêtre");
+
+        meter.advance(Duration.ofMillis(45_200));
+        assertEquals("15", retryAfterOf(run(timed, "PUT", PATH)), "14,8 s restantes annoncées 15");
+
+        meter.advance(Duration.ofMillis(14_700));
+        assertEquals("1", retryAfterOf(run(timed, "PUT", PATH)), "0,1 s restante annoncée 1, jamais 0");
+
+        meter.advance(Duration.ofMillis(100));
+        assertTrue(run(timed, "PUT", PATH).reachedChain(), "le délai annoncé écoulé, le quota revient");
+    }
+
+    /** Statut 429, chaîne non atteinte, aucun X-RateLimit-*, et la valeur brute de Retry-After. */
+    private static String retryAfterOf(Outcome out) {
+        assertEquals(429, out.response().getStatus());
+        assertFalse(out.reachedChain());
+        assertEquals("{\"error\":\"too_many_requests\"}", contentOf(out));
+        for (String name : out.response().getHeaderNames()) {
+            assertFalse(name.toLowerCase(Locale.ROOT).startsWith("x-ratelimit"), "X-RateLimit-* émis : " + name);
+        }
+        String raw = out.response().getHeader("Retry-After");
+        assertNotNull(raw, "un 429 doit porter Retry-After — en-têtes : " + out.response().getHeaderNames());
+        return raw;
+    }
+
+    private static String contentOf(Outcome out) {
+        try {
+            return out.response().getContentAsString();
+        } catch (java.io.UnsupportedEncodingException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     @Test
