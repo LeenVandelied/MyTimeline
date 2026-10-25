@@ -1093,3 +1093,15 @@ Relever `tagName:left,top,width,height` de tous les éléments de `body` avant e
 
 ## PAT-S115-002 — Migration de masse dans les specs : script ligne à ligne + rejeu par lot + garde texte armée
 99 occurrences dans 72 specs : script qui ne réécrit que les lignes de code (pas les JSDoc, pas les `browser.newContext`), `prettier --write` + lint, rejeu par lots de 9, puis garde Vitest TEXTE (59 ms) qui rougit sur la forme brute, armée par mutation. Anti-pattern : `sed` global. (Sprint 115 #840)
+
+## PAT-S116-001 — Prouver qu'un `Retry-After` vient du BON seau quand deux seaux peuvent refuser
+Décaler leurs âges avec le TimeMeter piloté (seau du jeton créé à t0, requête à t0+30 s depuis une IP neuve dont le seau annoncerait 60) et asserter la valeur exacte (30). Anti-pattern : « présent et dans [1, 60] », vert quel que soit le seau. (Sprint 116 #567)
+
+## PAT-S116-002 — Tester un arrondi de délai avec une avance FRACTIONNAIRE
+Un seau neuf annonce 60 s pile, insensible à l'arrondi (vert sous mutation « arrondi inférieur »). Avancer de 20,5 s → asserter 40, puis 0,5 s restante → plancher 1. (Sprint 116 #567)
+
+## PAT-S116-003 — Un compteur statique qui modélise une sélection runtime appelle la MÊME fonction
+Le test de budget compte les comptes de chaque passe CI avec `selectSetupAccounts`, exportée et utilisée par `auth.setup.ts`, ancre l'appel syntaxiquement dans le setup, et n'accepte la variable qu'en préfixe de commande dans `ci.yml`. Anti-pattern : recopier la règle dans le test, ou lire un `env:` que le parseur ignore. (Sprint 116 #839)
+
+## PAT-S116-004 — E2E « absence de bannière » non vacant
+(1) attendre une preuve que l'intercepteur est passé (`console.error` du `catch` appelant) + deux `requestAnimationFrame` ; (2) témoin positif dans la même spec (500 sur une autre requête → bannière visible) ; (3) contrôle négatif rechargé à chaud qui rougit. Anti-pattern : `toHaveCount(0)` juste après le clic. (Sprint 116 #838)

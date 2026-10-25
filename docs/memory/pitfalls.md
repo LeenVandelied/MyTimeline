@@ -2139,3 +2139,21 @@ Le relevé « texte contenu dans la barre » de `sprint-104-landing-sticky-nav` 
 
 ## PIT-S115-005 — Contre `next dev`, 7 faux rouges de préchargement connus, pas 4
 `sprint-106-product-detail` #698 (`:495`, `:529`, `:549`) rougit ×3 contre `next dev`, comme `sprint-90-first-contact` #629 ×4 : préchargement RSC absent en dev. A/B sur la version non migrée → mêmes rouges. Prévention : imputer ces 7 cas à l'environnement ; la suite qui fait foi tourne contre `next build` + `next start`. (Sprint 115 #840)
+
+## PIT-S116-001 — `Retry-After` n'est pas un en-tête de réponse CORS-safelisted
+Le front dev appelle `:8080` depuis `:3000` : sans `setExposedHeaders`, le JS ne lit pas `Retry-After` (seuls Cache-Control, Content-Language, Content-Length, Content-Type, Expires, Last-Modified, Pragma le sont). Le `CorsFilter` passe avant le limiteur, donc l'asserter SUR le 429. Prévention : tout nouvel en-tête de réponse destiné au JS passe par `SecurityConfig.setExposedHeaders`. (Sprint 116 #567)
+
+## PIT-S116-002 — Un seau de rate-limit à clé fournie par l'attaquant ne devient un oracle que s'il dépend de la base
+Le seau par jeton de reset-password est créé pour toute valeur ≤ 128 caractères, sans accès base : jeton réel et inconnu donnent le même 429 et le même `Retry-After`. Prévention : ne jamais introduire de lookup (existence/validité du jeton) avant `tryConsumeToken`, sinon le délai annoncé trahit l'existence. (Sprint 116 #567, audit sécurité)
+
+## PIT-S116-003 — Un `node_modules` resté en zod 3 se déguise en régression du code
+Après le passage à zod 4, le `node_modules` du worktree était en zod 3.24.2 : tous les tests important `types/settings.ts` levaient `z.guid is not a function`. Prévention : en début de sprint, comparer la version INSTALLÉE (`node -p "require('./node_modules/zod/package.json').version"`) au `package.json`, ou `npm ci` d'office si le lock a bougé. (Sprint 116 #838)
+
+## PIT-S116-004 — `sprint-111-theme-account-preference:88` rougit sous `next dev` (hydratation)
+`loginViaForm` remplit le formulaire avant l'hydratation : champs vidés, `[invalid]`, aucun `POST /api/auth/login`. Même rouge sur HEAD (A/B), vert sous `next build` + `next start`. Prévention : s'ajoute aux faux rouges `next dev` (PIT-S115-005) ; rejouer contre le build de production avant tout diagnostic. Suivi : issue de barrière d'hydratation. (Sprint 116 #838)
+
+## PIT-S116-005 — `warn-test-delegation` refuse toute commande dont le TEXTE contient `npx playwright test`
+Y compris un heredoc qui écrit cette chaîne dans un test ou un commentaire `ci.yml` : l'édition entière est refusée SANS être appliquée. Prévention : préfixer `SKIP_DELEGATION=1` ou passer par Write, et vérifier après un refus que rien n'a été écrit avant de rejouer. (Sprint 116 #839)
+
+## PIT-S116-006 — Une borne de budget écrite en prose n'est gardée par rien
+« borne register avec ré-émissions du setup = 36 » (`application-e2e.properties`, `auth.setup.ts`) était périmée depuis S111 (valait 39) ; recomptée 30 au S116. Prévention : toute borne de budget E2E est une ligne lue par `e2e-rate-limit-budget.test.ts`, ou se recompte à chaque changement de passe/compte. Suivi : issue backlog. (Sprint 116 #839)
