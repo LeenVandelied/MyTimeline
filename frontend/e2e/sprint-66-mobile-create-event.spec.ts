@@ -1,6 +1,7 @@
 import { expect, test } from './support/fixtures'
 import { type APIRequestContext, type Page } from '@playwright/test'
 import { PROD } from './support/accounts'
+import { sessionState } from './support/session'
 import { ensureAuthenticated } from './support/auth'
 import { neutralizeDevToolingPointerEvents } from './support/dev-tooling'
 import { getUserId, seedCategory, seedProduct, unique } from './support/products'
@@ -48,7 +49,7 @@ import { getUserId, seedCategory, seedProduct, unique } from './support/products
  * OK, `404` = proxy absent ([[PIT-S62-012]]).
  */
 
-test.use({ storageState: PROD.storageState })
+test.use({ storageState: sessionState(PROD) })
 
 /** Portrait mobile de référence (iPhone 14). */
 const MOBILE_PORTRAIT = { width: 390, height: 844 }

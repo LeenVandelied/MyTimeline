@@ -1,6 +1,7 @@
 import { test, expect } from './support/fixtures'
 import { type Locator, type Page } from '@playwright/test'
 import { PROD } from './support/accounts'
+import { sessionState } from './support/session'
 import { ensureAuthenticated } from './support/auth'
 import { waitForFonts } from './support/contrast'
 import { getUserId, seedCategory, seedProduct, unique } from './support/products'
@@ -46,7 +47,7 @@ import { getUserId, seedCategory, seedProduct, unique } from './support/products
  * Mesures, pas captures : aucune référence visuelle n'est créée ni modifiée.
  */
 
-test.use({ storageState: PROD.storageState, timezoneId: 'Europe/Paris' })
+test.use({ storageState: sessionState(PROD), timezoneId: 'Europe/Paris' })
 
 const LOCALES = ['fr', 'de'] as const
 const WIDTHS = [1024, 1280] as const

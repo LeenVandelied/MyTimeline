@@ -1,6 +1,7 @@
 import { test, expect } from './support/fixtures'
 import { type Locator, type Page } from '@playwright/test'
 import { PROD } from './support/accounts'
+import { sessionState } from './support/session'
 import { ensureAuthenticated, openSettingsChapter } from './support/auth'
 import { getUserId, gotoProducts, seedCategory, seedProduct, unique } from './support/products'
 import {
@@ -159,7 +160,7 @@ import {
  * décrit par #472 n'a pas été reproduit — il n'a pas été expliqué non plus.
  */
 
-test.use({ storageState: PROD.storageState })
+test.use({ storageState: sessionState(PROD) })
 
 /** Bord haut de l'option, loin de ses coins `rounded-xs` (rayon 3 px). */
 const SIDE = 'top' as const
