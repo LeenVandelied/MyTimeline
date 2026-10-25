@@ -12,7 +12,16 @@ import { basename, join } from 'node:path'
 import * as ts from 'typescript'
 import { describe, expect, it } from 'vitest'
 
-import { ALL_ACCOUNTS, type E2eAccount } from '../../e2e/support/accounts'
+import {
+  ALL_ACCOUNTS,
+  DEL,
+  PROD,
+  PWD,
+  SETUP_ACCOUNTS_ENV,
+  SHARED,
+  selectSetupAccounts,
+  type E2eAccount,
+} from '../../e2e/support/accounts'
 import { acceptedRegisterStatus, classifyRegisterResponse } from '../../e2e/support/register-retry'
 import { assertUsableSession, sessionState } from '../../e2e/support/session'
 
@@ -34,9 +43,14 @@ import { assertUsableSession, sessionState } from '../../e2e/support/session'
  *
  *   1. LA PASSE 2 MANQUAIT. Le job CI `e2e` joue DEUX passes Playwright contre le
  *      MÊME backend (seaux en mémoire JVM, conservés d'une passe à l'autre) ; la
- *      passe 2 (`auth.setup.ts auth-signature.spec.ts`) re-provisionne les 4 comptes.
+ *      passe 2 (`auth.setup.ts auth-signature.spec.ts`) re-provisionnait les 4 comptes.
  *      Le budget register annoncé (8) valait 12 en CI. Les passes sont maintenant
  *      LUES dans `ci.yml`, pas supposées.
+ *      #839 (S116) : la passe 2 ne provisionne plus que `SHARED`, seul compte
+ *      d'`auth-signature.spec.ts`, via `E2E_SETUP_ACCOUNTS=shared` posé en préfixe de sa
+ *      commande. Le nombre de comptes du setup est donc LU PAR PASSE (préfixe de la
+ *      commande, résolu par la MÊME fonction que le setup : `selectSetupAccounts`), et
+ *      le setup est ancré : sa boucle de provision itère sur cette fonction.
  *   2. LES HELPERS LOCAUX D'UNE SPEC ÉTAIENT COMPTÉS UNE FOIS. La détection par
  *      regex voyait `login-submit` UNE fois dans `reset-password-failures.spec.ts`,
  *      alors que la fonction locale `submitLogin` qui le porte est appelée deux fois.
@@ -48,6 +62,8 @@ import { assertUsableSession, sessionState } from '../../e2e/support/session'
  * ─────────────────────────────────────────────────────────────────────────────
  *   nominal CI  = Σ passes [ setup + émissions des specs de la passe ]
  *   pire cas CI = Σ passes [ setup + émissions des specs × (1 + retries) ]
+ *   setup d'une passe = comptes provisionnés PAR CETTE PASSE × émissions par compte
+ *                       × (1 + retries du setup)
  *
  * Une émission dans une boucle compte × la BORNE de la boucle ; une boucle qui émet sans
  * borne lisible fait échouer le recompte (revue S88). SEULE exception, sous contrat vérifié :
@@ -684,9 +700,14 @@ interface Pass {
   command: string
   full: boolean
   files: string[]
+  /** Affectations `NOM=valeur` posées en PRÉFIXE de la commande (#839). */
+  env: Record<string, string>
 }
 
 const PLAYWRIGHT_INVOCATION = /(?:npm run test:e2e|playwright test)/
+
+/** Préfixe d'affectations shell `NOM=valeur ` en tête de commande. */
+const LEADING_ASSIGNMENT = /^([A-Z_][A-Z0-9_]*)=(\S*)\s+/
 
 /**
  * Les commandes shell des étapes `run:` du workflow, dans l'ordre : une par ligne pour
@@ -731,17 +752,85 @@ function readCiPasses(yaml: string = readFileSync(CI_WORKFLOW, 'utf8')): Pass[] 
   for (const raw of readRunCommands(yaml)) {
     if (!PLAYWRIGHT_INVOCATION.test(raw)) continue
     const command = raw.trim()
+    const env: Record<string, string> = {}
+    let rest = command
+    for (let m = rest.match(LEADING_ASSIGNMENT); m; m = rest.match(LEADING_ASSIGNMENT)) {
+      env[m[1]] = m[2].replace(/^(['"])(.*)\1$/, '$2')
+      rest = rest.slice(m[0].length)
+    }
     const args = command.includes('test:e2e')
       ? (command.split(/\s--\s/)[1] ?? '').split(/\s+/)
       : command.split(/playwright test/)[1].split(/\s+/)
     const files = args.filter((a) => a !== '' && !a.startsWith('-'))
-    passes.push({ command, full: files.length === 0, files })
+    passes.push({ command, full: files.length === 0, files, env })
   }
   return passes
 }
 
 function passIncludes(pass: Pass, file: string): boolean {
   return pass.full || pass.files.some((f) => basename(f) === file)
+}
+
+/**
+ * Comptes provisionnés par le setup DANS cette passe (#839) : la sélection de
+ * `auth.setup.ts`, appliquée au préfixe `E2E_SETUP_ACCOUNTS=…` de la commande. La même
+ * fonction que le setup, pas une copie — l'ancrage « boucle de provision » garantit que
+ * le setup l'appelle bien.
+ */
+function setupAccountsOf(pass: Pass): readonly E2eAccount[] {
+  return passIncludes(pass, 'auth.setup.ts')
+    ? selectSetupAccounts(pass.env[SETUP_ACCOUNTS_ENV])
+    : []
+}
+
+/** Constantes de compte exportées par `support/accounts.ts`, par nom d'import. */
+const ACCOUNT_EXPORTS: Record<string, readonly E2eAccount['key'][]> = {
+  SHARED: [SHARED.key],
+  PWD: [PWD.key],
+  DEL: [DEL.key],
+  PROD: [PROD.key],
+  ALL_ACCOUNTS: ALL_ACCOUNTS.map((a) => a.key),
+}
+
+/** Clés des comptes qu'une spec importe de `support/accounts` (imports nommés). */
+function importedAccounts(text: string): E2eAccount['key'][] {
+  const source = ts.createSourceFile('spec.ts', text, ts.ScriptTarget.Latest, true)
+  const keys = new Set<E2eAccount['key']>()
+  for (const statement of source.statements) {
+    if (!ts.isImportDeclaration(statement)) continue
+    const from = literalText(statement.moduleSpecifier)
+    if (from === null || !/(?:^|\/)support\/accounts$/.test(from)) continue
+    const bindings = statement.importClause?.namedBindings
+    if (bindings === undefined) continue
+    if (ts.isNamespaceImport(bindings)) {
+      ALL_ACCOUNTS.forEach((a) => keys.add(a.key))
+      continue
+    }
+    for (const element of bindings.elements) {
+      const name = (element.propertyName ?? element.name).text
+      for (const key of ACCOUNT_EXPORTS[name] ?? []) keys.add(key)
+    }
+  }
+  return ALL_ACCOUNTS.map((a) => a.key).filter((key) => keys.has(key))
+}
+
+/**
+ * Ancrage du setup (#839) : UNE boucle `for…of` de niveau module, qui itère sur
+ * `selectSetupAccounts(process.env[SETUP_ACCOUNTS_ENV])` — sinon le compte par passe
+ * ci-dessus décrit une sélection que le setup n'applique pas. Renvoie les écarts.
+ */
+function setupLoopViolations(setupFile: string = SETUP_FILE): string[] {
+  const source = parse(setupFile)
+  const loops = source.statements.filter(ts.isForOfStatement)
+  if (loops.length !== 1) {
+    return [`${loops.length} boucle(s) for…of de niveau module dans ${setupFile}, 1 attendue`]
+  }
+  const iterated = loops[0].expression
+  const expected = 'selectSetupAccounts(process.env[SETUP_ACCOUNTS_ENV])'
+  const text = iterated.getText(source)
+  return text === expected
+    ? []
+    : [`la boucle de provision itère sur \`${text}\`, attendu \`${expected}\``]
 }
 
 function readRetries(): number {
@@ -862,13 +951,13 @@ function computeBudget(slot: SlotName): Budget {
   const retries = readRetries()
   const firefox = readFirefoxMatch()
   const { perFile } = countSpecs(slot)
-  const setupPerPass =
-    ALL_ACCOUNTS.length * setupEmissionsPerAccount(slot) * (1 + readSetupRetries())
+  const perAccount = setupEmissionsPerAccount(slot) * (1 + readSetupRetries())
   let nominal = 0
   let worst = 0
   const detail: string[] = []
   passes.forEach((pass, index) => {
-    const setup = passIncludes(pass, 'auth.setup.ts') ? setupPerPass : 0
+    const accounts = setupAccountsOf(pass)
+    const setup = accounts.length * perAccount
     let specs = 0
     for (const [file, count] of Object.entries(perFile)) {
       if (!passIncludes(pass, file)) continue
@@ -877,7 +966,8 @@ function computeBudget(slot: SlotName): Budget {
     nominal += setup + specs
     worst += setup + specs * (1 + retries)
     detail.push(
-      `  passe ${index + 1} (${pass.full ? 'suite complète' : pass.files.join(' ')}) : setup ${setup} + specs ${specs}`,
+      `  passe ${index + 1} (${pass.full ? 'suite complète' : pass.files.join(' ')}) : ` +
+        `setup ${setup} (${accounts.map((a) => a.key).join(',') || 'aucun compte'}) + specs ${specs}`,
     )
   })
   detail.push(`  specs émettrices : ${JSON.stringify(perFile)} ; retries CI : ${retries}`)
@@ -907,7 +997,7 @@ describe(
   '#547 — budget rate-limit de la suite E2E (dépôt réel)',
   { timeout: REAL_REPO_TIMEOUT_MS },
   () => {
-    it('le job CI joue bien les passes attendues, dont la passe 2 qui re-provisionne', () => {
+    it('le job CI joue bien les passes attendues : passe 1 sur les 4 comptes, passe 2 sur SHARED seul (#839)', () => {
       const passes = readCiPasses()
       expect(
         passes.length,
@@ -915,6 +1005,54 @@ describe(
       ).toBe(2)
       expect(passes[0].full).toBe(true)
       expect(passIncludes(passes[1], 'auth.setup.ts')).toBe(true)
+      expect(setupAccountsOf(passes[0]).map((a) => a.key)).toEqual(['shared', 'pwd', 'del', 'prod'])
+      expect(
+        setupAccountsOf(passes[1]).map((a) => a.key),
+        `passe 2 : ${passes[1].command}`,
+      ).toEqual([SHARED.key])
+    })
+
+    it(`${SETUP_ACCOUNTS_ENV} n'apparaît dans ci.yml qu'en préfixe d'une commande Playwright (#839)`, () => {
+      // Posée dans un bloc `env:` (step ou job), la variable échapperait à la lecture par passe :
+      // le recompte supposerait 4 comptes là où le setup en provisionne moins — ou l'inverse
+      // si elle était posée au niveau du job, passe 1 comprise.
+      const yaml = readFileSync(CI_WORKFLOW, 'utf8')
+      const occurrences =
+        yaml
+          .split('\n')
+          .filter((l) => !l.trim().startsWith('#'))
+          .join('\n')
+          .split(SETUP_ACCOUNTS_ENV).length - 1
+      const asPrefix = readCiPasses(yaml).filter((p) => SETUP_ACCOUNTS_ENV in p.env).length
+      expect(occurrences, `${SETUP_ACCOUNTS_ENV} hors préfixe de commande dans ci.yml`).toBe(
+        asPrefix,
+      )
+    })
+
+    it('chaque passe filtrée ne joue que des specs dont les comptes sont provisionnés par elle (#839)', () => {
+      for (const pass of readCiPasses().filter((p) => !p.full)) {
+        const provisioned = new Set(setupAccountsOf(pass).map((a) => a.key))
+        for (const file of pass.files.filter((f) => f.endsWith('.spec.ts'))) {
+          const used = importedAccounts(readFileSync(join(E2E_DIR, file), 'utf8'))
+          const missing = used.filter((key) => !provisioned.has(key))
+          expect(
+            missing,
+            `${file} (passe « ${pass.command} ») utilise ${JSON.stringify(used)}, la passe ne ` +
+              `provisionne que ${JSON.stringify([...provisioned])} — élargir ${SETUP_ACCOUNTS_ENV} ` +
+              'ET recompter le budget',
+          ).toEqual([])
+        }
+      }
+      // Ancrage : la seule spec de la passe 2 n'utilise que SHARED.
+      expect(
+        importedAccounts(readFileSync(join(E2E_DIR, 'auth-signature.spec.ts'), 'utf8')),
+      ).toEqual([SHARED.key])
+    })
+
+    it('le setup provisionne la sélection et persiste TOUTES les identités (#839)', () => {
+      expect(setupLoopViolations()).toEqual([])
+      // `persist account identities` reste entier : appel sans argument = ALL_ACCOUNTS.
+      expect(readFileSync(SETUP_FILE, 'utf8')).toMatch(/^\s+persistAccounts\(\)$/m)
     })
 
     it('le setup émet 1 register et 1 login par compte, sans retry Playwright, pour 4 comptes', () => {
@@ -1539,6 +1677,72 @@ describe('#547 — la détection, exercée sur des sources synthétiques', () =>
     expect(passes.map((p) => ({ full: p.full, files: p.files }))).toEqual([
       { full: true, files: [] },
       { full: false, files: ['auth.setup.ts', 'auth-signature.spec.ts'] },
+    ])
+  })
+
+  it('lit les affectations en préfixe de commande, et en déduit les comptes du setup (#839)', () => {
+    const passes = readCiPasses(
+      [
+        '      - name: passe 1',
+        '        run: npm run test:e2e -- --output=p1',
+        '      - name: passe 2',
+        `        run: ${SETUP_ACCOUNTS_ENV}=shared FOO='x' npx playwright test auth.setup.ts auth-signature.spec.ts`,
+        '      - name: passe 3, sans setup',
+        `        run: ${SETUP_ACCOUNTS_ENV}=pwd npx playwright test golden-path.spec.ts`,
+      ].join('\n'),
+    )
+    expect(passes.map((p) => ({ files: p.files, env: p.env }))).toEqual([
+      { files: [], env: {} },
+      {
+        files: ['auth.setup.ts', 'auth-signature.spec.ts'],
+        env: { [SETUP_ACCOUNTS_ENV]: 'shared', FOO: 'x' },
+      },
+      { files: ['golden-path.spec.ts'], env: { [SETUP_ACCOUNTS_ENV]: 'pwd' } },
+    ])
+    expect(passes.map((p) => setupAccountsOf(p).map((a) => a.key))).toEqual([
+      ['shared', 'pwd', 'del', 'prod'],
+      ['shared'],
+      // Le filtre ne crée pas de setup là où la passe n'en joue pas.
+      [],
+    ])
+  })
+
+  it('sélection des comptes du setup : défaut = tous, ordre du tableau, clé inconnue = erreur (#839)', () => {
+    const keys = (raw: string | undefined) => selectSetupAccounts(raw).map((a) => a.key)
+    expect(keys(undefined)).toEqual(['shared', 'pwd', 'del', 'prod'])
+    expect(keys('')).toEqual(['shared', 'pwd', 'del', 'prod'])
+    expect(keys('  ')).toEqual(['shared', 'pwd', 'del', 'prod'])
+    expect(keys('shared')).toEqual(['shared'])
+    expect(keys(' prod , shared,shared ')).toEqual(['shared', 'prod'])
+    expect(() => keys('shared,SHARED')).toThrow(/SHARED/)
+    expect(() => keys('nobody')).toThrow(/nobody/)
+  })
+
+  it('lit les comptes importés par une spec, nom renommé ou espace de noms compris (#839)', () => {
+    expect(importedAccounts(`import { SHARED } from './support/accounts'`)).toEqual(['shared'])
+    expect(
+      importedAccounts(`import { PROD as P, type E2eAccount, DEL } from '../e2e/support/accounts'`),
+    ).toEqual(['del', 'prod'])
+    expect(importedAccounts(`import * as accounts from './support/accounts'`)).toEqual([
+      'shared',
+      'pwd',
+      'del',
+      'prod',
+    ])
+    expect(importedAccounts(`import { SHARED } from './support/other'`)).toEqual([])
+  })
+
+  it('ancrage du setup : une boucle qui ignore la sélection est refusée (#839)', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'setup-loop-'))
+    const file = join(dir, 'auth.setup.ts')
+    writeFileSync(file, `for (const account of ALL_ACCOUNTS) {\n  setup('x', () => {})\n}\n`)
+    expect(setupLoopViolations(file)).toEqual([
+      'la boucle de provision itère sur `ALL_ACCOUNTS`, attendu ' +
+        '`selectSetupAccounts(process.env[SETUP_ACCOUNTS_ENV])`',
+    ])
+    writeFileSync(file, `persistAccounts()\n`)
+    expect(setupLoopViolations(file)).toEqual([
+      `0 boucle(s) for…of de niveau module dans ${file}, 1 attendue`,
     ])
   })
 
