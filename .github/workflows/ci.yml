@@ -309,22 +309,37 @@ jobs:
           echo "BACKEND_PID=$!" >> "$GITHUB_ENV"
 
       # Attente de la disponibilité RÉELLE du backend avant de lancer Playwright
-      # (évite le flaky). Pas d'actuator : on poll un endpoint connu — `/api/auth/me`
-      # renvoie 401 sans cookie, ce qui prouve que l'app répond (tout code HTTP < 500
-      # non vide = up). Timeout ~90s (boot Spring + Flyway).
+      # (évite le flaky). Timeout ~90s (boot Spring + Flyway).
+      # #406 (S116) — l'ancien commentaire niait la présence d'Actuator : FAUX depuis #37
+      # (`spring-boot-starter-actuator`, backend/pom.xml). DÉCISION : le poll BASCULE de
+      # `/api/auth/me` vers `/actuator/health`, comme `flyway-smoke` (plus bas) et le
+      # healthcheck du service `backend-e2e` de docker-compose.yml (MÊMES profils dev,e2e).
+      # Pourquoi : un 401 sur `/api/auth/me` prouve que la chaîne de filtres web répond,
+      # pas que l'application est prête ; `{"status":"UP"}` agrège les indicateurs (dont la
+      # base). Exposition vérifiée en profil dev,e2e : `permitAll` sur `/actuator/health`
+      # (SecurityConfig, #37), aucune propriété `management.*` qui le masquerait (défaut
+      # Spring Boot : health exposé sur le web), hors des créneaux de `RateLimitingFilter`,
+      # et l'indicateur `brevo` (seul à pouvoir rendre DOWN sans panne) est `@Profile("prod")`.
+      # En plus : `kill -0` sort AUSSITÔT si la JVM est morte (au lieu d'attendre 90 s).
+      # Pas de preuve sur un run réel avant la PR S116 : c'est le run CI de la PR qui la donne.
       - name: Wait for backend readiness
         working-directory: backend
         run: |
           for i in $(seq 1 45); do
-            code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/api/auth/me || echo 000)
-            if [ "$code" != "000" ] && [ "$code" -lt 500 ]; then
-              echo "Backend up (HTTP $code) après ${i} tentative(s)."
+            if ! kill -0 "$BACKEND_PID" 2>/dev/null; then
+              echo "Backend MORT avant d'être prêt — logs :"
+              tail -n 200 backend.log || true
+              exit 1
+            fi
+            if curl -sf http://localhost:8080/actuator/health | grep -q '"status":"UP"'; then
+              echo "Backend UP (/actuator/health) après ${i} tentative(s)."
               exit 0
             fi
-            echo "Attente backend... (tentative ${i}, code=$code)"
+            echo "Attente backend... (tentative ${i})"
             sleep 2
           done
-          echo "Backend indisponible après timeout — logs :"
+          echo "Backend jamais UP après timeout — santé et logs :"
+          curl -s http://localhost:8080/actuator/health || true
           tail -n 200 backend.log || true
           exit 1
 
