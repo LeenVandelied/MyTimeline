@@ -1,6 +1,7 @@
 import { test, expect } from './support/fixtures'
 import { type Page, type Route } from '@playwright/test'
 import { PROD } from './support/accounts'
+import { sessionState } from './support/session'
 import { gotoProducts } from './support/products'
 
 /**
@@ -25,7 +26,7 @@ import { gotoProducts } from './support/products'
  * tableau de bord ; un run qui franchit minuit entre le calcul de la fixture et le rendu.
  */
 
-test.use({ storageState: PROD.storageState })
+test.use({ storageState: sessionState(PROD) })
 
 const PRODUCTS_LIST_RE = /\/api\/users\/[^/]+\/products(\?.*)?$/
 

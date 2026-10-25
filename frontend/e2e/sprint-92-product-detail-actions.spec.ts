@@ -1,6 +1,7 @@
 import { type Page } from '@playwright/test'
 import { expect, test } from './support/fixtures'
 import { PROD } from './support/accounts'
+import { sessionState } from './support/session'
 import { ensureAuthenticated } from './support/auth'
 import { neutralizeDevToolingPointerEvents } from './support/dev-tooling'
 import { getUserId, gotoProducts, seedCategory, seedProduct, unique } from './support/products'
@@ -72,7 +73,7 @@ async function seedAndOpenDetail(page: Page, label: string) {
 }
 
 test.describe('#605 — actions du détail produit (desktop)', () => {
-  test.use({ storageState: PROD.storageState, viewport: DESKTOP })
+  test.use({ storageState: sessionState(PROD), viewport: DESKTOP })
 
   test('« Nouvel événement » ouvre le drawer du shell avec CE produit sélectionné', async ({
     page,
