@@ -80,7 +80,11 @@ import {
   layoutLanes,
   type LaneLayout,
 } from './lane-layout'
-import { applyLabelReserves } from './label-reserve'
+import {
+  applyLabelReserves,
+  fitMarginsForTrailReserve,
+  trailingLabelReservePx,
+} from './label-reserve'
 
 /**
  * #55 — Vue Timeline desktop.
@@ -1222,7 +1226,12 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
       // JUSTE APRÈS l'en-tête sticky. Le convertir en repère rail le collerait au
       // bord gauche, donc SOUS l'en-tête — le défaut même que corrige cette issue
       // (visible sur « T » / « [ » / « ] »).
-      el.scrollLeft = Math.max(0, zoom.offsetDays * dayWidth)
+      // #805 — `behavior:'instant'` et non `el.scrollLeft =` : sous le
+      // `scroll-behavior:smooth` du conteneur, l'affectation LANCE une animation et
+      // `recordScrollAnchor()` relisait aussitôt la position de DÉPART. Un `+`/`-`
+      // frappé avant la fin du vol re-projetait (#449) cette ancre périmée et
+      // annulait le saut : `]` puis `+` finissait 19 405 px trop loin (mesure E2E).
+      el.scrollTo({ left: Math.max(0, zoom.offsetDays * dayWidth), behavior: 'instant' })
       recordScrollAnchor()
     }
   }, [zoom.offsetDays, dayWidth, recordScrollAnchor])
@@ -1265,7 +1274,8 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
     if (!el) return
     // `todayLeftPx` est en repère PISTE → passage en repère rail (#392).
     const target = LANE_TRACK_OFFSET_PX + todayLeftPx - el.clientWidth / 2
-    el.scrollLeft = Math.max(0, target)
+    // #805 — instantané pour que l'ancre relevée juste après soit la position posée.
+    el.scrollTo({ left: Math.max(0, target), behavior: 'instant' })
     recordScrollAnchor()
     autoAnchorRef.current = anchorDaysRef.current
   }, [todayLeftPx, recordScrollAnchor])
@@ -1318,7 +1328,8 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
       const el = scrollRef.current
       if (!el) return
       // Réciproque exacte de `syncViewportFromScroll` (repère piste → rail, #392).
-      el.scrollLeft = LANE_TRACK_OFFSET_PX + start * trackWidth
+      // #805 — instantané : même course ancre/animation que l'effet `offsetDays`.
+      el.scrollTo({ left: LANE_TRACK_OFFSET_PX + start * trackWidth, behavior: 'instant' })
       recordScrollAnchor()
       setViewportStart(start)
     },
@@ -1355,10 +1366,13 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
         }
       }
     }
-    const fit = computeFit(
-      displayedEventDayExtent(indexedEvents, displayed),
-      el.clientWidth - LANE_TRACK_OFFSET_PX,
+    const extent = displayedEventDayExtent(indexedEvents, displayed)
+    // #804 (suite) — marge droite = réserve RÉELLE du libellé de queue (+ air), pas le
+    // seul plancher 100 px : un titre de plus de ~19 caractères restait coupé au bord.
+    const margins = fitMarginsForTrailReserve(
+      extent ? trailingLabelReservePx(indexedEvents, displayed, extent.endDay) : 0,
     )
+    const fit = computeFit(extent, el.clientWidth - LANE_TRACK_OFFSET_PX, margins)
     if (!fit) return
     pendingFitRef.current = true
     dispatch({ type: 'FIT', ...fit })

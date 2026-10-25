@@ -7336,12 +7336,25 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
 **Saturation contexte lead (mesure) :** non mesurée
 **Status :** Terminé
 
-### Sprint 117 — 2026-10-24 (PLANIFIÉ — cohésion 1.00, Frise : défilement et cadrage justes, cibles tactiles restantes)
+### Sprint 117 — 2026-10-25 → 2026-10-25 (Terminé — merge PR #873 dans dev)
 **Objectif :** plus de dérive de position sur `[ ]` combinés à `+/-` ; libellé de pin entier après F ; dernières cibles tactiles mesurées
-**Milestone GitHub :** #118
-**Issues :** #805 (P2, S), #804 (P3, XS), #837 (P3, XS) — 4 pts
-**Vagues :** V1 = #837 (Playwright) ∥ #804 (code + `zoom.test.ts`) | V2 = #805 (Playwright) + E2E #804, même agent (`sprint-105-fit-shortcut.spec.ts`)
-**Migrations Flyway :** aucune
-**Dépend de :** Sprint 115 (#840 a migré `sprint-105-fit-shortcut.spec.ts`)
-**À confirmer au démarrage :** #805 — reproduire la dérive en navigateur avant de corriger (jsdom ne clampe pas `scrollLeft`) ; si non reproduite, fermer avec la mesure
-**Status :** Planifié
+**Milestone GitHub :** #118 (fermé après merge)
+**Issues livrées (3) :** #805 (P2, S — dérive reproduite et corrigée), #804 (P3, XS — + réserve dynamique du libellé de queue, follow-up absorbé), #837 (P3, XS) — fermées après merge
+**Vagues exécutées :** V1 = #804 (Vitest seul) ∥ #837 (seul détenteur de Playwright) | V2 = #805 + E2E #804 + réserve dynamique (même agent, `TimelineView.tsx` et `sprint-105-fit-shortcut.spec.ts` communs) | lead : Vitest complet, `next build`, E2E complète contre `next build`+`next start` | reviewer batch | lead : correction du mineur | correction CI (jeu 4 E2E #804 dépendant de la police)
+**Cohésion score :** 1.00 (br-events)
+**Migrations Flyway :** aucune — prochaine V17
+**Commits :** 10 — démarrage `cbff1c3d` · #804 `5cd78b37` · #837 `04a78c0f` · #805 `f0627005` · #804 réserve `b3f52fa8` · #804 E2E `a49b2e2c` · audit + JSDoc review `1ebadb5c` · review-batch `e0a2cf41` · correction CI `96508f0d` · clôture (ce commit)
+**BR impactées :** aucune BR métier (rendu de la frise et coque mobile ; 0 fichier backend)
+**Reviews :** reviewer batch 0 CRITIQUE / 0 MAJEUR / 5 MINEURS — 1 corrigé (`FIT_MARGINS_PX.mobile` signalé non branché), 1 en issue (#875), 3 assumés (`review-batch.md`)
+**Tests :** Vitest 2359/2359 | `next build`, `format:check`, tsc verts | E2E locale complète (`next build`+`next start`) : 654 passés / 8 sautés / 11 rouges = 10 références `-darwin` absentes (attendu) + `sprint-111-theme:88` (6/6 ×3 isolé, PIT-S117-005) | CI PR 1er run (`e0a2cf41`) : `e2e` rouge sur le jeu 4 de #804 (police Linux, PIT-S117-004) + 1 flaky `sprint-101-fab-landscape` (3/3 vert en local) → corrigé `96508f0d` : CI 7/7 verte
+**Nouveaux pitfalls / décisions / patterns / bugs :** PIT-S117-001..005 · PAT-S117-001..003 · DEC-S117-001..003 (DEC-S112-002 remplacée) · BUG-S117-001..003 · packs pit régénérés
+**Écarts de briefing :** branche du worktree basée sur `main` → `sprint/117` créée depuis `origin/dev` ; image backend e2e reconstruite (3 commits backend depuis la dernière) ; follow-up « réserve réelle du libellé de queue » de #804 absorbé en V2 ; E2E non délégués à un test-runner ; briefings supprimés avant la PR
+**Absorbé en cours :** réserve dynamique du libellé de queue (follow-up de #804, même fichier que #805)
+**Follow-ups arbitrés (Phase 4 triage) :**
+  - estimation de largeur #746 sous-dimensionnée sous Linux [S | events/frontend] → issue #874 (backlog)
+  - après F, pin antérieur à libellé long qui déborde [S | events/frontend] → issue #875 (backlog)
+  - `T` : deux positions au 1er et au 2e appui [XS | events/frontend] → issue #876 (backlog)
+  - zone tactile des barres de durée en paysage (~24 px) [XS | events] → issue #877 (backlog)
+  Ratio discard 0/4. Déjà traités pendant le sprint (non arbitrés) : E2E V2 de #804, réserve dynamique, jeu des specs contre `next build`.
+**Saturation contexte lead (mesure) :** non mesurée
+**Status :** Terminé

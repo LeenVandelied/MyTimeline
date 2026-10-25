@@ -1105,3 +1105,12 @@ Le test de budget compte les comptes de chaque passe CI avec `selectSetupAccount
 
 ## PAT-S116-004 — E2E « absence de bannière » non vacant
 (1) attendre une preuve que l'intercepteur est passé (`console.error` du `catch` appelant) + deux `requestAnimationFrame` ; (2) témoin positif dans la même spec (500 sur une autre requête → bannière visible) ; (3) contrôle négatif rechargé à chaud qui rougit. Anti-pattern : `toHaveCount(0)` juste après le clic. (Sprint 116 #838)
+
+## PAT-S117-001 — Le helper de test appelle la fonction SANS l'argument optionnel quand il simule l'appelant réel
+`computeFit(extent, width)` sans 3ᵉ argument dans le helper qui simule `TimelineView` : la mutation du défaut rougit (4 → 8 rouges). Anti-pattern : un paramètre par défaut du helper égal à la constante, qui rend la mutation du défaut invisible. (Sprint 117 #804)
+
+## PAT-S117-002 — Fixture E2E qui dépend d'une mesure du rendu
+Stub `page.route` qui relit une variable `current` à chaque requête : produit provisoire → `goto` → mesure → `current = build(mesure)` → `page.reload()` → attente d'un attribut propre au jeu final (pas d'un simple compte, identique au provisoire). Anti-pattern : étendues codées en dur, calibrées pour un viewport. (Sprint 117 #805)
+
+## PAT-S117-003 — Garde desktop d'un composant qui ne s'ouvre que sous 768 px
+Ouvrir le tiroir à 375 px, puis `page.setViewportSize` à 1024 px et mesurer la MÊME instance (36 px desktop, 44 px mobile). Anti-pattern : déclarer le desktop « inchangé par construction » sans mesure. (Sprint 117 #837)

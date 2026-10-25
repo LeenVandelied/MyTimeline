@@ -7,6 +7,8 @@ import { LanguageSelector } from '@/components/ui/language-selector'
 import { Button } from '@/components/ui/button'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { useFocusTrap } from '@/components/timeline/useFocusTrap'
+import { cn } from '@/lib/utils'
+import { TOUCH_TARGET_BUTTON } from '@/lib/touchTarget'
 
 /**
  * #83 — Drawer off-canvas mobile portrait. Panneau glissant depuis la droite,
@@ -87,11 +89,16 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({ open, onClose, onLog
         </div>
 
         <div className="border-rule border-t p-4">
+          {/* #837 — `<Button>` sans `size` = cva `h-9` (36 px, mesuré) : 44 px sous 768 px
+              via `TOUCH_TARGET_BUTTON`, inchangé au-dessus (`e2e/sprint-117-touch-targets`). */}
           <Button
             variant="ghost"
             onClick={onLogout}
             data-testid="dashboard-mobile-drawer-logout"
-            className="text-ink hover:bg-accent-soft flex w-full items-center justify-start gap-2"
+            className={cn(
+              'text-ink hover:bg-accent-soft flex w-full items-center justify-start gap-2',
+              TOUCH_TARGET_BUTTON,
+            )}
           >
             <LogOut className="h-4 w-4" aria-hidden="true" />
             <span>{tc('logout')}</span>

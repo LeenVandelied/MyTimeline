@@ -10,12 +10,23 @@ import {
   RECURRENCE_PREFIX_CHARS,
   applyLabelReserves,
   estimateLabelWidthPx,
+  fitMarginsForTrailReserve,
   outsideLabelMaxPx,
   outsideLabelTrailPx,
   pinFootprintPx,
   pinLabelMaxPx,
+  trailingLabelReservePx,
 } from './label-reserve'
-import { PIN_FOOTPRINT_PX, positionEvents, type PositionedEvent } from './zoom'
+import {
+  FIT_EDGE_AIR_PX,
+  FIT_MARGINS_PX,
+  PIN_FOOTPRINT_PX,
+  computeFit,
+  displayedEventDayExtent,
+  indexEventsByResource,
+  positionEvents,
+  type PositionedEvent,
+} from './zoom'
 
 /** Titre « allemand long » (44 caractères) : dépasse l'emprise historique de 100 px. */
 const LONG_DE = 'Kfz-Haftpflichtversicherungsbeitragserhöhung'
@@ -251,5 +262,86 @@ describe('#746 layoutLane consomme les réserves de libellé', () => {
       ).get('r1')!
     expect(layoutLane(events('#1D4ED8'), opts).rows).toBe(1)
     expect(layoutLane(events('#787878'), opts).rows).toBe(2)
+  })
+})
+
+describe('#804 (suite) — réserve de queue du recadrage F', () => {
+  // rangeStart = 01/07 : le 05/07 est le jour 4, le 10/07 le jour 9.
+  const index = (events: FullCalendarEvent[]) => indexEventsByResource(events, rangeStart, now)
+  const reserveAt = (events: FullCalendarEvent[], endDay: number, ids = ['r1']) =>
+    trailingLabelReservePx(index(events), ids, endDay)
+  const pin = (id: string, day: string, title: string) =>
+    fcEvent(id, day, day, { type: 'single', title })
+
+  it('pin de queue à titre court : plancher 100 px (= défaut #804, marges inchangées)', () => {
+    expect(reserveAt([pin('s', '2026-07-10', SHORT)], 9)).toBe(PIN_FOOTPRINT_PX.desktop)
+    expect(fitMarginsForTrailReserve(PIN_FOOTPRINT_PX.desktop)).toEqual(FIT_MARGINS_PX.desktop)
+  })
+
+  it('pin de queue à titre long : réserve RÉELLE du rendu (`pinFootprintPx`, plafond 251)', () => {
+    expect(reserveAt([pin('l', '2026-07-10', LONG_DE)], 9)).toBe(
+      pinFootprintPx(LONG_DE, false, 'desktop'),
+    )
+    expect(reserveAt([pin('m', '2026-07-10', MID)], 9)).toBe(pinFootprintPx(MID, false, 'desktop'))
+    expect(pinFootprintPx(MID, false, 'desktop')).toBeGreaterThan(PIN_FOOTPRINT_PX.desktop)
+  })
+
+  it('série : le glyphe `↻ ` compte, comme au rendu', () => {
+    const recurring = fcEvent('r', '2026-07-10', '2026-07-10', {
+      type: 'single',
+      title: MID,
+      recurring: true,
+    })
+    expect(reserveAt([recurring], 9)).toBe(pinFootprintPx(MID, true, 'desktop'))
+  })
+
+  it('seuls les événements du DERNIER jour comptent ; le plus large l’emporte', () => {
+    const events = [pin('l', '2026-07-05', LONG_DE), pin('s', '2026-07-10', SHORT)]
+    expect(reserveAt(events, 9)).toBe(PIN_FOOTPRINT_PX.desktop)
+    const tie = [pin('s', '2026-07-10', SHORT), pin('m', '2026-07-10', MID)]
+    expect(reserveAt(tie, 9)).toBe(pinFootprintPx(MID, false, 'desktop'))
+  })
+
+  it('barre de queue : libellé intérieur 0 ; libellé extérieur (faible contraste) réservé', () => {
+    const readable = fcEvent('r', '2026-07-05', '2026-07-10', { color: '#1D4ED8', title: MID })
+    const lowContrast = fcEvent('b', '2026-07-05', '2026-07-10', { color: '#787878', title: MID })
+    expect(reserveAt([readable], 9)).toBe(0)
+    expect(reserveAt([lowContrast], 9)).toBe(outsideLabelTrailPx(MID, false))
+  })
+
+  it('ressource non affichée : ignorée ; rien au dernier jour : 0', () => {
+    const hidden = { ...pin('h', '2026-07-10', LONG_DE), resourceId: 'r2' }
+    expect(reserveAt([hidden, pin('s', '2026-07-10', SHORT)], 9, ['r1'])).toBe(
+      PIN_FOOTPRINT_PX.desktop,
+    )
+    expect(reserveAt([pin('s', '2026-07-05', SHORT)], 9)).toBe(0)
+    expect(fitMarginsForTrailReserve(0)).toEqual(FIT_MARGINS_PX.desktop)
+  })
+
+  it('marges : trailPx = max(135, réserve + 35), leadPx inchangé', () => {
+    const reserve = pinFootprintPx(LONG_DE, false, 'desktop')
+    expect(fitMarginsForTrailReserve(reserve)).toEqual({
+      leadPx: FIT_MARGINS_PX.desktop.leadPx,
+      trailPx: reserve + FIT_EDGE_AIR_PX,
+    })
+  })
+
+  it('cadrage : le libellé long du pin de queue tient dans la piste, le défaut le coupait', () => {
+    // Piste utile 824 px (viewport 1000 − gouttière 176) ; pins aux jours 4 et 9.
+    const events = [pin('a', '2026-07-05', SHORT), pin('l', '2026-07-10', LONG_DE)]
+    const indexed = index(events)
+    const extent = displayedEventDayExtent(indexed, ['r1'])!
+    const reserve = trailingLabelReservePx(indexed, ['r1'], extent.endDay)
+    const labelEndPx = (margins?: Parameters<typeof computeFit>[2]) => {
+      const fit = computeFit(extent, 824, margins)!
+      const dayWidth = { day: 96, week: 34, month: 12, quarter: 5, year: 2.2 }[fit.level]
+      return (extent.endDay - fit.offsetDays) * dayWidth + reserve
+    }
+    // Contrôle négatif : marges par défaut (plancher 100) ⇒ libellé au-delà de la piste.
+    expect(labelEndPx()).toBeGreaterThan(824)
+    // Réserve réelle ⇒ fin du libellé à 35 px du bord droit.
+    expect(labelEndPx(fitMarginsForTrailReserve(reserve))).toBeLessThanOrEqual(
+      824 - FIT_EDGE_AIR_PX + 1e-9,
+    )
   })
 })
