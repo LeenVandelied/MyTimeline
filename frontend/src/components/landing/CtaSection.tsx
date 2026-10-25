@@ -34,6 +34,13 @@ interface CtaSectionProps {
  * donc imbattable par une utilitaire) : 1.08, mesuré 29,16 px à 27 px et 37,8 px à
  * 35 px, IDENTIQUE avant et après le retrait de l'utilitaire inerte qu'il portait.
  * Ne s'applique qu'aux titres : le `<p>` en dessous n'est pas couvert par cette règle.
+ *
+ * #799 (WCAG 1.4.4) — `[overflow-wrap:anywhere]` sur le bouton. Il est `inline-flex` :
+ * sa largeur est bornée par la taille min-content de son texte, que le `break-words`
+ * hérité de `HomePage` ne réduit PAS. À texte ×2, « gratuitement » (54 px) + `px-10`
+ * donnait un bouton de 389 px pour 343 utiles à 375 px. `anywhere` abaisse la
+ * min-content : le bouton reprend la largeur disponible et ne coupe le mot qu'en
+ * dernier recours. Au texte nominal le bouton tient déjà : largeur inchangée.
  */
 export function CtaSection({ locale }: CtaSectionProps) {
   const t = useTranslations()
@@ -49,7 +56,7 @@ export function CtaSection({ locale }: CtaSectionProps) {
         </p>
         <Button
           asChild
-          className="bg-primary text-primary-ink hover:bg-primary-hover h-auto rounded-lg px-10 py-6 text-lg whitespace-normal transition-all"
+          className="bg-primary text-primary-ink hover:bg-primary-hover h-auto rounded-lg px-10 py-6 text-lg [overflow-wrap:anywhere] whitespace-normal transition-all"
         >
           <Link href={`/${locale}/register`} data-testid="landing-final-cta-register">
             {t('common.landing.cta.button')}
