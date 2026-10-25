@@ -42,8 +42,15 @@ test.use({ storageState: sessionState(PROD) })
 const PRODUCTS_LIST_RE = /\/api\/users\/[^/]+\/products(\?.*)?$/
 /** Gouttière sticky des lanes (`LANE_TRACK_OFFSET_PX`, #674). */
 const GUTTER_PX = 176
-/** Marge de cadrage de chaque côté (`FIT_MARGIN_PX`). */
-const FIT_MARGIN_PX = 40
+/**
+ * #804 — Marges de cadrage ASYMÉTRIQUES (`FIT_MARGINS_PX.desktop`, `zoom.ts`) : à gauche
+ * demi-pin 5 + air 35 ; à droite emprise plancher pin + libellé 100 + air 35. Recopiées
+ * (et non importées : `zoom.ts` tire `@/…` à l'exécution) — à tenir alignées.
+ */
+const FIT_LEAD_PX = 40
+const FIT_TRAIL_PX = 135
+/** #804 — Air minimal entre l'emprise extrême et le bord de la piste (`FIT_EDGE_AIR_PX`). */
+const FIT_EDGE_AIR_PX = 35
 
 function isoDay(offsetDays: number): string {
   const d = new Date()
@@ -167,7 +174,7 @@ const fullscreenElement = (page: Page) =>
 
 /** Piste utile hors marges : `year` doit tenir 320 j, `month` ne doit pas tenir 130 j. */
 async function expectUsableWidthPremise(page: Page): Promise<void> {
-  const usable = (await readFrame(page, [])).usablePx - 2 * FIT_MARGIN_PX
+  const usable = (await readFrame(page, [])).usablePx - FIT_LEAD_PX - FIT_TRAIL_PX
   expect(usable, 'piste utile (px) ≥ 320 j × 2,2').toBeGreaterThanOrEqual(704)
   expect(usable, 'piste utile (px) < 130 j × 12').toBeLessThan(1560)
 }
@@ -246,8 +253,14 @@ test.describe('#597 — touche F : recadrage de la frise', () => {
     // rabattement du navigateur à l'un des bords du rail.
     expect(framed.scrollLeft).toBeGreaterThan(0)
     expect(framed.scrollLeft).toBeLessThan(framed.maxScroll)
+    // #804 : marges asymétriques ⇒ les centres des pins extrêmes sont décalés de
+    // `FIT_TRAIL_PX − FIT_LEAD_PX` = 95 px vers la gauche (c'est l'EMPRISE pin + libellé
+    // qui est centrée, pas les dates).
     const g = gaps(framed)
-    expect(Math.abs(g.left - g.right), `centrage ${g.left} vs ${g.right}`).toBeLessThanOrEqual(1.5)
+    expect(
+      Math.abs(g.right - g.left - (FIT_TRAIL_PX - FIT_LEAD_PX)),
+      `centrage ${g.left} vs ${g.right} (écart attendu ${FIT_TRAIL_PX - FIT_LEAD_PX})`,
+    ).toBeLessThanOrEqual(1.5)
 
     // 2e F immédiat : même cadrage.
     await page.keyboard.press('f')
@@ -269,5 +282,230 @@ test.describe('#597 — touche F : recadrage de la frise', () => {
       })
       .toBe(Math.round(framed.scrollLeft))
     await expectPinsFramed(page, shown, 'F après défilement manuel')
+  })
+})
+
+/* ============================================================================
+ * #804 — après `F`, le LIBELLÉ du pin de queue est ENTIER dans la piste.
+ *
+ * Avant #804 la marge de cadrage valait 40 px des deux côtés : le libellé du dernier
+ * pin (posé ≈ 100 px à droite de sa date) sortait par le bord droit. Oracle mesuré sur
+ * rendu réel (jsdom ne mesure aucun libellé) :
+ *  - pin de QUEUE : `.mt-evt-pin__label` à droite ≤ bord de piste − 35 px d'air (à 1 px
+ *    près), et pas d'ellipse (`scrollWidth ≤ clientWidth`) ;
+ *  - événement de TÊTE : bord gauche − bord de piste ≥ 35 px.
+ *
+ * JEUX SERRÉS, calculés depuis la piste MESURÉE (`usablePx`) : les niveaux étant discrets,
+ * une étendue quelconque laisse jusqu'à un niveau entier de mou et le libellé tient même
+ * avec les marges d'avant #804 (mesuré : 150 à 570 px d'air à 1920 px — spec vacante).
+ * L'étendue retenue est donc la PLUS GRANDE qui tient au niveau visé avec les marges
+ * réelles (mou < 1 jour) : toute marge droite plus petite ferait déborder le libellé.
+ * Le pin SEUL n'a pas d'étendue : son oracle est le CENTRAGE de l'emprise pin + libellé
+ * (`[date − 5, date + 100]`), qu'une marge symétrique décale de 95 px.
+ * Jamais en niveau `year` (30 j de marge de rail = 66 px < 135 : le navigateur rabattrait
+ * le défilement, PIT-S105-003) — prémisse assertée par le libellé du niveau.
+ * Le 4e jeu porte un titre de queue de 31 caractères (> 19) : au-delà du plancher de
+ * 100 px, seule la réserve réelle du libellé (#804 suite, `trailingLabelReservePx`, même
+ * estimation 11 + ⌈31 × 6,3⌉ = 207 px) le garde entier.
+ *
+ * CONTRÔLES NÉGATIFS (consignés au done.md de #805) : marges 40 / 40 ⇒ jeux 1 à 4 rouges ;
+ * réserve réelle ignorée (marge droite 135) ⇒ jeu 4 rouge.
+ * ========================================================================== */
+
+/** Emprise plancher d'un pin après sa date (`PIN_FOOTPRINT_PX.desktop`). */
+const PIN_FOOTPRINT_PX = 100
+/** Réserve estimée du libellé long du jeu 4 (`pinFootprintPx`, 31 car. × 6,3 + 11). */
+const LONG_TAIL_RESERVE_PX = 11 + Math.ceil(31 * 6.3)
+const DAY_WIDTH = { day: 96, week: 34, quarter: 5 } as const
+
+type FitEvent = { title: string; start: number; end?: number }
+
+function fitProduct(n: number, events: FitEvent[]) {
+  const id = uuid('117b0804', n)
+  const category = { id: uuid('117a0804', n), name: `S117 Libellé Cat ${n}`, color: '#1D4ED8' }
+  return {
+    id,
+    name: `S117 Libellé Produit ${n}`,
+    color: null,
+    category,
+    events: events.map((e, i) => ({
+      id: uuid('117c0804', n * 10 + i),
+      title: e.title,
+      type: e.end === undefined ? 'single' : 'duration',
+      startDate: isoDay(e.start),
+      endDate: isoDay(e.end ?? e.start),
+      productId: id,
+      color: category.color,
+      archived: false,
+    })),
+  }
+}
+
+/**
+ * Ouvre la frise avec un produit provisoire, MESURE la piste, puis recharge avec le jeu
+ * calculé pour cette piste (le listing stubbé relit `current` à chaque requête).
+ */
+async function gotoTimelineSized(
+  page: Page,
+  build: (usablePx: number) => unknown[],
+): Promise<number> {
+  let current: unknown[] = [fitProduct(9, [{ title: 'S117 Provisoire', start: 15 }])]
+  await page.setViewportSize({ width: 1920, height: 900 })
+  await page.route(PRODUCTS_LIST_RE, async (route: Route) => {
+    if (route.request().method() !== 'GET') {
+      await route.continue()
+      return
+    }
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(current),
+    })
+  })
+  await ensureAuthenticated(page)
+  await page.goto('/fr/timeline', { waitUntil: 'domcontentloaded' })
+  await expect(page.getByTestId('timeline-view')).toHaveAttribute('data-layout', 'screen')
+  await expect(page.getByTestId('timeline-group-head')).toHaveCount(1)
+  const usablePx = (await readFrame(page, [])).usablePx
+  current = build(usablePx)
+  await page.reload({ waitUntil: 'domcontentloaded' })
+  await expect(page.getByTestId('timeline-group-head')).toHaveCount(current.length)
+  await expect(page.getByTestId('timeline-group-head')).toHaveAttribute(
+    'data-category',
+    /^S117 Libellé Cat [1-4]$/,
+  )
+  return usablePx
+}
+
+async function readLabelFrame(page: Page, head: string, tail: string) {
+  return page.getByTestId('timeline-scroll').evaluate(
+    (el, { head, tail, gutter }) => {
+      const x0 = el.getBoundingClientRect().left + el.clientLeft
+      const pill = (title: string) =>
+        el.querySelector(`[data-testid="timeline-event"][data-event-title="${title}"]`)
+      const headPill = pill(head)
+      // Tête : le pin s'il y en a un (il déborde de 5 px à gauche de sa date), sinon la barre.
+      const headBox = (headPill?.querySelector('.mt-evt-pin') ?? headPill)?.getBoundingClientRect()
+      const tailPin = pill(tail)?.querySelector('.mt-evt-pin')?.getBoundingClientRect()
+      const label = pill(tail)?.querySelector<HTMLElement>('.mt-evt-pin__label')
+      const labelBox = label?.getBoundingClientRect()
+      return {
+        trackLeft: x0 + gutter,
+        trackRight: x0 + el.clientWidth,
+        headLeft: headBox ? headBox.left : null,
+        tailDate: tailPin ? (tailPin.left + tailPin.right) / 2 : null,
+        labelRight: labelBox ? labelBox.right : null,
+        labelScrollWidth: label ? label.scrollWidth : null,
+        labelClientWidth: label ? label.clientWidth : null,
+      }
+    },
+    { head, tail, gutter: GUTTER_PX },
+  )
+}
+
+/** Plus grande étendue (jours) qui tient à `dayWidth` avec les marges `lead` / `trail`. */
+const tightSpan = (usablePx: number, trailPx: number, dayWidth: number) =>
+  Math.floor((usablePx - FIT_LEAD_PX - trailPx) / dayWidth)
+
+const LABEL_CASES: ReadonlyArray<{
+  name: string
+  level: string
+  head: string
+  tail: string
+  events: (usablePx: number) => FitEvent[]
+  /** Pin seul : l'oracle est le centrage de l'emprise, pas l'air (toujours large). */
+  centered?: boolean
+}> = [
+  {
+    name: '2 pins, étendue serrée en `week`',
+    level: 'Semaine',
+    head: 'S117 Tête A',
+    tail: 'S117 Queue A',
+    events: (u) => [
+      { title: 'S117 Tête A', start: 15 },
+      { title: 'S117 Queue A', start: 15 + tightSpan(u, FIT_TRAIL_PX, DAY_WIDTH.week) },
+    ],
+  },
+  {
+    name: 'barre + pin, étendue serrée en `quarter`',
+    level: 'Trimestre',
+    head: 'S117 Barre B',
+    tail: 'S117 Queue B',
+    events: (u) => [
+      { title: 'S117 Barre B', start: 20, end: 50 },
+      { title: 'S117 Queue B', start: 20 + tightSpan(u, FIT_TRAIL_PX, DAY_WIDTH.quarter) },
+    ],
+  },
+  {
+    name: 'pin seul (emprise centrée)',
+    level: 'Jour',
+    head: 'S117 Seul C',
+    tail: 'S117 Seul C',
+    events: () => [{ title: 'S117 Seul C', start: 40 }],
+    centered: true,
+  },
+  {
+    name: '2 pins, titre de queue de 31 caractères, étendue serrée en `week`',
+    level: 'Semaine',
+    head: 'S117 Tête D',
+    tail: 'S117 échéance de queue allongée',
+    events: (u) => [
+      { title: 'S117 Tête D', start: 15 },
+      {
+        title: 'S117 échéance de queue allongée',
+        start:
+          15 +
+          tightSpan(
+            u,
+            Math.max(FIT_TRAIL_PX, LONG_TAIL_RESERVE_PX + FIT_EDGE_AIR_PX),
+            DAY_WIDTH.week,
+          ),
+      },
+    ],
+  },
+]
+
+test.describe('#804 — touche F : libellé du pin de queue entier', () => {
+  LABEL_CASES.forEach((c, i) => {
+    test(`${c.name} : libellé de queue entier, tête à ≥ 35 px de la gouttière`, async ({
+      page,
+    }) => {
+      await gotoTimelineSized(page, (usablePx) => [fitProduct(i + 1, c.events(usablePx))])
+      const level = page.getByTestId('timeline-zoom-level')
+      await expect(level).toHaveText('Mois')
+      await page.keyboard.press('f')
+      // Chaque jeu se cadre à un AUTRE niveau que `month` (initial) : l'attendre prouve que
+      // le cadrage est appliqué — et que le jeu n'est pas tombé en `year` (rail rabattu).
+      await expect(level).toHaveText(c.level)
+      await expect
+        .poll(async () => {
+          const f = await readLabelFrame(page, c.head, c.tail)
+          return f.labelRight !== null && f.headLeft !== null && f.tailDate !== null
+        })
+        .toBe(true)
+      const f = await readLabelFrame(page, c.head, c.tail)
+      const tailAir = f.trackRight - (f.labelRight ?? Infinity)
+      const headAir = (f.headLeft ?? -Infinity) - f.trackLeft
+      expect(
+        tailAir,
+        `${c.name} : libellé « ${c.tail} » à ${tailAir} px du bord droit de la piste`,
+      ).toBeGreaterThanOrEqual(FIT_EDGE_AIR_PX - 1)
+      expect(
+        f.labelScrollWidth ?? Infinity,
+        `${c.name} : libellé « ${c.tail} » non tronqué (scrollWidth ≤ clientWidth)`,
+      ).toBeLessThanOrEqual(f.labelClientWidth ?? 0)
+      expect(
+        headAir,
+        `${c.name} : « ${c.head} » à ${headAir} px de la gouttière`,
+      ).toBeGreaterThanOrEqual(FIT_EDGE_AIR_PX - 1)
+      if (c.centered) {
+        // Emprise `[date − 5, date + 100]` centrée : même air des deux côtés.
+        const emprRightAir = f.trackRight - ((f.tailDate ?? 0) + PIN_FOOTPRINT_PX)
+        expect(
+          Math.abs(headAir - emprRightAir),
+          `${c.name} : emprise centrée (${headAir} px à gauche, ${emprRightAir} px à droite)`,
+        ).toBeLessThanOrEqual(1.5)
+      }
+    })
   })
 })
