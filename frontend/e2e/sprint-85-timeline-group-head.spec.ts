@@ -2,6 +2,7 @@ import { test, expect } from './support/fixtures'
 import { type Locator, type Page, type Route } from '@playwright/test'
 import { ensureAuthenticated } from './support/auth'
 import { PROD } from './support/accounts'
+import { sessionState } from './support/session'
 import { readAtRest, describeRendering, WCAG_AA_NORMAL } from './support/contrast'
 import { LANE_GUTTER_PX } from './support/timeline-lanes'
 
@@ -35,7 +36,7 @@ import { LANE_GUTTER_PX } from './support/timeline-lanes'
  * toujours dans le viewport ; le clic remonte au bouton.
  */
 
-test.use({ storageState: PROD.storageState })
+test.use({ storageState: sessionState(PROD) })
 
 const PRODUCTS_LIST_RE = /\/api\/users\/[^/]+\/products(\?.*)?$/
 

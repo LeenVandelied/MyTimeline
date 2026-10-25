@@ -1,5 +1,6 @@
 import { expect, test } from './support/fixtures'
 import { PROD } from './support/accounts'
+import { sessionState } from './support/session'
 import { ensureAuthenticated } from './support/auth'
 import { neutralizeDevToolingPointerEvents } from './support/dev-tooling'
 import { getUserId, seedCategory, seedProduct, unique } from './support/products'
@@ -48,7 +49,7 @@ const SCROLL_SETTLE_MS = 600
 const START_SCROLL_Y = 300
 
 test.describe('revue S86 — coque de formulaire modale (verrou de défilement + fond inerte)', () => {
-  test.use({ storageState: PROD.storageState, viewport: DESKTOP_SHORT })
+  test.use({ storageState: sessionState(PROD), viewport: DESKTOP_SHORT })
 
   test('la page est figée sous le scrim, le fond inerte, le Select et le corps utilisables', async ({
     page,

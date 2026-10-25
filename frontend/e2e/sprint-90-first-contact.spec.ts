@@ -1,6 +1,7 @@
 import { test, expect } from './support/fixtures'
 import { type Locator, type Page, type Route } from '@playwright/test'
 import { PROD } from './support/accounts'
+import { sessionState } from './support/session'
 import { ensureAuthenticated } from './support/auth'
 import {
   getUserId,
@@ -73,7 +74,7 @@ import {
  * servi depuis le cache et masquerait le produit semé (constaté par la sonde).
  */
 
-test.use({ storageState: PROD.storageState })
+test.use({ storageState: sessionState(PROD) })
 
 const DESKTOP = { width: 1280, height: 900 }
 const MOBILE_PORTRAIT = { width: 390, height: 844 }
