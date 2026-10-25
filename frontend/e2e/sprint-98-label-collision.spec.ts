@@ -2,6 +2,7 @@ import { test, expect } from './support/fixtures'
 import { type Locator, type Page, type Route } from '@playwright/test'
 import { ensureAuthenticated } from './support/auth'
 import { PROD } from './support/accounts'
+import { sessionState } from './support/session'
 
 /**
  * #746 (Sprint 98) — Frise : aucun LIBELLÉ ne se peint sur l'occurrence suivante de sa
@@ -36,7 +37,7 @@ import { PROD } from './support/accounts'
  *    l'option écartée) : rougit sur l'assertion de largeur lisible.
  */
 
-test.use({ storageState: PROD.storageState })
+test.use({ storageState: sessionState(PROD) })
 
 const PRODUCTS_LIST_RE = /\/api\/users\/[^/]+\/products(\?.*)?$/
 

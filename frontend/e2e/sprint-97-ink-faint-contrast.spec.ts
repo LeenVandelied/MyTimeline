@@ -2,6 +2,7 @@ import { test, expect } from './support/fixtures'
 import { type Locator, type Page } from '@playwright/test'
 import { ensureAuthenticated } from './support/auth'
 import { PROD } from './support/accounts'
+import { sessionState } from './support/session'
 import { openCategoriesTab } from './support/products'
 import {
   readStable,
@@ -37,7 +38,7 @@ import {
  * migration, les 4 mesures × 2 thèmes rougissent (2,56 à 2,99:1).
  */
 
-test.use({ storageState: PROD.storageState })
+test.use({ storageState: sessionState(PROD) })
 
 /** Luminance relative WCAG 2.x (linéarisation sRGB canal par canal). */
 function luminance(hex: string): number {

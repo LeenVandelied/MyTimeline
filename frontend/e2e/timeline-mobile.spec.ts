@@ -1,6 +1,7 @@
 import { test, expect } from './support/fixtures'
 import { type Locator, type Page } from '@playwright/test'
 import { PROD } from './support/accounts'
+import { sessionState } from './support/session'
 import { ensureAuthenticated } from './support/auth'
 import { getUserId, seedCategory, seedProduct, todayIsoDate, unique } from './support/products'
 import { revealSeededLane } from './support/timeline-lanes'
@@ -113,7 +114,7 @@ function seededEventMore(page: Page, title: string): Locator {
 /* ========================================================================== */
 
 test.describe('#205 Timeline mobile — portrait', () => {
-  test.use({ storageState: PROD.storageState, viewport: PORTRAIT })
+  test.use({ storageState: sessionState(PROD), viewport: PORTRAIT })
 
   test('affiche la frise portrait (règle, lanes, minimap) et pas la vue desktop', async ({
     page,
@@ -355,7 +356,7 @@ test.describe('#205 Timeline mobile — portrait', () => {
 /* ========================================================================== */
 
 test.describe('#205 Timeline mobile — rotation', () => {
-  test.use({ storageState: PROD.storageState, viewport: PORTRAIT })
+  test.use({ storageState: sessionState(PROD), viewport: PORTRAIT })
 
   /**
    * Critère d'acceptation central de l'issue : la rotation démonte/remonte la
@@ -496,7 +497,7 @@ test.describe('#205 Timeline mobile — rotation', () => {
 test.describe('#205 Timeline mobile — paysage', () => {
   // Hauteur 520 : au-dessus du seuil de forçage (400), sous le seuil paysage (600)
   // → la minimap est présente ET le toggle utilisateur est actif.
-  test.use({ storageState: PROD.storageState, viewport: LANDSCAPE_TALL })
+  test.use({ storageState: sessionState(PROD), viewport: LANDSCAPE_TALL })
 
   test('monte la variante paysage avec minimap et lanes denses', async ({ page }) => {
     const { eventTitle } = await seedAndOpenTimeline(page, 'landscape')
