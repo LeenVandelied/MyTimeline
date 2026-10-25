@@ -792,7 +792,12 @@ const ACCOUNT_EXPORTS: Record<string, readonly E2eAccount['key'][]> = {
   ALL_ACCOUNTS: ALL_ACCOUNTS.map((a) => a.key),
 }
 
-/** Clés des comptes qu'une spec importe de `support/accounts` (imports nommés). */
+/**
+ * Clés des comptes qu'une spec importe de `support/accounts` (imports nommés).
+ * Limite connue (review S116) : un compte atteint par un helper transitif (ex. `support/auth.ts`)
+ * ou par une chaîne littérale n'est pas vu ; l'ancrage `auth-signature => [shared]` couvre le cas
+ * réel d'aujourd'hui.
+ */
 function importedAccounts(text: string): E2eAccount['key'][] {
   const source = ts.createSourceFile('spec.ts', text, ts.ScriptTarget.Latest, true)
   const keys = new Set<E2eAccount['key']>()

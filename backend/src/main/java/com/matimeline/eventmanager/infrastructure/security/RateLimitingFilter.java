@@ -620,13 +620,16 @@ public class RateLimitingFilter extends OncePerRequestFilter {
      * #567 — {@code Retry-After} value for a REJECTED probe: the bucket's refill delay in whole
      * seconds, rounded UP (a client that waits the advertised delay must find the quota back,
      * so 59.2 s is announced as 60), and never below 1 (RFC 9110 allows 0, but "retry now" on a
-     * 429 would invite an immediate, still-refused retry). Package-private and static so that
-     * {@link UserRateLimitingFilter} (#831) rounds the same way.
+     * 429 would invite an immediate, still-refused retry). Capped at {@link #WINDOW}: every
+     * bucket refills within one window, so a larger value can only come from an overflow or a
+     * misconfigured bucket (defense in depth, S116 security review). {@code Math.ceilDiv} avoids
+     * the {@code nanos + NANOS_PER_SECOND - 1} overflow near {@code Long.MAX_VALUE}.
+     * Package-private and static so that {@link UserRateLimitingFilter} (#831) rounds the same way.
      */
     static long retryAfterSeconds(ConsumptionProbe rejected) {
         long nanos = Math.max(0L, rejected.getNanosToWaitForRefill());
-        long seconds = (nanos + NANOS_PER_SECOND - 1) / NANOS_PER_SECOND;
-        return Math.max(1L, seconds);
+        long seconds = Math.ceilDiv(nanos, NANOS_PER_SECOND);
+        return Math.min(WINDOW.toSeconds(), Math.max(1L, seconds));
     }
 
     /**

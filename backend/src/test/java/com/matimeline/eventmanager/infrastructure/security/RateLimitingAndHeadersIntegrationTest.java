@@ -9,11 +9,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.Duration;
+import java.util.Arrays;
+import java.util.Locale;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.junit.jupiter.api.Test;
@@ -551,7 +554,7 @@ class RateLimitingAndHeadersIntegrationTest extends AbstractPostgresIntegrationT
         long seconds = Long.parseLong(raw);
         assertTrue(seconds >= 1 && seconds <= 60, "Retry-After hors de [1, 60] : " + seconds);
         for (String name : response.getHeaderNames()) {
-            assertTrue(!name.toLowerCase(java.util.Locale.ROOT).startsWith("x-ratelimit"),
+            assertFalse(name.toLowerCase(Locale.ROOT).startsWith("x-ratelimit"),
                     "aucun X-RateLimit-* ne doit être émis (divulgation du plafond), reçu : " + name);
         }
         return seconds;
@@ -628,7 +631,7 @@ class RateLimitingAndHeadersIntegrationTest extends AbstractPostgresIntegrationT
         assertRetryAfterContract(over);
         String exposed = over.getHeader("Access-Control-Expose-Headers");
         assertNotNull(exposed, "le 429 cross-origin doit porter Access-Control-Expose-Headers");
-        assertTrue(java.util.Arrays.stream(exposed.split(","))
+        assertTrue(Arrays.stream(exposed.split(","))
                         .map(String::trim).anyMatch("Retry-After"::equalsIgnoreCase),
                 "Retry-After doit être exposé au JS cross-origin, reçu : " + exposed);
     }

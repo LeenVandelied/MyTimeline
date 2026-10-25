@@ -331,7 +331,7 @@ jobs:
               tail -n 200 backend.log || true
               exit 1
             fi
-            if curl -sf http://localhost:8080/actuator/health | grep -q '"status":"UP"'; then
+            if curl -sf --max-time 5 http://localhost:8080/actuator/health | grep -q '"status":"UP"'; then
               echo "Backend UP (/actuator/health) après ${i} tentative(s)."
               exit 0
             fi
