@@ -7296,7 +7296,7 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
 **Migrations Flyway :** aucune
 **Dépend de :** Sprints 113 et 114 (#840 migre aussi leurs specs)
 **À confirmer au démarrage :** **décision produit #797** (reformuler recommandé ; implémenter des rappels sort de l'axe)
-**Status :** Planifié
+**Status :** En cours (démarré 2026-10-25 ; #797 : reformuler, décision dev)
 
 ### Sprint 116 — 2026-10-24 (PLANIFIÉ — cohésion 1.00, Débit et harnais auth : 429 informatif, budget E2E, thème sans bandeau)
 **Objectif :** un 429 dit quand retenter ; la passe 2 CI ne recrée qu'un compte ; un 500 du PUT de thème traité inline n'allume plus la bannière serveur
