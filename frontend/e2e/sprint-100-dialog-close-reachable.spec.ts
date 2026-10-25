@@ -1,6 +1,7 @@
 import { type Locator, type Page } from '@playwright/test'
 import { expect, test } from './support/fixtures'
 import { PROD } from './support/accounts'
+import { sessionState } from './support/session'
 import { neutralizeDevToolingPointerEvents } from './support/dev-tooling'
 import { gotoProducts, openCategoriesTab, seedCategory, unique } from './support/products'
 
@@ -140,7 +141,7 @@ async function expectCloseReachable(page: Page, dialog: Locator, label: string):
 }
 
 test.describe('#732/#740 — croix atteignable après défilement (390×600)', () => {
-  test.use({ storageState: PROD.storageState, viewport: SHORT })
+  test.use({ storageState: sessionState(PROD), viewport: SHORT })
 
   test('ProductDrawer : croix dans le viewport et cliquable, formulaire défilé en bas', async ({
     page,
@@ -174,7 +175,7 @@ test.describe('#732/#740 — croix atteignable après défilement (390×600)', (
 })
 
 test.describe('#732/#740 — non-régression sans défilement (desktop)', () => {
-  test.use({ storageState: PROD.storageState, viewport: DESKTOP })
+  test.use({ storageState: sessionState(PROD), viewport: DESKTOP })
 
   test('DeleteConfirmDialog : croix à top-4 right-4 du dialog', async ({ page }) => {
     await neutralizeDevToolingPointerEvents(page)

@@ -2,6 +2,7 @@ import { test, expect } from './support/fixtures'
 import { type Page, type Route } from '@playwright/test'
 import { ensureAuthenticated } from './support/auth'
 import { PROD } from './support/accounts'
+import { sessionState } from './support/session'
 
 /**
  * Sprint 105 #597 — la touche `F` RECADRE la frise bureau sur les événements AFFICHÉS
@@ -36,7 +37,7 @@ import { PROD } from './support/accounts'
  * manuel puis F ».
  */
 
-test.use({ storageState: PROD.storageState })
+test.use({ storageState: sessionState(PROD) })
 
 const PRODUCTS_LIST_RE = /\/api\/users\/[^/]+\/products(\?.*)?$/
 /** Gouttière sticky des lanes (`LANE_TRACK_OFFSET_PX`, #674). */
