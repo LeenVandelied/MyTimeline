@@ -7344,4 +7344,4 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
 **Migrations Flyway :** aucune
 **Dépend de :** Sprint 115 (#840 a migré `sprint-105-fit-shortcut.spec.ts`)
 **À confirmer au démarrage :** #805 — reproduire la dérive en navigateur avant de corriger (jsdom ne clampe pas `scrollLeft`) ; si non reproduite, fermer avec la mesure
-**Status :** Planifié
+**Status :** En cours (démarré 2026-10-25, branche `sprint/117`)
