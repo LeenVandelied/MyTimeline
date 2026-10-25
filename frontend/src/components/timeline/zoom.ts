@@ -123,40 +123,6 @@ export function displayedEventDayExtent(
   return startDay === Infinity ? null : { startDay, endDay }
 }
 
-/**
- * #597 — Marge (px) laissée de chaque côté de l'étendue recadrée, dans la largeur
- * utile de la piste (viewport − gouttière `LANE_TRACK_OFFSET_PX`). Couvre la
- * demi-largeur du pin (5 px) avec de l'air ; le libellé d'un pin en bout d'étendue
- * peut, lui, être coupé par le bord droit.
- */
-export const FIT_MARGIN_PX = 40
-
-/**
- * #597 — Cadrage `F` : niveau le plus FIN dont l'échelle fait tenir `extent` dans
- * `viewportTrackWidthPx − 2 × FIT_MARGIN_PX`, et `offsetDays` (même repère que
- * `PAN`/`GO_TO_TODAY` : jour affleurant la gouttière) qui CENTRE l'étendue — alignée
- * à gauche (marge comprise) si elle déborde même en `year`. Borné à 0 à gauche ; le
- * bord droit est rabattu par le navigateur. `null` (no-op) : rien d'affiché ou
- * viewport sans largeur.
- */
-export function computeFit(
-  extent: { startDay: number; endDay: number } | null,
-  viewportTrackWidthPx: number,
-): { level: ZoomLevel; offsetDays: number } | null {
-  if (!extent || !(viewportTrackWidthPx > 0)) return null
-  const usablePx = Math.max(0, viewportTrackWidthPx - 2 * FIT_MARGIN_PX)
-  const spanDays = Math.max(0, extent.endDay - extent.startDay)
-  // #593 (zoom continu) : px/jour IDÉAL d'abord — c'est lui qu'un zoom continu
-  // retiendra tel quel ; aujourd'hui il est ramené au niveau discret qui le respecte.
-  const idealPxPerDay = spanDays === 0 ? Infinity : usablePx / spanDays
-  const level =
-    ZOOM_LEVELS.find((l) => DAY_WIDTH_PX[l] <= idealPxPerDay) ?? ZOOM_LEVELS[ZOOM_LEVELS.length - 1]
-  const dayWidth = DAY_WIDTH_PX[level]
-  const spanPx = spanDays * dayWidth
-  const leadPx = FIT_MARGIN_PX + Math.max(0, (usablePx - spanPx) / 2)
-  return { level, offsetDays: Math.max(0, extent.startDay - leadPx / dayWidth) }
-}
-
 /** Ramène une date à minuit (comparaisons/arithmétique de jours stables). */
 export function startOfDay(d: Date): Date {
   return new Date(d.getFullYear(), d.getMonth(), d.getDate())
@@ -267,6 +233,74 @@ export const PIN_HALF_WIDTH_PX = PIN_WIDTH_PX / 2
 export const PIN_FOOTPRINT_PX = { desktop: 100, mobile: 90 } as const
 /** #594 — Largeur d'un ponctuel dans le résumé d'une catégorie repliée (maquette §C : 6 px). */
 export const SUMMARY_PIN_WIDTH_PX = 6
+
+/**
+ * #804 — Air (px) laissé entre l'emprise réelle d'un événement en bout d'étendue et le
+ * bord de la piste après un recadrage `F`. Valeur héritée de #597 (marge 40 = demi-pin
+ * 5 + 35 d'air) : le bord GAUCHE ne bouge pas.
+ */
+export const FIT_EDGE_AIR_PX = 35
+
+/** Marges (px) d'un recadrage, ASYMÉTRIQUES : un pin déborde peu à gauche, beaucoup à droite. */
+export interface FitMargins {
+  /** Avant le 1er jour de l'étendue : le pin y déborde de sa demi-largeur (une barre, de 0). */
+  leadPx: number
+  /** Après le dernier jour : le pin y porte son libellé (emprise `PIN_FOOTPRINT_PX`). */
+  trailPx: number
+}
+
+/**
+ * #804 — Marges de cadrage dérivées de l'EMPRISE RÉELLE d'un ponctuel (`eventTrackExtent`) :
+ * `[date − PIN_HALF_WIDTH_PX, date + PIN_FOOTPRINT_PX[vue]]`, plus `FIT_EDGE_AIR_PX` de
+ * chaque côté. Avant #804, une marge unique de 40 px des DEUX côtés laissait le libellé
+ * du dernier pin (≈ 100 px à droite de sa date) coupé par le bord droit.
+ *  - desktop : 40 / 135 px ; mobile : 40 / 125 px.
+ * Le plancher `PIN_FOOTPRINT_PX` couvre un libellé d'environ 19 caractères avec l'air
+ * (desktop : (135 − 11) / 6,3 px). Un libellé plus long (#746 : réserve jusqu'à 251 px)
+ * exige que l'appelant passe sa réserve réelle : `{ ...FIT_MARGINS_PX.desktop,
+ * trailPx: Math.max(FIT_MARGINS_PX.desktop.trailPx, reservePx + FIT_EDGE_AIR_PX) }`.
+ */
+export const FIT_MARGINS_PX: Readonly<Record<'desktop' | 'mobile', Readonly<FitMargins>>> = {
+  desktop: {
+    leadPx: PIN_HALF_WIDTH_PX + FIT_EDGE_AIR_PX,
+    trailPx: PIN_FOOTPRINT_PX.desktop + FIT_EDGE_AIR_PX,
+  },
+  mobile: {
+    leadPx: PIN_HALF_WIDTH_PX + FIT_EDGE_AIR_PX,
+    trailPx: PIN_FOOTPRINT_PX.mobile + FIT_EDGE_AIR_PX,
+  },
+}
+
+/**
+ * #597 — Cadrage `F` : niveau le plus FIN dont l'échelle fait tenir `extent` dans
+ * `viewportTrackWidthPx − margins.leadPx − margins.trailPx`, et `offsetDays` (même
+ * repère que `PAN`/`GO_TO_TODAY` : jour affleurant la gouttière) qui CENTRE l'étendue
+ * dans cette largeur utile — alignée à gauche (`leadPx` compris) si elle déborde même
+ * en `year`. Borné à 0 à gauche ; le bord droit est rabattu par le navigateur. `null`
+ * (no-op) : rien d'affiché ou viewport sans largeur.
+ *
+ * #804 — marges asymétriques (`FIT_MARGINS_PX`, desktop par défaut : seule la frise
+ * desktop `TimelineView` recadre). Un ponctuel seul a donc son emprise pin + libellé
+ * CENTRÉE (même air des deux côtés), et non plus sa date.
+ */
+export function computeFit(
+  extent: { startDay: number; endDay: number } | null,
+  viewportTrackWidthPx: number,
+  margins: Readonly<FitMargins> = FIT_MARGINS_PX.desktop,
+): { level: ZoomLevel; offsetDays: number } | null {
+  if (!extent || !(viewportTrackWidthPx > 0)) return null
+  const usablePx = Math.max(0, viewportTrackWidthPx - margins.leadPx - margins.trailPx)
+  const spanDays = Math.max(0, extent.endDay - extent.startDay)
+  // #593 (zoom continu) : px/jour IDÉAL d'abord — c'est lui qu'un zoom continu
+  // retiendra tel quel ; aujourd'hui il est ramené au niveau discret qui le respecte.
+  const idealPxPerDay = spanDays === 0 ? Infinity : usablePx / spanDays
+  const level =
+    ZOOM_LEVELS.find((l) => DAY_WIDTH_PX[l] <= idealPxPerDay) ?? ZOOM_LEVELS[ZOOM_LEVELS.length - 1]
+  const dayWidth = DAY_WIDTH_PX[level]
+  const spanPx = spanDays * dayWidth
+  const leadPx = margins.leadPx + Math.max(0, (usablePx - spanPx) / 2)
+  return { level, offsetDays: Math.max(0, extent.startDay - leadPx / dayWidth) }
+}
 
 /**
  * #594 — Intervalle [start, end] réellement occupé par un événement dans le repère

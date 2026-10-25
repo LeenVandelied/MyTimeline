@@ -12,10 +12,10 @@ import { TimelineView } from './TimelineView'
  * Repères (fixture ci-dessous, aujourd'hui = 15/07/2026) : `rangeStart` = 10/06
  * (premier événement − 30 j). Événements aux jours 30 (Cat A, ×2 : 10 et 11/07),
  * 38 (Cat B, 18/07) et 46 (Cat C, 26/07). Viewport de 1000 px → piste utile
- * 1000 − 176 (gouttière) − 2 × 40 (marges) = 744 px.
- *  - tout affiché : 16 j → 46,5 px/j idéal → `week` (34 px/j) ; 544 px centrés
- *    ⇒ avance 40 + 100 = 140 px ⇒ `scrollLeft` = 30 × 34 − 140 = 880 ;
- *  - Cat C exclue : 8 j → 93 px/j → `week` ; 272 px ⇒ avance 276 ⇒ 1020 − 276 = 744.
+ * 1000 − 176 (gouttière) − 40 − 135 (marges #804 `FIT_MARGINS_PX.desktop`) = 649 px.
+ *  - tout affiché : 16 j → 40,6 px/j idéal → `week` (34 px/j) ; 544 px centrés
+ *    ⇒ avance 40 + 52,5 = 92,5 px ⇒ `scrollLeft` = 30 × 34 − 92,5 = 927,5 ;
+ *  - Cat C exclue : 8 j → 81 px/j → `week` ; 272 px ⇒ avance 228,5 ⇒ 1020 − 228,5 = 791,5.
  *
  * ⚠ jsdom ne clampe pas `scrollLeft` et ne mesure rien : la position RÉELLE des
  * pastilles dans le viewport est prouvée par `e2e/sprint-105-fit-shortcut.spec.ts`.
@@ -54,8 +54,8 @@ const RESOURCES: Resource[] = [
   { id: 'pc', title: 'Prod C', category: 'Cat C', categoryColor: null },
 ]
 
-const FIT_ALL_PX = 880
-const FIT_WITHOUT_C_PX = 744
+const FIT_ALL_PX = 927.5
+const FIT_WITHOUT_C_PX = 791.5
 
 function setupScreen() {
   render(
