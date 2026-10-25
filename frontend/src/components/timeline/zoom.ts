@@ -255,6 +255,8 @@ export interface FitMargins {
  * chaque côté. Avant #804, une marge unique de 40 px des DEUX côtés laissait le libellé
  * du dernier pin (≈ 100 px à droite de sa date) coupé par le bord droit.
  *  - desktop : 40 / 135 px ; mobile : 40 / 125 px.
+ * `mobile` est RÉSERVÉ, non branché : seul `TimelineView.fitToEvents` (touche F, desktop)
+ * appelle `computeFit` ; les frises mobiles ne recadrent pas.
  * Le plancher `PIN_FOOTPRINT_PX` couvre un libellé d'environ 19 caractères avec l'air
  * (desktop : (135 − 11) / 6,3 px). Un libellé plus long (#746 : réserve jusqu'à 251 px)
  * exige que l'appelant passe sa réserve réelle : `{ ...FIT_MARGINS_PX.desktop,
