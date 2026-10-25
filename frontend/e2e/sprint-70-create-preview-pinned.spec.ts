@@ -1,5 +1,6 @@
 import { expect, test } from './support/fixtures'
 import { PROD } from './support/accounts'
+import { sessionState } from './support/session'
 import { ensureAuthenticated } from './support/auth'
 import { neutralizeDevToolingPointerEvents } from './support/dev-tooling'
 import { getUserId, seedCategory, seedProduct, unique } from './support/products'
@@ -48,7 +49,7 @@ const FIRST_NAV_BUDGET = 60_000
 const EPSILON = 1.5
 
 test.describe('#326 — aperçu épinglé en haut du drawer de création', () => {
-  test.use({ storageState: PROD.storageState, viewport: DESKTOP_SHORT })
+  test.use({ storageState: sessionState(PROD), viewport: DESKTOP_SHORT })
 
   test('l’aperçu reste à sa place pendant que le formulaire défile', async ({ page }) => {
     test.setTimeout(150_000)

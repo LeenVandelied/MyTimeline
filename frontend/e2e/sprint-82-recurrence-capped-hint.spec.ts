@@ -1,5 +1,6 @@
 import { expect, test } from './support/fixtures'
 import { PROD } from './support/accounts'
+import { sessionState } from './support/session'
 import { ensureAuthenticated } from './support/auth'
 import { neutralizeDevToolingPointerEvents } from './support/dev-tooling'
 import { getUserId, seedCategory, seedProduct, unique } from './support/products'
@@ -102,7 +103,7 @@ function plusDaysIso(iso: string, days: number): string {
 }
 
 test.describe('#491 — hint de plafond de récurrence (parcours réel)', () => {
-  test.use({ storageState: PROD.storageState, viewport: DESKTOP })
+  test.use({ storageState: sessionState(PROD), viewport: DESKTOP })
 
   test('le hint apparaît sans date de fin et disparaît dès qu’une borne courte est posée', async ({
     page,
