@@ -25,6 +25,7 @@ import com.matimeline.eventmanager.infrastructure.adapters.controllers.JwksContr
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -215,7 +216,12 @@ public class SecurityConfig {
         // cookie-only JWT (#104) le front ne lit plus jamais ce header de réponse
         // (le token vit dans le cookie HttpOnly, illisible en JS). Seul Set-Cookie
         // reste exposé.
-        config.setExposedHeaders(List.of("Set-Cookie"));
+        // #567 : + Retry-After, posé sur chaque 429 du rate-limit. Il n'est PAS un en-tête de
+        // réponse CORS-safelisted (Fetch § CORS-safelisted response-header name) : sans cette
+        // ligne, un front servi sur une AUTRE origine que l'API (dev : :3000 -> :8080 via
+        // NEXT_PUBLIC_API_URL=http://localhost:8080/api) lirait `null`. Aucune divulgation :
+        // la valeur est le délai déjà communiqué au client refusé, pas le plafond du slot.
+        config.setExposedHeaders(List.of("Set-Cookie", HttpHeaders.RETRY_AFTER));
         // --- Décision SameSite (#120) ---
         // Le cookie `jwt` reste posé en SameSite=Lax (AuthController.COOKIE_SAME_SITE),
         // NON passé à Strict. Justification : le front Next.js (localhost:3000 en dev,

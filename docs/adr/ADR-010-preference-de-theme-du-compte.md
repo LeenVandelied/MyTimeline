@@ -170,6 +170,10 @@ deux primitives (lecture avec `null` distinguable, écriture stricte).
   - *Preuve* : `PreferencesUserRateLimitIntegrationTest` (A au-delà du plafond → 429, y compris
     depuis une autre IP ; B depuis la même IP → 200 ; anonyme → 401). Monter le filtre avant
     l'authentification rend les 3 tests rouges (mutation vérifiée).
+  **Amendement S116 (#567, 2026-10-25)** — tout 429 du rate-limit (les 12 points de rejet de
+  `RateLimitingFilter` et `UserRateLimitingFilter`, cette route comprise) porte `Retry-After` en
+  secondes entières arrondies au supérieur (≥ 1, délai de recharge lu dans Bucket4j), exposé au
+  CORS, et **aucun** `X-RateLimit-*`, écartés car ils publieraient le plafond de chaque slot.
 - **CSRF** : aucune mesure spécifique, alignement sur les autres routes mutantes `/api/me`
   (`csrf.disable()` global, mitigation par le cookie `SameSite=Lax` — BR-AUT-007 — qu'un `PUT`
   cross-site n'emporte pas, et par le pré-vol CORS qu'impose un `PUT` JSON).

@@ -16,6 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -25,6 +26,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
+import io.github.bucket4j.ConsumptionProbe;
 import io.github.bucket4j.Refill;
 import io.github.bucket4j.TimeMeter;
 
@@ -46,6 +48,13 @@ import jakarta.servlet.http.HttpServletResponse;
  * {@code POST /api/auth/logout}, and the whole rest of the API) passes through
  * untouched. On overflow the filter short-circuits with HTTP 429 and a minimal
  * JSON body — no stack trace, no internal detail.
+ *
+ * <p><b>When to retry (#567, ADR-010 § 7):</b> every 429 carries {@code Retry-After} (RFC 6585
+ * § 4, RFC 9110 § 10.2.3) — whole seconds until the bucket refills, rounded UP, never below 1,
+ * read from Bucket4j ({@link ConsumptionProbe#getNanosToWaitForRefill()}), never recomputed by
+ * hand. DELIBERATELY no {@code X-RateLimit-Limit/Remaining/Reset}: they would publish the
+ * ceiling of every slot (and the remaining budget) to an attacker probing the throttle, while
+ * {@code Retry-After} alone is enough for an informed backoff.
  *
  * <p><b>Export endpoints (#265):</b> both {@code POST /api/export} (async job
  * submission, #58) and {@code GET /api/export} (synchronous inline export —
@@ -206,6 +215,9 @@ public class RateLimitingFilter extends OncePerRequestFilter {
     );
 
     private static final Duration WINDOW = Duration.ofMinutes(1);
+
+    /** #567 — divisor of {@link #retryAfterSeconds}: Bucket4j reports the refill delay in nanoseconds. */
+    private static final long NANOS_PER_SECOND = 1_000_000_000L;
 
     /**
      * #141 — max validation attempts allowed against ANY single reset-token value
@@ -431,8 +443,9 @@ public class RateLimitingFilter extends OncePerRequestFilter {
         String key = clientIp(request) + "|" + methodAndPath;
         Bucket bucket = buckets.computeIfAbsent(key, k -> newBucket(limit));
 
-        if (!bucket.tryConsume(1)) {
-            writeTooManyRequests(response);
+        ConsumptionProbe probe = bucket.tryConsumeAndReturnRemaining(1);
+        if (!probe.isConsumed()) {
+            writeTooManyRequests(response, retryAfterSeconds(probe));
             return;
         }
 
@@ -484,11 +497,15 @@ public class RateLimitingFilter extends OncePerRequestFilter {
         // Throttle par token UNIQUEMENT si le token a une longueur plausible (une clé
         // de plusieurs Mo saturerait le cap volumétrique MAX_TRACKED_TOKENS). Sinon on
         // saute le throttle-par-token (repli sur le throttle par IP), corps re-servi.
-        if (token != null && !token.isBlank() && isPlausibleTokenKey(token) && !tryConsumeToken(token)) {
-            // Même 429 générique que le throttle par IP : aucune distinction
-            // "token inconnu" vs "trop de tentatives" (anti-énumération, critère #141).
-            writeTooManyRequests(response);
-            return;
+        if (token != null && !token.isBlank() && isPlausibleTokenKey(token)) {
+            ConsumptionProbe probe = tryConsumeToken(token);
+            if (!probe.isConsumed()) {
+                // Même 429 générique que le throttle par IP : aucune distinction
+                // "token inconnu" vs "trop de tentatives" (anti-énumération, critère #141).
+                // Retry-After (#567) = délai du seau PAR TOKEN, celui qui a refusé.
+                writeTooManyRequests(response, retryAfterSeconds(probe));
+                return;
+            }
         }
         chain.doFilter(new CachedBodyHttpServletRequest(request, body), response);
     }
@@ -511,17 +528,18 @@ public class RateLimitingFilter extends OncePerRequestFilter {
     }
 
     /**
-     * Consumes one permit from the per-token bucket. Returns {@code true} when the attempt
-     * is within {@link #TOKEN_ATTEMPT_LIMIT}. The lookup/create is atomic on the
+     * Consumes one permit from the per-token bucket. The returned probe is consumed when the
+     * attempt is within {@link #TOKEN_ATTEMPT_LIMIT}; otherwise it carries the refill delay
+     * that becomes the {@code Retry-After} of the 429 (#567). The lookup/create is atomic on the
      * synchronized LRU {@code tokenBuckets}; if adding this token pushes the map past
      * {@link #MAX_TRACKED_TOKENS}, its eldest entry is evicted (bounded memory) while the
-     * freshly-seen token stays throttled. {@code tryConsume} runs off-lock (the bucket is
+     * freshly-seen token stays throttled. Consumption runs off-lock (the bucket is
      * thread-safe); a concurrent eviction of the entry only forfeits its history — the
      * accepted LRU trade-off.
      */
-    private boolean tryConsumeToken(String token) {
+    private ConsumptionProbe tryConsumeToken(String token) {
         Bucket bucket = tokenBuckets.computeIfAbsent(token, k -> newBucket(TOKEN_ATTEMPT_LIMIT));
-        return bucket.tryConsume(1);
+        return bucket.tryConsumeAndReturnRemaining(1);
     }
 
     /**
@@ -599,12 +617,27 @@ public class RateLimitingFilter extends OncePerRequestFilter {
     }
 
     /**
-     * The single 429 of the API's rate limiting: status, JSON content type, UTF-8 and the
-     * generic {@code {"error":"too_many_requests"}} body. Package-private and static so that
+     * #567 — {@code Retry-After} value for a REJECTED probe: the bucket's refill delay in whole
+     * seconds, rounded UP (a client that waits the advertised delay must find the quota back,
+     * so 59.2 s is announced as 60), and never below 1 (RFC 9110 allows 0, but "retry now" on a
+     * 429 would invite an immediate, still-refused retry). Package-private and static so that
+     * {@link UserRateLimitingFilter} (#831) rounds the same way.
+     */
+    static long retryAfterSeconds(ConsumptionProbe rejected) {
+        long nanos = Math.max(0L, rejected.getNanosToWaitForRefill());
+        long seconds = (nanos + NANOS_PER_SECOND - 1) / NANOS_PER_SECOND;
+        return Math.max(1L, seconds);
+    }
+
+    /**
+     * The single 429 of the API's rate limiting: status, {@code Retry-After} (#567), JSON content
+     * type, UTF-8 and the generic {@code {"error":"too_many_requests"}} body. No
+     * {@code X-RateLimit-*} (see class javadoc). Package-private and static so that
      * {@link UserRateLimitingFilter} (#831) emits a byte-identical response.
      */
-    static void writeTooManyRequests(HttpServletResponse response) throws IOException {
+    static void writeTooManyRequests(HttpServletResponse response, long retryAfterSeconds) throws IOException {
         response.setStatus(429);
+        response.setHeader(HttpHeaders.RETRY_AFTER, Long.toString(retryAfterSeconds));
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setCharacterEncoding(StandardCharsets.UTF_8.name());
         response.getWriter().write("{\"error\":\"too_many_requests\"}");
