@@ -1,6 +1,7 @@
 import { test, expect } from './support/fixtures'
 import { type Locator, type Page, type Route } from '@playwright/test'
 import { PROD } from './support/accounts'
+import { sessionState } from './support/session'
 import { waitForFonts } from './support/contrast'
 
 /**
@@ -33,7 +34,7 @@ import { waitForFonts } from './support/contrast'
  * Mesures, pas captures : aucune référence visuelle n'est créée ni modifiée.
  */
 
-test.use({ storageState: PROD.storageState, timezoneId: 'Europe/Paris' })
+test.use({ storageState: sessionState(PROD), timezoneId: 'Europe/Paris' })
 
 const LOCALES = ['fr', 'de'] as const
 type Locale = (typeof LOCALES)[number]

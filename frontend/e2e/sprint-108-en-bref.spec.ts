@@ -1,6 +1,7 @@
 import { test, expect } from './support/fixtures'
 import { type Page, type Route } from '@playwright/test'
 import { PROD } from './support/accounts'
+import { sessionState } from './support/session'
 
 /**
  * Sprint 108 — #640 : « En bref » affiche les 4 phrases de la maquette (DEC-S82-007,
@@ -22,7 +23,7 @@ import { PROD } from './support/accounts'
  */
 
 test.use({
-  storageState: PROD.storageState,
+  storageState: sessionState(PROD),
   viewport: { width: 1280, height: 900 },
   timezoneId: 'Europe/Paris',
 })

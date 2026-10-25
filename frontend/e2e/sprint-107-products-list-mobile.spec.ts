@@ -1,6 +1,7 @@
 import { type Page } from '@playwright/test'
 import { expect, test } from './support/fixtures'
 import { PROD } from './support/accounts'
+import { sessionState } from './support/session'
 import { ensureAuthenticated } from './support/auth'
 import { getUserId, seedCategory, seedProduct, unique } from './support/products'
 
@@ -31,7 +32,7 @@ import { getUserId, seedCategory, seedProduct, unique } from './support/products
  * #816, gardé par `sprint-114-products-list-overflow.spec.ts`), le thème sombre, Firefox.
  */
 
-test.use({ storageState: PROD.storageState, colorScheme: 'light' })
+test.use({ storageState: sessionState(PROD), colorScheme: 'light' })
 
 const MOBILE = { width: 390, height: 844 }
 const DESKTOP = { width: 1280, height: 900 }
