@@ -1,5 +1,6 @@
 import { expect, test } from './support/fixtures'
 import { PROD } from './support/accounts'
+import { sessionState } from './support/session'
 import { getUserId } from './support/products'
 import { trackSeed } from './support/seed-cleanup'
 
@@ -50,7 +51,7 @@ import { trackSeed } from './support/seed-cleanup'
  * la distinction n'est pas observable d'ici, les deux issues rendant le test rouge.
  */
 
-test.use({ storageState: PROD.storageState })
+test.use({ storageState: sessionState(PROD) })
 
 test.describe('#463 — contrôle négatif : une purge en échec doit faire rougir', () => {
   test.fail()

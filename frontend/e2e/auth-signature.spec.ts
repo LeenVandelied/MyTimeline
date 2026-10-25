@@ -3,6 +3,7 @@ import fs from 'node:fs'
 import { test, expect } from '@playwright/test'
 
 import { SHARED } from './support/accounts'
+import { assertUsableSession, sessionState } from './support/session'
 import {
   BACKEND_ORIGIN,
   JWKS_PATH,
@@ -102,6 +103,8 @@ const PROTECTED_PATH = '/fr/dashboard'
  * être rejeté pour une raison sans rapport avec la signature.
  */
 function readAuthenticJwt(): string {
+  // Fichier absent ou cookie périmé : cause nommée tout de suite (#840, `support/session.ts`).
+  assertUsableSession(SHARED)
   const raw = fs.readFileSync(SHARED.storageState, 'utf8') as string
   const state = JSON.parse(raw) as { cookies?: { name: string; value: string }[] }
   const jwt = state.cookies?.find((cookie) => cookie.name === 'jwt')?.value
@@ -326,7 +329,7 @@ test.describe('Signature RS256 du cookie jwt — backend Spring -> middleware Ed
 
 test.describe('Signature RS256 — parcours nominal, session réellement émise par le backend', () => {
   // Session RÉELLE : register + login UI contre le backend, provisionnés par le projet `setup`.
-  test.use({ storageState: SHARED.storageState })
+  test.use({ storageState: sessionState(SHARED) })
 
   test.skip(
     !SIGNATURE_VERIFICATION_CONFIGURED,

@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test'
 import { SHARED } from './support/accounts'
+import { sessionState } from './support/session'
 // Import RELATIF (et non l'alias `@/`) : ce module est chargé par le transpileur
 // Playwright, qui n'a pas la même résolution que le bundler Next. `locales.ts` est
 // pur (aucun import Node/Next), il se charge donc tel quel. Source de vérité #235.
@@ -234,7 +235,7 @@ test.describe('Garde serveur — utilisateur authentifié', () => {
   // Compte partagé fixe provisionné par le projet `setup` (cookie JWT HttpOnly
   // réel). ZÉRO register ici : anti rate-limit (5/min/IP). Ce fichier ne MUTE
   // aucun état backend -> pas de `serial` nécessaire.
-  test.use({ storageState: SHARED.storageState })
+  test.use({ storageState: sessionState(SHARED) })
 
   test('/fr/dashboard est rendu normalement (aucune redirection)', async ({ page }) => {
     const response = await page.request.get('/fr/dashboard', { maxRedirects: 0 })

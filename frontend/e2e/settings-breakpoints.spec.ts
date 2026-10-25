@@ -1,6 +1,7 @@
 import { test, expect, type Page } from '@playwright/test'
 import { openSettingsPage } from './support/auth'
 import { SHARED } from './support/accounts'
+import { sessionState } from './support/session'
 
 /**
  * FU4 (Sprint 57) — PALIERS RESPONSIVE des Réglages sous le shell applicatif.
@@ -48,7 +49,7 @@ import { SHARED } from './support/accounts'
  * projet `setup`) -> ZÉRO register (anti rate-limit 5/min/IP). Tests de LECTURE
  * seule (aucune mutation) : compte partagé, parallélisables.
  */
-test.use({ storageState: SHARED.storageState })
+test.use({ storageState: sessionState(SHARED) })
 
 /** Seuil `lg` de Tailwind (64rem) : bascule sidebar shell <-> bouton retour. */
 const LG = 1024
