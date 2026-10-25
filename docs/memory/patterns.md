@@ -1087,3 +1087,9 @@ Refs par onglet scopées à l'instance ; `onKeyDown` fait `select(next)` puis `r
 
 ## PAT-S114-003 — Sonder un layout Tailwind sans `next dev` ni `next build`
 En vague parallèle (serveur Next réservé au lead), compiler `globals.css` via `postcss` + `@tailwindcss/postcss` (`createRequire` depuis `frontend/package.json`, `@source` vers la sonde), copier le balisage dans un HTML statique et le mesurer à la largeur réelle de la boîte. C'est une sonde, pas l'app : la spec E2E du lead tranche. (Sprint 114 #816)
+
+## PAT-S115-001 — Prouver un rendu nominal inchangé sans captures : empreinte géométrique de `body`
+Relever `tagName:left,top,width,height` de tous les éléments de `body` avant et après le correctif, par locale × largeur ; 0 diff = mise en page nominale identique sur cette plateforme. Anti-pattern : se fier aux seules specs de non-régression, qui n'échantillonnent que quelques éléments. (Sprint 115 #799, 587 éléments × 4 combinaisons)
+
+## PAT-S115-002 — Migration de masse dans les specs : script ligne à ligne + rejeu par lot + garde texte armée
+99 occurrences dans 72 specs : script qui ne réécrit que les lignes de code (pas les JSDoc, pas les `browser.newContext`), `prettier --write` + lint, rejeu par lots de 9, puis garde Vitest TEXTE (59 ms) qui rougit sur la forme brute, armée par mutation. Anti-pattern : `sed` global. (Sprint 115 #840)

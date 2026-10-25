@@ -1644,3 +1644,89 @@ describe('#832 — sessionState refuse une session inutilisable avec la cause no
     expect(untouched).toEqual([])
   })
 })
+
+/**
+ * #840 (S115) — PLUS AUCUNE SESSION BRUTE. Toute spec prend sa session par
+ * `test.use({ storageState: sessionState(X) })` (#832) : la forme brute
+ * `storageState: X.storageState` démarre le test ANONYME quand le fichier manque ou a
+ * expiré, et l'échec se lit « dashboard introuvable » loin de sa cause.
+ *
+ * Seule exception : `browser.newContext({ storageState: X.storageState, … })`, qui ne
+ * passe pas par une fixture — la ligne non vide et non commentée qui la précède doit
+ * alors être `assertUsableSession(X)` (même contrôle, explicite).
+ *
+ * Lecture TEXTE, ligne à ligne (PIT-S112-010 : pas d'AST du dépôt entier pour une règle
+ * de forme) ; les sessions anonymes `{ cookies: [], origins: [] }` ne correspondent pas
+ * au motif.
+ */
+const RAW_SESSION = /storageState:\s*([A-Za-z_$][\w$]*)\.storageState\b/
+
+function rawSessionViolations(file: string, text: string): string[] {
+  const violations: string[] = []
+  const lines = text.split('\n')
+  const isCode = (line: string): boolean => {
+    const t = line.trim()
+    return t.length > 0 && !t.startsWith('//') && !t.startsWith('*') && !t.startsWith('/*')
+  }
+  lines.forEach((line, i) => {
+    if (!isCode(line)) return
+    const match = line.match(RAW_SESSION)
+    if (match === null) return
+    const account = match[1]
+    const where = `${file}:${i + 1}`
+    if (!/browser\.newContext\(/.test(line)) {
+      violations.push(
+        `${where} — \`storageState: ${account}.storageState\` : écrire sessionState(${account})`,
+      )
+      return
+    }
+    // Remonter au-dessus des `newContext` consécutifs jusqu'à la première ligne de code.
+    let j = i - 1
+    while (j >= 0 && (!isCode(lines[j]) || /browser\.newContext\(/.test(lines[j]))) j--
+    if (j < 0 || lines[j].trim() !== `assertUsableSession(${account})`) {
+      violations.push(`${where} — newContext sans assertUsableSession(${account}) juste avant`)
+    }
+  })
+  return violations
+}
+
+describe(
+  '#840 — aucune spec ne charge une session brute',
+  { timeout: REAL_REPO_TIMEOUT_MS },
+  () => {
+    it('dépôt réel : toutes les sessions passent par sessionState / assertUsableSession', () => {
+      const violations = readdirSync(E2E_DIR, { recursive: true, encoding: 'utf8' })
+        .filter((f) => f.endsWith('.ts'))
+        .sort()
+        .flatMap((f) => rawSessionViolations(f, readFileSync(join(E2E_DIR, f), 'utf8')))
+      expect(violations, 'forme brute réintroduite (#840, `e2e/support/session.ts`)').toEqual([])
+    })
+
+    it('sources synthétiques : la forme brute rougit, les formes contrôlées passent', () => {
+      const bad = [
+        'test.use({ storageState: PROD.storageState })',
+        'test.use({ viewport: MOBILE, storageState: SHARED.storageState })',
+        'test.use({\n  storageState: PROD.storageState,\n  timezoneId: "Europe/Paris",\n})',
+        'const ctx = await browser.newContext({ storageState: PROD.storageState })',
+        'assertUsableSession(SHARED)\nconst ctx = await browser.newContext({ storageState: PROD.storageState })',
+      ]
+      for (const source of bad) {
+        expect(rawSessionViolations('bad.spec.ts', source), source).toHaveLength(1)
+      }
+      const good = [
+        'test.use({ storageState: sessionState(PROD) })',
+        'test.use({ viewport: MOBILE, storageState: sessionState(SHARED) })',
+        'test.use({ storageState: { cookies: [], origins: [] } })',
+        '// ancien : test.use({ storageState: PROD.storageState })',
+        ' * `test.use({ storageState: PROD.storageState })` en JSDoc',
+        'assertUsableSession(PROD)\n' +
+          'const a = await browser.newContext({ storageState: PROD.storageState })\n' +
+          'const b = await browser.newContext({ storageState: PROD.storageState, viewport: M })',
+        'assertUsableSession(PROD)\n// commentaire\n\nconst a = await browser.newContext({ storageState: PROD.storageState })',
+      ]
+      for (const source of good) {
+        expect(rawSessionViolations('good.spec.ts', source), source).toEqual([])
+      }
+    })
+  },
+)

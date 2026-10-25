@@ -1901,6 +1901,26 @@ Aucun nom de test : impossible de savoir QUEL test a rougi lors d'un test de mut
 ## PIT-S114-001 — Plafonner UNE colonne de table ne suffit pas si les AUTRES dépassent déjà la boîte
 #816 demandait de « plafonner la colonne Produit » : à 1024 px la table débordait même avec la colonne Produit à 0, car frise 220 px + titre 256 px + compteur + actions = 751 px pour une boîte de 710 px. Et le correctif `w-full max-w-0` réduisait alors le nom à ~27 px entre 768 et 1023 px (attrapé par la review, pas par l'énoncé). Prévention : sommer les min-content des autres colonnes à CHAQUE palier (sm/md/lg/xl) avec un contenu long dans toutes, et asserter une largeur VISIBLE minimale de la colonne protégée, pas seulement l'absence de débordement. (Sprint 114 #816)
 
+
+## PIT-S115-001 — Un balayage regex de « promesse » rate les participes et les formules : relire le bloc par le SENS
+Le briefing de #797 balayait `rappel|remind|…|prévien` : `prévien` ne matche pas `prévenu`, et le titre de jalon « Vous êtes prévenu à temps » (« You are warned in time », « Te avisamos a tiempo », « Rechtzeitig informiert ») promettait lui aussi un envoi sans contenir le mot-racine. Prévention : relire chaque valeur du bloc i18n rendu, puis seulement grepper ; la regex inclut participes et tournures des 4 langues. (Sprint 115 #797)
+
+
+## PIT-S115-002 — Audit WCAG 1.4.4 : un mot qui déborde sur sa voisine n'élargit PAS le document
+#799 ne citait que le header ; la sonde par élément a trouvé 4 sections fautives sur 5, dont le h1 du hero et la frise à 1024 px, où le texte passe sur la colonne voisine sans que `documentElement.scrollWidth` bouge. Prévention : à texte ×2, sonder `scrollWidth > clientWidth` et le rectangle de chaque élément porteur de texte, pas seulement le document. (Sprint 115 #799)
+
+
+## PIT-S115-003 — `break-words` ne réduit pas la min-content : un `inline-flex` déborde quand même
+Le bouton final (`inline-flex`, `whitespace-normal`) débordait à ×2 avec `overflow-wrap: break-word` hérité : sa largeur est bornée par la min-content de son texte, que `break-word` ne change pas. `[overflow-wrap:anywhere]` la réduit. Prévention : `break-words` suffit pour un bloc de largeur définie, pas pour un `inline-flex` ou un item flex sans `min-w-0`. (Sprint 115 #799)
+
+
+## PIT-S115-004 — Une sonde `Range`/TreeWalker de texte doit filtrer `.sr-only`
+Le relevé « texte contenu dans la barre » de `sprint-104-landing-sticky-nav` a rougi après le repli légitime du groupe à ×2 : le texte `.sr-only` est rapporté hors de son clip. Récurrence de PIT-S77-002. Prévention : toute sonde de texte par `Range` ou TreeWalker exclut `.sr-only` et les sous-arbres `aria-hidden`. (Sprint 115 #799)
+
+
+## PIT-S115-005 — Contre `next dev`, 7 faux rouges de préchargement connus, pas 4
+`sprint-106-product-detail` #698 (`:495`, `:529`, `:549`) rougit ×3 contre `next dev`, comme `sprint-90-first-contact` #629 ×4 : préchargement RSC absent en dev. A/B sur la version non migrée → mêmes rouges. Prévention : imputer ces 7 cas à l'environnement ; la suite qui fait foi tourne contre `next build` + `next start`. (Sprint 115 #840)
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)

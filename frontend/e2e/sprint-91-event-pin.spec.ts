@@ -2,6 +2,7 @@ import { test, expect } from './support/fixtures'
 import { type Locator, type Page, type Route } from '@playwright/test'
 import { ensureAuthenticated } from './support/auth'
 import { PROD } from './support/accounts'
+import { sessionState } from './support/session'
 
 /**
  * #594 (Sprint 91) — Frise : un événement PONCTUEL est un PIN, pas une barre.
@@ -37,7 +38,7 @@ import { PROD } from './support/accounts'
  * prod empile en rangées (`layoutLane`) : cf. `sprint-97-lane-stacking.spec.ts`.
  */
 
-test.use({ storageState: PROD.storageState })
+test.use({ storageState: sessionState(PROD) })
 
 const PRODUCTS_LIST_RE = /\/api\/users\/[^/]+\/products(\?.*)?$/
 

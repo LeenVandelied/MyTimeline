@@ -203,13 +203,13 @@
     },
     "howItWorks": {
       "eyebrow": "Cómo funciona",
-      "title": "La misma cronología, del recordatorio al vencimiento.",
-      "subtitle": "Cada evento sigue su curso en la cronología. Así te acompaña Mi Timeline, desde el primer recordatorio hasta la renovación.",
+      "title": "La misma cronología, del primer vistazo al vencimiento.",
+      "subtitle": "Cada evento sigue su curso en la cronología. Así te acompaña Mi Timeline, desde el vencimiento visto de lejos hasta la renovación.",
       "milestones": {
         "reminder": {
-          "tag": "−30 días · recordatorio",
-          "title": "Te avisamos a tiempo",
-          "text": "Un recordatorio antes de cada vencimiento, fijado en la cronología — nunca a destiempo."
+          "tag": "−30 días · a la vista",
+          "title": "Lo ves venir",
+          "text": "Cada vencimiento ocupa su fecha en la cronología: lo ves acercarse, nunca a destiempo."
         },
         "recurrence": {
           "tag": "↻ recurrencia",

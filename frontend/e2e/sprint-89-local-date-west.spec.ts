@@ -1,6 +1,7 @@
 import type { Page } from '@playwright/test'
 import { test, expect } from './support/fixtures'
 import { PROD } from './support/accounts'
+import { sessionState } from './support/session'
 import { ensureAuthenticated } from './support/auth'
 import { getUserId, gotoProducts, seedCategory, seedProduct, unique } from './support/products'
 import { revealSeededLane } from './support/timeline-lanes'
@@ -32,7 +33,7 @@ import { revealSeededLane } from './support/timeline-lanes'
 
 const WEST_TZ = 'America/New_York'
 
-test.use({ storageState: PROD.storageState, timezoneId: WEST_TZ })
+test.use({ storageState: sessionState(PROD), timezoneId: WEST_TZ })
 
 /**
  * Jour civil de test = aujourd'hui + 3 jours À NEW YORK : futur (« prochain

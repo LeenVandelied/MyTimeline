@@ -1,6 +1,7 @@
 import { type Locator, type Page } from '@playwright/test'
 import { expect, test } from './support/fixtures'
 import { PROD } from './support/accounts'
+import { sessionState } from './support/session'
 import { ensureAuthenticated } from './support/auth'
 import { dumpOutwardProfile, formatProfile, settleForMeasurement } from './support/pixel'
 import { getUserId, seedCategory, seedProduct, unique } from './support/products'
@@ -136,7 +137,7 @@ async function paintedSides(page: Page, tab: Locator): Promise<Record<string, bo
   return out
 }
 
-test.use({ storageState: PROD.storageState, colorScheme: 'light' })
+test.use({ storageState: sessionState(PROD), colorScheme: 'light' })
 
 for (const route of ['list', 'detail'] as const) {
   for (const [vpName, viewport] of Object.entries(VIEWPORTS)) {

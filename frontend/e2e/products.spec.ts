@@ -1,5 +1,6 @@
 import { test, expect } from './support/fixtures'
 import { PROD } from './support/accounts'
+import { sessionState } from './support/session'
 import {
   getUserId,
   seedCategory,
@@ -26,7 +27,7 @@ import {
  * garantie + frise/historique non vides sur le détail).
  */
 
-test.use({ storageState: PROD.storageState })
+test.use({ storageState: sessionState(PROD) })
 
 test.describe('#218 Produits — navigation & CRUD via ProductDrawer', () => {
   // Critère 5 — navigation liste -> détail -> retour.

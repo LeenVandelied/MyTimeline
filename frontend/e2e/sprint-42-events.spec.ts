@@ -1,6 +1,7 @@
 import { test, expect } from './support/fixtures'
 import { type Page, type APIRequestContext } from '@playwright/test'
 import { PROD } from './support/accounts'
+import { assertUsableSession, sessionState } from './support/session'
 import { getUserId, seedCategory, seedProduct, todayIsoDate, unique } from './support/products'
 
 /**
@@ -35,7 +36,7 @@ import { getUserId, seedCategory, seedProduct, todayIsoDate, unique } from './su
  * PRÉREQUIS RUNTIME (job CI `e2e`) : backend Spring (:8080) + Postgres migré, front :3000.
  */
 
-test.use({ storageState: PROD.storageState })
+test.use({ storageState: sessionState(PROD) })
 
 const API = '/api'
 
@@ -95,6 +96,8 @@ test.describe('#232 Events — conflit 409 comparatif + toggle archived', () => 
     browser,
   }) => {
     // --- SETUP état partagé via API (contexte A) --------------------------
+    // `newContext` hors fixture `sessionState` : même contrôle, explicite (#840).
+    assertUsableSession(PROD)
     const ctxA = await browser.newContext({ storageState: PROD.storageState })
     const ctxB = await browser.newContext({ storageState: PROD.storageState })
     const pageA = await ctxA.newPage()
@@ -171,6 +174,8 @@ test.describe('#232 Events — conflit 409 comparatif + toggle archived', () => 
   test('conflit 409 -> « prendre la version serveur » rafraîchit les données', async ({
     browser,
   }) => {
+    // `newContext` hors fixture `sessionState` : même contrôle, explicite (#840).
+    assertUsableSession(PROD)
     const ctxA = await browser.newContext({ storageState: PROD.storageState })
     const ctxB = await browser.newContext({ storageState: PROD.storageState })
     const pageA = await ctxA.newPage()

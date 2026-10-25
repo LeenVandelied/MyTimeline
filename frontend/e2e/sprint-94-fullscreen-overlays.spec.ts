@@ -1,6 +1,7 @@
 import { type Page } from '@playwright/test'
 import { expect, test } from './support/fixtures'
 import { PROD } from './support/accounts'
+import { sessionState } from './support/session'
 import { ensureAuthenticated } from './support/auth'
 import { neutralizeDevToolingPointerEvents } from './support/dev-tooling'
 import { getUserId, seedCategory, seedProduct, unique } from './support/products'
@@ -69,7 +70,7 @@ async function gotoTimeline(page: Page) {
 }
 
 test.describe('#712 — couches du shell ouvertes depuis la frise en plein écran', () => {
-  test.use({ storageState: PROD.storageState, viewport: DESKTOP })
+  test.use({ storageState: sessionState(PROD), viewport: DESKTOP })
 
   test('« Éditer » depuis la frise en plein écran : sortie du plein écran, drawer saisi, toast visible', async ({
     page,

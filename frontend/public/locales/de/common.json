@@ -203,13 +203,13 @@
     },
     "howItWorks": {
       "eyebrow": "So funktioniert es",
-      "title": "Eine Zeitleiste, von der Erinnerung bis zur Frist.",
-      "subtitle": "Jedes Ereignis nimmt auf der Zeitleiste seinen Lauf. So begleitet Sie Meine Timeline, von der ersten Erinnerung bis zur Verlängerung.",
+      "title": "Eine Zeitleiste, vom ersten Blick bis zur Frist.",
+      "subtitle": "Jedes Ereignis nimmt auf der Zeitleiste seinen Lauf. So begleitet Sie Meine Timeline, von der Frist am Horizont bis zur Verlängerung.",
       "milestones": {
         "reminder": {
-          "tag": "−30 Tage · Erinnerung",
-          "title": "Rechtzeitig informiert",
-          "text": "Eine Erinnerung vor jeder Frist, auf der Zeitleiste verankert — nie im Nachhinein."
+          "tag": "−30 Tage · in Sicht",
+          "title": "Sie sehen es kommen",
+          "text": "Jede Frist steht an ihrem Datum auf der Zeitleiste: Sie sehen sie näherkommen — nie im Nachhinein."
         },
         "recurrence": {
           "tag": "↻ Wiederholung",

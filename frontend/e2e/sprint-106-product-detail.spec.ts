@@ -1,6 +1,7 @@
 import { test, expect } from './support/fixtures'
 import { type Locator, type Page, type Route } from '@playwright/test'
 import { PROD } from './support/accounts'
+import { sessionState } from './support/session'
 import { ensureAuthenticated } from './support/auth'
 import { WCAG_AA_NORMAL, describeRendering, readAtRest } from './support/contrast'
 import { getUserId, gotoProducts, seedCategory, seedProduct, unique } from './support/products'
@@ -30,7 +31,7 @@ import { trackSeed } from './support/seed-cleanup'
  * (`staleTime` 30 s, PIT-S90-004), purgé par la fixture.
  */
 
-test.use({ storageState: PROD.storageState })
+test.use({ storageState: sessionState(PROD) })
 
 const API = '/api'
 const DESKTOP = { width: 1280, height: 900 }

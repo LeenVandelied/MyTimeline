@@ -7288,15 +7288,29 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
 **Saturation contexte lead (mesure) :** non mesurée
 **Status :** Terminé
 
-### Sprint 115 — 2026-10-24 (PLANIFIÉ — cohésion 0.00 ⚠ hors br-packs, Landing honnête et lisible à 200 %, sessions E2E contrôlées)
-**Objectif :** la landing ne promet plus de rappels qui n'existent pas ; header sans débordement à texte ×2 ; specs E2E migrées vers `sessionState(X)`
-**Milestone GitHub :** #116
-**Issues :** #797 (P2, S — 3 chaînes par locale), #799 (P2, S), #840 (P3, S — plutôt M : 96 sites dans 70 specs) — 6 pts
-**Vagues :** V1 = #797 (i18n + rejeu `sprint-103-use-case-frieze`) ∥ #799 (Playwright ; ne touche pas aux locales) | V2 = #840 seul (lots de ~10 specs rejoués)
-**Migrations Flyway :** aucune
-**Dépend de :** Sprints 113 et 114 (#840 migre aussi leurs specs)
-**À confirmer au démarrage :** **décision produit #797** (reformuler recommandé ; implémenter des rappels sort de l'axe)
-**Status :** Planifié
+### Sprint 115 — 2026-10-25 → 2026-10-25 (Terminé — merge PR #863 dans dev)
+**Objectif :** la landing ne promet plus de rappels qui n'existent pas ; aucun débordement horizontal à texte ×2 ; specs E2E sur la session contrôlée `sessionState(X)`
+**Milestone GitHub :** #116 (fermé après merge)
+**Issues livrées (3) :** #797 (P2, S), #799 (P2, S), #840 (P3, S — réel M : 99 sites dans 72 specs) — fermées après merge
+**Décision produit :** #797 — reformuler (décision dev du 2026-10-25), DEC-S115-001
+**Vagues exécutées :** V1 = #797 (Vitest seul) ∥ #799 (détient Playwright) | lead : rejeu frise + ×2 + sticky-nav 33/33 | V2 = #840 seul (8 lots de 9 rejoués) | lead : `next build` + `next start`, E2E complet | reviewer batch
+**Cohésion score :** 0.00 (hors br-packs ; cohésion par fichiers : #797 et #799 sur la landing)
+**Migrations Flyway :** aucune — prochaine V17
+**Commits :** 16 — démarrage `42745fe0` · #797 `49e712d1` · #799 `1eda8b9b` · artefacts V1 `28d05aba` · #840 `1ae0752d`…`e411cf96` (8 lots) + garde `402bb3b7` · artefact V2 · audit `e8d1c573` · clôture (ce commit)
+**BR impactées :** aucune (textes de landing, mise en page, harnais E2E)
+**Reviews :** reviewer batch 0 CRITIQUE / 0 MAJEUR / 8 MINEURS — non corrigés, regroupés dans l'issue #867
+**Tests :** Backend non concerné | Vitest 2328/2328 | `next build`, tsc, lint, `format:check` verts | E2E complet contre `next build`+`next start` : 657 passés / 8 sautés / 1 rouge hors sprint (`sprint-77-theme-visual:620`, armement darwin) / 1 non exécuté | CI PR : 7/7 verts (e2e 659 passés ; passe RS256 appairée `auth-signature` 13 passés)
+**Nouveaux pitfalls / décisions / patterns :** PIT-S115-001..005 · PAT-S115-001..002 · DEC-S115-001 · packs pit régénérés
+**Écarts de briefing :** branche du worktree basée sur `main` → `sprint/115` recréée depuis `origin/dev` ; backend e2e réutilisé depuis l'image S113 (0 commit `backend/` depuis) ; E2E non délégués à un test-runner ; briefings non committés (supprimés avant la PR)
+**Absorbé en cours (XS) :** 1 — titre du jalon `milestones.reminder.title` (hors balayage regex du plan, #797)
+**Follow-ups arbitrés (Phase 4 triage) :**
+  - `legal.json:116` non traduit en en/es/de [XS | i18n] → issue #864 (backlog)
+  - audit texte ×2 des autres écrans publics + 320 px/en/es sur la landing [S | frontend] → issue #865 (backlog)
+  - exercer `auth-signature` en pile appairée [XS | e2e] → issue #866 (backlog) — la CI la joue déjà (passe RS256, 13 passés)
+  - 8 mineurs de la review batch [S | test] → issue #867 (backlog)
+  Ratio discard 0/4.
+**Saturation contexte lead (mesure) :** non mesurée
+**Status :** Terminé
 
 ### Sprint 116 — 2026-10-24 (PLANIFIÉ — cohésion 1.00, Débit et harnais auth : 429 informatif, budget E2E, thème sans bandeau)
 **Objectif :** un 429 dit quand retenter ; la passe 2 CI ne recrée qu'un compte ; un 500 du PUT de thème traité inline n'allume plus la bannière serveur

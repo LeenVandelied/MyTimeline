@@ -129,5 +129,14 @@ describe('HowItWorksSection — frise de cas d’usage (#612)', () => {
       expect(document.body.textContent).not.toContain('milestones.')
       expect(document.body.textContent).not.toContain('howItWorks')
     })
+
+    // #797 (S115, décision « reformuler ») : le produit n'envoie AUCUN rappel ni
+    // notification — la frise ne doit pas en promettre. Vérifié sur le texte RENDU.
+    it(`ne promet ni rappel ni notification en \`${locale}\` (#797)`, () => {
+      renderWithMessages(locale, messages)
+      expect(document.body.textContent).not.toMatch(
+        /rappel|prévenu|prévien|remind|warned|notif|alert|recordatorio|avisamos|erinnerung|informiert/i,
+      )
+    })
   }
 })

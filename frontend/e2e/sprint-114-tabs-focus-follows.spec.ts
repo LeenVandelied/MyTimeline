@@ -1,6 +1,7 @@
 import { type Locator, type Page } from '@playwright/test'
 import { expect, test } from './support/fixtures'
 import { PROD } from './support/accounts'
+import { sessionState } from './support/session'
 import { ensureAuthenticated } from './support/auth'
 import { getUserId, seedCategory, seedProduct, unique } from './support/products'
 
@@ -82,7 +83,7 @@ async function expectFocusOn(page: Page, tabs: Locator, idx: number, step: strin
   expect(roving, `${step} : un seul onglet en tabIndex=0`).toBe(1)
 }
 
-test.use({ storageState: PROD.storageState, colorScheme: 'light' })
+test.use({ storageState: sessionState(PROD), colorScheme: 'light' })
 
 for (const route of ['list', 'detail'] as const) {
   for (const [vpName, viewport] of Object.entries(VIEWPORTS)) {

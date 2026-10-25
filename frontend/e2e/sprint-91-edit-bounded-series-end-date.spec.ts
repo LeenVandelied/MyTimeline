@@ -1,5 +1,6 @@
 import { expect, test } from './support/fixtures'
 import { PROD } from './support/accounts'
+import { sessionState } from './support/session'
 import { ensureAuthenticated } from './support/auth'
 import { neutralizeDevToolingPointerEvents } from './support/dev-tooling'
 import { getUserId, seedCategory, seedProduct, unique } from './support/products'
@@ -70,7 +71,7 @@ function plusDaysIso(iso: string, days: number): string {
 }
 
 test.describe('#676 — édition depuis la frise d’une série bornée', () => {
-  test.use({ storageState: PROD.storageState, viewport: DESKTOP })
+  test.use({ storageState: sessionState(PROD), viewport: DESKTOP })
 
   test('la date de fin de série est pré-remplie et le hint de plafond ne s’affiche pas', async ({
     page,

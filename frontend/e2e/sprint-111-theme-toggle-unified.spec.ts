@@ -1,5 +1,6 @@
 import { expect, test, type Locator, type Page } from '@playwright/test'
 import { SHARED } from './support/accounts'
+import { sessionState } from './support/session'
 import { neutralizeDevToolingPointerEvents } from './support/dev-tooling'
 import { keepThemeOffSharedAccount } from './support/theme-preference'
 
@@ -53,7 +54,7 @@ import { keepThemeOffSharedAccount } from './support/theme-preference'
  * (:3000) avec le proxy `/api`. Auth par `storageState` (projet `setup`).
  */
 
-test.use({ storageState: SHARED.storageState })
+test.use({ storageState: sessionState(SHARED) })
 
 /** Première navigation après une modification : `next dev` recompile (10-20 s). */
 const FIRST_NAV_BUDGET = 60_000

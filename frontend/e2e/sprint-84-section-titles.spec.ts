@@ -3,6 +3,7 @@ import { type Locator, type Page } from '@playwright/test'
 import { waitForFonts } from './support/contrast'
 import { ensureAuthenticated } from './support/auth'
 import { PROD } from './support/accounts'
+import { sessionState } from './support/session'
 import { getUserId, seedCategory, seedProduct } from './support/products'
 
 /**
@@ -25,7 +26,7 @@ import { getUserId, seedCategory, seedProduct } from './support/products'
  * Mesures, pas captures : aucune référence visuelle n'est créée ni modifiée.
  */
 
-test.use({ storageState: PROD.storageState })
+test.use({ storageState: sessionState(PROD) })
 
 const LOCALES = ['fr', 'en', 'es', 'de'] as const
 type Locale = (typeof LOCALES)[number]

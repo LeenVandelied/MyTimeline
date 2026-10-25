@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { openSettingsChapter } from './support/auth'
 import { SHARED } from './support/accounts'
+import { sessionState } from './support/session'
 import { keepThemeOffSharedAccount } from './support/theme-preference'
 
 /**
@@ -17,7 +18,7 @@ import { keepThemeOffSharedAccount } from './support/theme-preference'
 // Mutations client-only (densité/langue). Le thème est persisté SUR LE COMPTE
 // depuis #653 : son `PUT` est répondu dans le navigateur (`keepThemeOffSharedAccount`)
 // pour que le compte partagé reste sans préférence (non restaurable à `null`).
-test.use({ storageState: SHARED.storageState })
+test.use({ storageState: sessionState(SHARED) })
 
 test.describe('Réglages — Préférences', () => {
   test('thème sombre appliqué sans reload (classe .dark sur <html>)', async ({ page }) => {

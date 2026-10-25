@@ -2,6 +2,7 @@ import { test, expect } from './support/fixtures'
 import { type Locator, type Page, type Route } from '@playwright/test'
 import { waitForFonts } from './support/contrast'
 import { PROD } from './support/accounts'
+import { sessionState } from './support/session'
 
 /**
  * Sprint 108 — #623 : ruban du tableau de bord = les 30 PROCHAINS jours, avec une
@@ -24,7 +25,7 @@ import { PROD } from './support/accounts'
  */
 
 test.use({
-  storageState: PROD.storageState,
+  storageState: sessionState(PROD),
   timezoneId: 'Europe/Paris',
 })
 

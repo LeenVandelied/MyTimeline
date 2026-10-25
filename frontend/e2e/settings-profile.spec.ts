@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { openSettingsChapter, minimalPngBuffer } from './support/auth'
 import { SHARED } from './support/accounts'
+import { sessionState } from './support/session'
 
 /**
  * #86 / #75 — E2E chapitre Profil (desktop) : upload/recadrage/suppression
@@ -19,7 +20,7 @@ import { SHARED } from './support/accounts'
 // Compte partagé fixe (storageState) : ZÉRO register par test (anti rate-limit).
 // Ce fichier MUTE l'état backend du compte partagé (nom, avatar) -> `serial` pour
 // éviter tout entrelacement entre tests (et clobber du compte partagé).
-test.use({ storageState: SHARED.storageState })
+test.use({ storageState: sessionState(SHARED) })
 test.describe.configure({ mode: 'serial' })
 
 test.describe('Réglages — Profil : avatar + champs', () => {

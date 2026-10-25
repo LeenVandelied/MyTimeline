@@ -1,6 +1,7 @@
 import { expect, test } from './support/fixtures'
 import { type APIRequestContext, type Page } from '@playwright/test'
 import { PROD, SHARED } from './support/accounts'
+import { sessionState } from './support/session'
 import { ensureAuthenticated } from './support/auth'
 import { neutralizeDevToolingPointerEvents } from './support/dev-tooling'
 import { getUserId, seedCategory, seedProduct, unique } from './support/products'
@@ -125,7 +126,7 @@ async function fetchProductEvents(
 }
 
 test.describe('#79 — sheet de création : le clavier ne masque plus le formulaire', () => {
-  test.use({ storageState: PROD.storageState, viewport: MOBILE_PORTRAIT })
+  test.use({ storageState: sessionState(PROD), viewport: MOBILE_PORTRAIT })
 
   test('borne la sheet au viewport visible, garde le pied visible et crée l’événement', async ({
     page,
@@ -274,7 +275,7 @@ test.describe('#79 — sheet de création : le clavier ne masque plus le formula
 })
 
 test.describe('#79 — bottom sheet Réglages (suppression de compte)', () => {
-  test.use({ storageState: SHARED.storageState, viewport: SETTINGS_PORTRAIT })
+  test.use({ storageState: sessionState(SHARED), viewport: SETTINGS_PORTRAIT })
 
   test('la sheet de suppression réagit au clavier et garde son champ visible', async ({ page }) => {
     test.setTimeout(120_000)

@@ -1,6 +1,7 @@
 import { type Locator, type Page, type Route } from '@playwright/test'
 import { expect, test } from './support/fixtures'
 import { PROD } from './support/accounts'
+import { sessionState } from './support/session'
 import { ensureAuthenticated } from './support/auth'
 import { neutralizeDevToolingPointerEvents } from './support/dev-tooling'
 import { expectAllTouchable } from './support/touch-targets'
@@ -82,7 +83,7 @@ function seededEventMore(page: Page, title: string): Locator {
 }
 
 test.describe('#764 — frise mobile (375 px) : feuilles de lecture et d’actions', () => {
-  test.use({ viewport: MOBILE, storageState: PROD.storageState })
+  test.use({ viewport: MOBILE, storageState: sessionState(PROD) })
 
   test('fenêtre de lecture (TimelineBottomSheet) puis feuille d’actions', async ({ page }) => {
     test.setTimeout(120_000)
@@ -158,7 +159,7 @@ async function openMobileDashboard(page: Page, items: unknown[]): Promise<void> 
 }
 
 test.describe('#764 — tableau de bord mobile (375 px) : CTA d’état vide', () => {
-  test.use({ viewport: MOBILE, storageState: PROD.storageState })
+  test.use({ viewport: MOBILE, storageState: sessionState(PROD) })
 
   test('aucun produit : CTA du carousel produits', async ({ page }) => {
     await openMobileDashboard(page, [])

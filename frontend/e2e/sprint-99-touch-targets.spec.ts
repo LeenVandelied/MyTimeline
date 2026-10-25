@@ -1,6 +1,7 @@
 import { test, expect, type Locator, type Page, type Route } from '@playwright/test'
 import { ensureAuthenticated, minimalPngBuffer, openSettingsChapter } from './support/auth'
 import { SHARED } from './support/accounts'
+import { sessionState } from './support/session'
 import {
   BOX_ONLY,
   EPS,
@@ -182,7 +183,7 @@ async function expectOptionsTouchable(page: Page, trigger: string, min: number):
 }
 
 test.describe('#738 — Réglages mobiles (375 px) : toutes les cibles >= 44 px', () => {
-  test.use({ viewport: MOBILE, storageState: SHARED.storageState })
+  test.use({ viewport: MOBILE, storageState: sessionState(SHARED) })
 
   test('index des chapitres', async ({ page }) => {
     await ensureAuthenticated(page)
@@ -335,7 +336,7 @@ test.describe('#738 — Réglages mobiles (375 px) : toutes les cibles >= 44 px'
  * texte fait 24,28 px avec la police du DS, pas les 20 px de `text-sm`).
  */
 test.describe('#738 — Réglages desktop (1280 px) : hauteurs inchangées', () => {
-  test.use({ viewport: DESKTOP, storageState: SHARED.storageState })
+  test.use({ viewport: DESKTOP, storageState: sessionState(SHARED) })
 
   test('profil : champs 36, submit 36, suppression avatar 36×36', async ({ page }) => {
     await withFakeAvatar(page)

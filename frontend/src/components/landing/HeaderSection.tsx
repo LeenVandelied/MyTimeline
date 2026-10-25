@@ -164,13 +164,25 @@ export function HeaderSection({ locale }: HeaderSectionProps) {
           vaut 93 px à TOUTES les largeurs tant que le texte tient (+2 px
           au-dessus de `lg`, contenu recentré), et grandit au-delà. `py-2` :
           marge du texte agrandi contre les bords de la barre.
-          Garde-fou : `e2e/sprint-104-landing-sticky-nav.spec.ts`. */}
+          Garde-fou : `e2e/sprint-104-landing-sticky-nav.spec.ts`.
+
+          #799 (WCAG 1.4.4) — `flex-wrap` + `gap-x-2 gap-y-2` sur le `<header>`. À
+          texte ×2 (tokens `--text-*` doublés), les blocs ne tiennent plus sur une
+          ligne : logo 244 px + CTA 194–219 px + burger 44 px pour 343 px utiles à
+          375 px (+129 px en `fr`, +154 en `de`), et le groupe droit (534 px) poussait
+          le document à 1054 px à 1024 px en `de`. Ils passent désormais à la ligne
+          (la barre grandit, sa hauteur réelle est publiée par l'effet ci-dessus).
+          Au texte nominal RIEN NE BOUGE : `justify-between` répartit la même place
+          libre quel que soit `gap-x`, et le retour à la ligne ne se déclenche que
+          si l'écart tombe sous 8 px — sous le plancher `MIN_GAP_PX` (10 px) de
+          `landing-header-logo.spec.ts`, qui rougirait de toute façon.
+          Garde-fou : `e2e/sprint-115-landing-text-200.spec.ts`. */}
       <div
         ref={barRef}
         data-testid="landing-header-bar"
         className="landing-sticky-bar bg-bg border-rule border-b"
       >
-        <header className="container-landing flex items-center justify-between px-4 py-2">
+        <header className="container-landing flex flex-wrap items-center justify-between gap-x-2 gap-y-2 px-4 py-2">
           <div className="flex items-center">
             {/* #381 — ÉCHELLE ET RETOUR À LA LIGNE DU LOGO, PALIER UNIQUE.
             `text-md` (21 px) puis `text-lg` (27 px) à partir de `sm`, et

@@ -203,13 +203,13 @@
     },
     "howItWorks": {
       "eyebrow": "How it works",
-      "title": "One timeline, from reminder to deadline.",
-      "subtitle": "Every event plays out on the timeline. Here is how My Timeline supports you, from the first reminder to the renewal.",
+      "title": "One timeline, from first glance to deadline.",
+      "subtitle": "Every event plays out on the timeline. Here is how My Timeline supports you, from a deadline seen from afar to the renewal.",
       "milestones": {
         "reminder": {
-          "tag": "−30 days · reminder",
-          "title": "You are warned in time",
-          "text": "A reminder ahead of every deadline, set on the timeline — never after the fact."
+          "tag": "−30 days · in sight",
+          "title": "You see it coming",
+          "text": "Every deadline sits on the timeline at its date: you watch it approach, never after the fact."
         },
         "recurrence": {
           "tag": "↻ recurrence",

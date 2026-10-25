@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { openSettingsChapter } from './support/auth'
 import { SHARED, DEL } from './support/accounts'
+import { sessionState } from './support/session'
 
 /**
  * #86 / #59 — E2E chapitre Compte (desktop) : export RGPD (flux 3 étapes, contrat
@@ -16,7 +17,7 @@ import { SHARED, DEL } from './support/accounts'
 
 // Export = lecture seule (aucune mutation de compte) : compte partagé fixe. storageState.
 test.describe('Réglages — Compte : export RGPD (#59)', () => {
-  test.use({ storageState: SHARED.storageState })
+  test.use({ storageState: sessionState(SHARED) })
 
   test('export JSON (sync) : confirmation -> téléchargement immédiat', async ({ page }) => {
     await openSettingsChapter(page, 'account')
@@ -43,7 +44,7 @@ test.describe('Réglages — Compte : export RGPD (#59)', () => {
 // Suppression = compte THROWAWAY dédié `DEL` (se détruit) : storageState, pas de
 // register par test. Aucun autre test ne réutilise ce compte.
 test.describe('Réglages — Compte : suppression', () => {
-  test.use({ storageState: DEL.storageState })
+  test.use({ storageState: sessionState(DEL) })
   // fullyParallel global : le test lit/DÉTRUIT le compte DEL. Un futur 2e test lisant
   // ce même compte s'entrelacerait avec la suppression -> serial (cf. settings-profile).
   test.describe.configure({ mode: 'serial' })
