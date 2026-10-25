@@ -68,6 +68,19 @@ Une séquence qui FINIT par `[` / `]` ne dérive pas : l'écriture est absolue. 
 - Balayage des specs qui citent la surface (une passe, chromium) : `timeline`, `timeline-mobile`, `sprint-85-timeline-sidebar`, `sprint-85-timeline-group-head`, `sprint-85-timeline-toolbar`, `sprint-94-modal-shortcuts`, `sprint-91-event-pin`, `sprint-97-lane-stacking`, `sprint-98-label-collision`, `sprint-98-mobile-zoom-anchor`, `sprint-91-recurrence-marks`, `sprint-117-touch-targets`, `sprint-105-fit-shortcut`, `sprint-117-period-zoom-no-drift`. Résultat : **106 passed** (setup compris), 0 failed, 0 flaky. Le setup a rejoué 2 fois le rendu `/fr/register` en 500 (recompilation `next dev`), puis il est passé.
 - Pas de `next build` ni de `test-quiet.sh` (consigne). Le `next build` reste au lead.
 
+### Correction CI (run 40201893001, job e2e, PR #873)
+
+- **Symptôme.** Jeu 4 (`sprint-105-fit-shortcut.spec.ts:470`, titre de 31 car.) rouge sous Linux : `scrollWidth` 205 > `clientWidth` 196. Le jeu était vert 3× sous macOS (188 ≤ 188).
+- **Cause, confirmée par la lecture du code et par les chiffres.** 196 = `pinLabelMaxPx(11 + ⌈31 × 6,3⌉ = 207)` = le `--mt-label-max` que `EventPin` reçoit de `applyLabelReserves` (#746). Le libellé est donc coupé par SA PROPRE réserve estimée (ellipse + `title`, comportement assumé par DEC-S98), pas par le bord de piste. La police Linux rend ce titre à 6,6 px/car. ; l'estimation en retient 6,3.
+- **Décision : (a).** L'oracle mélangeait l'objet de #804 (« le cadrage F laisse la place ») et une métrique de police. Pour le jeu 4 seulement (`fontDependentWidth`), la non-troncature est remplacée par « largeur rendue = min(texte, réserve) ± 1 ». Un nouvel oracle, INDÉPENDANT DE LA POLICE, s'applique aux 4 jeux : départ du libellé + `max-width` calculé ≤ bord de piste − 34 px. Il renforce les jeux 1 à 3 : leur non-troncature et l'air de queue restent assertés.
+- **Mesures (macOS, `next start`).** Air de la réserve : jeux 1 et 2 37 px, pin seul 547 px, jeu 4 51 px (réserve 196 px).
+- **Résultats.**
+  - Spec 18/18 sur 3 rejeux contre `next start`.
+  - Mutation « réserve ignorée » (build de production mutant) : jeu 4 rouge (air 5,8 px). L'oracle de réserve isolé est rouge lui aussi (−2 px), donc non vacant quelle que soit la police.
+  - Source restaurée et rebuild propre ; oracles 200 / 401.
+- `sprint-101-fab-landscape.spec.ts:272` rejoué 3× : vert (pas rougi).
+- **Non tranché.** Je n'ai pas vérifié si l'écart Linux vient de la police elle-même (rendu, hinting) ou d'un repli avant chargement de la police web, ni s'il touche les libellés partout : c'est le follow-up ci-dessous.
+
 ## Commits
 
 - `f0627005` — `:bug: fix(timeline): plus de dérive sur [ ] enchaînés à + / - (scrollTo instantané) (#805)` : `TimelineView.tsx` + `e2e/sprint-117-period-zoom-no-drift.spec.ts`.
@@ -102,6 +115,7 @@ Une séquence qui FINIT par `[` / `]` ne dérive pas : l'écriture est absolue. 
 
 - RECOMMAND_FOLLOWUP: frise — `T` a deux positions : le 1er appui après chargement place aujourd'hui au bord de l'en-tête (l'effet `offsetDays` #392 passe après `scrollToToday`, 7 560 px), un 2e appui (offset inchangé) le CENTRE (7 209 px) ; trancher le repère voulu et l'unifier [triage XS | domaine frontend/timeline]
 - RECOMMAND_FOLLOWUP: frise — réserve de queue du cadrage `F` limitée aux événements du dernier jour ; un pin antérieur à long libellé peut encore déborder à forte échelle (cas marginal, documenté en JSDoc de `trailingLabelReservePx`) [triage S | domaine frontend/timeline]
+- RECOMMAND_FOLLOWUP: frise — l'estimation #746 (6,3 px/car., calibrée sur macOS) sous-dimensionne sous Linux CI (31 car. : 205 px rendus pour 196 réservés) : mesurer la chasse réelle sur Linux/Windows et recalibrer, ou accepter l'ellipse [triage S | domaine frontend/timeline]
 - Pas de RECOMMAND_DB_EXPERT : aucun schéma ni requête touché, correctifs purement frontend.
 - Pas de RECOMMAND_SECURITY : défilement et géométrie seulement, aucune donnée ni entrée utilisateur nouvelle.
 - Pas de RECOMMAND_UI_DESIGN : aucun token, style ni composant modifié ; seul le défilement programmatique devient instantané, comme #449/#597 l'avaient déjà décidé.

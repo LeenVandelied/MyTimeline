@@ -389,12 +389,17 @@ async function readLabelFrame(page: Page, head: string, tail: string) {
       const tailPin = pill(tail)?.querySelector('.mt-evt-pin')?.getBoundingClientRect()
       const label = pill(tail)?.querySelector<HTMLElement>('.mt-evt-pin__label')
       const labelBox = label?.getBoundingClientRect()
+      // Largeur RÉSERVÉE du libellé (`--mt-label-max`, #746) : fixée par l'estimation de
+      // `label-reserve.ts`, indépendante de la police réellement chargée.
+      const labelMax = label ? parseFloat(getComputedStyle(label).maxWidth) : NaN
       return {
         trackLeft: x0 + gutter,
         trackRight: x0 + el.clientWidth,
         headLeft: headBox ? headBox.left : null,
         tailDate: tailPin ? (tailPin.left + tailPin.right) / 2 : null,
         labelRight: labelBox ? labelBox.right : null,
+        reserveRight: labelBox && Number.isFinite(labelMax) ? labelBox.left + labelMax : null,
+        labelMaxWidth: Number.isFinite(labelMax) ? labelMax : null,
         labelScrollWidth: label ? label.scrollWidth : null,
         labelClientWidth: label ? label.clientWidth : null,
       }
@@ -415,6 +420,14 @@ const LABEL_CASES: ReadonlyArray<{
   events: (usablePx: number) => FitEvent[]
   /** Pin seul : l'oracle est le centrage de l'emprise, pas l'air (toujours large). */
   centered?: boolean
+  /**
+   * Titre dont la largeur RENDUE dépend de la police au point de dépasser l'estimation
+   * #746 (6,3 px/car.) : le libellé peut alors être coupé par SA réserve (`--mt-label-max`,
+   * ellipse + `title`, DEC-S98), pas par le bord de piste. Mesuré au S117 : 188 px sur
+   * macOS, 205 px sur la CI Linux pour 196 réservés. La non-troncature n'est pas l'objet
+   * de #804 : l'oracle porte alors sur la RÉSERVE entière dans la piste.
+   */
+  fontDependentWidth?: boolean
 }> = [
   {
     name: '2 pins, étendue serrée en `week`',
@@ -449,6 +462,7 @@ const LABEL_CASES: ReadonlyArray<{
     level: 'Semaine',
     head: 'S117 Tête D',
     tail: 'S117 échéance de queue allongée',
+    fontDependentWidth: true,
     events: (u) => [
       { title: 'S117 Tête D', start: 15 },
       {
@@ -490,10 +504,27 @@ test.describe('#804 — touche F : libellé du pin de queue entier', () => {
         tailAir,
         `${c.name} : libellé « ${c.tail} » à ${tailAir} px du bord droit de la piste`,
       ).toBeGreaterThanOrEqual(FIT_EDGE_AIR_PX - 1)
+      // Oracle INDÉPENDANT DE LA POLICE : la place réservée au libellé (départ du libellé +
+      // `--mt-label-max`) tient dans la piste, avec l'air. C'est ce que garantit le cadrage F.
+      const reserveAir = f.trackRight - (f.reserveRight ?? Infinity)
       expect(
-        f.labelScrollWidth ?? Infinity,
-        `${c.name} : libellé « ${c.tail} » non tronqué (scrollWidth ≤ clientWidth)`,
-      ).toBeLessThanOrEqual(f.labelClientWidth ?? 0)
+        reserveAir,
+        `${c.name} : réserve du libellé (${f.labelMaxWidth} px) à ${reserveAir} px du bord droit`,
+      ).toBeGreaterThanOrEqual(FIT_EDGE_AIR_PX - 1)
+      if (c.fontDependentWidth) {
+        // Si le texte est coupé, il ne l'est QUE par sa propre réserve (jamais au-delà).
+        expect(
+          Math.abs(
+            (f.labelClientWidth ?? 0) - Math.min(f.labelScrollWidth ?? 0, f.labelMaxWidth ?? 0),
+          ),
+          `${c.name} : largeur du libellé = min(texte, réserve)`,
+        ).toBeLessThanOrEqual(1)
+      } else {
+        expect(
+          f.labelScrollWidth ?? Infinity,
+          `${c.name} : libellé « ${c.tail} » non tronqué (scrollWidth ≤ clientWidth)`,
+        ).toBeLessThanOrEqual(f.labelClientWidth ?? 0)
+      }
       expect(
         headAir,
         `${c.name} : « ${c.head} » à ${headAir} px de la gouttière`,
