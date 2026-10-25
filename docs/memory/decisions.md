@@ -1204,7 +1204,7 @@ security-expert (MINEUR) recommandait 10/min/IP comme `PATCH /api/me`. Non appli
 ## DEC-S112-001 — Périmètre S112 recalibré à 7 issues ; #832 par helper `storageState` ; #700 reste ouverte
 Arbitrage dev au `/sprint start` : les 4 suites du S111 gardées (~11 pts) ; #832 → option helper `storageState`, plafond `login-per-minute=30` inchangé (relever le plafond rachète de la marge sans rien protéger) ; #700 → E2E livrés, volet VoiceOver/NVDA manuel au dev, issue laissée ouverte (grille `sprints/sprint-112/issue-700-sr-checklist.md`). (Sprint 112)
 
-## DEC-S112-002 — `e2e/support/touch-targets.ts` : profil complet par défaut, `sprint-99` en `BOX_ONLY`
+## DEC-S112-002 — `e2e/support/touch-targets.ts` : profil complet par défaut, `sprint-99` en `BOX_ONLY` (REMPLACÉE par DEC-S117-003)
 La factorisation ne devait rien changer à ce que mesure une spec : les 3 divergences deviennent 3 options, et sprint-99 garde son ancien comportement. L'alignement serait neutre aujourd'hui (mesuré) mais reste une décision à part (suite). (Sprint 112 #768)
 
 ## DEC-S112-003 — Plafond de `PUT /api/me/preferences` : 30/min par id de compte, filtre dédié, fail-closed
@@ -1230,3 +1230,12 @@ Décision dev du 2026-10-25 sur #838 : si `handlesStatusInline(config, 500)` est
 
 ## DEC-S116-003 — Job CI `e2e` : attente du backend sur `/actuator/health`
 #406 : le poll de disponibilité passe de `/api/auth/me` (un 401 ne prouve que la levée des filtres web) à `/actuator/health` UP, `--max-time 5`, avec sortie immédiate si la JVM meurt (`kill -0`). Endpoint public, hors rate-limit, déjà healthcheck de `backend-e2e` ; vérifié sur la CI de la PR #868 (UP après 6 tentatives). (Sprint 116 #406)
+
+## DEC-S117-001 — Recadrage F : marges asymétriques dérivées de l'emprise du pin
+`computeFit` : 40 px à gauche (demi-pin 5 + air 35), 135 px à droite (emprise plancher pin + libellé 100 + air 35) en desktop (`FIT_MARGINS_PX`, `mobile` réservé, non branché). Le libellé est à DROITE du pin, d'où l'asymétrie. Remplace la marge unique 40/40 du #597. (Sprint 117 #804)
+
+## DEC-S117-002 — Réserve de queue du recadrage F = libellés du DERNIER jour seulement
+`fitToEvents` passe `trailPx = max(135, réserve + 35)`, réserve = max des emprises de libellé des événements du dernier jour (`trailingLabelReservePx`, même estimation que le rendu `--mt-label-max`). Les jours antérieurs sont ignorés pour éviter un calcul circulaire (la marge dépend du niveau qu'elle choisit) ; limite connue et suivie en issue (pin antérieur à libellé long). (Sprint 117 #804)
+
+## DEC-S117-003 — Cibles tactiles : profil de mesure complet partout, `BOX_ONLY` supprimé
+Remplace DEC-S112-002. `sprint-99-touch-targets` passe au profil complet : mesuré neutre 3 runs sur 3 (14 passed, 17 lignes identiques au diff) ; `BOX_ONLY` retiré du helper `e2e/support/touch-targets.ts` (0 appelant), les 3 options `MeasureOptions` restent. (Sprint 117 #837)

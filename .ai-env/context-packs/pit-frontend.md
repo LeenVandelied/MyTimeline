@@ -1937,6 +1937,26 @@ Y compris un heredoc qui écrit cette chaîne dans un test ou un commentaire `ci
 ## PIT-S116-006 — Une borne de budget écrite en prose n'est gardée par rien
 « borne register avec ré-émissions du setup = 36 » (`application-e2e.properties`, `auth.setup.ts`) était périmée depuis S111 (valait 39) ; recomptée 30 au S116. Prévention : toute borne de budget E2E est une ligne lue par `e2e-rate-limit-budget.test.ts`, ou se recompte à chaque changement de passe/compte. Suivi : issue backlog. (Sprint 116 #839)
 
+
+## PIT-S117-001 — Une constante de module dérivée d'une autre déclarée plus bas plante au chargement, pas au typage
+`FIT_MARGINS_PX` (`zoom.ts`) est calculée depuis `PIN_FOOTPRINT_PX` : déclarée avant elle, elle lève une `ReferenceError` (TDZ) à l'import, invisible pour `tsc`. Même piège entre modules : `label-reserve.ts` importe `zoom.ts` et évalue `PIN_HALF_WIDTH_PX` au chargement, donc `zoom.ts` ne peut pas importer `label-reserve.ts` (cycle). Prévention : déclarer une constante dérivée APRÈS ses sources ; placer le calcul côté appelant quand l'import serait circulaire. (Sprint 117 #804)
+
+
+## PIT-S117-002 — Un oracle de marge sur des niveaux de zoom DISCRETS est vacant si l'étendue n'est pas serrée
+Frise : 96/34/12/5/2,2 px/j. Une étendue « au hasard » laisse jusqu'à un niveau entier de mou : l'oracle « libellé dans la piste » passait avec les marges fautives 40/40 (150 à 570 px d'air, mutation verte). Prévention : jeu serré calculé depuis la piste mesurée (charger, mesurer `clientWidth`, recharger avec la plus grande étendue qui tient au niveau visé) et contrôle négatif par mutation avant de déclarer l'oracle. (Sprint 117 #804/#805)
+
+
+## PIT-S117-003 — Remonter une cible qui déborde de sa lane : z-index sur la CIBLE, pas sur son conteneur
+Paysage : le `⋯` (44 px) d'une durée dans une lane de 34 px était recouvert par la lane suivante. Un `z-index:1` sur le wrap `.mt-tlm__evt-wrap` le corrigeait mais le wrap couvre toute sa lane et captait le bas du pin voisin à la même date (`sprint-91-event-pin` paysage/Jour rouge). Solution : `z-index` sur le bouton (item flex, actif sans `position`). Prévention : rejouer les specs des cibles VOISINES. (Sprint 117 #837)
+
+
+## PIT-S117-004 — La largeur rendue d'un libellé dépend de la police : un oracle « non tronqué » vert sur macOS rougit en CI Linux
+Titre de 31 caractères : 188 px rendus sur macOS, 205 px sur la CI Linux, pour 196 px réservés par l'estimation #746 (`--mt-label-max`, 6,3 px/car.) → ellipse sous Linux seulement. Prévention : un oracle E2E de géométrie de texte porte sur la RÉSERVE (départ + `max-width` calculé), pas sur `scrollWidth ≤ clientWidth`, sauf titres courts. Suivi : recalibrage de l'estimation, issue #874. (Sprint 117 #804, CI PR #873)
+
+
+## PIT-S117-005 — `sprint-111-theme-account-preference:88` rougit AUSSI contre `next build` + `next start` en suite complète
+Complète PIT-S116-004 (rouge sous `next dev`) : au S117, 1 rouge en suite complète locale contre le build de production (timeout 5 s sur le PUT de préférence à la connexion), puis 6/6 sur 3 rejeux isolés ; vert en CI. Prévention : ne pas l'imputer au sprint sans recoupement du diff ; l'issue de barrière d'hydratation (#871) est la piste. (Sprint 117, lead)
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)
