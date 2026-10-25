@@ -978,6 +978,9 @@ Sortie `command not found` (exit 127) avalée par un `;`, puis la sonde `/api/au
 Aucun nom de test : impossible de savoir QUEL test a rougi lors d'un test de mutation. `rtk proxy npx vitest run --reporter=verbose`. À mettre dans tout briefing qui demande une preuve de non-vacuité. (Sprint 113, review)
 
 
+## PIT-S115-005 — Contre `next dev`, 7 faux rouges de préchargement connus, pas 4
+`sprint-106-product-detail` #698 (`:495`, `:529`, `:549`) rougit ×3 contre `next dev`, comme `sprint-90-first-contact` #629 ×4 : préchargement RSC absent en dev. A/B sur la version non migrée → mêmes rouges. Prévention : imputer ces 7 cas à l'environnement ; la suite qui fait foi tourne contre `next build` + `next start`. (Sprint 115 #840)
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)

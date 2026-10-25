@@ -1218,3 +1218,6 @@ La factorisation ne devait rien changer à ce que mesure une spec : les 3 diverg
 
 ## DEC-S114-001 — Liste produits : frise pleine (220×40) à partir de `xl` seulement, compacte (64×24) en dessous
 Le handoff §5 la plaçait dès `md`, ce qui laissait ~27 px au nom à 768 px (même défaut que #825) et contredisait son propre invariant (table sans débordement, nom lisible). Arbitré par ui-design (APPROUVE), `docs/design/graphite-handoff.md` §5 amendé ; titre du prochain événement plafonné à 80 px sous `xl`, texte complet en `title`. (Sprint 114 #816)
+
+## DEC-S115-001 — Landing : la frise reformulée (l'échéance se voit venir), pas de fonction de rappel
+Décision dev du 2026-10-25 sur #797 : aucune fonction de rappel ou de notification n'existe ni n'est au backlog immédiat, donc la landing ne la promet plus. Le jalon dit qu'on voit l'échéance approcher sur la frise ; clé i18n `reminder` et `data-testid` conservés ; `HowItWorksSection.test.tsx` garde le texte rendu des 4 locales. Développer de vrais rappels reste possible, à rechiffrer séparément. (Sprint 115 #797)
