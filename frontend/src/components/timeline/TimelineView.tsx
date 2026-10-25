@@ -80,7 +80,11 @@ import {
   layoutLanes,
   type LaneLayout,
 } from './lane-layout'
-import { applyLabelReserves } from './label-reserve'
+import {
+  applyLabelReserves,
+  fitMarginsForTrailReserve,
+  trailingLabelReservePx,
+} from './label-reserve'
 
 /**
  * #55 — Vue Timeline desktop.
@@ -1362,10 +1366,13 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
         }
       }
     }
-    const fit = computeFit(
-      displayedEventDayExtent(indexedEvents, displayed),
-      el.clientWidth - LANE_TRACK_OFFSET_PX,
+    const extent = displayedEventDayExtent(indexedEvents, displayed)
+    // #804 (suite) — marge droite = réserve RÉELLE du libellé de queue (+ air), pas le
+    // seul plancher 100 px : un titre de plus de ~19 caractères restait coupé au bord.
+    const margins = fitMarginsForTrailReserve(
+      extent ? trailingLabelReservePx(indexedEvents, displayed, extent.endDay) : 0,
     )
+    const fit = computeFit(extent, el.clientWidth - LANE_TRACK_OFFSET_PX, margins)
     if (!fit) return
     pendingFitRef.current = true
     dispatch({ type: 'FIT', ...fit })

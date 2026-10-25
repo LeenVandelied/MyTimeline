@@ -57,10 +57,10 @@ const RESOURCES: Resource[] = [
 const FIT_ALL_PX = 927.5
 const FIT_WITHOUT_C_PX = 791.5
 
-function setupScreen() {
+function setupScreen(events: FullCalendarEvent[] = EVENTS) {
   render(
     <TimelineView
-      events={EVENTS}
+      events={events}
       resources={RESOURCES}
       locale="fr-FR"
       today={new Date(2026, 6, 15)}
@@ -162,5 +162,34 @@ describe('#597 touche F = recadrage', () => {
     await new Promise((r) => setTimeout(r, 20))
     expect(level).toHaveTextContent('dashboard.timeline.zoom.month')
     expect(scroll.scrollLeft).toBe(123)
+  })
+})
+
+/**
+ * #804 (suite, Sprint 117) — la marge droite du cadrage suit la réserve RÉELLE du libellé
+ * du pin de queue. Titre de 44 caractères sur c1 (jour 46) : réserve 11 + 240 = 251 px
+ * (plafond `label-reserve.ts`) ⇒ `trailPx` = 251 + 35 = 286 ; piste utile
+ * 1000 − 176 − 40 − 286 = 498 px ; 16 j → 31,1 px/j ⇒ `month` (12) ; 192 px centrés ⇒
+ * avance 40 + 153 = 193 px ⇒ `scrollLeft` = 30 × 12 − 193 = 167. Avec le seul plancher
+ * (135 px) on restait en `week` à 927,5 et le libellé débordait la piste.
+ */
+describe('#804 (suite) — F : marge droite = réserve réelle du libellé de queue', () => {
+  const LONG_TITLE = 'Kfz-Haftpflichtversicherungsbeitragserhöhung'
+  const FIT_LONG_TAIL_PX = 167
+
+  it('titre long en queue : niveau plus large et avance recalculée', async () => {
+    const events = EVENTS.map((e) => (e.id === 'c1' ? { ...e, title: LONG_TITLE } : e))
+    const { scroll, level } = setupScreen(events)
+    fireEvent.keyDown(window, { key: 'f' })
+    await waitFor(() => expect(level).toHaveTextContent('dashboard.timeline.zoom.month'))
+    expect(scroll.scrollLeft).toBeCloseTo(FIT_LONG_TAIL_PX, 6)
+  })
+
+  it('titre long hors queue : sans effet (plancher 135 px)', async () => {
+    const events = EVENTS.map((e) => (e.id === 'a1' ? { ...e, title: LONG_TITLE } : e))
+    const { scroll, level } = setupScreen(events)
+    fireEvent.keyDown(window, { key: 'f' })
+    await waitFor(() => expect(level).toHaveTextContent('dashboard.timeline.zoom.week'))
+    expect(scroll.scrollLeft).toBeCloseTo(FIT_ALL_PX, 6)
   })
 })
