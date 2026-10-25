@@ -243,13 +243,13 @@
     },
     "howItWorks": {
       "eyebrow": "Comment ça marche",
-      "title": "La même frise, du rappel à l'échéance.",
-      "subtitle": "Chaque événement vit sa vie sur la frise. Voici comment Ma Timeline vous accompagne, du premier rappel jusqu'au renouvellement.",
+      "title": "La même frise, du premier coup d'œil à l'échéance.",
+      "subtitle": "Chaque événement vit sa vie sur la frise. Voici comment Ma Timeline vous accompagne, de l'échéance vue de loin jusqu'au renouvellement.",
       "milestones": {
         "reminder": {
-          "tag": "−30 jours · rappel",
-          "title": "Vous êtes prévenu à temps",
-          "text": "Un rappel avant chaque échéance, calé sur la frise — jamais après coup."
+          "tag": "−30 jours · en vue",
+          "title": "Vous la voyez venir",
+          "text": "Chaque échéance est posée sur la frise à sa date : vous la voyez approcher, jamais après coup."
         },
         "recurrence": {
           "tag": "↻ récurrence",
