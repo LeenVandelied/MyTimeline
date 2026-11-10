@@ -75,7 +75,7 @@
 			la version est donc EPINGLEE ici, comme jjwt. 0.8.13 = premiere ligne qui
 			instrumente le bytecode Java 21 sans avertissement de classfile version.
 		-->
-		<jacoco.version>0.8.15</jacoco.version>
+		<jacoco.version>0.8.16</jacoco.version>
 		<!--
 			Lombok : surcharge la propriete du BOM pour que la dependance et le
 			processeur d'annotations (maven-compiler-plugin) aient la MEME version.
