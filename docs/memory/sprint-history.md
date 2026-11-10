@@ -7382,3 +7382,11 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
   - React 18 → 19 [L | frontend] → #892 (backlog)
 **Restes connus :** Dependabot #879 ouverte (intégrée par cherry-pick ; Dependabot la fermera) ; flake isolé `sprint-90-first-contact:457` vu 1 fois sur une passe locale ×3, vert en CI
 **Status :** Terminé
+
+### Sprint 119 — 2026-11-10 (En cours)
+**Objectif :** dépendances majeures backend — Spring Boot 3.5.16 → 4.1.2 (remplace Dependabot #878)
+**Milestone GitHub :** #120
+**Issues :** #886 (P2, L)
+**Vagues :** une seule issue, traitée par le lead
+**Migrations Flyway :** aucune — prochaine V17
+**Status :** En cours

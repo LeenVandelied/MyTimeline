@@ -22,7 +22,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.util.UrlPathHelper;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
@@ -521,8 +522,8 @@ public class RateLimitingFilter extends OncePerRequestFilter {
             return null;
         }
         try {
-            return OBJECT_MAPPER.readTree(body).path("token").asText(null);
-        } catch (IOException e) {
+            return OBJECT_MAPPER.readTree(body).path("token").asString(null);
+        } catch (JacksonException e) {
             return null;
         }
     }

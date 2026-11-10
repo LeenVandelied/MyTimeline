@@ -10,8 +10,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -74,10 +74,10 @@ class BrevoEmailServiceLocaleTest {
             String locale, String expectedSubject, String expectedCtaLabel) {
         JsonNode payload = sendAndCapturePayload(locale, "Alice");
 
-        assertThat(payload.get("subject").asText()).isEqualTo(expectedSubject.trim());
-        assertThat(payload.get("htmlContent").asText()).contains(expectedCtaLabel.trim());
+        assertThat(payload.get("subject").asString()).isEqualTo(expectedSubject.trim());
+        assertThat(payload.get("htmlContent").asString()).contains(expectedCtaLabel.trim());
         // Le lien de réinitialisation est présent quelle que soit la langue.
-        assertThat(payload.get("htmlContent").asText()).contains(RESET_URL_BASE + "?token=" + TOKEN);
+        assertThat(payload.get("htmlContent").asString()).contains(RESET_URL_BASE + "?token=" + TOKEN);
     }
 
     @ParameterizedTest
@@ -86,9 +86,9 @@ class BrevoEmailServiceLocaleTest {
     void sendPasswordResetEmail_unknownLocale_fallsBackToFrench(String locale) {
         JsonNode payload = sendAndCapturePayload(locale, "Alice");
 
-        assertThat(payload.get("subject").asText())
+        assertThat(payload.get("subject").asString())
                 .isEqualTo("Réinitialisation de votre mot de passe MyTimeline");
-        assertThat(payload.get("htmlContent").asText())
+        assertThat(payload.get("htmlContent").asString())
                 .contains("Réinitialiser mon mot de passe")
                 .doesNotContain("Reset my password");
     }
@@ -102,7 +102,7 @@ class BrevoEmailServiceLocaleTest {
 
         // NB : le champ JSON "to.name" reste volontairement brut (non-HTML, sérialisé
         // par Brevo) — c'est le corps HTML, et lui seul, qui doit être échappé.
-        String html = payload.get("htmlContent").asText();
+        String html = payload.get("htmlContent").asString();
         assertThat(html).doesNotContain("<img src=x onerror=alert(1)>");
         assertThat(html).contains("&lt;img src=x onerror=alert(1)&gt;");
     }

@@ -82,6 +82,17 @@ class BomDriftTest {
   }
 
   /**
+   * Jackson 3 ({@code tools.jackson}), sérialiseur des API depuis Boot 4 (#886) ; Jackson 2 ne
+   * reste sur le classpath que pour jjwt-jackson (garde ci-dessus). Plancher = 3.0.0 : pas de CVE
+   * ciblée, la garde vérifie que le BOM fournit bien la ligne 3. Effectif (BOM Boot 4.1.2) : 3.1.7.
+   */
+  @Test
+  void jackson3IsTheManagedSerializer() {
+    String jackson3 = readStaticStringField("tools.jackson.core.json.PackageVersion", "VERSION");
+    assertVersionAtLeast("jackson 3", jackson3, "3.0.0", "sérialiseur Boot 4");
+  }
+
+  /**
    * postgresql JDBC. Plancher = 42.7.11, correctif de CVE-2026-42198. Effectif courant : 42.7.11.
    * Constante {@code static final} → lue par réflexion (voir jackson ci-dessus).
    */

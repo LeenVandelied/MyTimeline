@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.5.16</version>
+		<version>4.1.2</version>
 		<relativePath/>
 	</parent>
 	<groupId>com.matimeline</groupId>
@@ -91,7 +91,15 @@
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
+			<artifactId>spring-boot-starter-webmvc</artifactId>
+		</dependency>
+		<!--
+			Boot 4 (#886) : RestClient.Builder (client Brevo) n'est plus auto-configuré
+			par le starter web ; il vient du module spring-boot-restclient.
+		-->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-restclient</artifactId>
 		</dependency>
 		<!--
 			Actuator (#37) — expose /actuator/health pour le healthcheck Docker
@@ -112,16 +120,18 @@
 			<scope>runtime</scope>
 		</dependency>
 		<!--
-			Flyway (#42, #162) — migrations versionnées. Spring Boot 3.5.16 gère la
-			version via son BOM : Flyway 11.7.2 (#260 : était 10.20.1 sous Boot 3.4.x).
+			Flyway (#42, #162) — migrations versionnées. Spring Boot gère la version via
+			son BOM. Boot 4 (#886) : l'auto-configuration Flyway vit dans le module
+			spring-boot-flyway ; sans spring-boot-starter-flyway, flyway-core seul ne
+			déclenche PLUS les migrations au démarrage (et ddl-auto=validate échoue).
 			En Flyway 10+/11+, le support Postgres a QUITTÉ flyway-core → il faut le
 			module dédié flyway-database-postgresql, sinon le démarrage Flyway casse
 			("Unsupported Database: PostgreSQL" / "no database module"). DEC-S3-001.
 			Version alignée sur le BOM Boot (pas de surcharge).
 		-->
 		<dependency>
-			<groupId>org.flywaydb</groupId>
-			<artifactId>flyway-core</artifactId>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-flyway</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.flywaydb</groupId>
@@ -132,31 +142,48 @@
 			<artifactId>lombok</artifactId>
 			<optional>true</optional>
 		</dependency>
+		<!--
+			Boot 4 (#886) : un starter de test par technologie testée (chacun tire
+			spring-boot-starter-test). webmvc-test porte @AutoConfigureMockMvc,
+			security-test porte spring-security-test (@WithMockUser), data-jpa-test
+			et flyway-test l'infrastructure de test JPA/Flyway.
+		-->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
+			<artifactId>spring-boot-starter-webmvc-test</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.springframework.security</groupId>
-			<artifactId>spring-security-test</artifactId>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jpa-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-flyway-test</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<!--
 			Testcontainers (#…) — les tests @SpringBootTest démarrent désormais
 			contre un conteneur Postgres JETABLE (même dialecte que la prod, Flyway
 			rejoue V1/V2 from scratch), plus contre la base dev partagée localhost:5432.
-			Version 100% managée par le BOM Spring Boot 3.5.16 (1.21.4) — plus
-			aucun override testcontainers.version (retiré en #260, cf. note l.39).
+			Version 100% managée par le BOM Spring Boot. Boot 4 (#886) gère
+			Testcontainers 2, qui préfixe ses artefacts : postgresql →
+			testcontainers-postgresql, junit-jupiter → testcontainers-junit-jupiter.
 		-->
 		<dependency>
 			<groupId>org.testcontainers</groupId>
-			<artifactId>postgresql</artifactId>
+			<artifactId>testcontainers-postgresql</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.testcontainers</groupId>
-			<artifactId>junit-jupiter</artifactId>
+			<artifactId>testcontainers-junit-jupiter</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

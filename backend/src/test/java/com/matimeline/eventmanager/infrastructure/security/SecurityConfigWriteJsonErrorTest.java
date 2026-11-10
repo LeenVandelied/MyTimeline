@@ -11,8 +11,8 @@ import java.lang.reflect.Method;
 
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -40,7 +40,7 @@ class SecurityConfigWriteJsonErrorTest {
         verify(response).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 
         JsonNode json = MAPPER.readTree(body.toString());
-        assertThat(json.get("error").asText()).isEqualTo(maliciousError);
+        assertThat(json.get("error").asString()).isEqualTo(maliciousError);
         assertThat(json.size()).isEqualTo(1);
     }
 
@@ -53,7 +53,7 @@ class SecurityConfigWriteJsonErrorTest {
         invokeWriteJsonError(response, HttpServletResponse.SC_FORBIDDEN, "forbidden");
 
         JsonNode json = MAPPER.readTree(body.toString());
-        assertThat(json.get("error").asText()).isEqualTo("forbidden");
+        assertThat(json.get("error").asString()).isEqualTo("forbidden");
     }
 
     private static void invokeWriteJsonError(HttpServletResponse response, int status, String error)
