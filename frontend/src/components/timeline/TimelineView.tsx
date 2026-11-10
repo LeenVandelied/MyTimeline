@@ -59,7 +59,6 @@ import {
   windowEvents,
   windowLanes,
   NO_LANE_OFFSETS,
-  type TimelineMetrics,
   type WindowedEvent,
 } from './virtualization'
 import {
@@ -174,9 +173,10 @@ const PENDING_FOCUS_TTL_MS = 1000
  *  1. les parties invariantes au scroll deviennent des composants `React.memo` ;
  *  2. TOUTES leurs props sont rendues stables — callbacks `useCallback` sans
  *     dépendance volatile, `metrics` figé tant que ses valeurs ne bougent pas,
- *     et surtout un CACHE D'IDENTITÉ sur le résultat du fenêtrage horizontal
+ *     et surtout une comparaison PAR CONTENU du résultat du fenêtrage horizontal
  *     (`windowEvents` renvoie un tableau neuf à chaque appel, même quand la
- *     lane contient exactement les mêmes événements).
+ *     lane contient exactement les mêmes événements) — cache d'identité en refs
+ *     jusqu'à #891, comparateur `propsEqualByContent` des composants depuis.
  * ============================================================================
  */
 
@@ -226,12 +226,61 @@ function sameWindowedEvents(a: WindowedEvent[], b: WindowedEvent[]): boolean {
   return true
 }
 
-function sameMetrics(a: TimelineMetrics, b: TimelineMetrics): boolean {
-  return (
-    a.rulerHeight === b.rulerHeight &&
-    a.headHeight === b.headHeight &&
-    a.laneHeight === b.laneHeight
-  )
+/** #81 — Coordonnée d'une pastille dans la navigation clavier (`navLines`). */
+interface NavCoord {
+  lane: number
+  evt: number
+}
+
+/**
+ * #81 — Pastille portant `tabIndex=0` : l'active si sa RESSOURCE est toujours dans
+ * `navLanes` ET son événement toujours présent, sinon `fallback` (1re non vide).
+ * #891 — extraite telle quelle du `useMemo` de `TimelineView` : inline, ce corps
+ * empêchait le compilateur de préserver la mémoïsation manuelle
+ * (`react-hooks/preserve-manual-memoization`). Même algorithme, mêmes dépendances.
+ */
+function resolveRovingNav(
+  activeNav: { resourceId: string; eventId: string } | null,
+  navLanes: ReadonlyArray<{ resourceId: string; events: PositionedEvent[] }>,
+  laneIndexByResource: ReadonlyMap<string, number>,
+  fallback: NavCoord | null,
+): NavCoord | null {
+  if (activeNav) {
+    const line0 = laneIndexByResource.get(activeNav.resourceId)
+    if (line0 != null) {
+      for (let lane = line0; lane < navLanes.length; lane++) {
+        if (navLanes[lane].resourceId !== activeNav.resourceId) break
+        const evt = navLanes[lane].events.findIndex((e) => e.id === activeNav.eventId)
+        if (evt !== -1) return { lane, evt }
+      }
+    }
+  }
+  return fallback
+}
+
+/**
+ * #891 — Comparateur `React.memo` : égalité superficielle (`Object.is`) sur TOUTES les
+ * props, sauf celles listées dans `byContent`, comparées par CONTENU.
+ *
+ * Remplace le cache d'identité de la pré-passe de rendu (#349), qui lisait et écrivait
+ * des refs PENDANT le rendu (`react-hooks/refs`) pour rendre au composant mémoïsé
+ * l'ANCIEN tableau quand le nouveau avait le même contenu. Même effet, pris de l'autre
+ * côté : la lane (ou l'en-tête) saute son rendu exactement quand le cache lui aurait
+ * rendu l'ancienne identité — mêmes props partout ailleurs, même contenu ici.
+ */
+function propsEqualByContent<P extends object>(byContent: {
+  [K in keyof P]?: (a: P[K], b: P[K]) => boolean
+}): (prev: Readonly<P>, next: Readonly<P>) => boolean {
+  return (prev, next) => {
+    const keys = Object.keys(next) as Array<keyof P>
+    if (keys.length !== Object.keys(prev).length) return false
+    for (const key of keys) {
+      if (!Object.prototype.hasOwnProperty.call(prev, key)) return false
+      const same = byContent[key]
+      if (same ? !same(prev[key], next[key]) : !Object.is(prev[key], next[key])) return false
+    }
+    return true
+  }
 }
 
 /**
@@ -250,22 +299,26 @@ function sameMetrics(a: TimelineMetrics, b: TimelineMetrics): boolean {
  * l'entrée, jamais sur la valeur — un `compute()` retournant légitimement
  * `undefined` reste un hit au lieu d'être recalculé à chaque rendu.
  */
-function useZoomCache<T>(source: unknown, key: string, compute: () => T): T {
-  // Initialisation PARESSEUSE : un initialiseur de `useRef` est évalué à CHAQUE
-  // rendu, donc la `Map` allouée directement dans l'appel était jetée aussitôt à
-  // toutes les passes suivantes. `null` + création à la demande alloue une seule
-  // fois par `source`. Comportement inchangé : la purge reste conditionnée à un
-  // changement d'identité de `source`.
-  const cacheRef = useRef<{ source: unknown; byKey: Map<string, { value: T }> } | null>(null)
-  if (cacheRef.current === null || cacheRef.current.source !== source) {
-    cacheRef.current = { source, byKey: new Map<string, { value: T }>() }
+function createKeyedCache<T>(): (key: string, compute: () => T) => T {
+  const byKey = new Map<string, { value: T }>()
+  return (key, compute) => {
+    const hit = byKey.get(key)
+    if (hit) return hit.value
+    const value = compute()
+    byKey.set(key, { value })
+    return value
   }
-  const cache = cacheRef.current
-  const hit = cache.byKey.get(key)
-  if (hit) return hit.value
-  const value = compute()
-  cache.byKey.set(key, { value })
-  return value
+}
+
+function useZoomCache<T>(source: unknown, key: string, compute: () => T): T {
+  // #891 — le cache n'est plus porté par une ref lue/écrite pendant le rendu
+  // (`react-hooks/refs`) : c'est une fonction de mémoïsation à plusieurs
+  // emplacements, créée UNE fois par identité de `source` (`useMemo`). Même purge
+  // qu'avant (changement d'identité de `source`, comparaison `Object.is`) ; la
+  // valeur rendue reste une fonction pure de (`source`, `key`), donc un rendu
+  // abandonné ou un cache jeté par React ne coûte qu'un recalcul, jamais un écart.
+  const cache = useMemo(() => ({ source, lookup: createKeyedCache<T>() }), [source])
+  return cache.lookup(key, compute)
 }
 
 /** Règle sticky : invariante au scroll, ne dépend que du zoom et de l'étendue. */
@@ -350,7 +403,7 @@ const TimelineWeekends = React.memo<{
  * `aria-hidden` : l'information est portée par le nom et `aria-expanded`. Aucun
  * élément interactif dans le bouton.
  */
-const TimelineGroupHead = React.memo<{
+interface TimelineGroupHeadProps {
   category: string
   /** Couleur de catégorie (`categoryColorsOf`) ; `null` → contour neutre (DEC-S85-006). */
   color: string | null
@@ -360,10 +413,12 @@ const TimelineGroupHead = React.memo<{
   ariaLabel: string
   isCollapsed: boolean
   railWidth: number
-  /** Résumé plié FENÊTRÉ, identité stable (`NO_EVENTS` quand déplié). */
+  /** Résumé plié FENÊTRÉ, comparé par CONTENU (`NO_EVENTS` quand déplié). */
   summary: WindowedEvent[]
   onToggle: (category: string) => void
-}>(function TimelineGroupHead({
+}
+
+function TimelineGroupHeadView({
   category,
   color,
   productCount,
@@ -372,7 +427,7 @@ const TimelineGroupHead = React.memo<{
   railWidth,
   summary,
   onToggle,
-}) {
+}: TimelineGroupHeadProps) {
   return (
     <button
       type="button"
@@ -443,7 +498,12 @@ const TimelineGroupHead = React.memo<{
       )}
     </button>
   )
-})
+}
+
+const TimelineGroupHead = React.memo(
+  TimelineGroupHeadView,
+  propsEqualByContent<TimelineGroupHeadProps>({ summary: sameWindowedEvents }),
+)
 
 interface TimelineLaneRowProps {
   resource: Resource
@@ -451,9 +511,9 @@ interface TimelineLaneRowProps {
   laneOrdinal: number
   setSize: number
   isCollapsed: boolean
-  /** Fenêtre horizontale de la lane — identité STABLE tant que le contenu l'est. */
+  /** Fenêtre horizontale de la lane — comparée par CONTENU (`propsEqualByContent`). */
   windowed: WindowedEvent[]
-  /** #595 — fantômes + connecteurs montés (fenêtrés), identité STABLE (cache de rendu). */
+  /** #595 — fantômes + connecteurs montés (fenêtrés), comparés par CONTENU. */
   recurrence: LaneRecurrenceMarks
   /**
    * #709 — Empilage de la lane (rangée et rang de chaque événement), identité stable
@@ -483,7 +543,7 @@ interface TimelineLaneRowProps {
  * autres sont sautées, y compris la construction de leur `aria-label` agrégé
  * (`buildEventAriaLabel` construit un `Intl.DateTimeFormat` par pastille).
  */
-const TimelineLaneRow = React.memo<TimelineLaneRowProps>(function TimelineLaneRow({
+function TimelineLaneRowView({
   resource,
   laneOrdinal,
   setSize,
@@ -500,7 +560,7 @@ const TimelineLaneRow = React.memo<TimelineLaneRowProps>(function TimelineLaneRo
   onSelect,
   onPillKeyDown,
   pillNodes,
-}) {
+}: TimelineLaneRowProps) {
   return (
     <div
       // #596 — zébrure : une lane sur deux DANS SA CATÉGORIE, d'après le rang stable
@@ -577,7 +637,15 @@ const TimelineLaneRow = React.memo<TimelineLaneRowProps>(function TimelineLaneRo
       })}
     </div>
   )
-})
+}
+
+const TimelineLaneRow = React.memo(
+  TimelineLaneRowView,
+  propsEqualByContent<TimelineLaneRowProps>({
+    windowed: sameWindowedEvents,
+    recurrence: sameRecurrenceMarks,
+  }),
+)
 
 export interface TimelineViewProps {
   events: FullCalendarEvent[]
@@ -622,9 +690,13 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
   // rendus. Passée telle quelle aux lanes mémoïsées, cette prop les invaliderait
   // toutes à chaque frame de scroll (le piège `React.memo` rappelé par l'issue).
   // On expose un accesseur stable qui délègue toujours au `t` le plus récent.
-  const tRef = useRef<(key: string) => string>(t)
-  tRef.current = t
-  const translate = useCallback((key: string) => tRef.current(key), [])
+  // #891 — plus de ref écrite pendant le rendu (`react-hooks/refs`) : l'accesseur suit
+  // désormais l'identité de `t`. En production `t` est mémoïsé par next-intl (il ne
+  // change qu'avec la locale ou les messages, c'est-à-dire quand les libellés des lanes
+  // DOIVENT changer) : aucune frame de scroll ne l'invalide. Le libellé rendu reste
+  // celui du `t` courant — une ref écrite en effet l'aurait au contraire PÉRIMÉ d'un
+  // rendu sur une lane re-rendue dans la même passe qu'un changement de locale.
+  const translate = useCallback((key: string) => t(key), [t])
   const [zoom, dispatch] = useReducer(zoomReducer, initialZoomState)
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({})
   // #195 — Accordéon de 2e niveau : état collapse par PRODUIT (lane), keyé par
@@ -794,11 +866,14 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
   // d'identité à chaque bande franchie et casserait toutes les mémoïsations
   // en aval. (Le correctif à la source vit dans `useTimelineViewport`, hors
   // périmètre de cette issue.)
-  const metricsRef = useRef(viewport.metrics)
-  if (!sameMetrics(metricsRef.current, viewport.metrics)) {
-    metricsRef.current = viewport.metrics
-  }
-  const metrics = metricsRef.current
+  //
+  // #891 — le figeage par ref (lue/écrite pendant le rendu, `react-hooks/refs`) est
+  // retiré : il est désormais REDONDANT avec le correctif à la source (#351).
+  // `useTimelineViewport` ne publie un nouvel objet `metrics` que si l'une des trois
+  // hauteurs a changé (`metricsEqual` dans `sync`, objet repris tel quel par les
+  // autres chemins) — exactement la condition `sameMetrics` qu'appliquait la ref.
+  // Même identité, mêmes transitions.
+  const metrics = viewport.metrics
 
   // #709 — Hauteur ajoutée par l'empilage à chaque lane (0 pour une lane mono-rangée
   // ou repliée : ses pastilles ne sont pas rendues, elle garde la hauteur de base).
@@ -920,19 +995,10 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
   // visible ET son index d'event toujours valide, sinon la 1re. On dérive la
   // coordonnée de lane à la volée depuis `resourceId` → immunisé au glissement
   // d'index provoqué par le collapse d'une catégorie au-dessus (MAJEUR-2).
-  const rovingNav = useMemo(() => {
-    if (activeNav) {
-      const line0 = laneIndexByResource.get(activeNav.resourceId)
-      if (line0 != null) {
-        for (let lane = line0; lane < navLanes.length; lane++) {
-          if (navLanes[lane].resourceId !== activeNav.resourceId) break
-          const evt = navLanes[lane].events.findIndex((e) => e.id === activeNav.eventId)
-          if (evt !== -1) return { lane, evt }
-        }
-      }
-    }
-    return firstNav
-  }, [activeNav, navLanes, laneIndexByResource, firstNav])
+  const rovingNav = useMemo(
+    () => resolveRovingNav(activeNav, navLanes, laneIndexByResource, firstNav),
+    [activeNav, navLanes, laneIndexByResource, firstNav],
+  )
   const rovingKey = rovingNav === null ? null : navKeyOf(rovingNav.lane, rovingNav.evt)
 
   // #69 — Cible de focus EN ATTENTE. La virtualisation démonte les pastilles hors
@@ -1094,7 +1160,17 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
   // #592 — Sidebar (écran `/timeline` seulement, DEC-S85-005).
   const sidebarId = useId()
   const sidebarPanel = useTimelineSidebarPanel(isScreen)
-  const { open: sidebarPanelOpen, closeAndRestoreFocus: closeSidebarPanel } = sidebarPanel
+  // #891 — tout ce que le rendu consomme est extrait ICI : passer la ref du bouton via
+  // l'objet (`sidebarPanel.buttonRef`) dans le JSX fait traiter l'objet entier comme une
+  // ref par `react-hooks/refs`, et chacune de ses autres lectures au rendu serait
+  // signalée. Pur renommage.
+  const {
+    open: sidebarPanelOpen,
+    closeAndRestoreFocus: closeSidebarPanel,
+    panelRef: sidebarPanelRef,
+    buttonRef: sidebarButtonRef,
+    toggle: toggleSidebarPanel,
+  } = sidebarPanel
   const eventCounts = useMemo(() => countEventsByCategory(events, resources), [events, resources])
   // Liste des filtres : TOUTES les catégories (`groups`, pas `visibleGroups`) —
   // une catégorie masquée doit rester dans la liste pour pouvoir être réaffichée.
@@ -1303,9 +1379,14 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
    * sur un défilement délibéré.
    */
   const todayLeftPxRef = useRef(todayLeftPx)
-  todayLeftPxRef.current = todayLeftPx
   const dayWidthRef = useRef(dayWidth)
-  dayWidthRef.current = dayWidth
+  // #891 — écrites en effet de LAYOUT, plus pendant le rendu (`react-hooks/refs`). Leur
+  // seul lecteur est l'effet PASSIF ci-dessous ; or tous les effets de layout d'un
+  // commit s'exécutent avant ses effets passifs : il lit les valeurs du rendu courant.
+  useLayoutEffect(() => {
+    todayLeftPxRef.current = todayLeftPx
+    dayWidthRef.current = dayWidth
+  }, [todayLeftPx, dayWidth])
 
   useEffect(() => {
     const el = scrollRef.current
@@ -1580,39 +1661,39 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
   }, [zoom.level, levelLabel, t])
 
   // Annonce l'event sélectionné (ouverture du drawer). Vidé à la fermeture.
-  useEffect(() => {
-    if (selected) {
-      setLiveMessage(`${t('dashboard.timeline.live.selected')} ${selected.title}`)
-    }
-  }, [selected, t])
+  // #891 — plus d'effet qui appelle `setLiveMessage` (`react-hooks/set-state-in-effect`) :
+  // la transition est détectée PENDANT le rendu, en comparant à la sélection déjà
+  // annoncée (motif React « ajuster l'état quand une prop change »). Mêmes déclencheurs
+  // qu'avant — une nouvelle sélection, ou un nouveau texte pour la sélection courante
+  // (changement de locale) — mais le message part dans le MÊME commit que l'ouverture du
+  // drawer au lieu du rendu suivant. Rien n'est annoncé au montage (`selected` = null),
+  // ni à la fermeture (le dernier message reste, comme avant).
+  const selectedMessage = selected
+    ? `${t('dashboard.timeline.live.selected')} ${selected.title}`
+    : null
+  const [announcedSelection, setAnnouncedSelection] = useState({
+    selected,
+    message: selectedMessage,
+  })
+  if (announcedSelection.selected !== selected || announcedSelection.message !== selectedMessage) {
+    setAnnouncedSelection({ selected, message: selectedMessage })
+    if (selectedMessage !== null) setLiveMessage(selectedMessage)
+  }
 
   // ==========================================================================
-  // #349 — PRÉ-PASSE DE RENDU. Elle fait deux choses que le JSX ne peut pas
-  // faire proprement : (1) calculer le fenêtrage de chaque lane montée ;
-  // (2) STABILISER l'identité de ce résultat. `windowEvents` renvoie un tableau
-  // NEUF à chaque appel, même quand la lane contient exactement les mêmes
-  // événements — sans ce cache, la prop `windowed` changerait à chaque frame et
-  // `React.memo` sur les lanes ne sauterait jamais un seul rendu.
+  // #349 — PRÉ-PASSE DE RENDU : calcule le fenêtrage de chaque lane montée.
+  // `windowEvents` renvoie un tableau NEUF à chaque appel, même quand la lane
+  // contient exactement les mêmes événements : sans parade, la prop `windowed`
+  // changerait à chaque frame et `React.memo` sur les lanes ne sauterait jamais
+  // un seul rendu. Idem pour le RÉSUMÉ PLIÉ d'une catégorie (#601) et pour les
+  // marques de récurrence (#595, `windowRecurrenceMarks`).
   //
-  // Le cache est reconstruit à chaque rendu à partir des SEULES lanes montées :
-  // aucune entrée fantôme ne survit au démontage d'une lane (pas de fuite).
+  // #891 — la parade vivait ici (cache d'identité en refs, lu et écrit pendant le
+  // rendu → `react-hooks/refs`). Elle vit désormais dans le comparateur des
+  // composants mémoïsés (`propsEqualByContent` : `windowed`/`recurrence` sur
+  // `TimelineLaneRow`, `summary` sur `TimelineGroupHead`), qui compare par CONTENU
+  // avec les mêmes prédicats (`sameWindowedEvents`, `sameRecurrenceMarks`).
   // ==========================================================================
-  const windowCacheRef = useRef(new Map<string, WindowedEvent[]>())
-  const previousWindows = windowCacheRef.current
-  const nextWindows = new Map<string, WindowedEvent[]>()
-  // #601 — même cache d'identité pour le RÉSUMÉ PLIÉ, keyé par catégorie (map
-  // distincte : un nom de catégorie pourrait coïncider avec un id de produit).
-  // Sans lui, l'en-tête mémoïsé d'une catégorie repliée serait re-rendu à chaque
-  // frame de défilement (#349), avec tous ses traits.
-  const summaryCacheRef = useRef(new Map<string, WindowedEvent[]>())
-  const previousSummaries = summaryCacheRef.current
-  const nextSummaries = new Map<string, WindowedEvent[]>()
-  // #595 — même cache d'identité pour les marques de récurrence (fantômes + connecteurs)
-  // de chaque lane : sans lui, `windowRecurrenceMarks` rendrait un objet neuf à chaque
-  // frame et casserait `React.memo` sur `TimelineLaneRow`.
-  const recurrenceCacheRef = useRef(new Map<string, LaneRecurrenceMarks>())
-  const previousRecurrence = recurrenceCacheRef.current
-  const nextRecurrence = new Map<string, LaneRecurrenceMarks>()
 
   // #592 — `visibleGroups` : une catégorie masquée n'a ni en-tête ni lanes.
   const renderGroups = visibleGroups.map(([category, resList]) => {
@@ -1621,13 +1702,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
     // (une catégorie peut agréger des centaines d'événements).
     let summary = NO_EVENTS
     if (isCollapsed) {
-      const computed = windowEvents(
-        collapsedCategoryEvents.get(category) ?? NO_POSITIONED,
-        horizontalBand,
-      )
-      const previous = previousSummaries.get(category)
-      summary = previous && sameWindowedEvents(previous, computed) ? previous : computed
-      nextSummaries.set(category, summary)
+      summary = windowEvents(collapsedCategoryEvents.get(category) ?? NO_POSITIONED, horizontalBand)
     }
     // #69 — Fenêtre verticale de CE groupe. Les en-têtes de catégorie restent
     // TOUJOURS montés (peu nombreux, et ils portent l'accordéon) ; seules les
@@ -1646,24 +1721,15 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
           // #69 — Fenêtre HORIZONTALE : seuls les événements dont l'intervalle
           // croise la plage temporelle visible sont montés. L'index d'origine
           // est conservé (coordonnée clavier #81).
-          const computed = isResCollapsed ? NO_EVENTS : windowEvents(laneEvents, horizontalBand)
-          const previous = previousWindows.get(resource.id)
-          const windowed = previous && sameWindowedEvents(previous, computed) ? previous : computed
-          nextWindows.set(resource.id, windowed)
+          const windowed = isResCollapsed ? NO_EVENTS : windowEvents(laneEvents, horizontalBand)
           // #595 — marques de récurrence de la lane, fenêtrées sur la MÊME bande mais
           // indépendamment des pastilles (une série hors bande garde ses fantômes).
-          const computedMarks = isResCollapsed
+          const recurrence = isResCollapsed
             ? NO_RECURRENCE_MARKS
             : windowRecurrenceMarks(
                 recurrenceByResource.get(resource.id) ?? NO_SERIES,
                 horizontalBand,
               )
-          const previousMarks = previousRecurrence.get(resource.id)
-          const recurrence =
-            previousMarks && sameRecurrenceMarks(previousMarks, computedMarks)
-              ? previousMarks
-              : computedMarks
-          nextRecurrence.set(resource.id, recurrence)
           const navLine0 = laneIndexByResource.get(resource.id) ?? -1
           const layout = isResCollapsed
             ? SINGLE_ROW_LAYOUT
@@ -1698,9 +1764,6 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
       },
     }
   })
-  windowCacheRef.current = nextWindows
-  summaryCacheRef.current = nextSummaries
-  recurrenceCacheRef.current = nextRecurrence
 
   // Bulle `?` (layout `embedded` seulement) : même source que le pied de sidebar.
   const shortcuts = isScreen ? [] : buildTimelineShortcuts((key) => t(`dashboard.timeline.${key}`))
@@ -1744,7 +1807,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
           categories={sidebarCategories}
           onToggleCategory={toggleHiddenCategory}
           onCollapseAll={collapseAllCategories}
-          panelRef={sidebarPanel.panelRef}
+          panelRef={sidebarPanelRef}
         />
       )}
       {/* Toolbar : zoom controls + minimap + aide */}
@@ -1754,11 +1817,11 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
         {isScreen && (
           <button
             type="button"
-            ref={sidebarPanel.buttonRef}
+            ref={sidebarButtonRef}
             className="mt-tlv-side-toggle"
             aria-expanded={sidebarPanelOpen}
             aria-controls={sidebarId}
-            onClick={sidebarPanel.toggle}
+            onClick={toggleSidebarPanel}
             data-testid="timeline-sidebar-toggle"
           >
             <SlidersHorizontal size={13} strokeWidth={1.5} aria-hidden="true" />
