@@ -3,6 +3,7 @@ import { type Locator, type Page, type Route } from '@playwright/test'
 import { PROD } from './support/accounts'
 import { sessionState } from './support/session'
 import { ensureAuthenticated } from './support/auth'
+import { PAGE_CHUNK_MARKERS, gatePageChunk } from './support/page-chunk-gate'
 import { WCAG_AA_NORMAL, describeRendering, readAtRest } from './support/contrast'
 import { getUserId, gotoProducts, seedCategory, seedProduct, unique } from './support/products'
 import { trackSeed } from './support/seed-cleanup'
@@ -557,17 +558,14 @@ test.describe('#698 — squelettes et préchargement', () => {
     // Next 16 (S118) : la route SSG préchargée par segment ne refait AUCUNE requête RSC
     // au clic — l'ancienne porte (RSC sans `next-router-prefetch`) n'était atteinte que
     // si le clic devançait le préchargement (course, verte en CI, rouge en local). On
-    // retient le chunk client `page-<hash>.js` du dashboard : React suspend et
+    // retient le chunk client de la page dashboard (#890 : reconnu à son contenu, cf.
+    // `support/page-chunk-gate.ts`) : React suspend et
     // `loading.tsx` est peint (même porte que S90, sonde S118). La porte n'est ARMÉE
     // qu'après le passage par le dashboard de `ensureAuthenticated` (sinon il ne se
     // monterait jamais) ; `goto('/fr/products')` ouvre un NOUVEAU document, qui
     // redemandera le chunk — au préchargement du lien ou au clic.
     let armed = false
-    const g = await gate(
-      page,
-      (url) => /\/_next\/static\/chunks\/app\/.*\/dashboard\/page-[^/]+\.js$/.test(url),
-      () => armed,
-    )
+    const g = await gatePageChunk(page, PAGE_CHUNK_MARKERS.dashboard, () => armed)
     await ensureAuthenticated(page)
     armed = true
     await page.goto('/fr/products', { waitUntil: 'domcontentloaded' })
