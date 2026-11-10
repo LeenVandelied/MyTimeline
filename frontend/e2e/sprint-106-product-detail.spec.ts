@@ -480,14 +480,18 @@ test.describe('#698 — squelettes et préchargement', () => {
 
   /**
    * `router.prefetch(href)` précharge en mode FULL (défaut de l'API impérative, ≠ `<Link>`
-   * qui précharge en AUTO) : la requête RSC part SANS l'en-tête `next-router-prefetch`
-   * (relevé par sonde, `next start` 15.5). On la distingue donc d'une navigation par
-   * l'URL de la page, inchangée, et par l'absence de clic.
+   * qui précharge en AUTO). On la distingue d'une navigation par l'URL de la page,
+   * inchangée, et par l'absence de clic.
+   * Next 16 (sonde S118, `next start` 16.4.6) : un préchargement = DEUX requêtes `?_rsc=`,
+   * l'arbre de routes (`next-router-segment-prefetch: /_tree`) puis la fiche (préchargement
+   * complet). Seule la seconde porte la page : l'arbre n'est pas compté.
    */
   const rscCountFor = (page: Page, path: string): { urls: string[] } => {
     const seen = { urls: [] as string[] }
     page.on('request', (req) => {
-      if (isRscFor(req.url(), path)) seen.urls.push(req.url())
+      if (!isRscFor(req.url(), path)) return
+      if (req.headers()['next-router-segment-prefetch'] === '/_tree') return
+      seen.urls.push(req.url())
     })
     return seen
   }
@@ -549,14 +553,25 @@ test.describe('#698 — squelettes et préchargement', () => {
   test('dashboard : le squelette de segment a la LARGEUR et la structure de la page réelle', async ({
     page,
   }) => {
-    // Navigation client /fr/products → /fr/dashboard par le lien du shell (préchargé) :
-    // la requête RSC de NAVIGATION est retenue, le préchargement passe (motif S90).
+    // Navigation client /fr/products → /fr/dashboard par le lien du shell (préchargé).
+    // Next 16 (S118) : la route SSG préchargée par segment ne refait AUCUNE requête RSC
+    // au clic — l'ancienne porte (RSC sans `next-router-prefetch`) n'était atteinte que
+    // si le clic devançait le préchargement (course, verte en CI, rouge en local). On
+    // retient le chunk client `page-<hash>.js` du dashboard : React suspend et
+    // `loading.tsx` est peint (même porte que S90, sonde S118). La porte n'est ARMÉE
+    // qu'après le passage par le dashboard de `ensureAuthenticated` (sinon il ne se
+    // monterait jamais) ; `goto('/fr/products')` ouvre un NOUVEAU document, qui
+    // redemandera le chunk — au préchargement du lien ou au clic.
+    let armed = false
     const g = await gate(
       page,
-      (url) => isRscFor(url, '/fr/dashboard'),
-      (route) => route.request().headers()['next-router-prefetch'] !== '1',
+      (url) => /\/_next\/static\/chunks\/app\/.*\/dashboard\/page-[^/]+\.js$/.test(url),
+      () => armed,
     )
-    await gotoProducts(page)
+    await ensureAuthenticated(page)
+    armed = true
+    await page.goto('/fr/products', { waitUntil: 'domcontentloaded' })
+    await expect(page.getByTestId('products-list-view')).toBeVisible()
     const link = page.getByTestId('shell-sidebar-nav-link-dashboard')
     await expect(link).toBeVisible()
     await link.click()

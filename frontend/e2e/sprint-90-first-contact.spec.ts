@@ -42,20 +42,24 @@ import {
  * formulaire), et aucun produit (état vide sans CTA).
  *
  * ─────────────────────────────────────────────────────────────────────────────
- * FALLBACKS DE SEGMENT — la porte RSC
+ * FALLBACKS DE SEGMENT — la porte sur le CHUNK de page (Next 16, Sprint 118)
  * ─────────────────────────────────────────────────────────────────────────────
- * Un `loading.tsx` n'est peint que pendant une navigation CLIENT, le temps que le
- * payload RSC de la route cible arrive — quelques ms en local. Relevé réseau (sonde
- * du S90, `next start` 15.5) : au chargement du dashboard, les liens du shell sont
- * PRÉCHARGÉS (`GET /fr/<route>?_rsc=…`, en-têtes `rsc: 1` + `next-router-prefetch: 1`) ;
- * le clic émet ENSUITE une seconde requête `?_rsc=…` avec `rsc: 1` et SANS
- * `next-router-prefetch`. Le préchargement fournit la frontière `loading.tsx`, la
- * seconde requête porte la page. On laisse donc passer le préchargement (sans lui,
- * le routeur n'a aucun fallback à peindre) et on RETIENT la seconde jusqu'à
- * l'assertion. Aucune temporisation : l'état est stable tant que la porte est close.
+ * Un `loading.tsx` n'est peint que pendant une navigation CLIENT. Sous Next 15 la
+ * porte retenait la requête RSC de navigation (la seconde `?_rsc=…`, SANS
+ * `next-router-prefetch`). Next 16 précharge PAR SEGMENT (`/_tree` puis
+ * `…/<route>/__PAGE__`, tous en `next-router-prefetch: 1`) : pour ces routes SSG, le
+ * clic n'émet PLUS AUCUNE requête RSC (sonde S118 contre `next start` 16.4.6), la porte
+ * n'était jamais atteinte. Retenir le segment `__PAGE__` ne peint rien non plus : le
+ * routeur garde l'ancienne page tant qu'il manque.
+ * Ce qui peint le fallback, mesuré sur timeline, settings et products : retenir le
+ * chunk client `page-<hash>.js` du segment. Le RSC est en cache, React suspend sur le
+ * chunk manquant, `loading.tsx` sert de fallback (~100 ms après le clic, stable tant
+ * que la porte est close). C'est la porte déjà employée pour la fiche produit
+ * ci-dessous. Le chunk est souvent demandé dès le préchargement : la porte le retient
+ * alors AVANT le clic, ce qui revient au même.
  *
- * Le préchargement est ATTENDU avant le clic : un clic qui le devancerait naviguerait
- * sans frontière connue, et le squelette n'apparaîtrait jamais — un flake, pas un bug.
+ * Le préchargement RSC est ATTENDU avant le clic : un clic qui le devancerait
+ * naviguerait sans arbre connu.
  *
  * FICHE PRODUIT — autre porte, parce qu'autre chemin. Le SEUL accès UI à
  * `/fr/products/<id>` est `router.push` au clic d'une ligne (`ProductsListView.tsx`),
@@ -127,7 +131,7 @@ function isRscFor(url: string, pathname: string): boolean {
 }
 
 interface RscGate {
-  /** Résolue quand la requête de NAVIGATION (non préchargement) a été interceptée. */
+  /** Résolue quand une requête retenue a été interceptée. */
   held: Promise<void>
   /** Libère la requête retenue. Idempotent. */
   release: () => void
@@ -166,14 +170,16 @@ async function gateRequests(
 }
 
 /**
- * Retient la requête RSC de navigation vers `pathname`. Les préchargements
- * (`next-router-prefetch: 1`) passent librement.
+ * Retient le chunk client `page-<hash>.js` du segment `segment` (`(app)/<segment>`).
+ * Le chunk `loading-<hash>.js` du même segment n'est PAS apparié : c'est lui qui
+ * doit arriver pour peindre le fallback.
  */
-function gateRscNavigation(page: Page, pathname: string): Promise<RscGate> {
+function gatePageChunk(page: Page, segment: string): Promise<RscGate> {
+  const re = new RegExp(`/_next/static/chunks/app/.*/${segment}/page-[^/]+\\.js$`)
   return gateRequests(
     page,
-    (url) => isRscFor(url, pathname),
-    (headers) => headers['next-router-prefetch'] !== '1',
+    (url) => re.test(url),
+    () => true,
   )
 }
 
@@ -389,14 +395,14 @@ test.describe('#629 — squelettes de segment pendant une navigation client', ()
 
   /**
    * Charge le dashboard, attend le préchargement de `pathname`, puis clique
-   * `trigger` avec la navigation retenue. Rend la porte (déjà `held`).
+   * `trigger` avec le chunk de page retenu. Rend la porte (déjà `held`).
    */
   async function navigateGated(
     page: Page,
     pathname: string,
     trigger: (p: Page) => Locator,
   ): Promise<RscGate> {
-    const gate = await gateRscNavigation(page, pathname)
+    const gate = await gatePageChunk(page, pathname.split('/').pop() as string)
     const prefetched = waitForPrefetch(page, pathname)
     await ensureAuthenticated(page)
     await prefetched

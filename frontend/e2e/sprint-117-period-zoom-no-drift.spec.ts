@@ -241,6 +241,14 @@ test.describe('#805 — [ / ] enchaînés à + / - : pas de dérive du défileme
         maxQuarter,
       },
     )
+    // Trace dans le rapport les jours où la borne s'applique : le CENTRAGE n'y est
+    // plus prouvé (seule la re-projection l'est), il ne doit pas l'être en silence.
+    if (Math.abs(expected - (maxQuarter / DW.quarter) * DW.month) < 1e-6) {
+      test.info().annotations.push({
+        type: 'oracle-borné',
+        description: `centrage Trimestre borné par maxScroll ${maxQuarter} px`,
+      })
+    }
     // Avant zoom : scrollLeft entier ⇒ ±1 px × 12/5 après re-projection.
     expect(
       Math.abs(after.scrollLeft - expected),
