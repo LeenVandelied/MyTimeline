@@ -76,24 +76,11 @@ const eslintConfig = [
       ],
     },
   },
-  {
-    // #885 — eslint-config-next 16 embarque eslint-plugin-react-hooks 7, dont le
-    // preset active en ERREUR des règles dérivées du React Compiler. Mesuré à la
-    // montée (Sprint 118) : 85 erreurs préexistantes, toutes sur les 5 règles
-    // ci-dessous (refs 57, set-state-in-effect 18, preserve-manual-memoization 6,
-    // purity 4, incompatible-library 4 avertissements), sur du code inchangé.
-    // Le projet n'active pas le React Compiler : ces règles sont coupées ici
-    // pour que la montée de framework ne réécrive pas 40 composants. Les AUTRES
-    // règles du preset 7 restent actives (0 occurrence aujourd'hui → garde-fous).
-    // Leur adoption est un chantier à part (follow-up du Sprint 118).
-    rules: {
-      'react-hooks/refs': 'off',
-      'react-hooks/set-state-in-effect': 'off',
-      'react-hooks/preserve-manual-memoization': 'off',
-      'react-hooks/purity': 'off',
-      'react-hooks/incompatible-library': 'off',
-    },
-  },
+  // #891 (S120) — les 5 règles d'eslint-plugin-react-hooks 7 coupées à la montée Next 16
+  // (#885 : refs, set-state-in-effect, preserve-manual-memoization, purity,
+  // incompatible-library) sont RÉACTIVÉES : le preset `core-web-vitals` s'applique tel quel.
+  // Désactivations locales justifiées : AuthContext (état posé après await), toaster
+  // (remise à zéro couplée à la restauration du focus), harnais perf story (chronométrage).
   ...storybook.configs['flat/recommended'],
 ]
 
