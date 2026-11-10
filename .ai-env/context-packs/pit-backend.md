@@ -998,6 +998,10 @@ Après le passage à zod 4, le `node_modules` du worktree était en zod 3.24.2 :
 Y compris un heredoc qui écrit cette chaîne dans un test ou un commentaire `ci.yml` : l'édition entière est refusée SANS être appliquée. Prévention : préfixer `SKIP_DELEGATION=1` ou passer par Write, et vérifier après un refus que rien n'a été écrit avant de rejouer. (Sprint 116 #839)
 
 
+## PIT-S118-001 — PR Dependabot npm rouges après rebase : le lock régénéré perd un pair optionnel imbriqué
+Dependabot retire `next-intl/node_modules/@swc/helpers` (pair optionnel de `@swc/core`) ; `npm ci` (npm 10) refuse le lock (`Missing: @swc/helpers@… from lock file`) et chaque `@dependabot rebase` reproduit l'erreur. Prévention : appliquer la montée en local (`npm install`, lock régénéré par npm 10) au lieu de re-rebaser. Suivi : #888. (Sprint 118 #882)
+
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)

@@ -207,3 +207,6 @@ Marge de cadrage unique de 40 px alors que le libellé s'étend ~100 px à droit
 
 ## BUG-S117-003 — Déconnexion du tiroir mobile à 36 px et `⋯` paysage recouvert
 Déconnexion 285,8×36 → 44 px (`TOUCH_TARGET_BUTTON`, desktop 36 conservé) ; `⋯` d'une durée en paysage : 3 points sur 8 manqués (lane suivante par-dessus) → 0 sur 8 avec `z-index:1` sur le bouton (PIT-S117-003). (Sprint 117, #837)
+
+## BUG-S118-001 — `sprint-117-period-zoom-no-drift:196` rouge sur `dev` selon la date
+L'oracle attendait un `scrollLeft` centré que le navigateur ne peut atteindre (clamp à 2777 px) certains jours. Correctif : attendu = `min(maxScroll mesuré, centré)`, annotation `oracle-borné`. Avec l'avis `follow-redirects` (GHSA-mrwp-f3q8-3g9p, corrigé en 1.16.3), il rendait `dev` rouge avant le sprint. (Sprint 118)

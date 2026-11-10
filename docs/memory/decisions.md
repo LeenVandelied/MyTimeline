@@ -1239,3 +1239,9 @@ Décision dev du 2026-10-25 sur #838 : si `handlesStatusInline(config, 500)` est
 
 ## DEC-S117-003 — Cibles tactiles : profil de mesure complet partout, `BOX_ONLY` supprimé
 Remplace DEC-S112-002. `sprint-99-touch-targets` passe au profil complet : mesuré neutre 3 runs sur 3 (14 passed, 17 lignes identiques au diff) ; `BOX_ONLY` retiré du helper `e2e/support/touch-targets.ts` (0 appelant), les 3 options `MeasureOptions` restent. (Sprint 117 #837)
+
+## DEC-S118-001 — Montée Next 16 : `next build --webpack` et `middleware.ts` conservés
+Le build de production reste sur webpack pour isoler le changement de framework du changement de bundler (`next dev` passe à Turbopack, la recette Playwright locale reste `next dev --webpack`) ; `middleware.ts` gardé (convention dépréciée mais supportée). Suivis : #890 (Turbopack), #889 (`proxy.ts`). (Sprint 118 #885)
+
+## DEC-S118-002 — 5 règles react-hooks 7 coupées à la montée Next 16
+`refs`, `set-state-in-effect`, `preserve-manual-memoization`, `purity`, `incompatible-library` (85 occurrences préexistantes) désactivées avec justification dans `frontend/eslint.config.mjs` ; le reste du preset `eslint-config-next` 16 reste actif ; `lint` = `eslint .` (flat config native). Suivi : #891. (Sprint 118 #885)

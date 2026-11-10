@@ -1957,6 +1957,26 @@ Titre de 31 caractères : 188 px rendus sur macOS, 205 px sur la CI Linux, pour 
 ## PIT-S117-005 — `sprint-111-theme-account-preference:88` rougit AUSSI contre `next build` + `next start` en suite complète
 Complète PIT-S116-004 (rouge sous `next dev`) : au S117, 1 rouge en suite complète locale contre le build de production (timeout 5 s sur le PUT de préférence à la connexion), puis 6/6 sur 3 rejeux isolés ; vert en CI. Prévention : ne pas l'imputer au sprint sans recoupement du diff ; l'issue de barrière d'hydratation (#871) est la piste. (Sprint 117, lead)
 
+
+## PIT-S118-001 — PR Dependabot npm rouges après rebase : le lock régénéré perd un pair optionnel imbriqué
+Dependabot retire `next-intl/node_modules/@swc/helpers` (pair optionnel de `@swc/core`) ; `npm ci` (npm 10) refuse le lock (`Missing: @swc/helpers@… from lock file`) et chaque `@dependabot rebase` reproduit l'erreur. Prévention : appliquer la montée en local (`npm install`, lock régénéré par npm 10) au lieu de re-rebaser. Suivi : #888. (Sprint 118 #882)
+
+
+## PIT-S118-002 — Next 16 + next-intl sans paramètre racine : la branche `[locale]` sort du SSG en silence
+`unstable_rootParams` retiré : sans `setRequestLocale(locale)` dans `app/[locale]/layout.tsx`, le `NextIntlClientProvider` serveur lit la locale via `headers()` et les routes `/[locale]/*` passent de ● à ƒ, build vert. `next/root-params` ne s'applique pas (le layout racine est `app/layout.tsx`, #413). Prévention : comparer la table des routes de `next build` avant/après toute montée de Next ou de next-intl. (Sprint 118 #885)
+
+
+## PIT-S118-003 — vitest 5 : `ReturnType<typeof vi.fn>` n'est plus assignable à une méthode DOM
+Le type de `vi.fn()` devient `Mock<Procedure | Constructable>` : l'affecter à `requestFullscreen` & co. casse `tsc`. Typer `Mock<() => Promise<void>>`. vitest 5 exige aussi Node ≥ 22.12 et `@types/node` ≥ 22 (sinon ERESOLVE), et écrit `.vitest/` (à ignorer dans `.gitignore` et `.prettierignore`). (Sprint 118 #884)
+
+
+## PIT-S118-004 — Prefetch par segment de Next 16 : une porte sur la « requête RSC de navigation » devient inerte
+Next 16 précharge `/_tree` puis `__PAGE__`, tous marqués `next-router-prefetch: 1` : au clic vers une route SSG, aucune requête RSC de navigation ne part, donc une porte `page.route` qui la retient ne retient rien et le squelette `loading.tsx` n'est jamais observé. Prévention : retenir le chunk JS de la page (`/_next/static/chunks/app/…/<segment>/page-*.js`), armer la porte APRÈS la connexion, et exclure `next-router-segment-prefetch: /_tree` des comptes RSC. (Sprint 118 #885, CI PR #887)
+
+
+## PIT-S118-005 — Tailwind ≥ 4.2 émet `@layer properties;` avant l'ordre déclaré des layers
+Un test qui lit l'ordre des layers sur la PREMIÈRE instruction `@layer` voit `properties` seul. Prévention : fusionner toutes les instructions `@layer` par ordre de première apparition (règle CSS). (Sprint 118 #882)
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)
