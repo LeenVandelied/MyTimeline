@@ -7358,3 +7358,27 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
   Ratio discard 0/4. Déjà traités pendant le sprint (non arbitrés) : E2E V2 de #804, réserve dynamique, jeu des specs contre `next build`.
 **Saturation contexte lead (mesure) :** non mesurée
 **Status :** Terminé
+
+### Sprint 118 — 2026-11-10 → 2026-11-10 (Terminé — merge PR #887 dans dev)
+**Objectif :** dépendances majeures frontend — débloquer Dependabot, Node 22, vitest 5, Next 16
+**Milestone GitHub :** #119 (fermé après merge)
+**Issues livrées (4) :** #882 (P2, S), #883 (P2, S), #884 (P2, M), #885 (P2, L) — fermées après merge
+**Vagues exécutées :** séquentiel par dépendance (#882 → #883 → #884 → #885), tout par le lead (configuration et outillage, pas de fullstack-dev) ; review batch par `reviewer` en fin
+**Cohésion score :** 1.00 (transversal frontend / devops)
+**Migrations Flyway :** aucune — prochaine V17
+**Commits :** #882 `204d3b58` · #883 `dc882ebc` + ci.yml `8b15c851` · merge dev (#880) `9d8d0b45` · #884 `7c7d3b0f` · #885 `c6bf4801` · oracle period-zoom `73a98a23` · #879 cherry-pick `55a89660` · e2e prefetch Next 16 `4ba1621a` · docs review `56f7f6de` · ci.yml commentaires `39b1ef7e` · artefacts `37b985dd` + `34810a4d` · clôture (ce commit)
+**BR impactées :** aucune
+**Reviews :** reviewer batch 0 CRITIQUE / 2 MAJEUR / 8 MINEURS — tous corrigés ou assumés (`sprints/sprint-118/review-batch.md`)
+**Tests :** Vitest 177/2359 identique avant/après | lint (`eslint .`), tsc, format:check, `next build` verts, 48 pages SSG comme sous Next 15 | E2E ciblée locale 71/71 ×3 | CI PR #887 sur `37b985dd` : 7/7 verte, e2e 676 passés / 0 échec / 0 flaky ; 1er run (`55a89660`) rouge sur 3 specs de préchargement (prefetch par segment de Next 16), corrigées `4ba1621a`
+**Dependabot :** #846 #848 #851 #852 #854 #849 #853 fermées vers #887 (lock Dependabot rejeté par `npm ci`) ; #880 mergée dans dev ; #879 intégrée par cherry-pick, laissée ouverte (fermeture non autorisée) ; #850 fermée au merge
+**`dev` trouvée rouge :** e2e (`sprint-117-period-zoom:196`, oracle dépendant de la date, corrigé) et security (follow-redirects GHSA-mrwp-f3q8-3g9p, corrigé) — #879 ne pouvait pas passer seule
+**Nouveaux pitfalls / décisions / bugs :** PIT-S118-001 (lock Dependabot) · PIT-S118-002 (SSG perdu sans `setRequestLocale`) · PIT-S118-003 (typage `Mock` vitest 5) · PIT-S118-004 (prefetch par segment, portes RSC inertes) · PIT-S118-005 (`@layer properties` Tailwind 4.2) · DEC-S118-001 (`--webpack` et `middleware.ts` gardés) · DEC-S118-002 (5 règles react-hooks coupées) · BUG-S118-001 (oracle period-zoom daté) ; packs `pit-*` régénérés
+**Écarts de briefing :** branche du worktree basée sur `main` → `sprint/118` créée depuis `origin/dev` ; skill `/sprint` lancé par l'utilisateur (non invocable par le modèle) ; issues traitées par le lead sans fullstack-dev ; E2E non délégués à un test-runner (`SKIP_DELEGATION=1`, sortie en fichier) ; PR ouverte en brouillon tôt pour obtenir la CI (la CI ne tourne que sur PR)
+**Follow-ups arbitrés (Phase 4 triage, 5/5 en issue, 0 discard, 0 absorbé) :**
+  - lock Dependabot rejeté par `npm ci` [S | devops] → #888 (Sprint 119)
+  - `middleware.ts` → `proxy.ts` [S | auth/frontend] → #889 (backlog)
+  - `next build` sur Turbopack [S | frontend] → #890 (backlog)
+  - 5 règles react-hooks 7 coupées (85 occurrences) [M | frontend] → #891 (backlog)
+  - React 18 → 19 [L | frontend] → #892 (backlog)
+**Restes connus :** Dependabot #879 ouverte (intégrée par cherry-pick ; Dependabot la fermera) ; flake isolé `sprint-90-first-contact:457` vu 1 fois sur une passe locale ×3, vert en CI
+**Status :** Terminé

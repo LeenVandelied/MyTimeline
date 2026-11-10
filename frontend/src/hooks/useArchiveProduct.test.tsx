@@ -11,7 +11,7 @@ import type { Product } from '@/types/product'
  * PIT-S92-004 — Archivage produit : `DELETE` via `deleteProduct`, puis (succès seulement)
  * retrait du produit du cache de la liste + invalidation du préfixe `products.all`.
  *
- * ⚠ Piège outillage documenté dans `useSetEventArchived.test.tsx` (Vitest 3.2.7) : un mock
+ * ⚠ Piège outillage documenté dans `useSetEventArchived.test.tsx` (mesuré sous Vitest 3.2.7, suite toujours verte sous 5.1.0) : un mock
  * partagé réinitialisé en `beforeEach` qui rend une promesse rejetée fait rapporter le rejet
  * comme erreur de test. Remède identique : un `vi.fn()` NEUF par test, porté par un objet
  * mutable (pas un `let` : PIT-S90-009), et les cas d'erreur passent par `mutate`. La

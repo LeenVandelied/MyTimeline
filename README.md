@@ -29,7 +29,7 @@ ne résout pas. `/` redirige en 307 vers `/fr`. Locales livrées : `fr` (pilote)
 | Couche | Techno (versions lues dans `backend/pom.xml` et `frontend/package.json`) |
 | --- | --- |
 | Backend | Java 21, Spring Boot 3.5.16, Spring Security, JWT **RS256** (JJWT), Flyway, Hibernate/JPA |
-| Frontend | Next.js 15, React 18, TypeScript 5 strict, Tailwind CSS 4, Radix/shadcn, TanStack Query 5, next-intl |
+| Frontend | Next.js 16, React 18, TypeScript 5 strict, Tailwind CSS 4, Radix/shadcn, TanStack Query 5, next-intl |
 | Base de données | PostgreSQL 16 (image `postgres:16`) |
 | Tests | JUnit + Testcontainers (backend), Vitest + Testing Library (frontend), Playwright (E2E) |
 
@@ -294,7 +294,7 @@ cd backend  && SKIP_DELEGATION=1 ./mvnw test
 cd frontend && npm run build       # next build (lint bloquant + typecheck inclus)
 cd frontend && npm test            # Vitest
 cd frontend && npm run typecheck   # tsc --noEmit
-cd frontend && npm run lint        # next lint
+cd frontend && npm run lint        # eslint .
 ```
 
 Avant de lancer la suite E2E, **lire** :
@@ -306,7 +306,7 @@ Avant de lancer la suite E2E, **lire** :
   troncature des CTA.
 
 `test-quiet.sh frontend` exécute la vérification **complète** dans l'ordre du job CI `frontend` :
-`next build` → Vitest → `tsc --noEmit` → `next lint`. Il s'arrête au premier échec et remonte le
+`next build` → Vitest → `tsc --noEmit` → `eslint .`. Il s'arrête au premier échec et remonte le
 code de sortie de l'étape rouge. L'ordre n'est pas « le moins cher d'abord » à dessein :
 `tsconfig.json` inclut `.next/types/**`, donc un typecheck lancé avant le build lit les types d'un
 build antérieur et peut rougir sur une route qui n'existe plus — le build doit les régénérer

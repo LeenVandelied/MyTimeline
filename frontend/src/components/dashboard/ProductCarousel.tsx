@@ -82,7 +82,7 @@ export const ProductCarousel: React.FC<ProductCarouselProps> = ({
         />
       ) : (
         <ul
-          className="scrollbar-none -mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-1"
+          className="-mx-4 flex snap-x snap-mandatory scrollbar-none gap-3 overflow-x-auto px-4 pb-1"
           data-testid="dashboard-product-carousel"
           aria-label={tm('label')}
         >

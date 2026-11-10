@@ -215,13 +215,40 @@ test.describe('#805 — [ / ] enchaînés à + / - : pas de dérive du défileme
     await pressAll(page, ['-', 't', '+'])
     await expect(page.getByTestId('timeline-zoom-level')).toHaveText('Mois')
     const after = await settledScroll(page)
+    // Le centrage au Trimestre est BORNÉ par la fin de la piste : l'étendue suit les
+    // dates relatives des événements, et selon le jour d'exécution le centre
+    // d'aujourd'hui tombe au-delà du `maxScroll` du Trimestre — le navigateur borne
+    // alors `scrollLeft`. Un oracle non borné rougissait ainsi selon la DATE (vert le
+    // 2026-10-25, rouge depuis le 2026-11-09 sur `dev`, sans changement de code).
+    // La borne est relue APRÈS la mesure (retour au Trimestre) pour laisser la
+    // séquence `- T +` frappée d'une traite.
+    await page.keyboard.press('-')
+    await expect(page.getByTestId('timeline-zoom-level')).toHaveText('Trimestre')
+    const { maxScroll: maxQuarter } = await settledScroll(page)
     const expected = await page.getByTestId('timeline-scroll').evaluate(
       (el, d) => {
-        const centeredQuarter = Math.max(0, d.gutter + d.day * d.quarter - el.clientWidth / 2)
+        const centeredQuarter = Math.min(
+          d.maxQuarter,
+          Math.max(0, d.gutter + d.day * d.quarter - el.clientWidth / 2),
+        )
         return (centeredQuarter / d.quarter) * d.month
       },
-      { day: TODAY_DAY, quarter: DW.quarter, month: DW.month, gutter: LANE_GUTTER_PX },
+      {
+        day: TODAY_DAY,
+        quarter: DW.quarter,
+        month: DW.month,
+        gutter: LANE_GUTTER_PX,
+        maxQuarter,
+      },
     )
+    // Trace dans le rapport les jours où la borne s'applique : le CENTRAGE n'y est
+    // plus prouvé (seule la re-projection l'est), il ne doit pas l'être en silence.
+    if (Math.abs(expected - (maxQuarter / DW.quarter) * DW.month) < 1e-6) {
+      test.info().annotations.push({
+        type: 'oracle-borné',
+        description: `centrage Trimestre borné par maxScroll ${maxQuarter} px`,
+      })
+    }
     // Avant zoom : scrollLeft entier ⇒ ±1 px × 12/5 après re-projection.
     expect(
       Math.abs(after.scrollLeft - expected),

@@ -110,10 +110,10 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Set up Node 20
+      - name: Set up Node 22
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: "20"
+          node-version: "22"
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
@@ -149,7 +149,7 @@ jobs:
       - name: Lint
         run: npm run lint
 
-      # Gate de FORMATAGE (#528). Distinct du lint : `next lint` (eslint) ne
+      # Gate de FORMATAGE (#528). Distinct du lint : `eslint .` (#885) ne
       # verifie PAS le formatage, donc une CI verte ne disait rien de prettier.
       # Defaut consigne sous BUG-S71-002, redecouvert aux S71/S75/S77 sans etre
       # tranche. Dette de 119 fichiers reformatee dans le meme commit que ce
@@ -220,10 +220,10 @@ jobs:
           java-version: "21"
           cache: maven
 
-      - name: Set up Node 20
+      - name: Set up Node 22
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: "20"
+          node-version: "22"
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
@@ -392,11 +392,12 @@ jobs:
       # au demarrage n'aurait AUCUN effet et rendrait un 404 sur /api/*, que le
       # harnais deguise ensuite en rate-limit, en CORS ou en 409.
       #
-      # ⚠ COUPLAGE NOUVEAU, ASSUME : `next.config.mjs:61-65` fixe
-      # `ignoreBuildErrors: false` et `ignoreDuringBuilds: false`. Ce job rougit
-      # donc desormais sur une erreur de types ou de lint, en doublon du job
-      # `frontend`. C'est le prix d'un artefact de production : on ne peut pas
-      # tester le build sans le construire.
+      # ⚠ COUPLAGE NOUVEAU, ASSUME : `next.config.mjs` fixe
+      # `typescript.ignoreBuildErrors: false`. Ce job rougit donc desormais sur une
+      # erreur de types, en doublon du job `frontend`. Depuis Next 16 (#885),
+      # `next build` ne lint plus : le lint n'est couvert que par le job `frontend`.
+      # C'est le prix d'un artefact de production : on ne peut pas tester le build
+      # sans le construire.
       # =========================================================================
       - name: Build frontend (production)
         working-directory: frontend
@@ -812,10 +813,10 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Set up Node 20
+      - name: Set up Node 22
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: "20"
+          node-version: "22"
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
