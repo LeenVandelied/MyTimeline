@@ -1,4 +1,4 @@
-# Context-pack : Frontend MyTimeline (Next.js 15 App Router / React 18)
+# Context-pack : Frontend MyTimeline (Next.js 16 App Router / React 19)
 
 > À charger pour TOUTE tâche frontend. Décrit la stack RÉELLE (scan code, sprint 9).
 > Versions = source de vérité `frontend/package.json`. Ce pack ne réplique pas les
@@ -6,8 +6,8 @@
 
 ## Stack réelle (versions du package.json)
 
-- **Next.js `^15.2.4`** — App Router, dev `next dev --turbopack`, build `next build`.
-- **React `^18.3.1`** + React DOM 18.3.1. ⚠ **PAS React 19** malgré `@types/react@^19`.
+- **Next.js `^16`** — App Router, Turbopack par défaut en dev ET en build (`next build` sans `--webpack` depuis #890, S120).
+- **React `^19.3`** + React DOM 19.3 (#892, S120). `<html>`/`<body>` sont des singletons : en test RTL ils fusionnent avec le document (lire `document.documentElement`). Règles eslint-plugin-react-hooks 7 (dérivées du React Compiler) ACTIVES depuis #891 — compilateur non activé.
 - **TypeScript `^5`** strict (`strict: true`, `noEmit`), alias `@/* → src/*`, `@/app/* → app/*`.
 - **TanStack Query `^5.101.2`** (+ devtools) — état serveur. API v5 STRICT (forme objet, `gcTime`).
 - **Zod `^3.24.2`** — validation + inférence de types.
@@ -16,13 +16,13 @@
 - **Tailwind `^4.0.12`** (`@tailwindcss/postcss`) + `tailwind.config.ts` minimal + `postcss.config.mjs`.
 - **shadcn/ui** style `new-york`, `rsc: true`, icônes **lucide-react**, Radix (dialog, select, popover, dropdown, checkbox, label, slot).
 - **axios `^1.8.1`** (client HTTP), **react-hot-toast** (toasts globaux), **next-themes** (clair/sombre), **framer-motion**, **dayjs**, **react-colorful**.
-- Tests : **Vitest `^2.1.9`** + **RTL `^16`** + jest-dom (jsdom). **Playwright `^1.61`** configuré ET peuplé (`frontend/e2e/` contient ≥9 specs : `golden-path`, `categories`, `products`, `settings-*` — MAJ S33, l'ancienne note « e2e vide » était périmée S9). Storybook 8 présent.
+- Tests : **Vitest `^5`** + **RTL `^16`** + jest-dom (jsdom). **Playwright `^1.61`** configuré ET peuplé (`frontend/e2e/` contient ≥9 specs : `golden-path`, `categories`, `products`, `settings-*` — MAJ S33, l'ancienne note « e2e vide » était périmée S9). Storybook 8 présent.
 
 ## Structure `frontend/`
 
 - **`app/`** (App Router, PAS `src/app/`) : `layout.tsx` (root, Server Component), `app/[locale]/` avec `dashboard/ login/ register/ forgot-password/ reset-password/ home/ privacy/ terms/`.
 - **`i18n.ts`** (racine) : `getRequestConfig`, charge les messages depuis **`public/locales/<locale>/<namespace>.json`** (fichiers par namespace : `auth common dashboard errors legal products register validation`).
-- **`middleware.ts`** : `next-intl/middleware`, `localePrefix: 'always'`, matcher exclut `api|_next|*.*`.
+- **`proxy.ts`** (ex-`middleware.ts`, #889 S120 — runtime Node imposé) : `next-intl/middleware` + garde d'auth serveur (ADR-004), `localePrefix: 'always'`.
 - **`src/components/`** : `ui/` (shadcn : button, card, dialog, select, form, input, spinner, dropdown-menu, popover, language-selector…), `calendar/`, `pages/`, `products/`, + composants métier (`EventContent`, `EventEditForm`, `theme-provider`) ; `landing/` porte les sections de la page d'accueil (`FeaturesSection` et `Testimonial*` supprimés au S103).
 - **`src/contexts/`** : `AuthContext.tsx` (source unique du user), `QueryProvider.tsx`.
 - **`src/services/`** : `apiClient.ts` (axios + intercepteurs), `authService.ts`, `eventService.ts`, `productService.ts`.
@@ -72,7 +72,7 @@ Les schémas Zod front doivent rester alignés sur les DTO backend (Spring Boot)
 
 ## Tests (Vitest + RTL) — pièges
 
-- **`React.use()` N'EXISTE PAS en React 18.3.1** (PIT-S8-005) — ne pas s'appuyer dessus dans code ou tests.
+- ~~PIT-S8-005 `React.use()` absent~~ — périmé depuis React 19 (S120) : `use()` et `useEffectEvent` existent.
 - **`useSearchParams` exige un `<Suspense>`** englobant (PAT-S8-004).
 - **`next build` en CI attrape des erreurs invisibles aux tests RTL** (types/build strict, `ignoreBuildErrors:false`) — un run vitest vert ne garantit pas le build.
 - Setup `vitest.setup.ts` : jest-dom, cleanup RTL, mocks `next/font/google`, `next/navigation`, `matchMedia`. `useAuth` hors `<AuthProvider>` lève.
