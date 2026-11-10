@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react'
+import { renderToStaticMarkup } from 'react-dom/server'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 // #413 — `global-not-found.tsx` importe `globals.css` (il rend son propre
@@ -31,14 +32,16 @@ import frErrors from '../public/locales/fr/errors.json'
  * document Next). Cette preuve-là est le `<title>` lu sur le HTML brut,
  * consigné dans le rapport d'issue et rejoué par `e2e/document-lang.spec.ts`.
  *
- * Comme pour `global-error`, RTL monte le `<html>` rendu dans un `<div>` :
- * le `validateDOMNesting` de React est attendu et absorbé par le spy
- * `console.error`.
+ * ⚠ #892 — comme pour `global-error` : depuis React 19, `<html>` / `<body>` sont des
+ * singletons fusionnés avec ceux du document, pas imbriqués dans le `container` de RTL.
+ * `lang` se lit sur `document.documentElement` (remis à zéro avant chaque test) et la
+ * présence des balises se prouve sur `renderToStaticMarkup`.
  */
 let errorSpy: ReturnType<typeof vi.spyOn>
 
 beforeEach(() => {
   errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+  document.documentElement.removeAttribute('lang')
   // #627 — horloge factice (`Date` seul) : jeudi 24 septembre 2026, semaine ISO 39.
   vi.useFakeTimers({ toFake: ['Date'] })
   vi.setSystemTime(new Date(2026, 8, 24, 9, 0))
@@ -52,12 +55,14 @@ afterEach(() => {
 
 describe('GlobalNotFound', () => {
   it('rend son PROPRE document (html + body) et l’écran 404', () => {
-    const { container } = render(<GlobalNotFound />)
+    render(<GlobalNotFound />)
 
     // Le défaut corrigé était l'absence de ces deux balises dans le document
     // servi (`NEXT_MISSING_ROOT_TAGS`) : elles sont l'objet même du composant.
-    expect(container.querySelector('html')).not.toBeNull()
-    expect(container.querySelector('html > body')).not.toBeNull()
+    expect(renderToStaticMarkup(<GlobalNotFound />)).toMatch(
+      /^<html[^>]*>[\s\S]*<body[^>]*>[\s\S]*<\/body><\/html>$/,
+    )
+    expect(document.documentElement).toHaveAttribute('lang', 'fr')
     expect(screen.getByTestId('global-not-found-screen')).toBeInTheDocument()
     expect(screen.getByTestId('global-not-found-home-link')).toBeInTheDocument()
     // #627 — éphéméride : le code ne vit plus que dans le sur-titre.
@@ -75,9 +80,9 @@ describe('GlobalNotFound', () => {
     ['/de/nope', 'de', 'Für diese Seite gibt es kein Kalenderblatt.'],
   ])('%s → <html lang="%s"> + titre localisé', (pathname, expectedLang, expectedTitle) => {
     window.history.pushState({}, '', pathname)
-    const { container } = render(<GlobalNotFound />)
+    render(<GlobalNotFound />)
 
-    expect(container.querySelector('html')).toHaveAttribute('lang', expectedLang)
+    expect(document.documentElement).toHaveAttribute('lang', expectedLang)
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(expectedTitle)
     expect(screen.getByTestId('global-not-found-home-link')).toHaveAttribute(
       'href',
@@ -87,9 +92,9 @@ describe('GlobalNotFound', () => {
 
   it('segment inconnu → repli fr (lang ET libellés)', () => {
     window.history.pushState({}, '', '/zz/nope')
-    const { container } = render(<GlobalNotFound />)
+    render(<GlobalNotFound />)
 
-    expect(container.querySelector('html')).toHaveAttribute('lang', 'fr')
+    expect(document.documentElement).toHaveAttribute('lang', 'fr')
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
       "Cette page n'a pas de date dans l'almanach.",
     )
