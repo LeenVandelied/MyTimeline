@@ -37,7 +37,7 @@
  * restent le SEUL signal existant : un E2E qui documente le dégradé reste VERT dans cet état,
  * donc rien dans le pipeline ne peut détecter la panne autrement.
  *
- * ⚠ Aucune fonction de ce module ne LÈVE. Une exception non catchée dans `middleware.ts`
+ * ⚠ Aucune fonction de ce module ne LÈVE. Une exception non catchée dans `proxy.ts`
  * produit un 500 sur TOUTES les routes protégées (BUG-S45-001).
  */
 

@@ -5,7 +5,7 @@ import { createRequire } from 'node:module'
 import { describe, it, expect, afterEach, beforeAll, vi } from 'vitest'
 import { NextRequest } from 'next/server'
 
-import middleware, { config } from './middleware'
+import { config, proxy } from './proxy'
 import { AUTH_COOKIE_NAME } from '@/lib/auth-guard-paths'
 import { resetJwksCache } from '@/lib/auth-jwks'
 import { SUPPORTED_LOCALES } from '@/i18n/locales'
@@ -15,8 +15,8 @@ import { SUPPORTED_LOCALES } from '@/i18n/locales'
  *
  * Environnement `node` (et non jsdom) : `NextRequest`/`NextResponse` s'appuient
  * sur les primitives Fetch globales (`Request`, `Headers`) que jsdom n'implémente
- * pas. Ce fichier vit à la racine (à côté de `middleware.ts`) — il est capté par
- * l'entrée `middleware.test.ts` du `include` de `vitest.config.mts`.
+ * pas. Ce fichier vit à la racine (à côté de `proxy.ts`) — il est capté par
+ * l'entrée `proxy.test.ts` du `include` de `vitest.config.mts`.
  */
 
 const ORIGIN = 'http://localhost:3000'
@@ -61,11 +61,11 @@ afterEach(() => {
   delete process.env.APP_CANONICAL_HOST
 })
 
-describe('middleware — anonyme sur route protégée', () => {
+describe('proxy — anonyme sur route protégée', () => {
   it.each(['/fr/dashboard', '/fr/timeline', '/fr/products', '/fr/settings'])(
     'redirige %s vers /fr/login SANS rendre la page',
     async (pathname) => {
-      const response = await middleware(request(pathname))
+      const response = await proxy(request(pathname))
 
       expect(response.status).toBe(307)
       expect(redirectTarget(response)).toBe('/fr/login')
@@ -75,20 +75,20 @@ describe('middleware — anonyme sur route protégée', () => {
   )
 
   it('redirige vers la page de connexion de la locale COURANTE', async () => {
-    expect(redirectTarget(await middleware(request('/en/dashboard')))).toBe('/en/login')
-    expect(redirectTarget(await middleware(request('/es/timeline')))).toBe('/es/login')
-    expect(redirectTarget(await middleware(request('/de/products')))).toBe('/de/login')
+    expect(redirectTarget(await proxy(request('/en/dashboard')))).toBe('/en/login')
+    expect(redirectTarget(await proxy(request('/es/timeline')))).toBe('/es/login')
+    expect(redirectTarget(await proxy(request('/de/products')))).toBe('/de/login')
   })
 
   it('protège aussi les sous-routes (détail produit)', async () => {
-    const response = await middleware(request('/fr/products/9f4c1e2a-0000-4000-8000-000000000000'))
+    const response = await proxy(request('/fr/products/9f4c1e2a-0000-4000-8000-000000000000'))
 
     expect(response.status).toBe(307)
     expect(redirectTarget(response)).toBe('/fr/login')
   })
 
   it('ne reporte PAS la query string dans la cible (pas d’open-redirect)', async () => {
-    const response = await middleware(request('/fr/dashboard?redirect=https://evil.example'))
+    const response = await proxy(request('/fr/dashboard?redirect=https://evil.example'))
     const location = response.headers.get('location')
 
     expect(new URL(location!, ORIGIN).search).toBe('')
@@ -96,11 +96,11 @@ describe('middleware — anonyme sur route protégée', () => {
   })
 })
 
-describe('middleware — cookie jwt présent', () => {
+describe('proxy — cookie jwt présent', () => {
   it.each(['/fr/dashboard', '/fr/timeline', '/fr/products', '/fr/settings'])(
     'laisse passer %s (délégation à next-intl, aucune redirection auth)',
     async (pathname) => {
-      const response = await middleware(request(pathname, { authenticated: true }))
+      const response = await proxy(request(pathname, { authenticated: true }))
 
       expect(redirectTarget(response)).not.toBe('/fr/login')
       expect(response.status).toBe(200)
@@ -116,11 +116,11 @@ describe('middleware — cookie jwt présent', () => {
     const req = new NextRequest(new URL('/fr/dashboard', ORIGIN))
     req.cookies.set(AUTH_COOKIE_NAME, 'ceci-n-est-pas-un-jwt')
 
-    expect(redirectTarget(await middleware(req))).not.toBe('/fr/login')
+    expect(redirectTarget(await proxy(req))).not.toBe('/fr/login')
   })
 })
 
-describe('middleware — routes publiques (aucune boucle de redirection)', () => {
+describe('proxy — routes publiques (aucune boucle de redirection)', () => {
   it.each([
     '/fr/login',
     '/fr/register',
@@ -131,13 +131,13 @@ describe('middleware — routes publiques (aucune boucle de redirection)', () =>
     '/fr/terms',
     '/fr',
   ])('laisse passer %s pour un anonyme', async (pathname) => {
-    expect(redirectTarget(await middleware(request(pathname)))).not.toBe('/fr/login')
+    expect(redirectTarget(await proxy(request(pathname)))).not.toBe('/fr/login')
   })
 })
 
-describe('middleware — non-régression i18n (#235)', () => {
+describe('proxy — non-régression i18n (#235)', () => {
   it('préfixe toujours un chemin nu avec la locale (localePrefix: always)', async () => {
-    const response = await middleware(request('/'))
+    const response = await proxy(request('/'))
 
     expect(response.status).toBe(307)
     expect(redirectTarget(response)).toBe('/fr')
@@ -148,11 +148,11 @@ describe('middleware — non-régression i18n (#235)', () => {
     // /fr/dashboard, requête sur laquelle le middleware re-tourne et redirige
     // alors vers /fr/login (ADR-004 §Décision 3). Aucune fuite : le 1er hop est
     // une redirection, pas un rendu.
-    const first = await middleware(request('/dashboard'))
+    const first = await proxy(request('/dashboard'))
     expect(first.status).toBe(307)
     expect(redirectTarget(first)).toBe('/fr/dashboard')
 
-    const second = await middleware(request(redirectTarget(first)!))
+    const second = await proxy(request(redirectTarget(first)!))
     expect(second.status).toBe(307)
     expect(redirectTarget(second)).toBe('/fr/login')
   })
@@ -161,19 +161,19 @@ describe('middleware — non-régression i18n (#235)', () => {
     // Itère SUPPORTED_LOCALES — une liste en dur ici raterait une locale ajoutée
     // à la source de vérité (régression #235).
     for (const locale of SUPPORTED_LOCALES) {
-      const response = await middleware(request(`/${locale}/home`))
+      const response = await proxy(request(`/${locale}/home`))
       expect(response.status).toBe(200)
     }
   })
 
   it('ne traite pas une locale non supportée comme une locale', async () => {
     // `/it/dashboard` : `it` n'est pas une locale → next-intl le préfixe.
-    const response = await middleware(request('/it/dashboard'))
+    const response = await proxy(request('/it/dashboard'))
     expect(redirectTarget(response)).toBe('/fr/it/dashboard')
   })
 })
 
-describe('middleware — Location exploitable par Next (régression 500, S45)', () => {
+describe('proxy — Location exploitable par Next (régression 500, S45)', () => {
   /**
    * ⚠ ANGLE MORT QUI A COÛTÉ UN RUN CI (30269383403 : 10 specs `auth-guard` en
    * 500 au lieu de 307, vitest VERT).
@@ -201,7 +201,7 @@ describe('middleware — Location exploitable par Next (régression 500, S45)', 
   })()
 
   const locationOf = async (pathname: string): Promise<string> => {
-    const location = (await middleware(request(pathname))).headers.get('location')
+    const location = (await proxy(request(pathname))).headers.get('location')
     expect(location).not.toBeNull()
     return location!
   }
@@ -227,7 +227,7 @@ describe('middleware — Location exploitable par Next (régression 500, S45)', 
 
   it('ne reporte toujours PAS la query string (pas d’open-redirect)', async () => {
     const location = (
-      await middleware(request('/fr/dashboard?redirect=https://evil.example'))
+      await proxy(request('/fr/dashboard?redirect=https://evil.example'))
     ).headers.get('location')!
 
     expect(new URL(location).search).toBe('')
@@ -239,21 +239,21 @@ describe('middleware — Location exploitable par Next (régression 500, S45)', 
     // configurée (dev local, CI, preview). C'est le dégradé assumé : une garde
     // qui casse partout serait pire que le risque qu'elle corrige
     // (BUG-S45-001). Ancré ici pour que le compromis reste VISIBLE.
-    const location = (await middleware(requestFromHost('evil.example'))).headers.get('location')!
+    const location = (await proxy(requestFromHost('evil.example'))).headers.get('location')!
 
     expect(new URL(location).pathname).toBe('/fr/login')
     expect(new URL(location).host).toBe('evil.example')
   })
 
   it('protège un segment percent-encodé (contournement corrigé S45)', async () => {
-    const response = await middleware(request('/fr/%64ashboard'))
+    const response = await proxy(request('/fr/%64ashboard'))
 
     expect(response.status).toBe(307)
     expect(redirectTarget(response)).toBe('/fr/login')
   })
 })
 
-describe('middleware — origine canonique du Location (#322)', () => {
+describe('proxy — origine canonique du Location (#322)', () => {
   /**
    * ⚠ CE QUI A ÉTÉ MESURÉ SUR LE RUNTIME RÉEL, avant d'écrire ces tests
    * (`next build` + `next start`, curl avec `Host: evil.example` puis
@@ -276,7 +276,7 @@ describe('middleware — origine canonique du Location (#322)', () => {
   const CANONICAL = 'app.mytimeline.test'
 
   const locationFor = async (req: NextRequest): Promise<URL> =>
-    new URL((await middleware(req)).headers.get('location')!)
+    new URL((await proxy(req)).headers.get('location')!)
 
   it('réécrit l’origine quand la requête arrive sur un Host FALSIFIÉ', async () => {
     process.env.APP_CANONICAL_HOST = CANONICAL
@@ -364,7 +364,7 @@ describe('middleware — origine canonique du Location (#322)', () => {
       try {
         process.env.APP_CANONICAL_HOST = raw
 
-        const response = await middleware(requestFromHost('evil.example'))
+        const response = await proxy(requestFromHost('evil.example'))
 
         expect(response.status).toBe(307)
         expect(new URL(response.headers.get('location')!).pathname).toBe('/fr/login')
@@ -380,7 +380,7 @@ describe('middleware — origine canonique du Location (#322)', () => {
     // protégées. Même garde-fou que le bloc précédent, mais AVEC la config.
     process.env.APP_CANONICAL_HOST = CANONICAL
 
-    const location = (await middleware(request('/fr/dashboard'))).headers.get('location')!
+    const location = (await proxy(request('/fr/dashboard'))).headers.get('location')!
 
     expect(() => new URL(location)).not.toThrow()
     expect(new URL(location).pathname).toBe('/fr/login')
@@ -400,14 +400,14 @@ describe('middleware — origine canonique du Location (#322)', () => {
   it('laisse passer sans redirection une route autorisée (aucun effet de bord)', async () => {
     process.env.APP_CANONICAL_HOST = CANONICAL
 
-    const response = await middleware(request('/fr/dashboard', { authenticated: true }))
+    const response = await proxy(request('/fr/dashboard', { authenticated: true }))
 
     expect(response.status).toBe(200)
     expect(response.headers.get('location')).toBeNull()
   })
 })
 
-describe('middleware — signature RS256 du cookie (#323)', () => {
+describe('proxy — signature RS256 du cookie (#323)', () => {
   /**
    * #323 — la garde ne se contente plus de la PRÉSENCE du cookie : elle vérifie sa
    * signature avec la clé PUBLIQUE, ce que la migration de `JwtService` en RS256 rend
@@ -498,7 +498,7 @@ describe('middleware — signature RS256 du cookie (#323)', () => {
   it('laisse passer un jeton BIEN SIGNÉ et non expiré', async () => {
     enableJwksDiscovery()
 
-    const response = await middleware(requestWithToken(await signToken(3600)))
+    const response = await proxy(requestWithToken(await signToken(3600)))
 
     expect(response.status).toBe(200)
     expect(response.headers.get('location')).toBeNull()
@@ -508,7 +508,7 @@ describe('middleware — signature RS256 du cookie (#323)', () => {
     enableJwksDiscovery()
     const tampered = `${(await signToken(3600)).slice(0, -6)}AAAAAA`
 
-    const response = await middleware(requestWithToken(tampered))
+    const response = await proxy(requestWithToken(tampered))
 
     expect(response.status).toBe(307)
     expect(redirectTarget(response)).toBe('/fr/login')
@@ -517,7 +517,7 @@ describe('middleware — signature RS256 du cookie (#323)', () => {
   it('REDIRIGE un cookie qui n’est pas un JWT du tout', async () => {
     enableJwksDiscovery()
 
-    const response = await middleware(requestWithToken('ceci-n-est-pas-un-jwt'))
+    const response = await proxy(requestWithToken('ceci-n-est-pas-un-jwt'))
 
     expect(response.status).toBe(307)
     expect(redirectTarget(response)).toBe('/fr/login')
@@ -526,14 +526,14 @@ describe('middleware — signature RS256 du cookie (#323)', () => {
   it('REDIRIGE un jeton EXPIRÉ (le trou fonctionnel que #323 vient fermer)', async () => {
     enableJwksDiscovery()
 
-    const response = await middleware(requestWithToken(await signToken(-60)))
+    const response = await proxy(requestWithToken(await signToken(-60)))
 
     expect(response.status).toBe(307)
     expect(redirectTarget(response)).toBe('/fr/login')
   })
 
   it('DÉGRADE sans erreur quand la clé publique est ABSENTE (comportement d’avant #323)', async () => {
-    const response = await middleware(requestWithToken('cookie-arbitraire'))
+    const response = await proxy(requestWithToken('cookie-arbitraire'))
 
     expect(response.status).toBe(200)
   })
@@ -555,7 +555,7 @@ describe('middleware — signature RS256 du cookie (#323)', () => {
         }),
       )
 
-      const response = await middleware(requestWithToken('cookie-arbitraire'))
+      const response = await proxy(requestWithToken('cookie-arbitraire'))
 
       expect(response.status).toBe(200)
     } finally {
@@ -568,7 +568,7 @@ describe('middleware — signature RS256 du cookie (#323)', () => {
     const token = await signToken(3600)
 
     for (let i = 0; i < 4; i += 1) {
-      expect((await middleware(requestWithToken(token))).status).toBe(200)
+      expect((await proxy(requestWithToken(token))).status).toBe(200)
     }
 
     expect(vi.mocked(globalThis.fetch)).toHaveBeenCalledTimes(1)
@@ -579,7 +579,7 @@ describe('middleware — signature RS256 du cookie (#323)', () => {
     // à cause d'un cookie périmé traînant dans le navigateur.
     enableJwksDiscovery()
 
-    const response = await middleware(requestWithToken(await signToken(-60), '/fr/home'))
+    const response = await proxy(requestWithToken(await signToken(-60), '/fr/home'))
 
     expect(response.status).toBe(200)
   })
@@ -595,14 +595,14 @@ describe('middleware — signature RS256 du cookie (#323)', () => {
     })
     req.cookies.set(AUTH_COOKIE_NAME, 'jeton-forge')
 
-    const location = new URL((await middleware(req)).headers.get('location')!)
+    const location = new URL((await proxy(req)).headers.get('location')!)
 
     expect(location.host).toBe('app.mytimeline.test')
     expect(location.pathname).toBe('/fr/login')
   })
 })
 
-describe('middleware — matcher (audit sécurité S45)', () => {
+describe('proxy — matcher (audit sécurité S45)', () => {
   /**
    * ⚠ Les entrées du matcher sont compilées par le path-to-regexp EMBARQUÉ de Next,
    * avec les MÊMES options que `next/dist/lib/try-to-parse-path` — et non par un

@@ -55,7 +55,7 @@ if (typeof globalThis.ResizeObserver === 'undefined') {
 
 // matchMedia non implémenté dans jsdom — requis par next-themes / composants responsive.
 // Garde `typeof window` (#302) : ce setup s'applique AUSSI aux fichiers déclarant
-// `// @vitest-environment node` (ex. `middleware.test.ts`, qui a besoin des
+// `// @vitest-environment node` (ex. `proxy.test.ts`, qui a besoin des
 // primitives Fetch globales absentes de jsdom). Sans la garde, ils échouaient
 // à la collecte sur `window is not defined`. Même garde qu'au bloc Radix ci-dessous.
 if (typeof window !== 'undefined') {

@@ -32,14 +32,14 @@ export default defineConfig({
     // ⚠ Le motif est comparé à l'ID COMPLET du module (`/…/node_modules/next-intl/
     // dist/…`) : une ancre `^next-intl` ne matche jamais. Ne pas « corriger ».
     server: { deps: { inline: [/node_modules[\\/]next-intl[\\/]/] } },
-    // `middleware.test.ts` vit à la RACINE (à côté de `middleware.ts`, seul
-    // emplacement où Next reconnaît le middleware) — #302 / ADR-004. Il déclare
+    // `proxy.test.ts` vit à la RACINE (à côté de `proxy.ts`, seul
+    // emplacement où Next reconnaît le proxy, ex-`middleware.ts` — #889) — #302 / ADR-004. Il déclare
     // `// @vitest-environment node` : `NextRequest` exige les primitives Fetch
     // globales, absentes de jsdom.
     include: [
       'src/**/*.{test,spec}.{ts,tsx}',
       'app/**/*.{test,spec}.{ts,tsx}',
-      'middleware.{test,spec}.ts',
+      'proxy.{test,spec}.ts',
     ],
     exclude: ['node_modules/**', '.next/**', 'e2e/**', '**/*.stories.{ts,tsx}'],
     // #169 — COUVERTURE : mesure seule, AUCUN seuil bloquant.

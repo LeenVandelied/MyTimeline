@@ -2,12 +2,17 @@
 
 > Titre amendé au sprint 50 : la garde ne portait que sur la **présence** du cookie
 > jusqu'à #323, qui y ajoute la **vérification de signature** (cf. §Limites).
+>
+> Amendé au sprint 120 (#889) : `frontend/middleware.ts` est devenu `frontend/proxy.ts`
+> (convention Next 16, export `proxy`). Le proxy s'exécute sur le runtime **Node**, non
+> configurable, et non plus Edge ; la logique de garde, le `matcher` et les limites
+> ci-dessous sont inchangés. Les mentions de `middleware.ts` plus bas sont historiques.
 
 - Statut : Accepté
 - Date : 2026-07-27
 - Contexte : Sprint 45, issue #302 (garde serveur pour les routes connectées `(app)`)
 - Follow-up de : review PR #297 (Sprint 40 — shell applicatif #210), réf. mémoire PIT-S40-002
-- Portée : `frontend/middleware.ts`, `frontend/src/lib/auth-guard-paths.ts`,
+- Portée : `frontend/proxy.ts` (ex-`middleware.ts`, #889), `frontend/src/lib/auth-guard-paths.ts`,
   `frontend/src/lib/canonical-host.ts` (#322), `frontend/src/lib/auth-token-verify.ts` (#323),
   `backend/.../infrastructure/security/{JwtService,RsaKeyMaterial}.java` (#323)
 - Complété par : issue #322 (sprint 50 — origine canonique du `Location`),

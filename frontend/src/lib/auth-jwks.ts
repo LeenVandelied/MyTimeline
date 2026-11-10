@@ -19,7 +19,7 @@
  *
  * - **Runtime Edge** : uniquement `fetch`, `AbortController`, `crypto.subtle`, `setTimeout`.
  *   AUCUNE dépendance npm ajoutée (ni `jose`, ni `jsonwebtoken`), aucun import Node.
- * - **Ne LÈVE JAMAIS.** Une exception non catchée dans `middleware.ts` produit un 500 sur
+ * - **Ne LÈVE JAMAIS.** Une exception non catchée dans `proxy.ts` produit un 500 sur
  *   TOUTES les routes protégées (BUG-S45-001). Toute fonction exportée ici renvoie `null`
  *   plutôt que de propager.
  * - **Jamais une découverte par requête.** Le middleware s'exécute sur chaque navigation :

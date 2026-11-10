@@ -1,5 +1,5 @@
 /**
- * #322 — Origine CANONIQUE des redirections émises par `middleware.ts`.
+ * #322 — Origine CANONIQUE des redirections émises par `proxy.ts`.
  *
  * Ce module est PUR : aucun import `next/server`, `fs` ou `path` → importable
  * depuis le runtime **Edge** du middleware et testable sans `NextRequest` (même
