@@ -28,10 +28,10 @@ jouée sur les nouvelles versions.
 - E2E locale ciblée contre `next build` + `next start` (:3100, backend e2e :8085) : `sprint-90` + `sprint-106` ×3 = 71/71 ;
   `sprint-117-period-zoom` 11/11 (oracle borné observé : maxScroll 2777 px). Un échec isolé de
   `sprint-90:457` (fiche produit, porte chunk inchangée) sur une passe ×3, non reproduit à la passe suivante ×3.
-- E2E CI : `55a89660` → 672 passed / 2 failed / 1 flaky (les 3 specs de préchargement, corrigées depuis) ; HEAD final : voir PR.
+- E2E CI : `55a89660` → 672 passed / 2 failed / 1 flaky (les 3 specs de préchargement, corrigées depuis) ; `37b985dd` → CI 7/7 verte, e2e 676 passed / 0 failed / 0 flaky / 8 skipped (5,4 min).
 - Suite E2E complète en local : NON jouée (la CI la joue sur Linux ; les références visuelles `-darwin` sont absentes sur macOS).
 - Vérification navigateur (navigateur intégré, `next start` :3100) : connexion, tableau de bord, produits, création produit,
   détail produit, création d'événement, frise ; aucune erreur console hors le 401 attendu avant connexion.
 
 ## Conclusion
-Prêt pour PR (CI du HEAD final à confirmer).
+PR #887 prête : CI 7/7 verte sur `37b985dd` (contenu de code identique au HEAD final, qui n'ajoute que ce relevé).
