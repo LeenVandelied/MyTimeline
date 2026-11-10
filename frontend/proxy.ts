@@ -128,8 +128,8 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
   // l'une ni l'autre n'est exploitable ici, d'où une variable dédiée — #358).
   //
   // ⚠ `verifyAuthCookie` fait un appel RÉSEAU (découverte JWKS) au plus une fois par TTL et
-  // par isolat, jamais par requête, et ne LÈVE jamais : son `fetch` est enveloppé et borné par
-  // un timeout. Un backend lent ou mort dégrade la garde, il ne pend pas l'Edge et ne produit
+  // par processus (isolat Edge avant #889), jamais par requête, et ne LÈVE jamais : son `fetch` est enveloppé et borné par
+  // un timeout. Un backend lent ou mort dégrade la garde, il ne pend pas le proxy et ne produit
   // pas de 500 sur toutes les routes protégées (BUG-S45-001).
   const isRejected =
     isProtectedPathname(pathname) &&

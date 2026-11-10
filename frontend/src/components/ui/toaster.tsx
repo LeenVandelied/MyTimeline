@@ -243,8 +243,9 @@ export function AppToaster() {
     if (focusedId === null || focusActive) return
     const target = returnFocusRef.current
     returnFocusRef.current = null
-    // #891 — gardé dans l'effet : la remise à zéro est couplée à la restauration du focus
-    // DOM ci-dessous (effet de bord réel), qui lit puis vide `returnFocusRef`.
+    // #891 — choix assumé (pas un faux positif) : la remise à zéro pourrait se faire au rendu
+    // comme `hoveredId`, mais elle déclencherait alors cet effet sans `focusedId` pour savoir
+    // qu'il faut restaurer le focus. On la garde ici, couplée à `target.focus()` (effet DOM).
     // eslint-disable-next-line react-hooks/set-state-in-effect -- couplé à target.focus(), effet DOM
     setFocusedId(null)
     if (target && canReceiveFocus(target) && focusIsOrphaned()) target.focus()

@@ -363,7 +363,9 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
   // n'existe qu'en mode edit (BR-EVE-012 : hors DTO de création). Sans cette garde,
   // configurer une récurrence à la CRÉATION déclenchait un appel réseau débouncé dont
   // le résultat n'était jamais affichable. Triage clôture S69.
-  const previewRecurrenceEndDate = useDebounced(useWatch({ control: form.control, name: 'recurrenceEndDate' }))
+  const previewRecurrenceEndDate = useDebounced(
+    useWatch({ control: form.control, name: 'recurrenceEndDate' }),
+  )
   const { data: recurrencePreview } = useRecurrencePreview({
     isRecurring: Boolean(previewIsRecurring) && !isCreate,
     startDate: previewStartDate,
