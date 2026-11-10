@@ -7383,10 +7383,21 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
 **Restes connus :** Dependabot #879 ouverte (intégrée par cherry-pick ; Dependabot la fermera) ; flake isolé `sprint-90-first-contact:457` vu 1 fois sur une passe locale ×3, vert en CI
 **Status :** Terminé
 
-### Sprint 119 — 2026-11-10 (En cours)
+### Sprint 119 — 2026-11-10 (Livré — PR #893 vers dev, en attente de /sprint end)
 **Objectif :** dépendances majeures backend — Spring Boot 3.5.16 → 4.1.2 (remplace Dependabot #878)
 **Milestone GitHub :** #120
-**Issues :** #886 (P2, L)
-**Vagues :** une seule issue, traitée par le lead
+**Issues livrées (1) :** #886 (P2, L) — à fermer après merge (base dev)
+**Vagues exécutées :** une issue, traitée par le lead (montée de plateforme itérative, pas de fullstack-dev) ; review batch par `reviewer` en fin
+**Cohésion score :** 1.00 (backend seul)
 **Migrations Flyway :** aucune — prochaine V17
-**Status :** En cours
+**Commits :** #886 `5d740f26` · sondes health + commentaires de versions `c2ab5f42` · artefacts et historique (ce commit)
+**BR impactées :** aucune
+**Reviews :** reviewer batch 0 CRITIQUE / 2 MAJEUR / 6 MINEURS — majeurs traités, 1 mineur corrigé, 3 assumés, 2 en follow-up (`sprints/sprint-119/review-batch.md`)
+**Tests :** backend `mvnw verify` 688/688 (local) | boot réel `java -jar` base vierge : Flyway V1→V16 + `validate` OK | parcours navigateur inscription → connexion → catégorie → produit → événement → frise OK | CI : 1er run (`5d740f26`) backend, flyway-smoke, frontend, security, secret-scan, ai-env-packs verts, e2e annulé par le push suivant ; résultat final dans la PR #893
+**Ruptures notables :** Flyway et RestClient exigent leur starter ; Jackson 3 ; `@MockitoBean` ; Security 7 (`DaoAuthenticationProvider(uds)`) ; sondes health désactivées ; **EntityManager introuvable au démarrage de Tomcat sous Spring 7** (hors guide, corrigé par un bean `@Fallback`) — détail `sprints/sprint-119/issue-886-done.md`
+**Écarts de briefing :** branche du worktree basée sur `main` → `sprint/119` créée depuis `origin/dev` ; skill `/sprint` lancé par l'utilisateur ; issue traitée par le lead ; PR ouverte en brouillon tôt (la CI ne tourne que sur PR) ; #888 (frontend) présente dans le milestone mais hors périmètre (pas de label `sprint-119`)
+**Follow-ups proposés (à arbitrer en /sprint end) :**
+  - test d'or de l'export RGPD JSON [XS | export]
+  - retirer `spring.jpa.database-platform` (HHH90000025) [XS | transversal]
+  - avertissement « Found 2 UserDetailsService beans » [XS | auth]
+**Status :** Livré — PR #893 ouverte, clôture par /sprint end
