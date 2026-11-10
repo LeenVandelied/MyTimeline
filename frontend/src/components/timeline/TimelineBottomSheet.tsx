@@ -56,9 +56,13 @@ export const TimelineBottomSheet: React.FC<TimelineBottomSheetProps> = ({
   }, [event, onClose])
 
   // Réinitialise l'offset de drag à chaque (ré)ouverture.
-  useEffect(() => {
+  // #891 — ajustement d'état PENDANT le rendu au changement de la prop (patron « valeur
+  // précédente » de React) plutôt qu'un `setState` dans un effet.
+  const [prevEvent, setPrevEvent] = useState(event)
+  if (event !== prevEvent) {
+    setPrevEvent(event)
     if (event) setDragY(0)
-  }, [event])
+  }
 
   const onGrabberPointerDown = useCallback((e: React.PointerEvent) => {
     dragStartY.current = e.clientY

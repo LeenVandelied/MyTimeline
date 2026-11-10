@@ -63,12 +63,16 @@ export function RestoreProductDialog({
   const [error, setError] = React.useState<'notFound' | 'generic' | null>(null)
 
   // Reset à chaque (ré)ouverture : une erreur d'une session précédente ne doit pas persister.
-  React.useEffect(() => {
+  // #891 — ajustement d'état PENDANT le rendu au changement de la prop (patron « valeur
+  // précédente » de React) plutôt qu'un `setState` dans un effet.
+  const [prevOpen, setPrevOpen] = React.useState(open)
+  if (open !== prevOpen) {
+    setPrevOpen(open)
     if (open) {
       setPending(false)
       setError(null)
     }
-  }, [open])
+  }
 
   const handleConfirm = async () => {
     setError(null)

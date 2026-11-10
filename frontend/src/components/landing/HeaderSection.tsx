@@ -114,9 +114,13 @@ export function HeaderSection({ locale }: HeaderSectionProps) {
    * SSR-safe et déjà moqué dans `vitest.setup.ts`.
    */
   const isDesktop = useMediaQuery(LG_BREAKPOINT_QUERY)
-  useEffect(() => {
+  // #891 — ajustement d'état PENDANT le rendu sur changement de `isDesktop` (patron
+  // « prop précédente » de React) plutôt qu'un `setState` dans un effet.
+  const [wasDesktop, setWasDesktop] = useState(isDesktop)
+  if (isDesktop !== wasDesktop) {
+    setWasDesktop(isDesktop)
     if (isDesktop) setMenuOpen(false)
-  }, [isDesktop])
+  }
 
   /**
    * Ancres de navigation — même ordre que les sections rendues par `HomePage`.

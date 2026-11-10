@@ -1,7 +1,7 @@
 'use client'
 
 import * as React from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslations } from 'next-intl'
 import toast from 'react-hot-toast'
@@ -145,25 +145,42 @@ export function CategoryDrawer({
   })
 
   // (Ré)initialisation à l'ouverture : pré-remplissage en édition, reset sinon.
+  // #891 — l'état LOCAL est réinitialisé PENDANT le rendu à l'ouverture (patron « valeur
+  // précédente » de React) ; l'effet ne garde que `form.reset`, synchronisation du
+  // formulaire RHF (système externe à l'état React).
+  const [syncedFor, setSyncedFor] = React.useState<{
+    open: boolean
+    isEdit: boolean
+    category: typeof category
+  } | null>(null)
+  if (
+    !syncedFor ||
+    syncedFor.open !== open ||
+    syncedFor.isEdit !== isEdit ||
+    syncedFor.category !== category
+  ) {
+    setSyncedFor({ open, isEdit, category })
+    if (open) {
+      setSubmitError(null)
+      setNameConflict(false)
+      setColor(isEdit && category ? (category.color ?? null) : null)
+    }
+  }
   React.useEffect(() => {
     if (!open) return
-    setSubmitError(null)
-    setNameConflict(false)
     if (isEdit && category) {
       form.reset({
         name: category.name,
         color: category.color ?? '',
         description: category.description ?? '',
       })
-      setColor(category.color ?? null)
     } else {
       form.reset({ name: '', color: '', description: '' })
-      setColor(null)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, isEdit, category])
 
-  const watchedName = form.watch('name')
+  const watchedName = useWatch({ control: form.control, name: 'name' })
 
   const submitting = createMutation.isPending || updateMutation.isPending
 

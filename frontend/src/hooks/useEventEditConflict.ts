@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 
 import { updateEvent } from '@/services/eventService'
@@ -107,17 +107,23 @@ export function useEventEditConflict(
 
   // Changer d'événement édité = nouvel épisode : le plafond ne se traîne pas d'un
   // event à l'autre (le hook est monté une fois par host, `eventId` varie).
-  useEffect(() => {
+  // #891 — ajusté PENDANT le rendu au changement d'`eventId` (patron « valeur précédente »).
+  const [attemptsEventId, setAttemptsEventId] = useState(eventId)
+  if (eventId !== attemptsEventId) {
+    setAttemptsEventId(eventId)
     setKeepMineAttempts(0)
-  }, [eventId])
+  }
 
   // Invalidation CIBLÉE de la query qui alimente dashboard ET détail produit
   // (`useProductsWithEvents`) → re-fetch des données à jour, jamais de reload page (#77).
+  // #891 — `userId` extrait : la règle preserve-manual-memoization exige que les
+  // dépendances déclarées soient exactement ce que le callback lit.
+  const userId = user?.id
   const invalidateEvents = useCallback(() => {
-    if (user?.id) {
-      queryClient.invalidateQueries({ queryKey: queryKeys.products.withEvents(user.id) })
+    if (userId) {
+      queryClient.invalidateQueries({ queryKey: queryKeys.products.withEvents(userId) })
     }
-  }, [queryClient, user?.id])
+  }, [queryClient, userId])
 
   /**
    * Soumission unique, partagee par le form (`onSubmit`) et par la re-soumission de

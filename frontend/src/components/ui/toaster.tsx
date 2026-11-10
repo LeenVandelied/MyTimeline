@@ -235,14 +235,17 @@ export function AppToaster() {
 
   // Toast survolé / focalisé retiré (dismiss, remove) sans `mouseleave` / `focusout` : son
   // identifiant n'est plus parmi les visibles → l'état retombe, même si d'AUTRES toasts restent.
-  React.useEffect(() => {
-    if (hoveredId !== null && !hoverActive) setHoveredId(null)
-  }, [hoveredId, hoverActive])
+  // #891 — remise à zéro PENDANT le rendu (état dérivé des toasts visibles) plutôt qu'un
+  // `setState` dans un effet.
+  if (hoveredId !== null && !hoverActive) setHoveredId(null)
 
   React.useEffect(() => {
     if (focusedId === null || focusActive) return
     const target = returnFocusRef.current
     returnFocusRef.current = null
+    // #891 — gardé dans l'effet : la remise à zéro est couplée à la restauration du focus
+    // DOM ci-dessous (effet de bord réel), qui lit puis vide `returnFocusRef`.
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- couplé à target.focus(), effet DOM
     setFocusedId(null)
     if (target && canReceiveFocus(target) && focusIsOrphaned()) target.focus()
   }, [focusedId, focusActive])
