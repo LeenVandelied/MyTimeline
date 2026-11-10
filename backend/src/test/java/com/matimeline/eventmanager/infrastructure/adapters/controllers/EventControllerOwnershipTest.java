@@ -17,9 +17,9 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
@@ -56,7 +56,7 @@ import jakarta.servlet.http.Cookie;
  * contrôleur (sans elle on obtiendrait un 403 d'autorité, pas le 403 d'ownership testé).
  * Le {@code JwtFilter} ne réécrit pas le contexte déjà posé par {@code @WithMockUser}
  * (garde {@code getAuthentication() == null}). Les services métier sont mockés
- * ({@code @MockBean}) pour piloter le scénario attaquant ≠ propriétaire sans DB ;
+ * ({@code @MockitoBean}) pour piloter le scénario attaquant ≠ propriétaire sans DB ;
  * {@code AbstractPostgresIntegrationTest} fournit le conteneur Postgres requis par le
  * démarrage du contexte (Flyway/Hibernate validate).
  */
@@ -69,15 +69,15 @@ class EventControllerOwnershipTest extends AbstractPostgresIntegrationTest {
 
     // #123 (DIP) : TOUS les contrôleurs injectent désormais les PORTS (interfaces),
     // plus aucun ne câble un *ServiceImpl concret. On mocke donc les interfaces —
-    // le @MockBean sur le port remplace l'unique impl @Service et satisfait chaque
+    // le @MockitoBean sur le port remplace l'unique impl @Service et satisfait chaque
     // contrôleur du contexte (Event/Product/Auth/Category).
-    @MockBean
+    @MockitoBean
     private EventService eventService;
-    @MockBean
+    @MockitoBean
     private ProductService productService;
-    @MockBean
+    @MockitoBean
     private UserService userService;
-    @MockBean
+    @MockitoBean
     private JwtService jwtService;
 
     private UUID eventId;

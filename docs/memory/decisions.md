@@ -1245,3 +1245,9 @@ Le build de production reste sur webpack pour isoler le changement de framework 
 
 ## DEC-S118-002 — 5 règles react-hooks 7 coupées à la montée Next 16
 `refs`, `set-state-in-effect`, `preserve-manual-memoization`, `purity`, `incompatible-library` (85 occurrences préexistantes) désactivées avec justification dans `frontend/eslint.config.mjs` ; le reste du preset `eslint-config-next` 16 reste actif ; `lint` = `eslint .` (flat config native). Suivi : #891. (Sprint 118 #885)
+
+## DEC-S119-001 — `EntityManager` partagé `@Fallback` plutôt que réécrire les adaptateurs JPA
+Un bean central (`JpaSharedEntityManagerConfig`) comble le créneau de démarrage de Tomcat (PIT-S119-001) ; `@Fallback` laisse l'`EntityManager` primaire de la fabrique prioritaire une fois instanciée (deux proxys partagés équivalents sur la même EMF). Écarté : `@PersistenceContext` ou `@Lazy` dans 8 adaptateurs (diff plus large, régression à réintroduire au prochain adaptateur). Garde : les tests `RANDOM_PORT` rougissent sans le bean. (Sprint 119 #886)
+
+## DEC-S119-002 — Sondes liveness/readiness désactivées sous Boot 4
+Boot 4 les active par défaut et ajoute `"groups"` au corps de `/actuator/health` ; aucun orchestrateur ne les consomme (healthchecks Docker/CI = `/actuator/health`). `management.endpoint.health.probes.enabled=false` garde le corps `{"status":"UP"}`. À réactiver avec un déploiement Kubernetes. (Sprint 119 #886)

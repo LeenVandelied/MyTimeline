@@ -1977,6 +1977,7 @@ Next 16 précharge `/_tree` puis `__PAGE__`, tous marqués `next-router-prefetch
 ## PIT-S118-005 — Tailwind ≥ 4.2 émet `@layer properties;` avant l'ordre déclaré des layers
 Un test qui lit l'ordre des layers sur la PREMIÈRE instruction `@layer` voit `properties` seul. Prévention : fusionner toutes les instructions `@layer` par ordre de première apparition (règle CSS). (Sprint 118 #882)
 
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)

@@ -3,8 +3,8 @@ package com.matimeline.eventmanager.infrastructure.adapters.email;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.actuate.health.Health;
-import org.springframework.boot.actuate.health.Status;
+import org.springframework.boot.health.contributor.Health;
+import org.springframework.boot.health.contributor.Status;
 
 /**
  * Test unitaire du {@link BrevoHealthIndicator} (issue #140).

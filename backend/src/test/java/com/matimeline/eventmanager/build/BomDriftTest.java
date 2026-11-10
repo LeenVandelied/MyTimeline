@@ -38,7 +38,7 @@ class BomDriftTest {
 
   /**
    * spring-security. Plancher = 6.5.9, correctif de CVE-2026-22732 / CVE-2025-41232. Effectif
-   * courant (BOM Boot 3.5.16) : 6.5.11.
+   * courant (BOM Boot 4.1.2, #886) : 7.1.2.
    */
   @Test
   void springSecurityStaysAboveCveFloor() {
@@ -48,7 +48,7 @@ class BomDriftTest {
 
   /**
    * spring-framework. Plancher = 6.2.19, aligné sur spring-security 6.5.x (correctifs transitifs
-   * spring-web/spring-core). Effectif courant : 6.2.19.
+   * spring-web/spring-core). Effectif courant (Boot 4.1.2) : 7.0.10.
    */
   @Test
   void springFrameworkStaysAboveCveFloor() {
@@ -58,7 +58,7 @@ class BomDriftTest {
 
   /**
    * tomcat-embed. Plancher = 10.1.55, correctif de CVE-2026-41293 / CVE-2026-43512 /
-   * CVE-2026-43515. Effectif courant : 10.1.55. Lu via {@link ServerInfo#getServerNumber()}
+   * CVE-2026-43515. Effectif courant (Boot 4.1.2) : 11.0.27. Lu via {@link ServerInfo#getServerNumber()}
    * (ex : "10.1.55").
    */
   @Test
@@ -72,7 +72,8 @@ class BomDriftTest {
 
   /**
    * jackson-databind/core. Plancher = 2.18.8, correctif de CVE-2026-54512 / CVE-2026-54513.
-   * Effectif courant : 2.21.4. Constante {@code static final} → lue par réflexion pour refléter le
+   * Effectif courant : 2.21.7 — depuis Boot 4 (#886), Jackson 2 n'est plus que le runtime de
+   * jjwt-jackson (le sérialiseur des API est Jackson 3, garde suivante). Constante {@code static final} → lue par réflexion pour refléter le
    * jar RÉELLEMENT chargé (une lecture directe serait inlinée à la compilation).
    */
   @Test
@@ -82,7 +83,18 @@ class BomDriftTest {
   }
 
   /**
-   * postgresql JDBC. Plancher = 42.7.11, correctif de CVE-2026-42198. Effectif courant : 42.7.11.
+   * Jackson 3 ({@code tools.jackson}), sérialiseur des API depuis Boot 4 (#886) ; Jackson 2 ne
+   * reste sur le classpath que pour jjwt-jackson (garde ci-dessus). Plancher = 3.0.0 : pas de CVE
+   * ciblée, la garde vérifie que le BOM fournit bien la ligne 3. Effectif (BOM Boot 4.1.2) : 3.1.7.
+   */
+  @Test
+  void jackson3IsTheManagedSerializer() {
+    String jackson3 = readStaticStringField("tools.jackson.core.json.PackageVersion", "VERSION");
+    assertVersionAtLeast("jackson 3", jackson3, "3.0.0", "sérialiseur Boot 4");
+  }
+
+  /**
+   * postgresql JDBC. Plancher = 42.7.11, correctif de CVE-2026-42198. Effectif courant (Boot 4.1.2) : 42.7.14.
    * Constante {@code static final} → lue par réflexion (voir jackson ci-dessus).
    */
   @Test
@@ -99,7 +111,7 @@ class BomDriftTest {
    * est portée par les tests Testcontainers (boot Flyway réel contre Postgres, qui échoue « Unsupported
    * Database » si le module manque), pas par ce plancher de version.
    *
-   * <p>Effectif courant : 11.7.2. Lu via {@link VersionPrinter#getVersion()} : API INTERNE de Flyway
+   * <p>Effectif courant (Boot 4.1.2) : 12.4.0. Lu via {@link VersionPrinter#getVersion()} : API INTERNE de Flyway
    * ({@code org.flywaydb.core.internal.*}), choisie faute d'accesseur public de version au runtime.
    * Caveat assumé — un bump Flyway major qui déplace/supprime cette classe cassera la COMPILATION de ce
    * test, ce qui force (volontairement) une revue du bump.

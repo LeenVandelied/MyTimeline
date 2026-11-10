@@ -7382,3 +7382,25 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
   - React 18 → 19 [L | frontend] → #892 (backlog)
 **Restes connus :** Dependabot #879 ouverte (intégrée par cherry-pick ; Dependabot la fermera) ; flake isolé `sprint-90-first-contact:457` vu 1 fois sur une passe locale ×3, vert en CI
 **Status :** Terminé
+
+### Sprint 119 — 2026-11-10 → 2026-11-10 (Terminé — merge PR #893 dans dev)
+**Objectif :** dépendances majeures backend — Spring Boot 3.5.16 → 4.1.2 (remplace Dependabot #878, fermée avec renvoi)
+**Milestone GitHub :** #120 (fermé après merge)
+**Issues livrées (1) :** #886 (P2, L) — fermée après merge (base dev)
+**Vagues exécutées :** une issue, traitée par le lead (montée de plateforme itérative, pas de fullstack-dev) ; review batch par `reviewer` en fin
+**Cohésion score :** 1.00 (backend seul)
+**Migrations Flyway :** aucune — prochaine V17
+**Commits :** #886 `5d740f26` · sondes health + commentaires de versions `c2ab5f42` · artefacts `7e6b25f5` · clôture (ce commit)
+**BR impactées :** aucune
+**Reviews :** reviewer batch 0 CRITIQUE / 2 MAJEUR / 6 MINEURS — majeurs traités, 1 mineur corrigé, 3 assumés, 2 en follow-up (`sprints/sprint-119/review-batch.md`)
+**Tests :** backend `mvnw verify` 688/688 | boot réel `java -jar` base vierge : Flyway V1→V16 + `validate` OK | parcours navigateur inscription → connexion → catégorie → produit → événement → frise OK | CI PR #893 sur `7e6b25f5` : 7/7 verte, e2e 676 passés / 0 échec / 8 ignorés + RS256 10/10 ; 1er run (`5d740f26`) e2e annulé par le push suivant
+**Versions effectives :** Spring Framework 7.0.10, Spring Security 7.1.2, Hibernate 7.4.13, Jackson 3.1.7 (+ 2.21.7 runtime jjwt), Tomcat 11.0.27, Flyway 12.4.0, Testcontainers 2.0.5
+**Nouveaux pitfalls / décisions :** PIT-S119-001 (EntityManager introuvable au démarrage de Tomcat sous Spring 7, MockMvc vert) · PIT-S119-002 (Boot 4 modulaire : starters flyway/restclient/tests requis) · DEC-S119-001 (EntityManager `@Fallback`) · DEC-S119-002 (sondes health désactivées) ; packs `pit-*` régénérés
+**Écarts de briefing :** branche du worktree basée sur `main` → `sprint/119` créée depuis `origin/dev` ; skill `/sprint` lancé par l'utilisateur ; issue traitée par le lead ; PR ouverte en brouillon tôt (la CI ne tourne que sur PR) ; #888 (frontend) détachée du jalon (hors périmètre, pas de label `sprint-119`)
+**Follow-ups arbitrés (Phase 4 triage, 3/3 en issue backlog, 0 discard, 0 absorbé) :**
+  - test d'or de l'export RGPD JSON [XS | export] → #894 (backlog)
+  - retirer `spring.jpa.database-platform` (HHH90000025) [XS | transversal] → #895 (backlog)
+  - avertissement « Found 2 UserDetailsService beans » [XS | auth] → #896 (backlog)
+**Restes connus :** aucun bloquant ; `@Fallback` EntityManager à revisiter si Spring Data rétablit l'injection de `jpaSharedEM_*`
+**Saturation contexte lead (mesure) :** non mesurée
+**Status :** Terminé

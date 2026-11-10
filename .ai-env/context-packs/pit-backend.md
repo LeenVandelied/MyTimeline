@@ -1002,6 +1002,13 @@ Y compris un heredoc qui écrit cette chaîne dans un test ou un commentaire `ci
 Dependabot retire `next-intl/node_modules/@swc/helpers` (pair optionnel de `@swc/core`) ; `npm ci` (npm 10) refuse le lock (`Missing: @swc/helpers@… from lock file`) et chaque `@dependabot rebase` reproduit l'erreur. Prévention : appliquer la montée en local (`npm install`, lock régénéré par npm 10) au lieu de re-rebaser. Suivi : #888. (Sprint 118 #882)
 
 
+## PIT-S119-001 — Spring 7 : `EntityManager` introuvable au démarrage de Tomcat, MockMvc vert
+Sous Spring Boot 4 / Spring Framework 7, `jpaSharedEM_entityManagerFactory` (Spring Data) n'est plus candidat à l'injection (`autowireCandidate=false`) : l'`EntityManager` vient du FactoryBean `entityManagerFactory`, reconnu seulement une fois instancié. Tomcat crée les filtres (`JwtFilter` → `UserDetailsService` → adaptateurs `*JpaImpl` injectés par constructeur) avant la fabrique → « No qualifying bean of type EntityManager » au boot réel et en `RANDOM_PORT`, alors que les tests MockMvc passent. Correctif : bean `EntityManager` partagé `@Fallback` (`infrastructure/config/JpaSharedEntityManagerConfig`). Prévention : après toute montée Spring, démarrer le jar (`java -jar`) ou un test `RANDOM_PORT`, jamais MockMvc seul. (Sprint 119 #886)
+
+
+## PIT-S119-002 — Boot 4 modulaire : une dépendance tierce ne suffit plus à activer son auto-configuration
+`flyway-core` seul ne migre plus au démarrage (il faut `spring-boot-starter-flyway`) ; `RestClient.Builder` n'est plus fourni par le starter web (il faut `spring-boot-starter-restclient`) ; `@AutoConfigureMockMvc` exige `spring-boot-starter-webmvc-test`, `@WithMockUser` `spring-boot-starter-security-test`. Symptômes : `NoSuchBeanDefinitionException` ou schéma absent sous `ddl-auto=validate`. Prévention : pour chaque techno utilisée, vérifier son starter dans la table du guide de migration Boot 4. (Sprint 119 #886)
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)
