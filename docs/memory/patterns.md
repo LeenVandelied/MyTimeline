@@ -1114,3 +1114,9 @@ Stub `page.route` qui relit une variable `current` à chaque requête : produit 
 
 ## PAT-S117-003 — Garde desktop d'un composant qui ne s'ouvre que sous 768 px
 Ouvrir le tiroir à 375 px, puis `page.setViewportSize` à 1024 px et mesurer la MÊME instance (36 px desktop, 44 px mobile). Anti-pattern : déclarer le desktop « inchangé par construction » sans mesure. (Sprint 117 #837)
+
+## PAT-S120-001 — Valeur « client seulement » sans `setState` dans un effet
+`matchMedia`, `localStorage`, date du jour, `window.location` : `useSyncExternalStore(subscribe, clientSnapshot, serverSnapshot)` (cf. `src/hooks/useHydrated.ts`). L'instantané serveur sert au prérendu et à l'hydratation (aucun écart), puis React re-rend avec l'instantané client. L'instantané client doit être STABLE (même référence tant que rien ne change). Anti-pattern : `useState(null)` + `useEffect(() => setX(…), [])` (règle `set-state-in-effect`). (Sprint 120 #891)
+
+## PAT-S120-002 — Ref callback d'un ENFANT qui lit des valeurs fraîches d'un hook du PARENT
+Écrire ces refs en `useInsertionEffect` (phase mutation, avant l'attach des refs en phase layout). En `useLayoutEffect`, React les écrirait après l'attach des refs enfants : valeurs du commit précédent. (Sprint 120 #891, `useTimelineMobileState`)
