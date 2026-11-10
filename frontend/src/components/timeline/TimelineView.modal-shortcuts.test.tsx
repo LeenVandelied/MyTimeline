@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest'
 
 import { TimelineView } from './TimelineView'
 import { NewEventDrawer } from '@/components/events/NewEventDrawer'
@@ -91,8 +91,8 @@ const EVENTS: FullCalendarEvent[] = [
 
 const RESOURCES: Resource[] = [{ id: 'p1', title: 'Lait bio', category: 'Frais' }]
 
-let requestFullscreenMock: ReturnType<typeof vi.fn>
-let exitFullscreenMock: ReturnType<typeof vi.fn>
+let requestFullscreenMock: Mock<(options?: FullscreenOptions) => Promise<void>>
+let exitFullscreenMock: Mock<() => Promise<void>>
 
 beforeEach(() => {
   // jsdom n'implémente ni l'API Fullscreen ni le défilement — stubs neutres.

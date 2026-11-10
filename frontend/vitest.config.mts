@@ -50,9 +50,9 @@ export default defineConfig({
     coverage: {
       // Provider v8 (instrumentation native du moteur) plutôt qu'istanbul : pas
       // de transformation supplémentaire du bundle, donc pas de coût sur la durée
-      // de la suite. `@vitest/coverage-v8` doit rester aligné sur la MINEURE de
-      // `vitest` (3.2.x) — un provider en avance échoue avec un message qui ne
-      // parle pas de version.
+      // de la suite. `@vitest/coverage-v8` doit rester aligné sur la version EXACTE
+      // de `vitest` (peer `vitest@5.1.0` depuis la v5) — un provider désaligné
+      // échoue avec un message qui ne parle pas de version.
       provider: 'v8',
       // `lcov` = exigence de l'issue (fichier coverage/lcov.info consommable par
       // un outil tiers) ; `text-summary` donne les 4 chiffres directement dans le
