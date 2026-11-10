@@ -9,7 +9,7 @@
  * inutilisables.
  *
  * Cette constante centralise la liste. Elle est PURE (aucune dépendance Node
- * fs/path) → importable sans risque depuis le runtime Edge de `middleware.ts`.
+ * fs/path) → importable sans risque depuis le runtime de `proxy.ts` (Node depuis #889, Edge avant).
  * Toute évolution de la liste des langues se fait ICI et se propage partout.
  */
 

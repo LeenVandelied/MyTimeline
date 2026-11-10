@@ -3,7 +3,7 @@
 import * as React from 'react'
 import { createPortal } from 'react-dom'
 import { useTranslations } from 'next-intl'
-import { Controller, useForm, ControllerRenderProps } from 'react-hook-form'
+import { Controller, useForm, useWatch, ControllerRenderProps } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Archive, Trash2 } from 'lucide-react'
 
@@ -305,7 +305,7 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
    * NŒUD DOM uniquement (après le spread `{...field}`, qui ne le porte pas) : les
    * valeurs restent intactes dans l'état RHF et le payload part complet.
    */
-  const archivedWatch = form.watch('archived')
+  const archivedWatch = useWatch({ control: form.control, name: 'archived' })
   const locked = !isCreate && archivedWatch === true
   const lockedNoteId = 'event-form-archived-lock-note'
 
@@ -314,11 +314,11 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
   }
 
   // Preview live : couleur + type/durée debouncés à 150 ms (perf).
-  const rawColor = form.watch('color')
-  const rawTitle = form.watch('title')
-  const rawType = form.watch('type')
-  const rawDurationValue = form.watch('durationValue')
-  const rawDurationUnit = form.watch('durationUnit')
+  const rawColor = useWatch({ control: form.control, name: 'color' })
+  const rawTitle = useWatch({ control: form.control, name: 'title' })
+  const rawType = useWatch({ control: form.control, name: 'type' })
+  const rawDurationValue = useWatch({ control: form.control, name: 'durationValue' })
+  const rawDurationUnit = useWatch({ control: form.control, name: 'durationUnit' })
   const previewColor = useDebounced(rawColor)
   const previewTitle = useDebounced(rawTitle)
   const previewType = useDebounced(rawType)
@@ -334,18 +334,18 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
   // ici, à la frontière, plutôt que d'élargir le type du composant (ni de caster).
   const previewEventType: PreviewEventType = previewType === 'duration' ? 'duration' : 'single'
 
-  const isRecurringWatch = form.watch('isRecurring')
+  const isRecurringWatch = useWatch({ control: form.control, name: 'isRecurring' })
 
   // #315 — dates débouncées elles aussi : la mini-frise recalcule sa fenêtre à
   // partir de `startDate`/`endDate`, une saisie non débouncée la ferait glisser
   // à chaque frappe (BR-EVE-017, cf. `useDebounced`).
-  const previewStartDate = useDebounced(form.watch('startDate'))
-  const previewEndDate = useDebounced(form.watch('endDate'))
+  const previewStartDate = useDebounced(useWatch({ control: form.control, name: 'startDate' }))
+  const previewEndDate = useDebounced(useWatch({ control: form.control, name: 'endDate' }))
 
   // #300 — libellé de récurrence, composé de clés i18n EXISTANTES (`form.recurring`
   // + `units.*`) → aucune clé nouvelle, parité 4 locales préservée par construction.
   // #315 — désormais rendu DANS la légende de la mini-frise (testid inchangé).
-  const rawRecurrenceUnit = form.watch('recurrenceUnit')
+  const rawRecurrenceUnit = useWatch({ control: form.control, name: 'recurrenceUnit' })
   const previewIsRecurring = useDebounced(isRecurringWatch)
   const previewRecurrenceUnit = useDebounced(rawRecurrenceUnit)
   const previewRecurrence =
@@ -363,7 +363,9 @@ export const EventEditForm: React.FC<EventEditFormProps> = ({
   // n'existe qu'en mode edit (BR-EVE-012 : hors DTO de création). Sans cette garde,
   // configurer une récurrence à la CRÉATION déclenchait un appel réseau débouncé dont
   // le résultat n'était jamais affichable. Triage clôture S69.
-  const previewRecurrenceEndDate = useDebounced(form.watch('recurrenceEndDate'))
+  const previewRecurrenceEndDate = useDebounced(
+    useWatch({ control: form.control, name: 'recurrenceEndDate' }),
+  )
   const { data: recurrencePreview } = useRecurrencePreview({
     isRecurring: Boolean(previewIsRecurring) && !isCreate,
     startDate: previewStartDate,

@@ -1,8 +1,8 @@
 /**
- * #302 — Logique de chemins de la garde serveur (`middleware.ts`). Cf. ADR-004.
+ * #302 — Logique de chemins de la garde serveur (`proxy.ts`). Cf. ADR-004.
  *
  * Ce module est PUR : aucun import `next/server`, `fs` ou `path` → importable
- * sans risque depuis le runtime **Edge** de `middleware.ts` (même contrainte que
+ * sans risque depuis le runtime de `proxy.ts` (Node depuis #889, Edge avant) (même contrainte que
  * `src/i18n/locales.ts`, #235) et testable sans mocker `NextRequest`.
  */
 

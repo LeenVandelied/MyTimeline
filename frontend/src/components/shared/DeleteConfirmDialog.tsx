@@ -146,14 +146,18 @@ export function DeleteConfirmDialog({
 
   // Reset de l'état local à chaque (ré)ouverture pour éviter qu'une erreur ou
   // une sélection d'une session précédente persiste.
-  React.useEffect(() => {
+  // #891 — ajustement d'état PENDANT le rendu au changement de la prop (patron « valeur
+  // précédente » de React) plutôt qu'un `setState` dans un effet.
+  const [prevOpen, setPrevOpen] = React.useState(open)
+  if (open !== prevOpen) {
+    setPrevOpen(open)
     if (open) {
       setDeleting(false)
       setErrorMessage(null)
       setReassignTo(undefined)
       setReassignRequiredByServer(false)
     }
-  }, [open])
+  }
 
   const confirmDisabled = deleting || (needsReassign && (noOtherCategory || !reassignTo))
 

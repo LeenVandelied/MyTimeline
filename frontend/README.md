@@ -17,7 +17,7 @@ npm ci
 npm run dev
 ```
 
-L'app router est sous [`app/`](./app), le middleware sous [`middleware.ts`](./middleware.ts).
+L'app router est sous [`app/`](./app), le middleware sous [`proxy.ts`](./proxy.ts).
 
 ## Overrides npm (`package.json` > `overrides`) — ne pas supprimer
 

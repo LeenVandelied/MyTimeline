@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useSyncExternalStore } from 'react'
 
 import { ephemerisParts } from '@/lib/ephemeris'
 import { toLocalIsoDate } from '@/lib/date-iso'
@@ -46,11 +46,29 @@ export interface EphemerisLeafProps {
 
 /** Date du jour, `null` tant que le composant n'est pas monté (prérendu, SSR, 1er rendu). */
 function useMountedToday(): Date | null {
-  const [today, setToday] = useState<Date | null>(null)
-  useEffect(() => {
-    setToday(new Date())
-  }, [])
-  return today
+  // #891 — `useSyncExternalStore` au lieu d'un `setState` dans un effet : l'instantané
+  // serveur (`null`) sert au prérendu et à l'hydratation, puis l'instantané client.
+  return useSyncExternalStore(subscribeNever, clientToday, serverToday)
+}
+
+function subscribeNever(): () => void {
+  return () => {}
+}
+
+/**
+ * Instantané client STABLE : `useSyncExternalStore` exige la même référence tant que
+ * rien n'a changé, sinon il re-rend en boucle. On garde la `Date` du premier appel et on
+ * ne la remplace qu'au changement de jour (le composant n'affiche que la date).
+ */
+let cachedToday: Date | null = null
+function clientToday(): Date {
+  const now = new Date()
+  if (!cachedToday || cachedToday.toDateString() !== now.toDateString()) cachedToday = now
+  return cachedToday
+}
+
+function serverToday(): null {
+  return null
 }
 
 export function EphemerisLeaf({ locale, formatWeek, className }: EphemerisLeafProps) {

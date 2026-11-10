@@ -4,6 +4,7 @@ import {
   RefObject,
   useCallback,
   useEffect,
+  useInsertionEffect,
   useLayoutEffect,
   useMemo,
   useReducer,
@@ -235,7 +236,12 @@ export function useTimelineMobileState(
    * ========================================================================== */
   const lastDayWidthRef = useRef(dayWidth)
   const dayWidthRef = useRef(dayWidth)
-  dayWidthRef.current = dayWidth
+  // #891 — écrite en effet d'INSERTION, plus pendant le rendu (`react-hooks/refs`) :
+  // lue uniquement par `captureZoomAnchor` (gestionnaires d'événements), donc toujours
+  // après le commit. Cf. le bloc « valeurs fraîches » plus bas pour le choix du hook.
+  useInsertionEffect(() => {
+    dayWidthRef.current = dayWidth
+  }, [dayWidth])
   /** Jour ancré relevé avant le dernier dispatch de zoom (consommé à la re-projection). */
   const pendingZoomAnchorRef = useRef<number | null>(null)
 
@@ -433,12 +439,27 @@ export function useTimelineMobileState(
   // #328 — Valeurs fraîches lisibles depuis `setScrollNode`, dont l'identité doit
   // rester STABLE (une ref callback re-créée serait rappelée null→node à chaque
   // rendu, ce qui rejouerait une restauration parasite).
+  //
+  // #891 — ces refs ne sont plus écrites pendant le RENDU (`react-hooks/refs`) mais dans
+  // un `useInsertionEffect`, et le choix de ce hook est PORTEUR : `setScrollNode` est
+  // une ref callback posée sur un élément des variantes ENFANTS (portrait / paysage),
+  // or React attache les refs pendant la phase LAYOUT, enfants d'abord — AVANT les
+  // `useLayoutEffect` de ce hook, qui vit dans le parent (`TimelineResponsive`). Un
+  // `useLayoutEffect` ferait donc lire à l'attachement les valeurs du commit PRÉCÉDENT.
+  // Les effets d'insertion s'exécutent pendant la phase MUTATION, entièrement terminée
+  // avant la phase layout : l'attachement lit les valeurs du rendu courant, comme
+  // l'ancienne écriture au rendu. (Le DÉTACHEMENT d'une variante supprimée, lui, a lieu
+  // en phase mutation avant cet effet et lit donc `trackWidth` du commit précédent —
+  // celui de l'échelle à laquelle `scrollLeft` a été rendu ; seule la branche
+  // « fraction » ci-dessous, inatteignable par un parcours produit, peut le voir.)
   const trackWidthRef = useRef(trackWidth)
-  trackWidthRef.current = trackWidth
   const todayLeftPxRef = useRef(todayLeftPx)
-  todayLeftPxRef.current = todayLeftPx
   const rawOnScrollRef = useRef(rawOnScroll)
-  rawOnScrollRef.current = rawOnScroll
+  useInsertionEffect(() => {
+    trackWidthRef.current = trackWidth
+    todayLeftPxRef.current = todayLeftPx
+    rawOnScrollRef.current = rawOnScroll
+  }, [trackWidth, todayLeftPx, rawOnScroll])
 
   /** Position mémorisée au démontage de la variante précédente (px rail + échelle piste). */
   const detachedScrollRef = useRef<{ scrollLeft: number; trackWidth: number } | null>(null)

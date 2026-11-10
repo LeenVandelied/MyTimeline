@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { queryKeys } from '@/lib/query-keys'
 import {
@@ -101,8 +101,10 @@ export function useExportFlow(): UseExportFlowResult {
   })
 
   // Transitions à partir du résultat du polling.
-  useEffect(() => {
-    if (phase !== 'preparing') return
+  // #891 — transitions ajustées PENDANT le rendu (l'état suit la réponse du polling)
+  // plutôt que par `setState` dans des effets. Gardées par `phase === 'preparing'` :
+  // chaque branche quitte cette phase, donc une seule application par réponse.
+  if (phase === 'preparing') {
     const data = jobQuery.data
     if (data?.status === 'COMPLETED') {
       setCompletedJob(data)
@@ -110,16 +112,12 @@ export function useExportFlow(): UseExportFlowResult {
     } else if (data?.status === 'FAILED') {
       setErrorKey('jobFailed')
       setPhase('error')
-    }
-  }, [jobQuery.data, phase])
-
-  // Erreur réseau pendant le polling (ex. 404 job introuvable).
-  useEffect(() => {
-    if (phase === 'preparing' && jobQuery.isError) {
+    } else if (jobQuery.isError) {
+      // Erreur réseau pendant le polling (ex. 404 job introuvable).
       setErrorKey('network')
       setPhase('error')
     }
-  }, [jobQuery.isError, phase])
+  }
 
   /* --- Téléchargement du fichier async terminé (étape 3) -------------------- */
   const downloadMutation = useMutation({

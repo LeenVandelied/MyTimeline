@@ -93,6 +93,11 @@ export const TimelineMobilePortrait: React.FC<TimelineMobilePortraitProps> = ({
   const gestures = injectedGestures ?? ownGestures
 
   const { selected, actionTarget, setSelected, setActionTarget } = selection
+  // #891 — refs extraites de `state` AVANT le JSX : passer `ref={state.railRef}` (ou la
+  // ref callback `state.setScrollNode`) fait traiter TOUT l'objet `state` comme une
+  // ref par `react-hooks/refs`, et chaque `state.xxx` lu ensuite au rendu est signalé.
+  // Pur renommage : mêmes valeurs, même identité (aucun changement de comportement).
+  const { railRef, setScrollNode } = state
   const levelLabel = t(`dashboard.timeline.zoom.${state.zoomLevel}`)
 
   const groups = useMemo(
@@ -138,7 +143,7 @@ export const TimelineMobilePortrait: React.FC<TimelineMobilePortraitProps> = ({
         className="mt-tlm__scroll"
         /* #328 — ref CALLBACK : restaure `scrollLeft` quand la rotation remonte
            cette variante (l'ancien `state.scrollRef` perdait la position). */
-        ref={state.setScrollNode}
+        ref={setScrollNode}
         onScroll={state.onScroll}
         onPointerDown={gestures.onScrollPointerDown}
         onPointerMove={gestures.onScrollPointerMove}
@@ -146,7 +151,7 @@ export const TimelineMobilePortrait: React.FC<TimelineMobilePortraitProps> = ({
         onPointerCancel={gestures.onScrollPointerUp}
         data-testid="timeline-scroll"
       >
-        <div className="mt-tlm__rail" ref={state.railRef} style={{ width: `${state.railWidth}px` }}>
+        <div className="mt-tlm__rail" ref={railRef} style={{ width: `${state.railWidth}px` }}>
           {/* Règle sticky adaptative. */}
           <div className="mt-tlm__ruler" data-testid="timeline-ruler">
             {state.ticks.map((tick, i) => (

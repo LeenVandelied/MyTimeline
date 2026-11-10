@@ -2193,3 +2193,12 @@ Sous Spring Boot 4 / Spring Framework 7, `jpaSharedEM_entityManagerFactory` (Spr
 
 ## PIT-S119-002 — Boot 4 modulaire : une dépendance tierce ne suffit plus à activer son auto-configuration
 `flyway-core` seul ne migre plus au démarrage (il faut `spring-boot-starter-flyway`) ; `RestClient.Builder` n'est plus fourni par le starter web (il faut `spring-boot-starter-restclient`) ; `@AutoConfigureMockMvc` exige `spring-boot-starter-webmvc-test`, `@WithMockUser` `spring-boot-starter-security-test`. Symptômes : `NoSuchBeanDefinitionException` ou schéma absent sous `ddl-auto=validate`. Prévention : pour chaque techno utilisée, vérifier son starter dans la table du guide de migration Boot 4. (Sprint 119 #886)
+
+## PIT-S120-001 — React 19 : un composant qui rend `<html>`/`<body>` ne s'imbrique plus dans le `container` RTL
+`<html>`, `<head>`, `<body>` sont des singletons depuis React 19 : rendus par RTL dans un `<div>`, ils fusionnent avec ceux du document (attributs sur `document.documentElement`, contenu sous `document.body`). `container.querySelector('html')` rend `null`. Lire `document.documentElement` et le remettre à zéro avant chaque test, sinon une valeur résiduelle rend l'assertion vacante ; prouver la présence des balises par `renderToStaticMarkup`. (Sprint 120 #892)
+
+## PIT-S120-002 — react-hooks 7 : `ref={obj.xRef}` dans le JSX fait traiter tout `obj` comme une ref
+La règle `react-hooks/refs` signale alors chaque `obj.y` lu au rendu (dizaines d'occurrences sur la frise). Déstructurer les refs d'un hook avant le JSX. Et corriger `incompatible-library` (RHF `watch()`) démasque d'autres erreurs dans le même composant, que le compilateur sautait : recompter après chaque règle. (Sprint 120 #891)
+
+## PIT-S120-003 — Turbopack (`next build`) : chunks plats nommés par hash, les portes E2E par chemin ne s'arment plus
+Sous webpack, le chunk d'une page se reconnaissait à `/_next/static/chunks/app/…/page-<hash>.js` ; Turbopack produit `/_next/static/chunks/<hash>.js`. Une porte `page.route` sur ce chemin n'intercepte plus rien et la spec attend `held` jusqu'au timeout. Reconnaître le chunk par son CONTENU (un `data-testid` propre à la page, absent du `loading`) : `e2e/support/page-chunk-gate.ts`. (Sprint 120 #890)

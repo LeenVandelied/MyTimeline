@@ -1,7 +1,7 @@
 'use client'
 
 import * as React from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslations } from 'next-intl'
 import toast from 'react-hot-toast'
@@ -150,23 +150,40 @@ export function ProductDrawer({
   })
 
   // (Ré)initialisation à l'ouverture : pré-remplissage en édition, reset sinon.
+  // #891 — l'état LOCAL est réinitialisé PENDANT le rendu à l'ouverture (patron « valeur
+  // précédente » de React) ; l'effet ne garde que `form.reset`, synchronisation du
+  // formulaire RHF (système externe à l'état React).
+  const [syncedFor, setSyncedFor] = React.useState<{
+    open: boolean
+    isEdit: boolean
+    product: typeof product
+  } | null>(null)
+  if (
+    !syncedFor ||
+    syncedFor.open !== open ||
+    syncedFor.isEdit !== isEdit ||
+    syncedFor.product !== product
+  ) {
+    setSyncedFor({ open, isEdit, product })
+    if (open) {
+      setSubmitError(null)
+      // #158 : pré-remplir la surcharge couleur persistée (null = héritage catégorie).
+      setColorOverride(isEdit && product ? (product.color ?? null) : null)
+    }
+  }
   React.useEffect(() => {
     if (!open) return
-    setSubmitError(null)
     if (isEdit && product) {
       form.reset({ name: product.name, category: product.category.id, firstEventDate: '' })
-      // #158 : pré-remplir la surcharge couleur persistée (null = héritage catégorie).
-      setColorOverride(product.color ?? null)
     } else {
       form.reset({ name: '', category: '', firstEventDate: '' })
-      setColorOverride(null)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, isEdit, product])
 
-  const selectedCategoryId = form.watch('category')
-  const watchedName = form.watch('name')
-  const watchedEventDate = form.watch('firstEventDate')
+  const selectedCategoryId = useWatch({ control: form.control, name: 'category' })
+  const watchedName = useWatch({ control: form.control, name: 'name' })
+  const watchedEventDate = useWatch({ control: form.control, name: 'firstEventDate' })
 
   const inheritedColor = categories.find((c) => c.id === selectedCategoryId)?.color ?? null
   const effectiveColor = colorOverride ?? inheritedColor

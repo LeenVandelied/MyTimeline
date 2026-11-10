@@ -1,14 +1,14 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useSyncExternalStore } from 'react'
 
 /**
  * #63 — Hook `matchMedia` SSR-safe.
  *
- * Rend `false` au premier rendu (SSR / avant hydratation) puis se synchronise
- * sur `window.matchMedia` côté client. Évite le hydration mismatch : on ne lit
- * PAS `matchMedia` pendant le rendu initial (indisponible côté serveur), on
- * bascule dans un `useEffect`.
+ * Rend `false` au rendu serveur et pendant l'hydratation, puis la valeur réelle
+ * de `window.matchMedia` côté client (instantané serveur/client de
+ * `useSyncExternalStore`, #891). Évite le hydration mismatch. Un montage client
+ * hors hydratation (navigation, test) lit directement la valeur réelle.
  *
  * ⚠ En test (jsdom), le mock `matchMedia` de `vitest.setup.ts` renvoie
  * `matches:false` par défaut → le hook rend la variante desktop. Pour tester la
@@ -16,24 +16,30 @@ import { useEffect, useState } from 'react'
  * tests portrait) OU utiliser le prop d'override du wrapper responsive.
  */
 export function useMediaQuery(query: string): boolean {
-  const [matches, setMatches] = useState(false)
+  // #891 — `useSyncExternalStore` plutôt qu'un `setState` dans un effet : instantané
+  // serveur `false` (prérendu ET hydratation, donc aucun écart), puis `matchMedia` réel.
+  const subscribe = useCallback(
+    (onChange: () => void) => {
+      if (typeof window === 'undefined' || !window.matchMedia) return () => {}
+      const mql = window.matchMedia(query)
+      // `addEventListener` moderne ; `addListener` en repli (Safari < 14).
+      if (mql.addEventListener) {
+        mql.addEventListener('change', onChange)
+        return () => mql.removeEventListener('change', onChange)
+      }
+      mql.addListener(onChange)
+      return () => mql.removeListener(onChange)
+    },
+    [query],
+  )
+  const getSnapshot = () =>
+    typeof window !== 'undefined' && !!window.matchMedia && window.matchMedia(query).matches
 
-  useEffect(() => {
-    if (typeof window === 'undefined' || !window.matchMedia) return
-    const mql = window.matchMedia(query)
-    // Sync immédiat (le state initial `false` peut différer côté client).
-    setMatches(mql.matches)
-    const onChange = (e: MediaQueryListEvent) => setMatches(e.matches)
-    // `addEventListener` moderne ; `addListener` en repli (Safari < 14).
-    if (mql.addEventListener) {
-      mql.addEventListener('change', onChange)
-      return () => mql.removeEventListener('change', onChange)
-    }
-    mql.addListener(onChange)
-    return () => mql.removeListener(onChange)
-  }, [query])
+  return useSyncExternalStore(subscribe, getSnapshot, serverSnapshot)
+}
 
-  return matches
+function serverSnapshot(): boolean {
+  return false
 }
 
 export default useMediaQuery

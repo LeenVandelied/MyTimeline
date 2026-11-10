@@ -3,7 +3,7 @@ import crypto from 'node:crypto'
 /**
  * Outillage de forge/vérification de jetons RS256 pour `auth-signature.spec.ts` (#323).
  *
- * POURQUOI DU CODE DE FORGE ICI — la vérification de signature du middleware Edge ne peut
+ * POURQUOI DU CODE DE FORGE ICI — la vérification de signature du proxy (`proxy.ts`, ex-middleware Edge) ne peut
  * être prouvée en E2E qu'en lui présentant des jetons qu'aucun parcours utilisateur ne peut
  * produire : signature altérée, `alg: none`, jeton expiré mais VALIDEMENT signé. Ces trois
  * cas exigent de manipuler le jeton octet par octet, ce que ni l'UI ni le backend n'offrent.

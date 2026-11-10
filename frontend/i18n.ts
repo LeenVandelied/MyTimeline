@@ -58,7 +58,7 @@ export async function loadMessages(locale: string) {
 /**
  * CASSE — `hasLocale` compare à l'identique : `'FR'` n'est PAS reconnu et
  * replie sur `fr`. C'est délibéré et non un oubli de normalisation. Les URLs
- * que sert réellement l'application sont produites par `middleware.ts`
+ * que sert réellement l'application sont produites par `proxy.ts`
  * (`next-intl/middleware`, `localePrefix: 'always'`), qui n'émet que les
  * préfixes en minuscules de `SUPPORTED_LOCALES` ; `/FR/...` est une URL forgée
  * à la main. Y répondre en `fr` la sert dans la langue de référence plutôt que

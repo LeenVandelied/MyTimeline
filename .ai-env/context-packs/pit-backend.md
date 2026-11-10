@@ -1009,6 +1009,7 @@ Sous Spring Boot 4 / Spring Framework 7, `jpaSharedEM_entityManagerFactory` (Spr
 ## PIT-S119-002 — Boot 4 modulaire : une dépendance tierce ne suffit plus à activer son auto-configuration
 `flyway-core` seul ne migre plus au démarrage (il faut `spring-boot-starter-flyway`) ; `RestClient.Builder` n'est plus fourni par le starter web (il faut `spring-boot-starter-restclient`) ; `@AutoConfigureMockMvc` exige `spring-boot-starter-webmvc-test`, `@WithMockUser` `spring-boot-starter-security-test`. Symptômes : `NoSuchBeanDefinitionException` ou schéma absent sous `ddl-auto=validate`. Prévention : pour chaque techno utilisée, vérifier son starter dans la table du guide de migration Boot 4. (Sprint 119 #886)
 
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)

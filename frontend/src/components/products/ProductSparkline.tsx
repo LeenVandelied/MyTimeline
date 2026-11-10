@@ -55,8 +55,10 @@ export function ProductSparkline({
   height = DEFAULT_HEIGHT,
   className,
 }: ProductSparklineProps) {
+  // #891 (react-hooks/purity) — instant de référence figé au montage : `Date.now()` dans le
+  // `useMemo` changeait à chaque recalcul. L'initialiseur paresseux ne s'exécute qu'une fois.
+  const [now] = React.useState(() => Date.now())
   const points = React.useMemo(() => {
-    const now = Date.now()
     const usableWidth = width - PADDING * 2
     const seen = new Set<number>()
     const result: Array<{ x: number; y: number }> = []
@@ -74,7 +76,7 @@ export function ProductSparkline({
       result.push({ x, y: height / 2 })
     }
     return result.sort((a, b) => a.x - b.x)
-  }, [dates, width, height])
+  }, [dates, width, height, now])
 
   const stroke = color || 'var(--color-accent, currentColor)'
 

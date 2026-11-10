@@ -28,7 +28,7 @@ import {
  * ## Ce que ce fichier prouve, et qu'aucun test unitaire ne peut prouver
  *
  * `JwtServiceRs256Test` (backend) prouve que Spring signe en RS256.
- * `auth-token-verify.test.ts` et `middleware.test.ts` (frontend) prouvent que le vérifieur
+ * `auth-token-verify.test.ts` et `proxy.test.ts` (frontend) prouvent que le vérifieur
  * rejette ce qu'il doit rejeter — mais sur des jetons que le TEST a lui-même fabriqués, avec
  * une paire que le TEST a lui-même générée. Les deux moitiés sont vertes séparément sans que
  * rien n'atteste qu'elles s'emboîtent : une divergence de format de clé (SPKI vs PKCS#1),
@@ -77,7 +77,7 @@ import {
  *   JWT_PRIVATE_KEY="$(cat /tmp/priv.b64)" \
  *   java -jar target/*.jar --app.cors.allowed-origins=http://localhost:3000,http://localhost:3100
  *
- * # 3. Frontend :3100 — URL du JWKS (lue au RUNTIME par le middleware, cf. middleware.ts).
+ * # 3. Frontend :3100 — URL du JWKS (lue au RUNTIME par le middleware, cf. proxy.ts).
  * #    ⚠ #358 : plus de clé publique ici. Le middleware la découvre sur le backend.
  * cd frontend && NEXT_PUBLIC_API_URL=/api E2E_API_PROXY_TARGET=http://localhost:8080 \
  *   AUTH_JWKS_URL=http://localhost:8080/.well-known/jwks.json npm run dev -- -p 3100
