@@ -7405,11 +7405,24 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
 **Saturation contexte lead (mesure) :** non mesurée
 **Status :** Terminé
 
-### Sprint 120 — 2026-11-10 (En cours — suivis frontend du Sprint 118)
-**Objectif :** solder les suivis de la montée Next 16 — React 19, règles react-hooks 7, `proxy.ts`, build Turbopack, lock Dependabot
-**Milestone GitHub :** #121
-**Issues :** #888 (P2, S), #889 (P2, S), #890 (P2, S), #891 (P1, M), #892 (P1, L)
-**Vagues :** séquentiel par le lead — #889 → #888 → #892 → #891 → #890 (#892/#891 et #888/#892 partagent composants ou lock)
+### Sprint 120 — 2026-11-10 → 2026-11-10 (Terminé — merge PR #897 dans dev)
+**Objectif :** solder les suivis frontend de la montée Next 16 (Sprint 118) — React 19, règles react-hooks 7, `proxy.ts`, build Turbopack, lock Dependabot
+**Milestone GitHub :** #121 (fermé après merge)
+**Issues livrées (5) :** #889 (P2, S), #888 (P2, S), #892 (P1, L), #891 (P1, M), #890 (P2, S) — fermées après merge (base dev)
+**Vagues exécutées :** séquentiel par le lead #889 → #888 → #892 → #891 → #890 ; #891 en fan-out : volet frise (5 fichiers, 59 occ.) par un fullstack-dev, le reste par le lead, sur fichiers disjoints ; review batch par `reviewer` en fin
+**Cohésion score :** 1.00 (frontend seul)
 **Migrations Flyway :** aucune — prochaine V17
-**Depend de :** Sprints 118 et 119 (dans `dev`)
-**Status :** En cours
+**Commits :** #889 `d3839c13` · #888 `f2c54752` · #892 `c27c6dfe` · #891 `39e68f19` + `bbf4cd6f` (frise) + `504fff6e` (réactivation) · #890 `8c22f64c` · cp-frontend `e632bdd2` · review `95912f8e` · artefacts `80b18c50` · clôture (ce commit)
+**BR impactées :** aucune (ADR-004 amendé : runtime Node du proxy)
+**Reviews :** reviewer batch 0 CRITIQUE / 1 MAJEUR / 5 MINEURS — majeur (format, `format:check` rouge en CI) corrigé, 2 mineurs corrigés, 3 assumés (`sprints/sprint-120/review-batch.md`)
+**Tests :** Vitest 2359/2359 sans stderr | `eslint .` 0 problème règles actives | tsc, format, `storybook build` | `next build` Turbopack 48 SSG identiques | E2E locale `next build`+`next start` : 674 passés / 1 échec attendu darwin (armement capture `sprint-77-theme-visual`, `--ignore-snapshots`) / 9 ignorés | navigateur : connexion, tableau de bord, frise, fiche produit, réglages | CI PR #897 : `frontend` rouge sur `504fff6e` (format), vert sur `95912f8e`
+**Versions effectives :** React 19.3.1, Next 16.4.6 (Turbopack en dev ET build), `@swc/helpers` 0.5.23 direct
+**Mesure #891 :** 89 occurrences (85 au S118) → 0 ; corriger `incompatible-library` en démasque d'autres (compilateur qui sautait le composant)
+**Nouveaux pitfalls / décisions / patterns :** voir `[MEMORY:*]` des done.md — singletons `<html>`/`<body>` React 19 en RTL ; `ref={obj.x}` dans le JSX contamine `obj` (react-hooks/refs) ; chunks Turbopack plats → portes E2E par contenu ; refs lues par ref callback enfant → `useInsertionEffect` ; valeurs client seulement → `useSyncExternalStore` (`useHydrated`)
+**Écarts de briefing :** branche du worktree basée sur `main` → `sprint/120` créée depuis `origin/dev` ; skill `/sprint` lancé par l'utilisateur ; issues traitées par le lead sauf le volet frise de #891 ; E2E non déléguée (lead) ; PR ouverte en brouillon tôt pour la CI ; Dependabot #879 fermée (contenu déjà dans dev via cherry-pick S118, accord utilisateur)
+**Follow-ups arbitrés (Phase 4 triage, 2/2 en issue backlog, 0 discard, 0 absorbé) :**
+  - densité appliquée seulement à l'ouverture de Réglages › Préférences (préexistant) [S | frontend] → #898 (backlog)
+  - `ci.yml` cite encore `middleware.ts` (2 commentaires) [XS | devops] → #899 (backlog)
+**Restes connus :** #888 fermée avec note — critère « PR Dependabot npm verte sans retouche du lock » à constater au prochain passage Dependabot ; `forwardRef` (21 fichiers) toujours en place, supporté par React 19
+**Saturation contexte lead (mesure) :** non mesurée
+**Status :** Terminé
