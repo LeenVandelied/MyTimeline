@@ -4,6 +4,7 @@ import '../../src/styles/animations.css'
 import React, { ReactNode } from 'react'
 import { notFound } from 'next/navigation'
 import { NextIntlClientProvider } from 'next-intl'
+import { setRequestLocale } from 'next-intl/server'
 import { loadMessages } from '../../i18n'
 import { fontVariables, fontUiStyle } from '../fonts'
 import { ThemeProvider } from '@/components/theme-provider'
@@ -43,6 +44,17 @@ export default async function LocaleLayout({
   if (!isSupportedLocale(locale)) {
     notFound()
   }
+
+  // #885 (Next 16) — SANS cet appel, toute la branche `[locale]` sort du
+  // prérendu statique : le `NextIntlClientProvider` serveur lit `formats`,
+  // `now` et `timeZone` via `getConfig()` SANS locale, donc `i18n.ts` attend
+  // `requestLocale`, qui retombe sur `headers()` (rendu dynamique). Mesuré à la
+  // montée : les 13 routes `/[locale]/*` passaient de ● (SSG, 52 pages) à ƒ.
+  // `next/root-params` (voie recommandée par next-intl 4.14) ne s'applique pas :
+  // `[locale]` n'est PAS un paramètre racine ici, le layout racine étant
+  // `app/layout.tsx` (cf. #413). `setRequestLocale` reste le mécanisme
+  // documenté pour ce cas. Filet : la table des routes de `next build`.
+  setRequestLocale(locale)
 
   const messages = await loadMessages(locale)
 

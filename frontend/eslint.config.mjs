@@ -1,19 +1,15 @@
 // For more info, see https://github.com/storybookjs/eslint-plugin-storybook#configuration-flat-config-format
 import storybook from 'eslint-plugin-storybook'
 
-import { dirname } from 'path'
-import { fileURLToPath } from 'url'
-import { FlatCompat } from '@eslint/eslintrc'
-
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
-
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-})
+// #885 — eslint-config-next 16 publie une config FLAT native : plus besoin de
+// `FlatCompat` (@eslint/eslintrc) pour traduire `next/core-web-vitals` et
+// `next/typescript`.
+import nextVitals from 'eslint-config-next/core-web-vitals'
+import nextTs from 'eslint-config-next/typescript'
 
 const eslintConfig = [
-  ...compat.extends('next/core-web-vitals', 'next/typescript'),
+  ...nextVitals,
+  ...nextTs,
   {
     // Artefacts générés / outillage — non lintés (#29).
     // next-env.d.ts (FU8, sprint 57) : régénéré par Next à chaque `next dev`/`next
@@ -81,6 +77,24 @@ const eslintConfig = [
             "Ne pas logger l'objet erreur brut en mono-argument (fuite credentials/PII). Utiliser console.error('msg', safeErrorMessage(error)) — cf. src/lib/safe-error.ts. (Exception tolérée : error-boundary React avec eslint-disable justifié.)",
         },
       ],
+    },
+  },
+  {
+    // #885 — eslint-config-next 16 embarque eslint-plugin-react-hooks 7, dont le
+    // preset active en ERREUR des règles dérivées du React Compiler. Mesuré à la
+    // montée (Sprint 118) : 85 erreurs préexistantes, toutes sur les 5 règles
+    // ci-dessous (refs 57, set-state-in-effect 18, preserve-manual-memoization 6,
+    // purity 4, incompatible-library 4 avertissements), sur du code inchangé.
+    // Le projet n'active pas le React Compiler : ces règles sont coupées ici
+    // pour que la montée de framework ne réécrive pas 40 composants. Les AUTRES
+    // règles du preset 7 restent actives (0 occurrence aujourd'hui → garde-fous).
+    // Leur adoption est un chantier à part (follow-up du Sprint 118).
+    rules: {
+      'react-hooks/refs': 'off',
+      'react-hooks/set-state-in-effect': 'off',
+      'react-hooks/preserve-manual-memoization': 'off',
+      'react-hooks/purity': 'off',
+      'react-hooks/incompatible-library': 'off',
     },
   },
   ...storybook.configs['flat/recommended'],

@@ -1,4 +1,7 @@
 .next
+# #885 — généré et réécrit par `next build` (Next 16 : `import "…"` en guillemets
+# doubles) ; le job CI `frontend` build AVANT `format:check`.
+next-env.d.ts
 node_modules
 package-lock.json
 tsconfig.tsbuildinfo
