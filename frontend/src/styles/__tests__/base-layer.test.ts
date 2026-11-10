@@ -72,12 +72,20 @@ function layerChain(node: { parent?: unknown }): string[] {
   return chain
 }
 
-/** Ordre déclaré des layers, lu sur l'instruction `@layer a, b, c;`. */
+/**
+ * Ordre déclaré des layers : concaténation, par première apparition, de TOUTES
+ * les instructions `@layer a, b, c;` du document (règle CSS : le rang d'un
+ * layer est fixé à sa première mention). Depuis Tailwind 4.2, la sortie
+ * commence par `@layer properties;` avant `@layer theme, base, components,
+ * utilities;` — ne lire que la première instruction perdrait `base`.
+ */
 function declaredLayerOrder(root: Container): string[] {
-  let order: string[] = []
+  const order: string[] = []
   root.walkAtRules('layer', (at) => {
-    if (order.length || at.nodes) return
-    order = at.params.split(',').map((name) => name.trim())
+    if (at.nodes) return
+    for (const name of at.params.split(',').map((n) => n.trim())) {
+      if (name && !order.includes(name)) order.push(name)
+    }
   })
   return order
 }
@@ -137,11 +145,7 @@ describe('cascade @layer — règle de base des liens', () => {
 
     // 3. L'ordre déclaré des layers place `base` AVANT `utilities` :
     //    à égalité de « importance », le layer le plus tardif gagne.
-    let order: string[] = []
-    root.walkAtRules('layer', (at) => {
-      if (order.length || at.nodes) return // on cherche l'instruction `@layer a, b, c;`
-      order = at.params.split(',').map((name) => name.trim())
-    })
+    const order = declaredLayerOrder(root)
     expect(order).toContain('base')
     expect(order).toContain('utilities')
     expect(order.indexOf('base')).toBeLessThan(order.indexOf('utilities'))

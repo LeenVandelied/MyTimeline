@@ -295,7 +295,7 @@ export const DensityRibbon: React.FC<DensityRibbonProps> = ({
         // La règle est DANS le rail : elle défile avec les barres.
         <div className="relative">
           <div
-            className="scrollbar-none flex h-24 overflow-x-auto pr-6"
+            className="flex h-24 scrollbar-none overflow-x-auto pr-6"
             role="img"
             aria-label={t('label', { days: rangeDays })}
             data-testid="dashboard-density-ribbon-scroll"
