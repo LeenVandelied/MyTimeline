@@ -7404,3 +7404,12 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
 **Restes connus :** aucun bloquant ; `@Fallback` EntityManager à revisiter si Spring Data rétablit l'injection de `jpaSharedEM_*`
 **Saturation contexte lead (mesure) :** non mesurée
 **Status :** Terminé
+
+### Sprint 120 — 2026-11-10 (En cours — suivis frontend du Sprint 118)
+**Objectif :** solder les suivis de la montée Next 16 — React 19, règles react-hooks 7, `proxy.ts`, build Turbopack, lock Dependabot
+**Milestone GitHub :** #121
+**Issues :** #888 (P2, S), #889 (P2, S), #890 (P2, S), #891 (P1, M), #892 (P1, L)
+**Vagues :** séquentiel par le lead — #889 → #888 → #892 → #891 → #890 (#892/#891 et #888/#892 partagent composants ou lock)
+**Migrations Flyway :** aucune — prochaine V17
+**Depend de :** Sprints 118 et 119 (dans `dev`)
+**Status :** En cours
