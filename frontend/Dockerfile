@@ -1,5 +1,5 @@
 # =============================================================
-# Frontend Next.js 15 — build multi-stage standalone (#37)
+# Frontend Next.js 16 — build multi-stage standalone (#37)
 # =============================================================
 
 # ---- Stage deps ----

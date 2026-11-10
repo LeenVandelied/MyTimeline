@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react'
 import { fileURLToPath } from 'node:url'
 
 /**
- * Config Vitest — tests unitaires + composants (Next 15 / React 18 / Tailwind 4).
+ * Config Vitest — tests unitaires + composants (Next 16 / React 18 / Tailwind 4).
  * Env jsdom pour RTL. Les alias `@/*` et `@/app/*` (tsconfig.json) sont mappés
  * en dur via `resolve.alias` — on évite `vite-tsconfig-paths` (ESM-only, charge
  * mal dans une config `.ts` require-CJS, vu que package.json n'est pas `"module"`).

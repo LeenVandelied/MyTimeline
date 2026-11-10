@@ -11,7 +11,7 @@ import { queryKeys } from '@/lib/query-keys'
  * de l'historique). Le 409 (BR-EVE-015) invalide AUSSI : sans re-fetch, le re-clic
  * repartirait de la MÊME version périmée → boucle de conflits.
  *
- * ⚠ PIÈGE OUTILLAGE (mesuré ici, Vitest 3.2.7) : un mock de module PARTAGÉ qui rend une
+ * ⚠ PIÈGE OUTILLAGE (mesuré ici sous Vitest 3.2.7 ; suite toujours verte sous 5.1.0) : un mock de module PARTAGÉ qui rend une
  * promesse REJETÉE, combiné à `mockReset()`/`mockClear()` en `beforeEach`, fait rapporter
  * la valeur de rejet comme une ERREUR DE TEST (`Serialized Error`, message `undefined`)
  * alors que le rejet EST traité par le code. Vérifié : le même test passe sans le
