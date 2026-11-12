@@ -7426,3 +7426,13 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
 **Restes connus :** #888 fermée avec note — critère « PR Dependabot npm verte sans retouche du lock » à constater au prochain passage Dependabot ; `forwardRef` (21 fichiers) toujours en place, supporté par React 19
 **Saturation contexte lead (mesure) :** non mesurée
 **Status :** Terminé
+
+### Sprint 121 — 2026-11-12 (En cours — cohésion ~0.5, suivis S120 + bugs P2)
+**Objectif :** solder les suivis du Sprint 120 et deux bugs P2 transverses (densité persistée, piège de focus du panneau mobile)
+**Milestone GitHub :** #122
+**Issues :** #898 (P2, S), #858 (P2, S), #899 (P3, XS)
+**Vagues :** V1 = #898 + #858 parallèles (fichiers disjoints) | #899 par le lead (commentaires `ci.yml`, accord explicite du dev le 2026-11-12)
+**Migrations Flyway :** aucune — prochaine V17
+**Depend de :** aucune
+**Planification :** faite par le lead (pas d'architect : matrice triviale) ; #874 + #875 (frise, `label-reserve.ts`) reportées au Sprint 122
+**Status :** En cours
