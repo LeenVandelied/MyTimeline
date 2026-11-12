@@ -146,9 +146,9 @@ export const TimelineEditHost: React.FC<TimelineEditHostProps> = (props) => {
   )
 
   // Chemin MOBILE : le tap sur « Supprimer » de l'action sheet ARME la cible (ouvre la
-  // confirmation) — il ne supprime rien. Stabilisé en `useCallback` : `TimelineActionSheet`
-  // monte `useFocusTrap`, dont les callbacks non stabilisés provoquent un vol de focus
-  // (BUG-S44-001).
+  // confirmation) — il ne supprime rien. Stabilisé en `useCallback` (historique BUG-S44-001 :
+  // `useFocusTrap` rejouait le piège sur un callback instable ; ce n'est plus le cas depuis
+  // #858, S121).
   const requestDelete = useCallback((target: PositionedEvent) => setDeleteTarget(target), [])
 
   /**
@@ -206,7 +206,7 @@ export const TimelineEditHost: React.FC<TimelineEditHostProps> = (props) => {
   }, [])
 
   // Instable (dépend de l'objet `conflict`) : `EventFormDrawer` le stabilise avant de le
-  // passer à `useFocusTrap` — pas de vol de focus à chaque rendu.
+  // passer à `useFocusTrap` (requis avant #858 ; le piège lit désormais `onEscape` en ref).
   const handleClose = useCallback(() => {
     conflict.reset()
     closeEditor()

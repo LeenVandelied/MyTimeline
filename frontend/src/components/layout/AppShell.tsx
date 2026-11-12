@@ -168,10 +168,9 @@ export function AppShell({ children }: AppShellProps) {
     undefined,
   )
 
-  // #300 — identité STABLE obligatoire : `NewEventDrawer` la passe en `onEscape` à
-  // `useFocusTrap`, dont l'effet a `onEscape` en dépendance. Une lambda inline
-  // recréerait l'effet à chaque rendu du shell (thème, pathname…) → re-focus du
-  // premier focusable, donc vol de focus pendant la saisie du formulaire.
+  // #300 — identité stable : `NewEventDrawer` la passe en `onEscape` à `useFocusTrap`.
+  // Depuis #858 (S121) le piège lit `onEscape` dans une ref et ne se rejoue plus quand
+  // son identité change ; la stabilité reste utile pour #602 ci-dessous.
   const closeCreate = useCallback(() => setShowCreate(false), [])
   // #602 — même exigence d'identité stable : c'est la valeur du contexte
   // `CreateEventProvider` ; une lambda inline re-rendrait tous ses consommateurs
