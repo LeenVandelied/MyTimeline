@@ -1,6 +1,6 @@
 'use client'
 
-import { RefObject, useEffect } from 'react'
+import { RefObject, useEffect, useLayoutEffect, useRef } from 'react'
 
 /**
  * #63 — Focus-trap réutilisable (extrait de la logique inline d'`EventDrawer`).
@@ -16,6 +16,14 @@ import { RefObject, useEffect } from 'react'
  * #208 (review) — Paramètre OPTIONNEL `onEscape` : mutualise aussi la fermeture
  * clavier Escape (consommé par `MobileDrawer` #83). Défaut no-op → non-cassant
  * pour les consommateurs S19 existants (TimelineBottomSheet, etc.).
+ *
+ * #858 — `onEscape` n'est PLUS une dépendance de l'effet : il est lu dans une ref
+ * au moment de la frappe. Avant, un appelant qui passait une lambda inline
+ * (`AccountSection` → `BottomSheet`) rejouait le piège à CHAQUE re-rendu : cleanup
+ * (focus rendu au déclencheur) puis focus initial sur le premier focusable (la
+ * croix). Mesuré sur la suppression de compte mobile : seul le 1er caractère du
+ * username atteignait le champ. Le piège n'est donc installé qu'à l'activation
+ * (`active` false → true) ; la stabilité du callback n'est plus exigée des appelants.
  */
 const FOCUSABLE = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
 
@@ -24,6 +32,15 @@ export function useFocusTrap(
   active: boolean,
   onEscape?: () => void,
 ): void {
+  // Dernier `onEscape` reçu, écrit après le commit (react-hooks 7 interdit l'écriture
+  // d'une ref pendant le rendu). Lu seulement dans le handler `keydown`, donc
+  // toujours après cette écriture : `useLayoutEffect` suffit (pas de ref enfant à
+  // devancer, cf. PAT-S120-002).
+  const onEscapeRef = useRef(onEscape)
+  useLayoutEffect(() => {
+    onEscapeRef.current = onEscape
+  })
+
   useEffect(() => {
     if (!active) return
     const container = containerRef.current
@@ -39,9 +56,10 @@ export function useFocusTrap(
       // Select ouvert, `DeleteConfirmDialog`, `ConflictDialog`…). Sans cette garde, la
       // même frappe refermait AUSSI le panneau piégé dessous.
       if (e.key === 'Escape' && e.defaultPrevented) return
-      if (e.key === 'Escape' && onEscape) {
+      const escape = onEscapeRef.current
+      if (e.key === 'Escape' && escape) {
         e.stopPropagation()
-        onEscape()
+        escape()
         return
       }
       if (e.key !== 'Tab' || !container) return
@@ -64,7 +82,7 @@ export function useFocusTrap(
       // Restaure le focus sur l'élément déclencheur (bloc event / bouton ⋯).
       previousFocus?.focus()
     }
-  }, [containerRef, active, onEscape])
+  }, [containerRef, active])
 }
 
 export default useFocusTrap

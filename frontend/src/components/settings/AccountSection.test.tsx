@@ -1,4 +1,5 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { AccountSection } from './AccountSection'
 
@@ -90,5 +91,43 @@ describe('AccountSection — suppression du compte', () => {
   it("délègue l'export au flux dédié (#59)", () => {
     render(<AccountSection />)
     expect(screen.getByTestId('export-flow-stub')).toBeInTheDocument()
+  })
+})
+
+/**
+ * #858 — Panneau mobile (`deleteContainer="sheet"`) : `AccountSection` passe à
+ * `BottomSheet` un `onClose` INLINE, relayé en `onEscape` à `useFocusTrap`. Tant que
+ * le hook listait `onEscape` en dépendance d'effet, chaque re-rendu de la section
+ * pendant la saisie rejouait le piège : restauration du focus sur le déclencheur
+ * puis focus initial sur le premier focusable du panneau (la croix) — la frappe
+ * suivante partait hors du champ.
+ */
+describe('AccountSection — panneau mobile, saisie du username (#858)', () => {
+  afterEach(() => vi.clearAllMocks())
+
+  it('garde le focus dans le champ pendant la saisie caractère par caractère', async () => {
+    const user = userEvent.setup()
+    render(<AccountSection deleteContainer="sheet" />)
+    await user.click(screen.getByTestId('delete-account-open'))
+    await user.click(screen.getByTestId('delete-account-continue'))
+
+    const input = screen.getByTestId('delete-account-username')
+    await user.click(input)
+    const moves: string[] = []
+    const onFocusIn = (e: FocusEvent) => {
+      const el = e.target as HTMLElement
+      if (el !== input) moves.push(el.getAttribute('data-testid') ?? el.tagName)
+    }
+    document.addEventListener('focusin', onFocusIn)
+    try {
+      for (const ch of 'jane') {
+        await user.keyboard(ch)
+        expect(document.activeElement).toBe(input)
+      }
+    } finally {
+      document.removeEventListener('focusin', onFocusIn)
+    }
+    expect(input).toHaveValue('jane')
+    expect(moves).toEqual([])
   })
 })
