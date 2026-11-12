@@ -236,11 +236,11 @@ jobs:
 
       # Paire RS256 JETABLE, générée À L'EXÉCUTION (audit de couverture S50). Le dépôt est
       # PUBLIC : aucune clé n'y est committée, et celle-ci meurt avec le runner. Elle est ce
-      # qui rend la vérification de signature Edge (#323) exerçable en E2E — jusqu'ici, seule
+      # qui rend la vérification de signature du proxy (#323) exerçable en E2E — jusqu'ici, seule
       # une paire ÉPHÉMÈRE générée par le backend existait, dont le frontend ne connaissait
       # pas la clé publique.
       #
-      # ⚠ Les deux modes du middleware sont MUTUELLEMENT EXCLUSIFS sur une instance Next (la
+      # ⚠ Les deux modes du proxy sont MUTUELLEMENT EXCLUSIFS sur une instance Next (la
       # variable est lue au runtime) : la première passe E2E tourne DÉGRADÉE (frontend sans
       # clé publique, contrat #302 -> `auth-guard.spec.ts`), la seconde tourne VÉRIFIANTE
       # (`auth-signature.spec.ts`). Le BACKEND, lui, signe avec cette paire dans les deux cas.
@@ -282,9 +282,9 @@ jobs:
           # #323 — JWT_SECRET (HS256) supprimé. La clé PRIVÉE vient de la paire jetable
           # générée au step précédent (rien n'est committé, rien ne survit au runner) : c'est
           # elle qui permet à la 2e passe E2E de publier la clé PUBLIQUE appairée au frontend
-          # et d'exercer réellement la vérification de signature Edge (audit S50).
+          # et d'exercer réellement la vérification de signature du proxy (audit S50).
           # Avant : paire ÉPHÉMÈRE générée par le backend, dont personne d'autre ne connaissait
-          # la clé publique -> vérification Edge jamais exercée hors tests unitaires.
+          # la clé publique -> vérification du proxy jamais exercée hors tests unitaires.
           JWT_PRIVATE_KEY: ${{ env.E2E_JWT_PRIVATE_KEY }}
           # Secret HMAC dédié aux tokens de download d'export (CI-only, non secret).
           EXPORT_TOKEN_SECRET: Q0lPbmx5SW5zZWN1cmVFeHBvcnRUb2tlblNlY3JldEZvckUyRVRlc3RzMDEyMzQ1Njc4OQ==
@@ -368,14 +368,14 @@ jobs:
       # reellement livre (SSG de `generateStaticParams()`, prerendu de
       # `/_not-found`, minification, `experimental.globalNotFound`).
       #
-      # UN SEUL `next build`, DEUX `next start`. `middleware.ts` lit
+      # UN SEUL `next build`, DEUX `next start`. `proxy.ts` lit
       # `AUTH_JWKS_URL` au RUNTIME, par requete, explicitement NON inlinee
       # au build (mesure #322) : seuls les PROCESS doivent differer, pas les
       # artefacts. Un second build couterait +2,5 a +3 min pour un resultat
       # identique.
       #
       # ⚠ LE POINT DUR, ET LA RAISON DE DEUX PORTS PLUTOT QU'UN REDEMARRAGE.
-      # Les deux modes du middleware sont MUTUELLEMENT EXCLUSIFS sur une instance
+      # Les deux modes du proxy sont MUTUELLEMENT EXCLUSIFS sur une instance
       # Next. Avant #462, c'est le redemarrage du `webServer` par Playwright entre
       # les deux passes qui les rendait tous deux exercables. Or des que
       # `PLAYWRIGHT_BASE_URL` est posee, `webServer` vaut `undefined` : plus aucun
@@ -548,9 +548,9 @@ jobs:
 
       # PASSE 2 — MODE VÉRIFIANT (audit de couverture S50), contre le SECOND serveur
       # de production (:3001), démarré AVEC `AUTH_JWKS_URL` pointant sur le JWKS du
-      # backend (#358) : le middleware y découvre la clé publique appairée à la clé
+      # backend (#358) : le proxy (`proxy.ts`) y découvre la clé publique appairée à la clé
       # privée en service, et vérifie alors vraiment la signature RS256. Sans cette
-      # passe, la chaîne backend -> Edge n'était prouvée que par des tests unitaires
+      # passe, la chaîne backend -> proxy n'était prouvée que par des tests unitaires
       # de part et d'autre, jamais bout à bout.
       #
       # ⚠ `AUTH_JWT_PUBLIC_KEY` reste posée sur le PROCESS DE TEST, et SEULEMENT là.
