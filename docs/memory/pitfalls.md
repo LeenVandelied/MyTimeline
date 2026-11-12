@@ -2202,3 +2202,9 @@ La règle `react-hooks/refs` signale alors chaque `obj.y` lu au rendu (dizaines 
 
 ## PIT-S120-003 — Turbopack (`next build`) : chunks plats nommés par hash, les portes E2E par chemin ne s'arment plus
 Sous webpack, le chunk d'une page se reconnaissait à `/_next/static/chunks/app/…/page-<hash>.js` ; Turbopack produit `/_next/static/chunks/<hash>.js`. Une porte `page.route` sur ce chemin n'intercepte plus rien et la spec attend `held` jusqu'au timeout. Reconnaître le chunk par son CONTENU (un `data-testid` propre à la page, absent du `loading`) : `e2e/support/page-chunk-gate.ts`. (Sprint 120 #890)
+
+## PIT-S121-001 — Un E2E qui remplit par `fill()` ne voit pas un vol de focus déclenché par la frappe
+`fill()` émet un seul `input` : le champ passe dirty en une fois et un re-rendu qui déplace le focus APRÈS coup ne coupe rien. Au S121, `useFocusTrap` (`onEscape` en dépendance d'effet + callback inline) rejouait le piège au 1er caractère : seul le 1er caractère du username passait au clavier, tous les E2E existants restaient verts. Dès qu'un champ vit dans un conteneur piégé ou un formulaire dont le parent re-rend, saisir caractère par caractère (`keyboard.press`, `user.keyboard`) et asserter `document.activeElement` à chaque frappe. Corollaire : supprimer le re-rendu peut DÉMASQUER un autre trou (focus sur `body` après démontage du bouton focusé → Tab hors du panneau). (Sprint 121 #858)
+
+## PIT-S121-002 — Un `MutationObserver` qui relit l'attribut dans son callback ne voit pas un flash
+Le callback est une microtâche : il lit la valeur FINALE d'un lot d'écritures ; un `normal → compact` écrit dans la même tâche est invisible, l'oracle anti-flash est vacant (constaté au contrôle négatif). Intercepter `setAttribute` (ou `attributeOldValue: true`) et asserter la liste des écritures. (Sprint 121 #898)
