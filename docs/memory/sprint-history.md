@@ -7426,3 +7426,24 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
 **Restes connus :** #888 fermée avec note — critère « PR Dependabot npm verte sans retouche du lock » à constater au prochain passage Dependabot ; `forwardRef` (21 fichiers) toujours en place, supporté par React 19
 **Saturation contexte lead (mesure) :** non mesurée
 **Status :** Terminé
+
+### Sprint 121 — 2026-11-12 → 2026-11-12 (Terminé — merge PR #909 dans dev)
+**Objectif :** solder les suivis du Sprint 120 et deux bugs P2 frontend (densité persistée, piège de focus du panneau mobile)
+**Milestone GitHub :** #122 (fermé après merge)
+**Issues livrées (3) :** #898 (P2, S), #858 (P2, S), #899 (P3, XS) — fermées après merge (base dev)
+**Vagues exécutées :** V1 = #898 + #858 en fan-out (2 fullstack-dev, fichiers disjoints, même working tree) | #899 par le lead en parallèle (accord explicite du dev pour toucher au workflow) | review batch par `reviewer` en fin, correctifs par le lead
+**Cohésion score :** ~0.5 (frontend transverse + devops)
+**Migrations Flyway :** aucune — prochaine V17
+**Commits :** #899 `d5663546` · #858 `5e8bd9b2` + `802f8e35` (review) + `54342e2f` (commentaires d'appelants) · #898 `6faaa4ef` · artefacts `6c92a246` · clôture (ce commit)
+**BR impactées :** aucune
+**Reviews :** reviewer batch 0 CRITIQUE / 1 MAJEUR / 5 MINEURS — majeur (Tab parti de `body` sortait du panneau après « Continuer ») corrigé ; 1 mineur corrigé (assertion E2E densité), 3 assumés, 1 absorbé (`sprints/sprint-121/review-batch.md`)
+**Tests :** Vitest 2380/2380 sans stderr | tsc, eslint, `format:check`, `next build` Turbopack | E2E locale `next build`+`next start` : 678 passés / 2 échecs / 9 ignorés — `sprint-77-theme-visual:620` (darwin attendu) + `sprint-90-first-contact:413` **préexistant** (A/B build `origin/dev` 4/5 vs branche 1/5, helper `page-chunk-gate.ts:71`) | E2E ciblé après review 62/62 | CI PR #909 7/7
+**Mesure #858 :** pire qu'annoncé — au clavier seul le 1er caractère du username passait (re-rendu au passage dirty → piège rejoué → focus sur la croix) ; masqué par `fill()` dans tous les E2E
+**Nouveaux pitfalls / patterns :** PIT-S121-001 (`fill()` masque un vol de focus à la frappe) · PIT-S121-002 (`MutationObserver` aveugle au flash) · PAT-S121-001 (callback d'appelant en ref, `useFocusTrap`) · PAT-S121-002 (préférence locale appliquée avant 1re peinture, script inline du layout serveur) ; packs `pit-*` régénérés
+**Écarts de briefing :** planification faite par le lead sans architect (matrice triviale ; #874/#875 reportées) ; branche du worktree basée sur `main` → `sprint/121` créée depuis `origin/dev` et `npm ci` refait ; E2E non déléguée (lead) ; suivi créé par le lead sans `project-manager` (labels appliqués à la main) ; briefings non commités (suppression bloquée par un garde-fou, laissés non suivis)
+**Absorbé en cours (XS/S) :** focus sur le champ à l'étape 2 + Tab hors panneau (review, `802f8e35`) ; 5 commentaires d'appelants de `useFocusTrap` devenus faux (`54342e2f`) ; mentions « Edge » de `ci.yml` (#899)
+**Follow-ups arbitrés (Phase 4 triage, 1/1 en issue backlog, 0 discard, 0 absorbé) :**
+  - flake `sprint-90-first-contact:413` (`page-chunk-gate` « Response has been disposed »), préexistant [S | frontend/e2e] → #910 (backlog — pas de milestone Sprint 122)
+**Restes connus :** #874 + #875 (frise, `label-reserve.ts`) prévues pour le Sprint 122, non planifié
+**Saturation contexte lead (mesure) :** non mesurée
+**Status :** Terminé

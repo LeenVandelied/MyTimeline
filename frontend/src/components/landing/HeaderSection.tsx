@@ -95,10 +95,10 @@ export function HeaderSection({ locale }: HeaderSectionProps) {
   const [menuOpen, setMenuOpen] = useState(false)
 
   /**
-   * Référence STABLE : `onClose` est passé en `onEscape` à `useFocusTrap`, qui
-   * l'a en dépendance d'effet. Une fonction recréée à chaque rendu rejouait donc
-   * le cleanup du trap (`previousFocus.focus()`) puis le refocus du premier
-   * élément à chaque re-rendu du parent — un saut de focus visible.
+   * Référence stable : `onClose` est passé en `onEscape` à `useFocusTrap`. Avant
+   * #858 (S121) le piège l'avait en dépendance d'effet et une fonction recréée à
+   * chaque rendu rejouait cleanup + refocus (saut de focus visible) ; il lit
+   * désormais `onEscape` dans une ref.
    */
   const closeMenu = useCallback(() => setMenuOpen(false), [])
 

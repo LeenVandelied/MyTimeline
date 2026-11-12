@@ -707,9 +707,9 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
   const [collapsedResources, setCollapsedResources] = useState<Record<string, boolean>>({})
   const [selected, setSelected] = useState<PositionedEvent | null>(null)
   // #316 — callback stabilisé (deps vides, `setSelected` est stable) : passé à
-  // `EventDrawer` → `useFocusTrap` qui liste `onEscape` en dépendance d'effet.
-  // Une lambda inline ici re-déclencherait le trap (focus initial) à CHAQUE
-  // rendu de `TimelineView` (BUG-S44-001, cf. `AppShell.closeCreate`).
+  // `EventDrawer` → `useFocusTrap`. Historique BUG-S44-001 : une lambda inline
+  // rejouait le trap à chaque rendu ; depuis #858 (S121) le piège lit `onEscape`
+  // dans une ref, la stabilisation n'est plus requise par lui.
   const closeDrawer = useCallback(() => setSelected(null), [])
   // #349 — Bascules d'accordéon stabilisées (mise à jour fonctionnelle → aucune
   // dépendance) : elles sont des props des composants mémoïsés.

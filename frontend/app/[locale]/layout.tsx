@@ -15,6 +15,7 @@ import { OfflineBanner } from '@/components/shared/OfflineBanner'
 import { ApiErrorTranslatorBridge } from '@/services/ApiErrorTranslatorBridge'
 import { AppToaster } from '@/components/ui/toaster'
 import { SUPPORTED_LOCALES, DEFAULT_LOCALE, isSupportedLocale } from '@/i18n/locales'
+import { DENSITY_INIT_SCRIPT } from '@/lib/density'
 
 /**
  * #413 — CE layout porte le `<html>` / `<body>` de l'application.
@@ -72,6 +73,17 @@ export default async function LocaleLayout({
       style={fontUiStyle}
     >
       <body>
+        {/*
+          #898 — densité persistée appliquée AVANT la première peinture et l'hydratation,
+          sur TOUTES les pages (avant : seule la section Préférences, via `useDensity`).
+          Premier enfant de <body>, script inline bloquant : il s'exécute avant que le
+          reste du corps soit analysé, donc aucune peinture en densité normale. Rendu par
+          ce layout SERVEUR : présent dans le HTML servi, jamais créé côté client (un
+          <script> rendu par React au client ne s'exécute pas). L'attribut qu'il pose sur
+          <html> est couvert par `suppressHydrationWarning` ci-dessus. Pas de nonce : le
+          frontend ne sert aucune CSP (vérifié #898), même cas que le script next-themes.
+        */}
+        <script dangerouslySetInnerHTML={{ __html: DENSITY_INIT_SCRIPT }} />
         {/*
           Ordre des providers (imposé) : Theme (S6 #45) > Auth (S7 #40)
           > Query (S7 #48, inséré entre AuthProvider et {children}).

@@ -97,7 +97,14 @@ export function DeleteAccountSteps({
             <FormItem>
               <FormLabel>{t('account.delete.usernameLabel')}</FormLabel>
               <FormControl>
-                <Input autoComplete="off" data-testid="delete-account-username" {...field} />
+                {/* #858 (review S121) — l'étape 2 démonte le bouton « Continuer » focusé :
+                    sans autoFocus, le focus tombait sur `body`. */}
+                <Input
+                  autoComplete="off"
+                  autoFocus
+                  data-testid="delete-account-username"
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>

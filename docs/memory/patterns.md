@@ -1120,3 +1120,9 @@ Ouvrir le tiroir à 375 px, puis `page.setViewportSize` à 1024 px et mesurer la
 
 ## PAT-S120-002 — Ref callback d'un ENFANT qui lit des valeurs fraîches d'un hook du PARENT
 Écrire ces refs en `useInsertionEffect` (phase mutation, avant l'attach des refs en phase layout). En `useLayoutEffect`, React les écrirait après l'attach des refs enfants : valeurs du commit précédent. (Sprint 120 #891, `useTimelineMobileState`)
+
+## PAT-S121-001 — Callback d'appelant lu dans une ref par un effet à effets de bord non idempotents
+`const cbRef = useRef(cb); useLayoutEffect(() => { cbRef.current = cb })`, lecture de `cbRef.current` dans le handler, deps de l'effet = seulement ce qui doit le rejouer (`[containerRef, active]` pour `useFocusTrap`). Anti-pattern : exiger un `useCallback` de chaque appelant (5 appelants stabilisaient, le 6e l'avait oublié). (Sprint 121 #858)
+
+## PAT-S121-002 — Préférence locale appliquée avant la première peinture sur toutes les pages
+Script inline généré depuis les constantes (`JSON.stringify`, liste fermée), rendu en tête de `<body>` par le layout SERVEUR qui porte `<html suppressHydrationWarning>` (`app/[locale]/layout.tsx`, `src/lib/density.ts`) ; le hook client ne sert qu'au choix et reste muet tant que `useHydrated()` est faux. Anti-pattern : le placer dans un layout imbriqué (`(app)`) — un `<script>` rendu pendant une navigation client ne s'exécute pas. Si une CSP front apparaît, ce script et celui de next-themes exigent nonce/hash. (Sprint 121 #898)
