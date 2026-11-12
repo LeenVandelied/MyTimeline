@@ -67,6 +67,14 @@ export function useFocusTrap(
       if (items.length === 0) return
       const firstEl = items[0]
       const lastEl = items[items.length - 1]
+      // #858 (review S121) — focus HORS du conteneur (ex. `body`, quand l'élément focusé
+      // vient d'être démonté par un changement d'étape) : sans cette branche, Tab partait
+      // sur le document derrière le panneau. On ramène le focus dans le piège.
+      if (!container.contains(document.activeElement)) {
+        e.preventDefault()
+        ;(e.shiftKey ? lastEl : firstEl).focus()
+        return
+      }
       if (e.shiftKey && document.activeElement === firstEl) {
         e.preventDefault()
         lastEl.focus()

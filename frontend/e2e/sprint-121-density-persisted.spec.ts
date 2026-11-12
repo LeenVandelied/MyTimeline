@@ -94,7 +94,11 @@ test.describe('#898 — densité persistée appliquée sur toutes les pages conn
     // Aucune écriture de la densité par défaut : pas de flash normal → compact.
     // (Le script écrit `compact` par-dessus un <html> sans attribut, d'où une seule
     // écriture.)
-    expect(await densityWrites(page)).toEqual(['compact'])
+    // Aucune autre valeur que `compact` (pas de flash) ; une ré-écriture identique
+    // (ex. `useDensity` monté après hydratation) reste légitime (review S121).
+    const writes = await densityWrites(page)
+    expect(writes.length).toBeGreaterThan(0)
+    expect(writes.filter((v) => v !== 'compact')).toEqual([])
 
     await page.goto('/fr/settings', { waitUntil: 'domcontentloaded' })
     await expect(page.getByTestId('settings-page')).toBeVisible()
@@ -102,7 +106,11 @@ test.describe('#898 — densité persistée appliquée sur toutes les pages conn
     // `useDensity`) n'est PAS montée — l'ancien code laissait l'attribut absent ici.
     await expect(page.getByTestId('settings-tab-profile')).toHaveAttribute('aria-selected', 'true')
     await expectDensity(page, 'compact')
-    expect(await densityWrites(page)).toEqual(['compact'])
+    // Aucune autre valeur que `compact` (pas de flash) ; une ré-écriture identique
+    // (ex. `useDensity` monté après hydratation) reste légitime (review S121).
+    const writesAfterSettings = await densityWrites(page)
+    expect(writesAfterSettings.length).toBeGreaterThan(0)
+    expect(writesAfterSettings.filter((v) => v !== 'compact')).toEqual([])
 
     await page.reload({ waitUntil: 'domcontentloaded' })
     await expect(page.getByTestId('settings-page')).toBeVisible()

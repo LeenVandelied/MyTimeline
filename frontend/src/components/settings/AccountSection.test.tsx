@@ -130,4 +130,13 @@ describe('AccountSection — panneau mobile, saisie du username (#858)', () => {
     expect(input).toHaveValue('jane')
     expect(moves).toEqual([])
   })
+
+  it("pose le focus sur le champ à l'étape 2 (le bouton « Continuer » est démonté)", async () => {
+    const user = userEvent.setup()
+    render(<AccountSection deleteContainer="sheet" />)
+    await user.click(screen.getByTestId('delete-account-open'))
+    await user.click(screen.getByTestId('delete-account-continue'))
+
+    expect(document.activeElement).toBe(screen.getByTestId('delete-account-username'))
+  })
 })

@@ -127,4 +127,19 @@ describe('useFocusTrap (#858)', () => {
     rerender(<Harness active={false} />)
     expect(document.activeElement).toBe(trigger)
   })
+
+  it('ramène dans le panneau un Tab parti de body (élément focusé démonté)', () => {
+    const { rerender } = render(<Harness active={false} />)
+    rerender(<Harness active />)
+    const firstEl = screen.getByTestId('first')
+    const lastEl = screen.getByTestId('last')
+
+    ;(document.activeElement as HTMLElement).blur()
+    expect(document.activeElement).toBe(document.body)
+    fireEvent.keyDown(document, { key: 'Tab' })
+    expect(document.activeElement).toBe(firstEl)
+    ;(document.activeElement as HTMLElement).blur()
+    fireEvent.keyDown(document, { key: 'Tab', shiftKey: true })
+    expect(document.activeElement).toBe(lastEl)
+  })
 })
