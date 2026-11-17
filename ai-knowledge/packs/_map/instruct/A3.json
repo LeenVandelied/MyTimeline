@@ -1,0 +1,15 @@
+{
+ "id": "A3",
+ "question": "ExportJobEntity (1 fichier) appartient-il au pack timeline ou à un pack d'export séparé ?",
+ "decision": "fondu dans timeline",
+ "rule": "R7 pack sous pack_min_kb=60, liens 2/2 vers UserEntity",
+ "confidence": "medium",
+ "seeds": [
+  "ExportJobEntity"
+ ],
+ "evidence": [],
+ "falsified_if": "un ticket d'export modifie ExportJob et ses moteurs de rendu sans toucher au compte ni aux événements",
+ "status": "open",
+ "opened": "2026-11-17",
+ "touched_by": []
+}

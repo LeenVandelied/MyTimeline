@@ -1,0 +1,27 @@
+{
+  "UserEntity": [
+    "user",
+    "utilisateur",
+    "event",
+    "événement",
+    "evenement",
+    "category",
+    "catégorie",
+    "categorie",
+    "product",
+    "produit",
+    "session",
+    "export",
+    "password",
+    "mot de passe",
+    "timeline",
+    "chronologie",
+    "recurrence",
+    "récurrence",
+    "auth",
+    "theme",
+    "thème",
+    "conflict",
+    "conflit"
+  ]
+}

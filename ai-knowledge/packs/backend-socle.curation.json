@@ -1,0 +1,2974 @@
+{
+ "pack": "backend-socle",
+ "schema": 1,
+ "curated_at": "2026-11-17T10:45:42Z",
+ "curator": "curate/1",
+ "base_sha256": "522b501666f9abbb5144df510e94699de89261cc0afbd60f65da445f1a4ea3d5",
+ "pack_sha256_before": "0fb0618356815e7bce3b82eaa2e27bc29a56a9f9bcff422f634697eb42c9d4c2",
+ "pack_sha256_after": "2ae6654a0b9429d24b64dfadbbe58c355470c3ad6c5ef97e31b91fb9072c7826",
+ "criteria_sha256": "75e38f096df69288e5ef9ef740a5a812f65b1bb381255f75045d285103cef042",
+ "models": {
+  "measure": "haiku",
+  "refute": "sonnet"
+ },
+ "base_fingerprint": "1deff139bf4d1c0ff48235e4b291630d39c342836f4a91484e8ac27ce3842bb1",
+ "bytes": {
+  "before": 10311,
+  "after": 9976,
+  "by_section": {
+   "activate": {
+    "before": 172,
+    "after": 172
+   },
+   "lexicon": {
+    "before": 78,
+    "after": 78
+   },
+   "rules": {
+    "before": 2105,
+    "after": 2227
+   },
+   "structure": {
+    "before": 82,
+    "after": 82
+   },
+   "surface": {
+    "before": 96,
+    "after": 96
+   },
+   "files": {
+    "before": 1940,
+    "after": 1940
+   },
+   "relations": {
+    "before": 376,
+    "after": 376
+   },
+   "tests": {
+    "before": 1895,
+    "after": 1804
+   },
+   "questions": {
+    "before": 625,
+    "after": 625
+   },
+   "alerts": {
+    "before": 2025,
+    "after": 1588
+   },
+   "coverage": {
+    "before": 584,
+    "after": 584
+   }
+  }
+ },
+ "units": [
+  {
+   "id": "backend-socle:rules:1",
+   "section": "rules",
+   "rank": 1,
+   "text": "- Les jetons sont signés en RS256 et toute lecture de claims passe par parseClaims, qui vérifie la signature et refuse un autre algorithme [#2009e8befcdfb90e-1] [#4aa88cfacaa0e8d4-1].",
+   "fact_text": "Les jetons sont signés en RS256 et toute lecture de claims passe par parseClaims, qui vérifie la signature et refuse un autre algorithme",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "backend-socle/2009e8befcdfb90e-1",
+    "backend-socle/4aa88cfacaa0e8d4-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtService.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtService.java",
+     220,
+     236,
+     "5da9702c3a8a178eafca5cb7c4e9a766ab71132ddce4d5cda43dcd9b451ce1c7"
+    ],
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtService.java",
+     154,
+     154,
+     "597d1f14ee710f34bd4aa84e4becf7b1d21c5944cb33a700811ed140a03a47a8"
+    ]
+   ],
+   "code_sha256": "fd005e7f219b854fd4b6405fdfb97c5827a2530a0e80247f0f521337d7263c46",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.778,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 9
+      }
+     },
+     "restatement": "JwtService.parseClaims vérifie la signature avec verificationKey, puis refuse tout jeton dont l'en-tête n'indique pas RS256 (UnsupportedJwtException) et renvoie le payload. generateToken signe aussi explicitement avec Jwts.SIG.RS256 (L154). Le point le plus important est le contrôle d'algorithme à la lecture.",
+     "confidence": "high"
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 30,
+    "annex_table": {
+     "part": "backend-socle.details.md",
+     "row": 1
+    }
+   },
+   "uses": 0
+  },
+  {
+   "id": "backend-socle:rules:2",
+   "section": "rules",
+   "rank": 2,
+   "text": "- Une propriété jwt.private-key vide déclenche une paire RS256 éphémère au démarrage, et une clé invalide lève IllegalStateException sans reprendre la valeur configurée [#be183b621d286328-1] [#fac6a46f66104090-1].",
+   "fact_text": "Une propriété jwt.private-key vide déclenche une paire RS256 éphémère au démarrage, et une clé invalide lève IllegalStateException sans reprendre la valeur configurée",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "backend-socle/be183b621d286328-1",
+    "backend-socle/fac6a46f66104090-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtService.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtService.java",
+     39,
+     40,
+     "7cb88c46e97f93bf62d841b5cc1026230a5e8f99e916fa34cdb208840eca5882"
+    ],
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtService.java",
+     79,
+     93,
+     "cfb8186cbb85eff98db8eba9eead196560f4baa6b1257c40cb808858a462afba"
+    ]
+   ],
+   "code_sha256": "4c10049c713effef452c01b87fa3315c1e12ca49efe79ef1da41451ca2053345",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": null,
+      "terms": 0.417,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 12
+      }
+     },
+     "restatement": "La clé privée vient de la propriété jwt.private-key, vide par défaut. configuredKeyPair la décode via RsaKeyMaterial.fromPkcs8 et, en cas d'échec, lève une IllegalStateException qui ne journalise pas la valeur, en rappelant le modulus minimal RsaKeyMaterial.MIN_MODULUS_BITS.",
+     "confidence": "high"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 14,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtService.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": null,
+      "terms": 0.583,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 12
+      }
+     },
+     "job": "backend-socle:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_dtos_ProductUpdateRequest.java:1"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "JwtService L39-40 : propriété jwt.private-key avec défaut vide, et configuredKeyPair L79-93 lève IllegalStateException sans la valeur. La paire éphémère n'est pas dans l'extrait mais rien ne contredit.",
+      "JwtService L79-93 : une clé invalide lève IllegalStateException sans reprendre la valeur. La paire éphémère pour une clé vide n'est pas dans l'extrait, mais rien ne la contredit.",
+      "JwtService.configuredKeyPair L79-93 lève IllegalStateException et indique que la valeur n'est pas journalisée. La paire éphémère pour une valeur vide n'est pas dans l'extrait, mais rien ne la contredit."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 31,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "backend-socle:rules:3",
+   "section": "rules",
+   "rank": 3,
+   "text": "- Un jeton vide lève MalformedJwtException, et validateToken renvoie false pour toute exception levée [#2009e8befcdfb90e-2] [#e7e48dce92f507bc-1].",
+   "fact_text": "Un jeton vide lève MalformedJwtException, et validateToken renvoie false pour toute exception levée",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "backend-socle/2009e8befcdfb90e-2",
+    "backend-socle/e7e48dce92f507bc-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtService.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtService.java",
+     221,
+     223,
+     "54d70ccdeea18be14053b528a2951cd002927e881cc5c38aa13bcd33b2f4b581"
+    ],
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtService.java",
+     238,
+     245,
+     "a2b009018518b6d5d5700e26c3e561e0fac682187499800fd1abb06e38ceed43"
+    ]
+   ],
+   "code_sha256": "003792c933c6800964865a5fe27023f702348bb23eb1b1237bf59d32a9134569",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.857,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "restatement": "parseClaims lève MalformedJwtException avec le message « Jeton JWT absent ou blanc. » si le jeton est null ou vide. validateToken, lui, renvoie false sur toute exception et sinon compare le sujet au username de UserDetails et exige que le jeton ne soit pas expiré.",
+     "confidence": "high"
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 32,
+    "annex_table": {
+     "part": "backend-socle.details.md",
+     "row": 2
+    }
+   },
+   "uses": 0
+  },
+  {
+   "id": "backend-socle:rules:4",
+   "section": "rules",
+   "rank": 4,
+   "text": "- L'utilisateur courant est résolu par CallerResolver, qui court-circuite si l'authentification est absente ou anonyme [#33b11eb6b0aa82ac-2].",
+   "fact_text": "L'utilisateur courant est résolu par CallerResolver, qui court-circuite si l'authentification est absente ou anonyme",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "backend-socle/33b11eb6b0aa82ac-2"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/CallerResolver.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/CallerResolver.java",
+     60,
+     68,
+     "d23090ff9811b43a56189b5c7d6dedc06e24199cb5119bab86d8eef6ad0b6a73"
+    ]
+   ],
+   "code_sha256": "d23090ff9811b43a56189b5c7d6dedc06e24199cb5119bab86d8eef6ad0b6a73",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 8
+      }
+     },
+     "restatement": "CallerResolver.currentUser renvoie Optional.empty() si l'authentification est null, non authentifiée ou de type AnonymousAuthenticationToken. Ce court-circuit explicite évite de dépendre d'un utilisateur nommé anonymousUser en base.",
+     "confidence": "high"
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 33,
+    "annex_table": {
+     "part": "backend-socle.details.md",
+     "row": 3
+    }
+   },
+   "uses": 0
+  },
+  {
+   "id": "backend-socle:rules:5",
+   "section": "rules",
+   "rank": 5,
+   "text": "- Le soft delete de Product passe par un filtre d'entité sur archived, qui s'applique à toutes les lectures Hibernate [#3fb0487b6c2dbb00-1].",
+   "fact_text": "Le soft delete de Product passe par un filtre d'entité sur archived, qui s'applique à toutes les lectures Hibernate",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "backend-socle/3fb0487b6c2dbb00-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/ProductEntity.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/ProductEntity.java",
+     25,
+     25,
+     "6a796775801ccd697887c61676c987226892386e9be4474d9cbe91716ece8254"
+    ]
+   ],
+   "code_sha256": "6a796775801ccd697887c61676c987226892386e9be4474d9cbe91716ece8254",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 0.3,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 10
+      }
+     },
+     "restatement": "L'entité ProductEntity est annotée @SQLRestriction(\"archived = false\"), ce qui masque automatiquement les produits archivés dans toutes les requêtes Hibernate sur cette entité. Le bloc ne montre que cette annotation.",
+     "confidence": "high"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 9,
+     "within_budget": false,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/ProductEntity.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 0.7,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 10
+      }
+     },
+     "job": "backend-socle:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_dtos_ProductUpdateRequest.java:1",
+     "rank_in_lot": 1
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "ProductEntity L25 : @SQLRestriction(\"archived = false\") ; le commentaire L20-24 va dans le même sens. Le terme filtre d'entité est une reformulation fidèle.",
+      "ProductEntity L25 porte @SQLRestriction(\"archived = false\"), et le commentaire L20-24 décrit l'effet sur les lectures.",
+      "ProductEntity L25 porte @SQLRestriction(\"archived = false\"), et le commentaire L20-24 décrit l'application aux lectures Hibernate."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 35,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "backend-socle:rules:6",
+   "section": "rules",
+   "rank": 6,
+   "text": "- Le modèle domaine ne lit pas l'horloge, les prédicats temporels reçoivent now en paramètre [#2fae5cab1ab1fc27-1].",
+   "fact_text": "Le modèle domaine ne lit pas l'horloge, les prédicats temporels reçoivent now en paramètre",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "backend-socle/2fae5cab1ab1fc27-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/export/ExportJob.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/export/ExportJob.java",
+     64,
+     70,
+     "cf5b74a8d1187bffa8465720eb7d90a3815f2c187ef90424532412049448ecaf"
+    ]
+   ],
+   "code_sha256": "cf5b74a8d1187bffa8465720eb7d90a3815f2c187ef90424532412049448ecaf",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 0.0,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "restatement": "ExportJob.isDownloadable(now) renvoie true seulement si le statut vaut COMPLETED, que storageRef et expiresAt sont non nuls, et que now est strictement avant expiresAt. Un job terminé mais expiré n'est donc plus téléchargeable.",
+     "confidence": "high",
+     "reused": true,
+     "reused_from": "2026-11-17T10:44:09Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 16,
+     "within_budget": false,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/backend/src/main/java/com/matimeline/eventmanager/domain/models/PasswordResetToken.java",
+     "file_ok": false,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 0.714,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "job": "backend-socle:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_dtos_ChangePasswordRequest.java:1",
+     "reused": true,
+     "reused_from": "2026-11-17T10:44:09Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "ExportJob.isDownloadable(LocalDateTime now) (L65-69) reçoit now en paramètre et ne lit pas l'horloge.",
+      "ExportJob.isDownloadable(LocalDateTime now) (L65-70) reçoit now en paramètre et ne lit pas l'horloge.",
+      "ExportJob.isDownloadable(LocalDateTime now) reçoit now en paramètre (L65-69), ce qui soutient la règle. Aucun contre-exemple dans l'extrait."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-17T10:44:09Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 36,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "backend-socle:rules:7",
+   "section": "rules",
+   "rank": 7,
+   "text": "- Les transitions mark... de ExportJob ne vérifient pas l'état précédent [#185f8a74f15e66fc-1].",
+   "fact_text": "Les transitions mark... de ExportJob ne vérifient pas l'état précédent",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "backend-socle/185f8a74f15e66fc-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/export/ExportJob.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/export/ExportJob.java",
+     48,
+     62,
+     "911a3864a9ad5a34dde5856b2b874f3e89d5556cc69508558df7de3dcd968877"
+    ]
+   ],
+   "code_sha256": "911a3864a9ad5a34dde5856b2b874f3e89d5556cc69508558df7de3dcd968877",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.2,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 5
+      }
+     },
+     "restatement": "ExportJob fixe le statut par des setters sans garde de transition : markRunning passe à RUNNING, markCompleted passe à COMPLETED et renseigne storageRef, completedAt et expiresAt, markFailed passe à FAILED et renseigne errorCode. Rien n'empêche d'appeler ces méthodes dans un ordre quelconque.",
+     "confidence": "high"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 13,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/backend/src/main/java/com/matimeline/eventmanager/domain/models/export/ExportJob.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.4,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 5
+      }
+     },
+     "job": "backend-socle:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_dtos_ProductUpdateRequest.java:1"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "ExportJob.markRunning/markCompleted/markFailed L48-62 affectent le statut sans aucun contrôle de l'état précédent.",
+      "ExportJob.markRunning, markCompleted et markFailed (L48-62) affectent le statut sans tester l'état précédent.",
+      "ExportJob.markRunning, markCompleted et markFailed (L48-62) affectent le statut sans tester l'état précédent."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 37,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "backend-socle:rules:8",
+   "section": "rules",
+   "rank": 8,
+   "text": "- Les entités portent un champ version, des champs d'audit sans setter et un equals par id non nul [#353d4149bc66a185-1] [#aefb4a0a2a939e49-1] [#322992155a7f5945-1].",
+   "fact_text": "Les entités portent un champ version, des champs d'audit sans setter et un equals par id non nul",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "backend-socle/353d4149bc66a185-1",
+    "backend-socle/aefb4a0a2a939e49-1",
+    "backend-socle/322992155a7f5945-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/CategoryEntity.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/CategoryEntity.java",
+     40,
+     42,
+     "140d3aa88583da8d821b270868d02f603b579431e6012129a9761fd884152e17"
+    ],
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/CategoryEntity.java",
+     84,
+     94,
+     "e9173e202d908d21bef5dbd303c25765ef92e7ef3419a4da5439d64ffe52e1a4"
+    ],
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/CategoryEntity.java",
+     96,
+     107,
+     "19eda4f36a5b71485f66756755a9c525e5fe6dfeb34a4d6859e7812092211765"
+    ]
+   ],
+   "code_sha256": "71db3763754322e238c78a47763abf014ded1ae215144f0ea07852631afa5097",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 0.429,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "restatement": "CategoryEntity porte un champ version annoté @Version et non nullable, ce qui active le verrouillage optimiste JPA. Les getters exposent createdAt, updatedAt et version. equals repose sur l'id (vrai seulement si id non null et égal), et hashCode renvoie le hash constant de la classe.",
+     "confidence": "high"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 10,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/ProductEntity.java",
+     "file_ok": false,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 0.429,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "job": "backend-socle:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_dtos_ProductUpdateRequest.java:1"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "CategoryEntity et ProductEntity ont @Version, des getters d'audit sans setter et equals sur id non nul (ProductEntity L58-60, L130-148).",
+      "CategoryEntity (@Version L40-42, getters d'audit sans setter, equals L96-102) et ProductEntity (L58-60, L130-148) suivent ce schéma.",
+      "CategoryEntity a @Version (L40-42), des getters d'audit sans setter (L84-94) et un equals par id non nul (L96-102). ProductEntity est identique."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 38,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "backend-socle:rules:9",
+   "section": "rules",
+   "rank": 9,
+   "text": "- Dans un DTO de mise à jour partielle, null signifie inchangé, donc un champ optionnel refuse le blanc par un motif et clearColor remet à null [#c227eff8822478b9-1] [#164b6d90f910bb89-1].",
+   "fact_text": "Dans un DTO de mise à jour partielle, null signifie inchangé, donc un champ optionnel refuse le blanc par un motif et clearColor remet à null",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "backend-socle/c227eff8822478b9-1",
+    "backend-socle/164b6d90f910bb89-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/ProductUpdateRequest.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/ProductUpdateRequest.java",
+     8,
+     31,
+     "25c6b62740238c3c8b8263480ddab5892873c3949300df11cca9e8bb4a7090e0"
+    ],
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/ProductUpdateRequest.java",
+     39,
+     39,
+     "e9487e9397e8abcaafe477668d9f750511942bf09f9c0e907c3119f15baf67d5"
+    ]
+   ],
+   "code_sha256": "56e982d923c712defdf0c87ac0e271c450c8385072c0ca47d19c15900e232bf5",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": null,
+      "terms": 0.417,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 12
+      }
+     },
+     "restatement": "Le champ name de ProductUpdateRequest (PATCH) applique @Size(min = 1, max = 100) et un @Pattern qui exige au moins un caractère non blanc, donc un nom fourni composé uniquement d'espaces est rejeté. Une valeur null est ignorée par @Pattern et signifie « inchangé ». Le bloc montre aussi le booléen clearColor (L39), qui réinitialise la couleur produit.",
+     "confidence": "high"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 7,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/backend/src/main/java/com/matimeline/eventmanager/application/dtos/ProductUpdateRequest.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": null,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 12
+      }
+     },
+     "job": "backend-socle:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_dtos_ProductUpdateRequest.java:1"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "ProductUpdateRequest L14-26 et L30-31 : @Pattern(\".*\\\\S.*\") sans @NotBlank, null = inchangé, et clearColor (L39) sert au reset.",
+      "ProductUpdateRequest L14-26 et L30-31 : @Pattern remplace @NotBlank car null signifie inchangé, et clearColor (L39) réinitialise la couleur.",
+      "ProductUpdateRequest L14-26 : @Pattern remplace @NotBlank car null = inchangé, et clearColor existe pour remettre la couleur à null."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 40,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "backend-socle:rules:10",
+   "section": "rules",
+   "rank": 10,
+   "text": "- Les valeurs d'enum reçues en String sont validées par un motif listant les valeurs acceptées [#dbd2bbe2eddcb65f-1].",
+   "fact_text": "Les valeurs d'enum reçues en String sont validées par un motif listant les valeurs acceptées",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "backend-socle/dbd2bbe2eddcb65f-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/UpdatePreferencesRequest.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/UpdatePreferencesRequest.java",
+     15,
+     21,
+     "057db7894d9f7f54cd8beab889738744e3f603b6b897697a33aea8fcf80dcac4"
+    ]
+   ],
+   "code_sha256": "057db7894d9f7f54cd8beab889738744e3f603b6b897697a33aea8fcf80dcac4",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 0.375,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 8
+      }
+     },
+     "restatement": "Le record UpdatePreferencesRequest exige themePreference non null et conforme au motif light, dark ou system. Le champ est porté en String pour qu'une valeur invalide produise la même erreur de validation 400 au lieu d'une erreur de désérialisation Jackson.",
+     "confidence": "high"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 8,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/backend/src/main/java/com/matimeline/eventmanager/application/dtos/UpdatePreferencesRequest.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 0.25,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 8
+      }
+     },
+     "job": "backend-socle:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_dtos_ProductUpdateRequest.java:1"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "UpdatePreferencesRequest L18-21 : String validée par @Pattern(regexp = \"light|dark|system\").",
+      "UpdatePreferencesRequest L18-21 : String validé par @Pattern(regexp = \"light|dark|system\").",
+      "UpdatePreferencesRequest L18-21 : themePreference est une String validée par @Pattern(\"light|dark|system\")."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 41,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "backend-socle:rules:11",
+   "section": "rules",
+   "rank": 11,
+   "text": "- Les règles ArchUnit interdisent au domaine Spring et Jakarta, et toute HttpSession en production [#0841acefee4fcf8b-4] [#5a27d2f742342c4e-1].",
+   "fact_text": "Les règles ArchUnit interdisent au domaine Spring et Jakarta, et toute HttpSession en production",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "backend-socle/0841acefee4fcf8b-4",
+    "backend-socle/5a27d2f742342c4e-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/test/java/com/matimeline/eventmanager/architecture/ArchitectureTest.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/architecture/ArchitectureTest.java",
+     76,
+     77,
+     "d905c46f590e322ebdcd0a9c6355d88ed2c524757047f7ed971a26a861b3b18b"
+    ],
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/architecture/ArchitectureTest.java",
+     174,
+     177,
+     "bfcb0d51a60ed409d31acb08008d979e80957f0acc7a0204a622d61279407381"
+    ]
+   ],
+   "code_sha256": "6ad1ec5f8d6c740cdd111a615f28122f4926cbda2730e1d686b59a35caa82654",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 6
+      }
+     },
+     "restatement": "ArchitectureTest contient des règles ArchUnit. domainShouldNotDependOnSpringOrJakarta interdit au domaine de dépendre de classes framework, à l'exception de la validation (frameworkExceptValidation). productionCodeShouldNotUseHttpSession interdit au code de production du package racine toute dépendance vers jakarta.servlet.http.HttpSession. L'extrait ne montre que des fragments de ces règles.",
+     "confidence": "high"
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 43,
+    "annex_table": {
+     "part": "backend-socle.details.md",
+     "row": 4
+    }
+   },
+   "uses": 0
+  },
+  {
+   "id": "backend-socle:rules:12",
+   "section": "rules",
+   "rank": 12,
+   "text": "- Les tests d'intégration étendent la base PostgreSQL du package support, avec profil test [#e735bef1d1794d75-1] [#551da21a5dbc23fe-1].",
+   "fact_text": "Les tests d'intégration étendent la base PostgreSQL du package support, avec profil test",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "backend-socle/e735bef1d1794d75-1",
+    "backend-socle/551da21a5dbc23fe-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/test/java/com/matimeline/eventmanager/EventmanagerApplicationTests.java",
+    "mytimeline:backend/src/test/java/com/matimeline/eventmanager/support/AbstractPostgresIntegrationTest.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/EventmanagerApplicationTests.java",
+     8,
+     9,
+     "e81a6911be36b89dc70576074c463c0251920b853caf9895037a7bfd1dc7b0b8"
+    ],
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/support/AbstractPostgresIntegrationTest.java",
+     30,
+     31,
+     "ac6223f4d81a1b10287a0d6e2039050fa556e03fa9686749a87760524e3f56ce"
+    ]
+   ],
+   "code_sha256": "4b1003be6040877a3f43c11036e1de928f5ba9f6b6e04ce7773468b1e17df051",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
+      "terms": 0.286,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "restatement": "Montre seulement la déclaration de EventmanagerApplicationTests, annotée @SpringBootTest et héritant de AbstractPostgresIntegrationTest. Le profil de test « test » (@ActiveProfiles) est posé par la classe abstraite, pas par cette classe. Aucun corps de test n'est visible.",
+     "confidence": "high"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 21,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/backend/src/test/java/com/matimeline/eventmanager/support/AbstractPostgresIntegrationTest.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
+      "terms": 0.857,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "job": "backend-socle:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_dtos_ProductUpdateRequest.java:1"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "EventmanagerApplicationTests L9 étend AbstractPostgresIntegrationTest, qui porte @ActiveProfiles(\"test\") L30.",
+      "EventmanagerApplicationTests L9 étend AbstractPostgresIntegrationTest, qui porte @ActiveProfiles(\"test\") L30.",
+      "EventmanagerApplicationTests L9 étend AbstractPostgresIntegrationTest, annoté @ActiveProfiles(\"test\") (L30)."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 44,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "backend-socle:rules:13",
+   "section": "rules",
+   "rank": 13,
+   "text": "- BomDriftTest vérifie des planchers de version liés à une référence CVE, par comparaison numérique [#66abb4cdef3eec41-1] [#867f2794346b8c63-1].",
+   "fact_text": "BomDriftTest vérifie des planchers de version liés à une référence CVE, par comparaison numérique",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "backend-socle/66abb4cdef3eec41-1",
+    "backend-socle/867f2794346b8c63-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/test/java/com/matimeline/eventmanager/build/BomDriftTest.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/build/BomDriftTest.java",
+     91,
+     91,
+     "08baae0be107fa083eebda474b155dda020a7c3e17d92317642de9484e17831a"
+    ],
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/build/BomDriftTest.java",
+     135,
+     147,
+     "b2e2f032cea6d21ccf838b64768da2ab1ada3f8806b16ec1b9e466cd3ecf62fd"
+    ]
+   ],
+   "code_sha256": "d953bd4548a5df5b988ae20c3b391889f82df6a490e10035561236597a6c13b7",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.429,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "restatement": "BomDriftTest vérifie que la version PostgreSQL du BOM reste au moins 42.7.11, avec la référence CVE-2026-42198, via le helper assertVersionAtLeast. La méthode compareSemver compare deux versions segment par segment, traite un segment absent comme 0, et renvoie le premier écart trouvé via Integer.compare, ou 0 si les versions sont égales.",
+     "confidence": "high"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 10,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/backend/src/test/java/com/matimeline/eventmanager/build/BomDriftTest.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.429,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "job": "backend-socle:rediscover:mytimeline_backend_src_test_java_com_matimeline_eventmanager_architecture_ArchitectureTest.java:2"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "BomDriftTest L91 appelle assertVersionAtLeast avec le plancher 42.7.11 et CVE-2026-42198, et compareSemver (L135-147) compare numériquement composante par composante.",
+      "BomDriftTest L91 appelle assertVersionAtLeast avec le plancher 42.7.11 et la référence CVE-2026-42198, et compareSemver (L135-147) compare numériquement par segment.",
+      "postgresqlStaysAboveCveFloor (l.91) appelle assertVersionAtLeast avec plancher 42.7.11 et CVE-2026-42198, et compareSemver (l.135-147) compare numériquement composante par composante."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 45,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "backend-socle:tests:1",
+   "section": "tests",
+   "rank": 1,
+   "text": "- Les tests fixent que l'anonymisation d'IP met à zéro le dernier octet d'une IPv4 et renvoie null pour une entrée invalide [#904428da9b653810-1] [#55610e4f5ae3174e-1].",
+   "fact_text": "Les tests fixent que l'anonymisation d'IP met à zéro le dernier octet d'une IPv4 et renvoie null pour une entrée invalide",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "backend-socle/904428da9b653810-1",
+    "backend-socle/55610e4f5ae3174e-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/ClientIpAnonymizerTest.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/ClientIpAnonymizerTest.java",
+     16,
+     16,
+     "f03c9a4d6bdfdec51fb9d40087486e5843c69537252ffe4c8381a1edc088068f"
+    ],
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/ClientIpAnonymizerTest.java",
+     45,
+     50,
+     "7d9ada923fc9bd049e91c2ae0adb1db02f34511de7f5e0fba5cf2d6ce7b5b623"
+    ]
+   ],
+   "code_sha256": "6aeb48d55867c90dbdcc6ab8a52f46068c101edd98c684c3aedf425597954cb1",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.6,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 10
+      }
+     },
+     "restatement": "ClientIpAnonymizerTest vérifie que le dernier octet IPv4 est mis à zéro (le corps de ipv4_lastOctetZeroed n'est pas visible). Le test invalidFormat_returnsNull vérifie que anonymize renvoie null pour « not-an-ip », pour un octet supérieur à 255 et pour une adresse à seulement trois parties.",
+     "confidence": "high"
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 86,
+    "annex_table": {
+     "part": "backend-socle.details.md",
+     "row": 5
+    }
+   },
+   "uses": 0
+  },
+  {
+   "id": "backend-socle:tests:2",
+   "section": "tests",
+   "rank": 2,
+   "text": "- Les tests fixent que l'indicateur de santé Brevo n'expose dans son détail aucune valeur contenant la clé transmise [#379fa4542b4614bf-1].",
+   "fact_text": "Les tests fixent que l'indicateur de santé Brevo n'expose dans son détail aucune valeur contenant la clé transmise",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "backend-socle/379fa4542b4614bf-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoHealthIndicatorTest.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoHealthIndicatorTest.java",
+     42,
+     48,
+     "756e0e58d6f8294a61c680900879e40e014eb3189d20883610d82a68f1eb0803"
+    ]
+   ],
+   "code_sha256": "756e0e58d6f8294a61c680900879e40e014eb3189d20883610d82a68f1eb0803",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 0.2,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 10
+      }
+     },
+     "restatement": "BrevoHealthIndicatorTest vérifie que le détail renvoyé par health() ne contient jamais la valeur de la clé API passée au constructeur. L'assertion échoue si une valeur des détails contient cette clé.",
+     "confidence": "high"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 6,
+     "within_budget": true,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoHealthIndicatorTest.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 0.1,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 10
+      }
+     },
+     "job": "backend-socle:rediscover:mytimeline_backend_src_test_java_com_matimeline_eventmanager_architecture_ArchitectureTest.java:2"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "BrevoHealthIndicatorTest L47 vérifie que aucune valeur des détails ne contient le secret.",
+      "BrevoHealthIndicatorTest L47 vérifie que aucune valeur de getDetails() ne contient le secret.",
+      "BrevoHealthIndicatorTest l.47 vérifie qu'aucune valeur des détails ne contient le secret transmis au constructeur."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 87,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "backend-socle:tests:3",
+   "section": "tests",
+   "rank": 3,
+   "text": "- Les tests fixent que, limitation de débit désactivée, une rafale depuis une même IP ne renvoie jamais 429 [#57050fdbe9c38e6d-2].",
+   "fact_text": "Les tests fixent que, limitation de débit désactivée, une rafale depuis une même IP ne renvoie jamais 429",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "backend-socle/57050fdbe9c38e6d-2"
+   ],
+   "files": [
+    "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/RateLimitingDisabledIntegrationTest.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/RateLimitingDisabledIntegrationTest.java",
+     42,
+     49,
+     "b7b6dd84178ca63d4903d3c64fe004b15038606b249d9108827d0a2167e71a87"
+    ]
+   ],
+   "code_sha256": "b7b6dd84178ca63d4903d3c64fe004b15038606b249d9108827d0a2167e71a87",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": null,
+      "values": 1.0,
+      "terms": 0.286,
+      "n": {
+       "identifiers": 0,
+       "values": 1,
+       "terms": 7
+      }
+     },
+     "restatement": "RateLimitingDisabledIntegrationTest envoie 25 requêtes POST sur /api/auth/login depuis la même IP et vérifie qu'aucune ne renvoie 429. Le test ne fonctionne que parce que la propriété app.rate-limit.enabled est à false.",
+     "confidence": "high"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 9,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/RateLimitingDisabledIntegrationTest.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": null,
+      "values": 1.0,
+      "terms": 0.0,
+      "n": {
+       "identifiers": 0,
+       "values": 1,
+       "terms": 7
+      }
+     },
+     "job": "backend-socle:rediscover:mytimeline_backend_src_test_java_com_matimeline_eventmanager_architecture_ArchitectureTest.java:2"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "RateLimitingDisabledIntegrationTest L42-49 envoie 25 requêtes depuis la même IP avec app.rate-limit.enabled=false et vérifie qu'aucune ne renvoie 429.",
+      "Avec app.rate-limit.enabled=false (L30), 25 requêtes de login depuis la même IP vérifient assertNotEquals(429) (L42-48).",
+      "RateLimitingDisabledIntegrationTest l.30 fixe app.rate-limit.enabled=false et l.42-49 envoie 25 requêtes depuis la même IP en vérifiant qu'aucune ne renvoie 429."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 88,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "backend-socle:tests:4",
+   "section": "tests",
+   "rank": 4,
+   "text": "- Les tests fixent que le stockage local rejette par IllegalArgumentException les références invalides (extension, chemin relatif) [#76d453920ca7bf3e-1]. Selon le commentaire du test, un second delete est sans effet et ne lève aucune exception [#d3de47ed0eeffbf8-1].",
+   "fact_text": "Les tests fixent que le stockage local rejette par IllegalArgumentException les références invalides (extension, chemin relatif). Selon le commentaire du test, un second delete est sans effet et ne lève aucune exception",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "backend-socle/76d453920ca7bf3e-1",
+    "backend-socle/d3de47ed0eeffbf8-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapterTest.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapterTest.java",
+     60,
+     76,
+     "6c7163ea68c59cb374f1587fbdaaf8b7d886fd4c91ab19e9fb7ffa012e87170e"
+    ],
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapterTest.java",
+     50,
+     57,
+     "4da4b30226d5a8df19e368a67aa100d5e91ace7e1f87931a1b41e6ead6fecd30"
+    ]
+   ],
+   "code_sha256": "cf39082b2cc4cbc7fc108eca38dfe6c2dd04dc3a01522ce1b6c13af5511cb3a8",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.562,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 16
+      }
+     },
+     "restatement": "LocalStorageAdapterTest exige une IllegalArgumentException pour une extension invalide (\"../etc\") à store, et pour une référence de traversée de chemin à load et à delete. Le test delete_removesFile_andIsIdempotent vérifie que delete supprime le fichier et qu'un second appel est sans effet et sans exception.",
+     "confidence": "high"
+    },
+    "rediscover": null,
+    "comment": [
+     {
+      "id": "backend-socle/d3de47ed0eeffbf8-1",
+      "verdict": "confirmed"
+     }
+    ],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 89,
+    "annex_table": {
+     "part": "backend-socle.details.md",
+     "row": 6
+    }
+   },
+   "uses": 0
+  },
+  {
+   "id": "backend-socle:tests:5",
+   "section": "tests",
+   "rank": 5,
+   "text": "- Les tests fixent que la fin d'un export terminé reprend la valeur fournie et non une valeur dérivée de l'expiration [#dec1b07c9a52c00a-2].",
+   "fact_text": "Les tests fixent que la fin d'un export terminé reprend la valeur fournie et non une valeur dérivée de l'expiration",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "backend-socle/dec1b07c9a52c00a-2"
+   ],
+   "files": [
+    "mytimeline:backend/src/test/java/com/matimeline/eventmanager/domain/models/export/ExportJobTest.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/domain/models/export/ExportJobTest.java",
+     29,
+     30,
+     "472d88cc5f655d54bc0d9b7ac770aa83a2f2486df214d98c3869554fa474e35c"
+    ]
+   ],
+   "code_sha256": "472d88cc5f655d54bc0d9b7ac770aa83a2f2486df214d98c3869554fa474e35c",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 0.111,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 9
+      }
+     },
+     "restatement": "ExportJobTest vérifie que markCompleted affecte à completedAt la valeur passée en paramètre, et non expiresAt moins 24 heures.",
+     "confidence": "high"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 12,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/backend/src/test/java/com/matimeline/eventmanager/domain/models/export/ExportJobTest.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 0.111,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 9
+      }
+     },
+     "job": "backend-socle:rediscover:mytimeline_backend_src_test_java_com_matimeline_eventmanager_architecture_ArchitectureTest.java:2"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "ExportJobTest L29-30 vérifie que completedAt est la valeur passée et non expiresAt moins 24 h.",
+      "ExportJobTest L29-30 vérifie que completedAt est la valeur passée et non expiresAt.minusHours(24).",
+      "ExportJobTest l.29-30 asserte que completedAt est la valeur passée et non expiresAt.minusHours(24)."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 90,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "backend-socle:tests:6",
+   "section": "tests",
+   "rank": 6,
+   "text": "- Les tests fixent qu'une unité de durée inconnue lève l'exception attendue [#998e745ee408fff7-1]. Selon un commentaire, une unité null donnait avant #54 une NullPointerException (500) et donne désormais 422 [#6b45ece8d5589a12-1].",
+   "fact_text": "Les tests fixent qu'une unité de durée inconnue lève l'exception attendue. Selon un commentaire, une unité null donnait avant #54 une NullPointerException (500) et donne désormais 422",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "backend-socle/998e745ee408fff7-1",
+    "backend-socle/6b45ece8d5589a12-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/test/java/com/matimeline/eventmanager/utils/UtilsTest.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/utils/UtilsTest.java",
+     44,
+     53,
+     "9fa743dccc2290785e6fff4acf08c92499fc01f03432b3afe241e20505109b13"
+    ],
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/utils/UtilsTest.java",
+     51,
+     51,
+     "1922f1da48817e5753576ccb4d2774c2fb32643f3a0107f913048782ed9a1efe"
+    ]
+   ],
+   "code_sha256": "e39037b2ab6df9c64ef3c3c5786f794c8fd5f2109b0c1b9649b8d900b1937a36",
+   "verdict": "annex",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 0.667,
+      "terms": 0.462,
+      "n": {
+       "identifiers": 1,
+       "values": 3,
+       "terms": 13
+      }
+     },
+     "restatement": "UtilsTest vérifie que calculateEndDate lève InvalidDurationUnitException pour une unité inconnue (\"fortnights\") et pour une unité null. Le commentaire indique que le cas null provoquait auparavant une NullPointerException (500) et renvoie désormais une erreur 422.",
+     "confidence": "high"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 7,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/backend/src/test/java/com/matimeline/eventmanager/utils/UtilsTest.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 0.615,
+      "n": {
+       "identifiers": 1,
+       "values": 3,
+       "terms": 13
+      }
+     },
+     "job": "backend-socle:rediscover:mytimeline_backend_src_test_java_com_matimeline_eventmanager_architecture_ArchitectureTest.java:2",
+     "rank_in_lot": 2
+    },
+    "comment": [
+     {
+      "id": "backend-socle/6b45ece8d5589a12-1",
+      "verdict": "confirmed"
+     }
+    ],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 91,
+    "annex_table": {
+     "part": "backend-socle.details.md",
+     "row": 7
+    }
+   },
+   "uses": 0
+  },
+  {
+   "id": "backend-socle:tests:7",
+   "section": "tests",
+   "rank": 7,
+   "text": "- Les tests fixent que ThemePreference accepte exactement les valeurs en minuscules, avec aller-retour, et rejette toute autre valeur [#e966087c821ce577-1] [#7ac79595659d2d9d-1].",
+   "fact_text": "Les tests fixent que ThemePreference accepte exactement les valeurs en minuscules, avec aller-retour, et rejette toute autre valeur",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "backend-socle/e966087c821ce577-1",
+    "backend-socle/7ac79595659d2d9d-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/test/java/com/matimeline/eventmanager/domain/models/ThemePreferenceTest.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/domain/models/ThemePreferenceTest.java",
+     17,
+     24,
+     "e7b4b76086742f24ec50baab6bc72b4ece7fe6010eb11d127769732bedb6a5f5"
+    ],
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/domain/models/ThemePreferenceTest.java",
+     26,
+     30,
+     "ddf0b940a4f37e215c85d3d302de7f61092a01f05b71878bd2c2cb9104bee05f"
+    ]
+   ],
+   "code_sha256": "e787a8890d19280c08f9e1f6bd2339235ddd60a9e483acb1d7a074a9ce835758",
+   "verdict": "annex",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
+      "terms": 0.667,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 9
+      }
+     },
+     "restatement": "ThemePreferenceTest vérifie que fromValue accepte exactement les valeurs de l'enum et qu'elles font l'aller-retour via value(), avec light, dark et system. Le second test attend une IllegalArgumentException pour toute autre chaîne, y compris les variantes de casse, les espaces et la chaîne vide.",
+     "confidence": "high"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 11,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/backend/src/test/java/com/matimeline/eventmanager/domain/models/ThemePreferenceTest.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.778,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 9
+      }
+     },
+     "job": "backend-socle:rediscover:mytimeline_backend_src_test_java_com_matimeline_eventmanager_architecture_ArchitectureTest.java:2",
+     "rank_in_lot": 3
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 92,
+    "annex_table": {
+     "part": "backend-socle.details.md",
+     "row": 8
+    }
+   },
+   "uses": 0
+  },
+  {
+   "id": "backend-socle:tests:8",
+   "section": "tests",
+   "rank": 8,
+   "text": "- Le test de contrat du DTO de création d'événement fixe qu'une requête sans couleur reste valide (compatibilité ascendante) [#8f2835df25c06050-1].",
+   "fact_text": "Le test de contrat du DTO de création d'événement fixe qu'une requête sans couleur reste valide (compatibilité ascendante)",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "backend-socle/8f2835df25c06050-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/dtos/EventCreationRequestContractTest.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/dtos/EventCreationRequestContractTest.java",
+     31,
+     32,
+     "826705ee898a5861fb0deee2f55ee413471dca3f8664b1074bdd7f1c77067c2b"
+    ]
+   ],
+   "code_sha256": "826705ee898a5861fb0deee2f55ee413471dca3f8664b1074bdd7f1c77067c2b",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
+      "terms": 0.636,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 11
+      }
+     },
+     "restatement": "Seule la signature de shouldRemainValidWhenColorAbsent_nonBreaking est visible (@Test, throws Exception). D'après son nom, le test vérifie qu'une requête de création d'événement reste valide quand le champ couleur est absent, ce qui constitue un changement non cassant. Le corps n'est pas dans l'extrait.",
+     "confidence": "medium"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 25,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/backend/src/test/java/com/matimeline/eventmanager/application/dtos/EventCreationRequestContractTest.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
+      "terms": 0.455,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 11
+      }
+     },
+     "job": "backend-socle:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_dtos_ProductUpdateRequest.java:1"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Le test shouldRemainValidWhenColorAbsent_nonBreaking (L31-32) confirme le nom et l'intention.",
+      "Le test shouldRemainValidWhenColorAbsent_nonBreaking (L31-32) correspond au constat.",
+      "Le test shouldRemainValidWhenColorAbsent_nonBreaking (L31-32) correspond au constat par son nom."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 93,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "backend-socle:tests:9",
+   "section": "tests",
+   "rank": 9,
+   "text": "- Un test d'intégration étend AbstractPostgresIntegrationTest avec @SpringBootTest et @AutoConfigureMockMvc, et fixe l'IP distante par un RequestPostProcessor sur la requête [#b5e6d1c5023e700a-1] [#57050fdbe9c38e6d-1].",
+   "fact_text": "Un test d'intégration étend AbstractPostgresIntegrationTest avec @SpringBootTest et @AutoConfigureMockMvc, et fixe l'IP distante par un RequestPostProcessor sur la requête",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "backend-socle/b5e6d1c5023e700a-1",
+    "backend-socle/57050fdbe9c38e6d-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/RateLimitingDisabledIntegrationTest.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/RateLimitingDisabledIntegrationTest.java",
+     28,
+     31,
+     "e5d607d352b60a161f158fab3ad416eb77c43644ffe75f0a4aba2a4398eaac22"
+    ],
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/RateLimitingDisabledIntegrationTest.java",
+     40,
+     49,
+     "9f4d20ae820f248fb968f4b8bcab09081abfe50bfaa1166002f72663a1ef7472"
+    ]
+   ],
+   "code_sha256": "a8e2c430dd3f39068d6f4b05300e192ae0df91fb7a4317f79c9092542b882eef",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.75,
+      "values": null,
+      "terms": 0.167,
+      "n": {
+       "identifiers": 4,
+       "values": 0,
+       "terms": 6
+      }
+     },
+     "restatement": "RateLimitingDisabledIntegrationTest est annotée @SpringBootTest et @AutoConfigureMockMvc, avec @TestPropertySource(app.rate-limit.enabled=false), et hérite de AbstractPostgresIntegrationTest. La classe désactive donc le rate limiting pour toute sa suite d'intégration.",
+     "confidence": "high"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 13,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/RateLimitDefaultCeilingsIntegrationTest.java",
+     "file_ok": false,
+     "overlap": {
+      "identifiers": 0.75,
+      "values": null,
+      "terms": 0.167,
+      "n": {
+       "identifiers": 4,
+       "values": 0,
+       "terms": 6
+      }
+     },
+     "job": "backend-socle:rediscover:mytimeline_backend_src_test_java_com_matimeline_eventmanager_architecture_ArchitectureTest.java:2"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "La classe (L28-31) porte @SpringBootTest et @AutoConfigureMockMvc et étend AbstractPostgresIntegrationTest. L'IP est fixée par req.setRemoteAddr dans .with(...), donc par un RequestPostProcessor.",
+      "La classe étend AbstractPostgresIntegrationTest avec @SpringBootTest et @AutoConfigureMockMvc (L28-31), et l'IP est fixée par req.setRemoteAddr dans .with(...) (L44).",
+      "La classe (l.28-31) porte @SpringBootTest et @AutoConfigureMockMvc et étend AbstractPostgresIntegrationTest. L'IP est fixée par un post-processeur lambda sur la requête (l.44)."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 94,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "backend-socle:tests:10",
+   "section": "tests",
+   "rank": 10,
+   "text": "- Un test de service unitaire utilise MockitoExtension avec un mock du repository et le service en @InjectMocks, et construit ses données par une fabrique privée [#bddd337cc630571f-1] [#894540d50ac1fcf3-1].",
+   "fact_text": "Un test de service unitaire utilise MockitoExtension avec un mock du repository et le service en @InjectMocks, et construit ses données par une fabrique privée",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "backend-socle/bddd337cc630571f-1",
+    "backend-socle/894540d50ac1fcf3-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/SessionServiceImplTest.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/SessionServiceImplTest.java",
+     25,
+     36,
+     "f468996cb4f4aa979ebf791d8f31b41b42aa4af7837edb0d88c49ff5d67616e1"
+    ],
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/SessionServiceImplTest.java",
+     38,
+     47,
+     "8d1fa6b668bc767c81ecf7567a3588b9f65cde3e5cfe8b2f5f7841647c1a365e"
+    ]
+   ],
+   "code_sha256": "182819c5a1668210411bf39afef76f1571936d1bc96b763ea706e02792a124f9",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
+      "terms": 0.4,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 10
+      }
+     },
+     "restatement": "SessionServiceImplTest utilise Mockito : SessionRepository est mocké et SessionServiceImpl est injecté. La méthode utilitaire activeSession construit une Session avec un revokedAt paramétrable et une expiration à now plus 2 jours. Le test isSessionActive_activeJti_true vérifie que isSessionActive renvoie true quand findByJti retourne une session non révoquée.",
+     "confidence": "high"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 22,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/backend/src/test/java/com/matimeline/eventmanager/application/services/EventServiceImplTest.java",
+     "file_ok": false,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": null,
+      "terms": 0.3,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 10
+      }
+     },
+     "job": "backend-socle:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_dtos_ProductUpdateRequest.java:1"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "SessionServiceImplTest L29-36 utilise @ExtendWith(MockitoExtension.class), @Mock SessionRepository, @InjectMocks service, et la fabrique privée activeSession (L38).",
+      "SessionServiceImplTest (L29-47) utilise @ExtendWith(MockitoExtension.class), @Mock SessionRepository, @InjectMocks SessionServiceImpl et la méthode privée activeSession pour construire les données.",
+      "SessionServiceImplTest l.29-36 utilise @ExtendWith(MockitoExtension.class), @Mock SessionRepository, @InjectMocks SessionServiceImpl, et la fabrique privée activeSession (l.38)."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 95,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "backend-socle:questions:1",
+   "section": "questions",
+   "rank": 1,
+   "text": "- L'autorité est-elle bien préfixée par ROLE_ ? CustomUserDetailsService utilise user.getRole() sans préfixe, alors que la Javadoc de CallerResolver cite hasAuthority(\"ROLE_USER\") [#13cd0990d0682f15-1].",
+   "fact_text": "L'autorité est-elle bien préfixée par ROLE_ ? CustomUserDetailsService utilise user.getRole() sans préfixe, alors que la Javadoc de CallerResolver cite hasAuthority(\"ROLE_USER\")",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "backend-socle/13cd0990d0682f15-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/CustomUserDetailsService.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/CustomUserDetailsService.java",
+     27,
+     27,
+     "87619ea102c117c04728f2a7e630c0ff429edaeb7b86d042d4b3c656d96720f1"
+    ]
+   ],
+   "code_sha256": "87619ea102c117c04728f2a7e630c0ff429edaeb7b86d042d4b3c656d96720f1",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "CustomUserDetailsService L27 construit SimpleGrantedAuthority(user.getRole()) sans préfixe, mais les valeurs stockées du rôle ne sont pas lues, donc le préfixe reste indécidable.",
+      "CustomUserDetailsService L27 crée SimpleGrantedAuthority(user.getRole()) sans préfixe. Le code lu ne dit pas si les valeurs stockées contiennent ROLE_, donc la question reste ouverte.",
+      "CustomUserDetailsService L27 passe user.getRole() sans préfixe. Le code ne dit pas si la valeur stockée porte ROLE_, donc la question reste ouverte."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "open"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 99,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "backend-socle:questions:2",
+   "section": "questions",
+   "rank": 2,
+   "text": "- Pourquoi User.role est-il une String alors qu'une énumération Role existe [#59cca22916afa937-1], et durationUnit un String libre alors que recurrenceUnit est un enum [#8f39fdf783d90a95-1] ?",
+   "fact_text": "Pourquoi User.role est-il une String alors qu'une énumération Role existe, et durationUnit un String libre alors que recurrenceUnit est un enum ?",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "backend-socle/59cca22916afa937-1",
+    "backend-socle/8f39fdf783d90a95-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/User.java",
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/EventEntity.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/User.java",
+     10,
+     10,
+     "34fe426dddf6f0c7b62d09038548b0baae601d3d61ed782d2d7711fe6d6f6df9"
+    ],
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/EventEntity.java",
+     40,
+     45,
+     "3b48c0cb8ffa8fc841ce3bdf57d221d33bd5774ce1833f280a1842fb16cfa8a1"
+    ]
+   ],
+   "code_sha256": "1df839a91632612622eb7cc9e9c3521f260d20ba156a473adb9b67f29b88b134",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "User.role est un String (L10) et durationUnit un String alors que recurrenceUnit est un enum (EventEntity L40-45), mais le code n'explique pas le pourquoi.",
+      "User.role est un String (L10) et EventEntity.durationUnit un String alors que recurrenceUnit est un enum (L43-45). Le code ne donne pas la raison.",
+      "User.role est un String (L10) et durationUnit un String (EventEntity L40) alors que recurrenceUnit est un enum (L43-45) ; le code ne dit pas pourquoi."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "open"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 100,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "backend-socle:questions:3",
+   "section": "questions",
+   "rank": 3,
+   "text": "- La langue des messages de validation est-elle voulue ? Les DTOs sont en anglais et le message par défaut de StrongPassword en français [#980e714db9758450-1] [#a1a112644f96b401-1].",
+   "fact_text": "La langue des messages de validation est-elle voulue ? Les DTOs sont en anglais et le message par défaut de StrongPassword en français",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "backend-socle/980e714db9758450-1",
+    "backend-socle/a1a112644f96b401-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/AuthRequest.java",
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/validation/StrongPassword.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/AuthRequest.java",
+     7,
+     12,
+     "dc79a97535008007aada7897c74ecd001638c8c3d2169b28fe5582bf11bdbf4e"
+    ],
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/validation/StrongPassword.java",
+     38,
+     39,
+     "b93510ecd0b8f4d3da8083dd257216e5a1d2b212833acb2cd996384fa0eb98f9"
+    ]
+   ],
+   "code_sha256": "3075cfabc11aaca38ea03faf26ef372ff40d9c887d4986524b2c569ba702e63d",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "AuthRequest L7-12 a des messages anglais et StrongPassword.message L38-39 est en français, mais le code ne dit pas si c'est voulu.",
+      "AuthRequest (L7-12) a des messages anglais et StrongPassword.message (L38-39) est en français, mais le code ne dit pas si c'est voulu.",
+      "AuthRequest (L7-12) a des messages anglais et StrongPassword.message (L38-39) un défaut français ; le code ne dit pas si c'est voulu."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "open"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 101,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "backend-socle:alerts:1",
+   "section": "alerts",
+   "rank": 1,
+   "text": "- La surcharge generateToken(String) émet un jeton sans claim jti, alors que la javadoc de generateToken(Authentication) dit que chaque jeton en porte un [#99cdc3c6ad8d23f3-1]. Un code qui lit le jti d'un jeton émis par cette voie n'en trouve pas, donc appeler la surcharge Authentication ou ajouter le claim.",
+   "fact_text": "La surcharge generateToken(String) émet un jeton sans claim jti, alors que la javadoc de generateToken(Authentication) dit que chaque jeton en porte un. Un code qui lit le jti d'un jeton émis par cette voie n'en trouve pas, donc appeler la surcharge Authentication ou ajouter le claim",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "backend-socle/99cdc3c6ad8d23f3-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtService.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtService.java",
+     145,
+     156,
+     "8c8dd48302257b9e28ca57ac57c55440a2590206f7cdd7013097f71032ddb2db"
+    ]
+   ],
+   "code_sha256": "8c8dd48302257b9e28ca57ac57c55440a2590206f7cdd7013097f71032ddb2db",
+   "verdict": "annex",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.071,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 14
+      }
+     },
+     "restatement": "generateToken fixe le sujet au username, issuedAt à la date courante et expiration à maintenant plus TOKEN_VALIDITY_MS, puis signe avec RS256 explicitement. Le commentaire lie ce choix à la vérification côté Edge, sans logique supplémentaire dans le code.",
+     "confidence": "high"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 14,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtService.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.714,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 14
+      }
+     },
+     "job": "backend-socle:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_dtos_ProductUpdateRequest.java:1",
+     "rank_in_lot": 3
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 105,
+    "annex_table": {
+     "part": "backend-socle.details.md",
+     "row": 9
+    }
+   },
+   "uses": 0
+  },
+  {
+   "id": "backend-socle:alerts:2",
+   "section": "alerts",
+   "rank": 2,
+   "text": "- UserMapper.toDomain ne transmet pas themePreference au constructeur de User, alors que UserResponse.fromDomain lit cette valeur [#d86713c491180960-1]. La préférence exposée peut ne pas refléter la colonne persistée, donc corriger le mapper avant d'ajouter un usage de ce champ.",
+   "fact_text": "UserMapper.toDomain ne transmet pas themePreference au constructeur de User, alors que UserResponse.fromDomain lit cette valeur. La préférence exposée peut ne pas refléter la colonne persistée, donc corriger le mapper avant d'ajouter un usage de ce champ",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "backend-socle/d86713c491180960-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/mappers/UserMapper.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/mappers/UserMapper.java",
+     10,
+     20,
+     "fc46bfdb334e15d398f994fcad6ae493565f7ca697fca9de1baa77a90d7abd7e"
+    ]
+   ],
+   "code_sha256": "fc46bfdb334e15d398f994fcad6ae493565f7ca697fca9de1baa77a90d7abd7e",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.4,
+      "values": null,
+      "terms": 0.214,
+      "n": {
+       "identifiers": 5,
+       "values": 0,
+       "terms": 14
+      }
+     },
+     "restatement": "UserMapper.toDomain copie directement les champs de UserEntity (id, name, username, password, role, email, avatar) vers le constructeur de User, sans condition ni transformation. Le mot de passe est donc transmis tel quel au modèle domaine.",
+     "confidence": "high"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 20,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/backend/src/main/java/com/matimeline/eventmanager/application/mappers/UserMapper.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.6,
+      "values": null,
+      "terms": 0.143,
+      "n": {
+       "identifiers": 5,
+       "values": 0,
+       "terms": 14
+      }
+     },
+     "job": "backend-socle:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_dtos_ProductUpdateRequest.java:1"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "UserMapper.toDomain L10-20 passe sept arguments sans themePreference ; rien ne contredit la ligne.",
+      "UserMapper.toDomain L10-20 ne transmet que sept arguments, sans themePreference.",
+      "UserMapper.toDomain L10-20 construit User avec 7 arguments sans themePreference ; rien dans l'extrait ne contredit le constat."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 106,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "backend-socle:alerts:3",
+   "section": "alerts",
+   "rank": 3,
+   "text": "- La règle ArchUnit sur HttpSession est la seule vérifiée sans FreezingArchRule.freeze [#367437a993c52dd8-1]. Toute nouvelle violation fait échouer le test, il faut la corriger au lieu de la geler.",
+   "fact_text": "La règle ArchUnit sur HttpSession est la seule vérifiée sans FreezingArchRule.freeze. Toute nouvelle violation fait échouer le test",
+   "consigne": "il faut la corriger au lieu de la geler",
+   "consigne_dropped": false,
+   "cites": [
+    "backend-socle/367437a993c52dd8-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/test/java/com/matimeline/eventmanager/architecture/ArchitectureTest.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/architecture/ArchitectureTest.java",
+     183,
+     183,
+     "022f2028c8d6e838bd7d7dc98509694867663d699a394277932cbf8e274c5475"
+    ]
+   ],
+   "code_sha256": "022f2028c8d6e838bd7d7dc98509694867663d699a394277932cbf8e274c5475",
+   "verdict": "annex",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": {
+     "fact_supported": true,
+     "consigne_supported": true,
+     "reason": "Le fait indique que la règle HttpSession est vérifiée sans FreezingArchRule.freeze et ne tolère donc aucune violation gelée, ce qui porte le constat, et la consigne de corriger plutôt que de geler en découle directement."
+    },
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.333,
+      "values": null,
+      "terms": 0.143,
+      "n": {
+       "identifiers": 3,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "restatement": "La ligne 183 de productionCodeShouldNotUseHttpSession appelle rule.check(classesUnderTest), c'est-à-dire qu'elle exécute la règle ArchUnit sur les classes analysées. La définition complète de la règle n'est pas dans cet extrait.",
+     "confidence": "medium"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 5,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/backend/src/test/java/com/matimeline/eventmanager/architecture/ArchitectureTest.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.667,
+      "values": null,
+      "terms": 0.714,
+      "n": {
+       "identifiers": 3,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "job": "backend-socle:rediscover:mytimeline_backend_src_test_java_com_matimeline_eventmanager_architecture_ArchitectureTest.java:2",
+     "rank_in_lot": 1
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 107,
+    "annex_table": {
+     "part": "backend-socle.details.md",
+     "row": 10
+    }
+   },
+   "uses": 0
+  },
+  {
+   "id": "backend-socle:alerts:4",
+   "section": "alerts",
+   "rank": 4,
+   "text": "- CustomUserDetails renvoie true en constante pour les quatre indicateurs de compte, la logique reste à écrire selon un commentaire [#dc03b9374b880075-1]. Un compte verrouillé, expiré ou désactivé n'est pas refusé par ces indicateurs, donc ne pas compter dessus.",
+   "fact_text": "CustomUserDetails renvoie true en constante pour les quatre indicateurs de compte, la logique reste à écrire selon un commentaire. Un compte verrouillé, expiré ou désactivé n'est pas refusé par ces indicateurs, donc ne pas compter dessus",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "backend-socle/dc03b9374b880075-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/CustomUserDetails.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/CustomUserDetails.java",
+     40,
+     59,
+     "47a1f39dc5608bd3a63e47361eb5995c63b9d546f81febb372e7d3ac83341f0d"
+    ]
+   ],
+   "code_sha256": "47a1f39dc5608bd3a63e47361eb5995c63b9d546f81febb372e7d3ac83341f0d",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.375,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 16
+      }
+     },
+     "restatement": "CustomUserDetails renvoie toujours true pour isAccountNonExpired, isAccountNonLocked, isCredentialsNonExpired et isEnabled. Aucun état de compte n'est donc contrôlé, le commentaire indiquant que la logique reste à implémenter.",
+     "confidence": "high"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 15,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/CustomUserDetails.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.25,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 16
+      }
+     },
+     "job": "backend-socle:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_dtos_ProductUpdateRequest.java:1"
+    },
+    "comment": [
+     {
+      "id": "backend-socle/dc03b9374b880075-1",
+      "verdict": "confirmed"
+     }
+    ],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "CustomUserDetails L40-59 : les quatre indicateurs renvoient true, avec le commentaire « need to implement logic ».",
+      "CustomUserDetails L40-59 : les quatre indicateurs renvoient true, avec le commentaire « need to implement logic ».",
+      "CustomUserDetails L42-59 : les quatre méthodes renvoient true, avec le commentaire L40 'need to implement logic'."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 108,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "backend-socle:alerts:5",
+   "section": "alerts",
+   "rank": 5,
+   "text": "- La relation category de ProductEntity n'a pas de fetch explicite, donc EAGER par défaut, alors que CategoryEntity.owner est LAZY [#f8f05e9e0279ea4d-1]. Chaque chargement de produit charge sa catégorie, donc déclarer le fetch si ce coût gêne.",
+   "fact_text": "La relation category de ProductEntity n'a pas de fetch explicite, donc EAGER par défaut, alors que CategoryEntity.owner est LAZY. Chaque chargement de produit charge sa catégorie, donc déclarer le fetch si ce coût gêne",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "backend-socle/f8f05e9e0279ea4d-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/ProductEntity.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/ProductEntity.java",
+     38,
+     40,
+     "f9d17ecd96351695bc09838c50e1fe1edd9fc1fe49a7e42431c6e3c4109a9bea"
+    ]
+   ],
+   "code_sha256": "f9d17ecd96351695bc09838c50e1fe1edd9fc1fe49a7e42431c6e3c4109a9bea",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.25,
+      "values": null,
+      "terms": 0.417,
+      "n": {
+       "identifiers": 4,
+       "values": 0,
+       "terms": 12
+      }
+     },
+     "restatement": "ProductEntity.category est une relation @ManyToOne obligatoire (colonne de jointure category_id, nullable = false). Aucun fetch n'est précisé, donc le mode de chargement par défaut de JPA pour @ManyToOne s'applique.",
+     "confidence": "medium"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 10,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/ProductEntity.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": null,
+      "terms": 0.25,
+      "n": {
+       "identifiers": 4,
+       "values": 0,
+       "terms": 12
+      }
+     },
+     "job": "backend-socle:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_dtos_ProductUpdateRequest.java:1"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "ProductEntity L38-40 : @ManyToOne sans fetch, donc EAGER par défaut ; le LAZY de CategoryEntity.owner n'est pas visible mais rien ne le contredit.",
+      "ProductEntity L38-40 : @ManyToOne sans fetch, donc EAGER par défaut. Le LAZY de CategoryEntity.owner n'est pas dans l'extrait, donc je ne le réfute pas.",
+      "ProductEntity L38-40 : @ManyToOne sans fetch, donc EAGER par défaut. Le LAZY de CategoryEntity.owner n'est pas vérifié, mais rien ne le contredit. La consigne est conditionnelle et raisonnable."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "supported",
+     "question_verdict": "n/a"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 109,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "backend-socle:alerts:6",
+   "section": "alerts",
+   "rank": 6,
+   "text": "- Product.addEvent appelle add sans contrôle de null, alors que le constructeur accepte une liste null [#e4027da2250fba89-1]. Un produit construit avec une liste null échoue à l'ajout d'un event, donc initialiser la liste avant l'appel.",
+   "fact_text": "Product.addEvent appelle add sans contrôle de null, alors que le constructeur accepte une liste null. Un produit construit avec une liste null échoue à l'ajout d'un event, donc initialiser la liste avant l'appel",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "backend-socle/e4027da2250fba89-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/Product.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/Product.java",
+     66,
+     68,
+     "66a8d3c19ea399507ade6fec12f2cf0f63c1ed55c6bed0e6c08ce6e32f6c0759"
+    ]
+   ],
+   "code_sha256": "66a8d3c19ea399507ade6fec12f2cf0f63c1ed55c6bed0e6c08ce6e32f6c0759",
+   "verdict": "annex",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.357,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 14
+      }
+     },
+     "restatement": "Product.addEvent ajoute l'événement à la liste events sans aucun contrôle, ni doublon, ni mise à jour du lien inverse vers Product. C'est un simple add.",
+     "confidence": "high"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 12,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/backend/src/main/java/com/matimeline/eventmanager/domain/models/Product.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 14
+      }
+     },
+     "job": "backend-socle:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_dtos_ProductUpdateRequest.java:1",
+     "rank_in_lot": 2
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 110,
+    "annex_table": {
+     "part": "backend-socle.details.md",
+     "row": 11
+    }
+   },
+   "uses": 0
+  },
+  {
+   "id": "backend-socle:alerts:7",
+   "section": "alerts",
+   "rank": 7,
+   "text": "- Le commentaire de CategoryEntity renvoie à getOwnerId(), absent de la classe qui n'expose que getOwner() [#1b4eb0d6be6a52b8-1]. Se fier au code et corriger le commentaire.",
+   "fact_text": "Le commentaire de CategoryEntity renvoie à getOwnerId(), absent de la classe qui n'expose que getOwner()",
+   "consigne": "Se fier au code et corriger le commentaire",
+   "consigne_dropped": false,
+   "cites": [
+    "backend-socle/1b4eb0d6be6a52b8-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/CategoryEntity.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/CategoryEntity.java",
+     26,
+     27,
+     "308e754847124b80d202e6c43dad3e5aeaf3a4761bfca3d78cb6f0ac8244c575"
+    ]
+   ],
+   "code_sha256": "308e754847124b80d202e6c43dad3e5aeaf3a4761bfca3d78cb6f0ac8244c575",
+   "verdict": "hold",
+   "reason": "comment_contradicted",
+   "final": true,
+   "measures": {
+    "fidelity": {
+     "fact_supported": true,
+     "consigne_supported": true,
+     "reason": "Le fait énonce que le commentaire renvoie à getOwnerId(), absent de CategoryEntity qui n'expose que getOwner(), ce qui porte le constat, et la consigne de se fier au code et de corriger le commentaire reprend cet écart."
+    },
+    "deduce": null,
+    "rediscover": null,
+    "comment": [
+     {
+      "id": "backend-socle/1b4eb0d6be6a52b8-1",
+      "verdict": "contradicted"
+     }
+    ],
+    "refute": null
+   },
+   "contrary": {
+    "fact": "backend-socle/1b4eb0d6be6a52b8-1",
+    "file": "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/CategoryEntity.java",
+    "lines": [
+     76,
+     78
+    ],
+    "evidence": "public UserEntity getOwner() {",
+    "code_says": "La classe CategoryEntity expose getOwner() qui renvoie un UserEntity, et ne définit aucune méthode getOwnerId(). Le commentaire (lignes 26-27) affirme que l'ownership se compare via getOwnerId(), ce qui n'existe pas dans le code."
+   },
+   "placed": {
+    "pack_line": null,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "backend-socle:alerts:8",
+   "section": "alerts",
+   "rank": 8,
+   "text": "- Les noms divergent, Event a setProduct mais getProductId [#125f0a1489463c85-1], et le champ de catégorie vaut category à la création de produit et categoryId à la mise à jour [#b43c6c49adde6e57-1]. Vérifier le nom exact avant d'écrire un appel ou un JSON.",
+   "fact_text": "Les noms divergent, Event a setProduct mais getProductId, et le champ de catégorie vaut category à la création de produit et categoryId à la mise à jour",
+   "consigne": "Vérifier le nom exact avant d'écrire un appel ou un JSON",
+   "consigne_dropped": false,
+   "cites": [
+    "backend-socle/125f0a1489463c85-1",
+    "backend-socle/b43c6c49adde6e57-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/Event.java",
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/ProductCreationRequest.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/Event.java",
+     79,
+     79,
+     "cb02a31c9b432f59fdca0b654415f51287bc60c96cdba240ee7b3d156550d33d"
+    ],
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/ProductCreationRequest.java",
+     16,
+     17,
+     "7dcd19ba8b4a429feb3c2ebe30b6ea5a3f53b7d21ac6049e06739d8569a8a3ac"
+    ]
+   ],
+   "code_sha256": "aa5ade7533e49b59e49463d5c21af6b4181e5c0abd117d7911ec2f94f6229c0a",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": {
+     "fact_supported": true,
+     "consigne_supported": true,
+     "reason": "Les faits citent setProduct face à getProductId, et category face à categoryId entre création et mise à jour, ce qui porte le constat, et la consigne de vérifier le nom exact avant un appel ou un JSON découle de cette incohérence de nommage."
+    },
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.333,
+      "values": null,
+      "terms": 0.364,
+      "n": {
+       "identifiers": 3,
+       "values": 0,
+       "terms": 11
+      }
+     },
+     "restatement": "Event.setProduct(UUID) affecte directement productId sans aucun contrôle. Dans ProductCreationRequest, le champ category porte @NotNull avec le message « Category is required », ce qui impose la présence de la catégorie côté requête, mais le setter ne vérifie rien.",
+     "confidence": "high"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 24,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+     "file_ok": false,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
+      "terms": 0.455,
+      "n": {
+       "identifiers": 3,
+       "values": 0,
+       "terms": 11
+      }
+     },
+     "job": "backend-socle:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_dtos_ProductUpdateRequest.java:1"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Event.setProduct(UUID productId) L79 et ProductCreationRequest.category L17 correspondent à la ligne ; la consigne de vérifier le nom exact est motivée par ces écarts.",
+      "Event.setProduct(UUID productId) L79 et ProductCreationRequest.category L17 sont conformes au constat. La consigne de vérifier le nom exact est motivée par ces divergences.",
+      "Event.setProduct(UUID productId) L79 et ProductCreationRequest.category L17 sont conformes ; la Javadoc de ProductUpdateRequest nomme categoryId. La consigne est utile."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "supported",
+     "question_verdict": "n/a"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 111,
+    "annex_table": null
+   },
+   "uses": 0
+  }
+ ],
+ "comment_facts": [
+  {
+   "id": "backend-socle/d3de47ed0eeffbf8-1",
+   "verdict": "confirmed",
+   "code_says": "Le test delete_removesFile_andIsIdempotent appelle adapter.delete(ref) une première fois puis une seconde fois sur la même référence. Aucune assertion n'entoure le second appel, donc une exception ferait échouer le test.",
+   "code_line_start": 54,
+   "code_line_end": 56,
+   "code_evidence": "adapter.delete(ref); // 2e appel : no-op, aucune exception",
+   "evidence_check": null,
+   "code_file": "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapterTest.java",
+   "invalid": false,
+   "key_sha256": "7c69079b15556d7ce6bd18c6a9d8cf7a621ad260a525a8d3d9f4a715725d358e",
+   "cited_by": [
+    "backend-socle:tests:4"
+   ],
+   "structure_rows_removed": []
+  },
+  {
+   "id": "backend-socle/6b45ece8d5589a12-1",
+   "verdict": "confirmed",
+   "code_says": "Le commentaire (lignes 50-51) décrit le comportement antérieur à #54 (switch(null) menant à une NullPointerException, soit une 500) et le comportement actuel (422). Le corps du test (lignes 52-53) appelle Utils.calculateEndDate avec durationUnit null et attend une InvalidDurationUnitException.",
+   "code_line_start": 50,
+   "code_line_end": 53,
+   "code_evidence": "assertThatThrownBy(() -> Utils.calculateEndDate(\"duration\", 3, null, START))",
+   "evidence_check": null,
+   "code_file": "mytimeline:backend/src/test/java/com/matimeline/eventmanager/utils/UtilsTest.java",
+   "invalid": false,
+   "key_sha256": "432565cfded01ba0b742b7413b6a3b9fb6e2da1f44ae9137f6459644f56afae7",
+   "cited_by": [
+    "backend-socle:tests:6"
+   ],
+   "structure_rows_removed": []
+  },
+  {
+   "id": "backend-socle/dc03b9374b880075-1",
+   "verdict": "confirmed",
+   "code_says": "Les quatre méthodes isAccountNonExpired, isAccountNonLocked, isCredentialsNonExpired et isEnabled renvoient la constante true, sans logique. Le commentaire de la ligne 40 indique que la logique reste à implémenter.",
+   "code_line_start": 40,
+   "code_line_end": 59,
+   "code_evidence": "// everything true, need to implement logic",
+   "evidence_check": null,
+   "code_file": "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/CustomUserDetails.java",
+   "invalid": false,
+   "key_sha256": "0eaab867b54da2f0cb10310c5dd21d4c0de33d7996ba51c2d10300739982fa30",
+   "cited_by": [
+    "backend-socle:alerts:4"
+   ],
+   "structure_rows_removed": []
+  },
+  {
+   "id": "backend-socle/1b4eb0d6be6a52b8-1",
+   "verdict": "contradicted",
+   "code_says": "La classe CategoryEntity expose getOwner() qui renvoie un UserEntity, et ne définit aucune méthode getOwnerId(). Le commentaire (lignes 26-27) affirme que l'ownership se compare via getOwnerId(), ce qui n'existe pas dans le code.",
+   "code_line_start": 76,
+   "code_line_end": 78,
+   "code_evidence": "public UserEntity getOwner() {",
+   "evidence_check": "exact",
+   "code_file": "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/CategoryEntity.java",
+   "invalid": false,
+   "key_sha256": "55f336f53ae16de495c2919e5c880222caeccc4975497b7901c323a5f0267fcb",
+   "cited_by": [
+    "backend-socle:alerts:7"
+   ],
+   "structure_rows_removed": []
+  }
+ ],
+ "facts_validated": [
+  "backend-socle/be183b621d286328-1",
+  "backend-socle/fac6a46f66104090-1",
+  "backend-socle/3fb0487b6c2dbb00-1",
+  "backend-socle/2fae5cab1ab1fc27-1",
+  "backend-socle/185f8a74f15e66fc-1",
+  "backend-socle/353d4149bc66a185-1",
+  "backend-socle/aefb4a0a2a939e49-1",
+  "backend-socle/322992155a7f5945-1",
+  "backend-socle/c227eff8822478b9-1",
+  "backend-socle/164b6d90f910bb89-1",
+  "backend-socle/dbd2bbe2eddcb65f-1",
+  "backend-socle/e735bef1d1794d75-1",
+  "backend-socle/551da21a5dbc23fe-1",
+  "backend-socle/66abb4cdef3eec41-1",
+  "backend-socle/867f2794346b8c63-1",
+  "backend-socle/379fa4542b4614bf-1",
+  "backend-socle/57050fdbe9c38e6d-2",
+  "backend-socle/dec1b07c9a52c00a-2",
+  "backend-socle/8f2835df25c06050-1",
+  "backend-socle/b5e6d1c5023e700a-1",
+  "backend-socle/57050fdbe9c38e6d-1",
+  "backend-socle/bddd337cc630571f-1",
+  "backend-socle/894540d50ac1fcf3-1",
+  "backend-socle/13cd0990d0682f15-1",
+  "backend-socle/59cca22916afa937-1",
+  "backend-socle/8f39fdf783d90a95-1",
+  "backend-socle/980e714db9758450-1",
+  "backend-socle/a1a112644f96b401-1",
+  "backend-socle/d86713c491180960-1",
+  "backend-socle/dc03b9374b880075-1",
+  "backend-socle/f8f05e9e0279ea4d-1",
+  "backend-socle/125f0a1489463c85-1",
+  "backend-socle/b43c6c49adde6e57-1"
+ ],
+ "counts": {
+  "units": 34,
+  "admit": 22,
+  "annex": 11,
+  "drop": 0,
+  "hold": 1,
+  "pending": 0,
+  "consigne_before_unsupported": 0,
+  "consigne_after_dropped": 0,
+  "structure_rows_removed": 0,
+  "framework": 0
+ },
+ "structure_rows_removed": [],
+ "notes": [],
+ "base_sha256_after": "4be979f6ea5168923dfd048e41abcc924e556b27d10995ba60fbf025491e6cf3",
+ "bases_touched": {
+  "backend-socle": {
+   "fingerprint": "1deff139bf4d1c0ff48235e4b291630d39c342836f4a91484e8ac27ce3842bb1",
+   "sha256_after": "4be979f6ea5168923dfd048e41abcc924e556b27d10995ba60fbf025491e6cf3"
+  }
+ },
+ "lint": {
+  "ok": true,
+  "errors": 0,
+  "warnings": 0
+ }
+}

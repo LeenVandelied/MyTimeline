@@ -1,0 +1,1585 @@
+{
+ "project": "mytimeline",
+ "generated_at": "2026-11-17T11:09:53",
+ "config_sha256": "22eb79f2d5f660596221d1ace1fcecdad2ab96fbc8d79b05cc171221e1f2e5fd",
+ "repos": {
+  "mytimeline": {
+   "language": "java",
+   "files": 688,
+   "tests": 86,
+   "base_package": "com.matimeline.eventmanager",
+   "app_root": null,
+   "annotations": [
+    {
+     "key": "Test",
+     "count": 84,
+     "examples": [
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/EventmanagerApplicationTests.java",
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/dtos/EventCreationRequestContractTest.java",
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/AvatarServiceImplTest.java"
+     ]
+    },
+    {
+     "key": "Autowired",
+     "count": 51,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/mappers/ProductMapper.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/CategoryServiceImpl.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/EventServiceImpl.java"
+     ]
+    },
+    {
+     "key": "Override",
+     "count": 43,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/AvatarServiceImpl.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/CategoryServiceImpl.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/EventServiceImpl.java"
+     ]
+    },
+    {
+     "key": "SpringBootTest",
+     "count": 42,
+     "examples": [
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/EventmanagerApplicationTests.java",
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/ExportPurgeSchedulerIntegrationTest.java",
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/PasswordResetTokenPurgeSchedulerIntegrationTest.java"
+     ]
+    },
+    {
+     "key": "Version",
+     "count": 33,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/EventResponse.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/mappers/EventMapper.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/EventServiceImpl.java"
+     ]
+    },
+    {
+     "key": "Transactional",
+     "count": 30,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/AsyncExportRunner.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/AvatarServiceImpl.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/CategoryServiceImpl.java"
+     ]
+    },
+    {
+     "key": "BeforeEach",
+     "count": 29,
+     "examples": [
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/AvatarServiceImplTest.java",
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/CategoryServiceImplTest.java",
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/EventServiceImplTest.java"
+     ]
+    },
+    {
+     "key": "Value",
+     "count": 23,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/AvatarServiceImpl.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/PasswordResetServiceImpl.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/PasswordResetTokenPurgeScheduler.java"
+     ]
+    },
+    {
+     "key": "Component",
+     "count": 22,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/mappers/CategoryMapper.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/mappers/EventMapper.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/mappers/PasswordResetTokenMapper.java"
+     ]
+    },
+    {
+     "key": "Valid",
+     "count": 20,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/EventCreationRequest.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/EventUpdateRequest.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/UpdatePreferencesRequest.java"
+     ]
+    },
+    {
+     "key": "ExtendWith",
+     "count": 20,
+     "examples": [
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/AvatarServiceImplTest.java",
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/CategoryServiceImplTest.java",
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/EventServiceImplTest.java"
+     ]
+    },
+    {
+     "key": "Mock",
+     "count": 20,
+     "examples": [
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/AvatarServiceImplTest.java",
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/CategoryServiceImplTest.java",
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/EventServiceImplTest.java"
+     ]
+    },
+    {
+     "key": "AutoConfigureMockMvc",
+     "count": 20,
+     "examples": [
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AccountDeletionIntegrationTest.java",
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthControllerLegacyPasswordLoginTest.java",
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/EventControllerOwnershipTest.java"
+     ]
+    },
+    {
+     "key": "NotBlank",
+     "count": 19,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/AuthRequest.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/CategoryRequest.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/CategoryUpdateRequest.java"
+     ]
+    },
+    {
+     "key": "GeneratedValue",
+     "count": 18,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/EventServiceImpl.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/UserRepositoryJpaImpl.java"
+     ]
+    },
+    {
+     "key": "Service",
+     "count": 15,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/AvatarServiceImpl.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/CategoryServiceImpl.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/EventServiceImpl.java"
+     ]
+    },
+    {
+     "key": "SQLRestriction",
+     "count": 14,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/ArchivedProductResponse.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/UserServiceImpl.java"
+     ]
+    },
+    {
+     "key": "Size",
+     "count": 13,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/AuthRequest.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/CategoryRequest.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/CategoryUpdateRequest.java"
+     ]
+    },
+    {
+     "key": "Bean",
+     "count": 12,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eTestSupportSecurityConfig.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/config/AsyncConfig.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/config/ClockConfig.java"
+     ]
+    },
+    {
+     "key": "Repository",
+     "count": 11,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/ports/repositories/ProductRepository.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/CategoryRepositoryJpaImpl.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/EventRepositoryJpaImpl.java"
+     ]
+    },
+    {
+     "key": "RestController",
+     "count": 10,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryController.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/EventController.java"
+     ]
+    },
+    {
+     "key": "Configuration",
+     "count": 10,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eTestSupportSecurityConfig.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/config/AsyncConfig.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/config/ClockConfig.java"
+     ]
+    },
+    {
+     "key": "AfterEach",
+     "count": 10,
+     "examples": [
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AccountDeletionIntegrationTest.java",
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ExportEndpointsIntegrationTest.java",
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ForgotPasswordAsyncTest.java"
+     ]
+    },
+    {
+     "key": "AssertTrue",
+     "count": 9,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/EventCreationRequest.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/EventUpdateRequest.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/EventServiceImpl.java"
+     ]
+    },
+    {
+     "key": "RequestMapping",
+     "count": 9,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryController.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/EventController.java"
+     ]
+    },
+    {
+     "key": "AllArgsConstructor",
+     "count": 8,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/ArchivedProductResponse.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/AuthResponse.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/CategoryResponse.java"
+     ]
+    },
+    {
+     "key": "Getter",
+     "count": 8,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/ArchivedProductResponse.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/AuthResponse.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/CategoryResponse.java"
+     ]
+    },
+    {
+     "key": "GetMapping",
+     "count": 8,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryController.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ExportController.java"
+     ]
+    },
+    {
+     "key": "RequestBody",
+     "count": 8,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryController.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/EventController.java"
+     ]
+    },
+    {
+     "key": "Column",
+     "count": 8,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/CategoryEntity.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/EventEntity.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/ExportJobEntity.java"
+     ]
+    },
+    {
+     "key": "PostMapping",
+     "count": 7,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryController.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/EventController.java"
+     ]
+    },
+    {
+     "key": "Profile",
+     "count": 7,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoHealthIndicator.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenController.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenFinderJpaAdapter.java"
+     ]
+    },
+    {
+     "key": "Entity",
+     "count": 7,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/CategoryEntity.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/EventEntity.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/ExportJobEntity.java"
+     ]
+    },
+    {
+     "key": "Id",
+     "count": 7,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/CategoryEntity.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/EventEntity.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/ExportJobEntity.java"
+     ]
+    },
+    {
+     "key": "Table",
+     "count": 7,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/CategoryEntity.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/EventEntity.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/ExportJobEntity.java"
+     ]
+    },
+    {
+     "key": "ParameterizedTest",
+     "count": 7,
+     "examples": [
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/RecurrenceExpansionServiceImplTest.java",
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/validation/PasswordPolicyTest.java",
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/domain/models/ThemePreferenceTest.java"
+     ]
+    },
+    {
+     "key": "Pattern",
+     "count": 6,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/ProductCreationRequest.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/ProductUpdateRequest.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/UpdatePreferencesRequest.java"
+     ]
+    },
+    {
+     "key": "ManyToOne",
+     "count": 6,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/mappers/CategoryMapper.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/CategoryEntity.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/EventEntity.java"
+     ]
+    },
+    {
+     "key": "Qualifier",
+     "count": 6,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/AsyncExportRunner.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/AvatarServiceImpl.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportPurgeScheduler.java"
+     ]
+    },
+    {
+     "key": "ValueSource",
+     "count": 6,
+     "examples": [
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/validation/PasswordPolicyTest.java",
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/domain/models/ThemePreferenceTest.java",
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailServiceLocaleTest.java"
+     ]
+    },
+    {
+     "key": "NotNull",
+     "count": 5,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/EventCreationRequest.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/ProductCreationRequest.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/RecurrencePreviewRequest.java"
+     ]
+    },
+    {
+     "key": "Async",
+     "count": 5,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/AsyncExportRunner.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/PasswordResetServiceImpl.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenController.java"
+     ]
+    },
+    {
+     "key": "Scheduled",
+     "count": 5,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportPurgeScheduler.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/PasswordResetTokenPurgeScheduler.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/config/SchedulingConfig.java"
+     ]
+    },
+    {
+     "key": "DeleteMapping",
+     "count": 5,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryController.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/EventController.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java"
+     ]
+    },
+    {
+     "key": "PathVariable",
+     "count": 5,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryController.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/EventController.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ExportController.java"
+     ]
+    },
+    {
+     "key": "Enumerated",
+     "count": 4,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/RecurrenceUnit.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/ThemePreference.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/EventEntity.java"
+     ]
+    },
+    {
+     "key": "PatchMapping",
+     "count": 4,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryController.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/EventController.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java"
+     ]
+    },
+    {
+     "key": "RequestParam",
+     "count": 4,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryController.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ExportController.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/UserController.java"
+     ]
+    },
+    {
+     "key": "CreatedDate",
+     "count": 4,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/CategoryEntity.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/EventEntity.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/ProductEntity.java"
+     ]
+    },
+    {
+     "key": "EntityListeners",
+     "count": 4,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/CategoryEntity.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/EventEntity.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/ProductEntity.java"
+     ]
+    },
+    {
+     "key": "LastModifiedDate",
+     "count": 4,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/CategoryEntity.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/EventEntity.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/ProductEntity.java"
+     ]
+    },
+    {
+     "key": "ActiveProfiles",
+     "count": 4,
+     "examples": [
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthControllerProdProfileCookieTest.java",
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenEndpointIntegrationTest.java",
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/RateLimitE2eProfileIntegrationTest.java"
+     ]
+    },
+    {
+     "key": "TestConfiguration",
+     "count": 4,
+     "examples": [
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ExportEndpointsIntegrationTest.java",
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/CorsAllowedOriginsConfigIntegrationTest.java",
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/RateLimitingAndHeadersIntegrationTest.java"
+     ]
+    },
+    {
+     "key": "DisplayName",
+     "count": 4,
+     "examples": [
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/config/ProdConfigStartupLoggerTest.java",
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/config/ProfileSafetyGuardTest.java",
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/CorsAllowedOriginsConfigIntegrationTest.java"
+     ]
+    },
+    {
+     "key": "StrongPassword",
+     "count": 3,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/ChangePasswordRequest.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/RegisterRequest.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/ResetPasswordRequest.java"
+     ]
+    },
+    {
+     "key": "JsonIgnore",
+     "count": 3,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/EventCreationRequest.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/EventUpdateRequest.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/export/UserDataExport.java"
+     ]
+    },
+    {
+     "key": "Email",
+     "count": 3,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/ForgotPasswordRequest.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/RegisterRequest.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/UserUpdateRequest.java"
+     ]
+    },
+    {
+     "key": "CookieValue",
+     "count": 3,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/SessionController.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/CallerResolver.java"
+     ]
+    },
+    {
+     "key": "RestControllerAdvice",
+     "count": 3,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/GlobalExceptionHandler.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/SecurityConfig.java",
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/EventControllerOwnershipTest.java"
+     ]
+    },
+    {
+     "key": "JoinColumn",
+     "count": 3,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/CategoryEntity.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/EventEntity.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/ProductEntity.java"
+     ]
+    }
+   ],
+   "external_packages": [
+    {
+     "key": "java.util",
+     "count": 157,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/ArchivedProductResponse.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/CategoryResponse.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/EventCreationRequest.java"
+     ]
+    },
+    {
+     "key": "org.junit.jupiter",
+     "count": 85,
+     "examples": [
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/EventmanagerApplicationTests.java",
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/dtos/EventCreationRequestContractTest.java",
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/AvatarServiceImplTest.java"
+     ]
+    },
+    {
+     "key": "java.time",
+     "count": 79,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/EventCreationRequest.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/EventResponse.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/EventUpdateRequest.java"
+     ]
+    },
+    {
+     "key": "org.springframework.beans",
+     "count": 69,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/mappers/ProductMapper.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/AsyncExportRunner.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/AvatarServiceImpl.java"
+     ]
+    },
+    {
+     "key": "org.springframework.boot",
+     "count": 45,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/EventmanagerApplication.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoHealthIndicator.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/config/ProdConfigStartupLogger.java"
+     ]
+    },
+    {
+     "key": "org.springframework.http",
+     "count": 45,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryController.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/EventController.java"
+     ]
+    },
+    {
+     "key": "org.springframework.stereotype",
+     "count": 44,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/mappers/CategoryMapper.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/mappers/EventMapper.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/mappers/PasswordResetTokenMapper.java"
+     ]
+    },
+    {
+     "key": "jakarta.persistence",
+     "count": 39,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/PasswordResetServiceImpl.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/CategoryRepositoryJpaImpl.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/EventRepositoryJpaImpl.java"
+     ]
+    },
+    {
+     "key": "org.springframework.security",
+     "count": 39,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/PasswordResetServiceImpl.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/UserServiceImpl.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/Role.java"
+     ]
+    },
+    {
+     "key": "org.springframework.transaction",
+     "count": 38,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/AsyncExportRunner.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/AvatarServiceImpl.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/CategoryServiceImpl.java"
+     ]
+    },
+    {
+     "key": "org.springframework.test",
+     "count": 38,
+     "examples": [
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AccountDeletionIntegrationTest.java",
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthControllerDevProfileCookieTest.java",
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthControllerErrorContractTest.java"
+     ]
+    },
+    {
+     "key": "org.assertj.core",
+     "count": 37,
+     "examples": [
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/dtos/EventCreationRequestContractTest.java",
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/EventServiceImplTest.java",
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/PasswordResetServiceImplTest.java"
+     ]
+    },
+    {
+     "key": "org.mockito",
+     "count": 28,
+     "examples": [
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/AvatarServiceImplTest.java",
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/CategoryServiceImplTest.java",
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/EventServiceImplTest.java"
+     ]
+    },
+    {
+     "key": "jakarta.servlet.http",
+     "count": 23,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/UserController.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtFilter.java"
+     ]
+    },
+    {
+     "key": "org.springframework.web",
+     "count": 20,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryController.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/EventController.java"
+     ]
+    },
+    {
+     "key": "org.springframework.context",
+     "count": 20,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoHealthIndicator.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenController.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenFinderJpaAdapter.java"
+     ]
+    },
+    {
+     "key": "org.mockito.junit",
+     "count": 20,
+     "examples": [
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/AvatarServiceImplTest.java",
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/CategoryServiceImplTest.java",
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/EventServiceImplTest.java"
+     ]
+    },
+    {
+     "key": "jakarta.validation.constraints",
+     "count": 15,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/AuthRequest.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/CategoryRequest.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/CategoryUpdateRequest.java"
+     ]
+    },
+    {
+     "key": "com.fasterxml.jackson",
+     "count": 13,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/CategoryResponse.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/EventCreationRequest.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/EventUpdateRequest.java"
+     ]
+    },
+    {
+     "key": "java.util.concurrent",
+     "count": 13,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/config/AsyncConfig.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/RateLimitingFilter.java",
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AccountDeletionIntegrationTest.java"
+     ]
+    },
+    {
+     "key": "org.springframework.data",
+     "count": 12,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/EventmanagerApplication.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/CategoryRepositoryJpaImpl.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/EventRepositoryJpaImpl.java"
+     ]
+    },
+    {
+     "key": "org.slf4j",
+     "count": 12,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/AsyncExportRunner.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportPurgeScheduler.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportServiceImpl.java"
+     ]
+    },
+    {
+     "key": "java.io",
+     "count": 10,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapter.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/UserController.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/ZipExportRenderer.java"
+     ]
+    },
+    {
+     "key": "java.nio.charset",
+     "count": 10,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/CsvExportRenderer.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/MarkdownExportRenderer.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/RateLimitingFilter.java"
+     ]
+    },
+    {
+     "key": "jakarta.validation",
+     "count": 9,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/validation/StrongPassword.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/validation/StrongPasswordValidator.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java"
+     ]
+    },
+    {
+     "key": "lombok",
+     "count": 8,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/ArchivedProductResponse.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/AuthResponse.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/CategoryResponse.java"
+     ]
+    },
+    {
+     "key": "io.jsonwebtoken",
+     "count": 8,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/SessionController.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/ExportTokenService.java"
+     ]
+    },
+    {
+     "key": "org.springframework.mock",
+     "count": 8,
+     "examples": [
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthControllerLegacyPasswordLoginTest.java",
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailServiceLocaleTest.java",
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/config/ProfileSafetyGuardTest.java"
+     ]
+    },
+    {
+     "key": "io.github.bucket4j",
+     "count": 7,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/RateLimitConfig.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/RateLimitingFilter.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/UserRateLimitingFilter.java"
+     ]
+    },
+    {
+     "key": "org.springframework.scheduling",
+     "count": 6,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/AsyncExportRunner.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportPurgeScheduler.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/PasswordResetServiceImpl.java"
+     ]
+    },
+    {
+     "key": "org.springframework.core",
+     "count": 6,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eTestSupportSecurityConfig.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/config/ProfileSafetyGuard.java",
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/build/BomDriftTest.java"
+     ]
+    },
+    {
+     "key": "java.util.stream",
+     "count": 5,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/ProductResponse.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/mappers/ProductMapper.java",
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthControllerLegacyPasswordLoginTest.java"
+     ]
+    },
+    {
+     "key": "org.springframework.dao",
+     "count": 5,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/CategoryServiceImpl.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java",
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/CategoryServiceImplTest.java"
+     ]
+    },
+    {
+     "key": "org.springframework.orm",
+     "count": 5,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/PasswordResetServiceImpl.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/EventController.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/GlobalExceptionHandler.java"
+     ]
+    },
+    {
+     "key": "io.jsonwebtoken.security",
+     "count": 4,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/ExportTokenService.java",
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthControllerSecurityTest.java",
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/ExportTokenServiceTest.java"
+     ]
+    },
+    {
+     "key": "java.security",
+     "count": 4,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtService.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/RsaKeyMaterial.java",
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/JwksEndpointIntegrationTest.java"
+     ]
+    },
+    {
+     "key": "java.nio.file",
+     "count": 3,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapter.java",
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapterTest.java",
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/config/StorageConfigTest.java"
+     ]
+    },
+    {
+     "key": "jakarta.servlet",
+     "count": 3,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtFilter.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/RateLimitingFilter.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/UserRateLimitingFilter.java"
+     ]
+    },
+    {
+     "key": "org.hibernate",
+     "count": 3,
+     "examples": [
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/EventDeleteStatisticsIntegrationTest.java",
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/EventOptimisticLockConflictIntegrationTest.java",
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/PasswordResetTokenCreateStatisticsIntegrationTest.java"
+     ]
+    },
+    {
+     "key": "java.time.format",
+     "count": 2,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/ExportFilenames.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/MarkdownExportRenderer.java"
+     ]
+    },
+    {
+     "key": "java.util.zip",
+     "count": 2,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/ZipExportRenderer.java",
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/export/ExportRenderersTest.java"
+     ]
+    },
+    {
+     "key": "javax.crypto",
+     "count": 2,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/ExportTokenService.java",
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/JwtServiceRs256Test.java"
+     ]
+    },
+    {
+     "key": "jakarta.annotation",
+     "count": 2,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/ExportTokenService.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtService.java"
+     ]
+    },
+    {
+     "key": "io.jsonwebtoken.io",
+     "count": 2,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/ExportTokenService.java",
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/ExportTokenServiceTest.java"
+     ]
+    },
+    {
+     "key": "java.security.spec",
+     "count": 2,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/RsaKeyMaterial.java",
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/JwksEndpointIntegrationTest.java"
+     ]
+    },
+    {
+     "key": "java.math",
+     "count": 2,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/RsaKeyMaterial.java",
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/JwksEndpointIntegrationTest.java"
+     ]
+    },
+    {
+     "key": "com.tngtech.archunit",
+     "count": 2,
+     "examples": [
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/architecture/ArchitectureTest.java",
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eTestSupportPackageGuardTest.java"
+     ]
+    },
+    {
+     "key": "java.lang.reflect",
+     "count": 2,
+     "examples": [
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/domain/models/export/UserDataExportTest.java",
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/SecurityConfigWriteJsonErrorTest.java"
+     ]
+    },
+    {
+     "key": "org.hamcrest",
+     "count": 2,
+     "examples": [
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthControllerSecurityTest.java",
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductRestoreIntegrationTest.java"
+     ]
+    },
+    {
+     "key": "org.hibernate.stat",
+     "count": 2,
+     "examples": [
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/EventDeleteStatisticsIntegrationTest.java",
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/PasswordResetTokenCreateStatisticsIntegrationTest.java"
+     ]
+    },
+    {
+     "key": "java.lang.annotation",
+     "count": 1,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/validation/StrongPassword.java"
+     ]
+    },
+    {
+     "key": "org.springframework.util",
+     "count": 1,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/config/ProfileSafetyGuard.java"
+     ]
+    },
+    {
+     "key": "org.hibernate.annotations",
+     "count": 1,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/ProductEntity.java"
+     ]
+    },
+    {
+     "key": "java.security.interfaces",
+     "count": 1,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/RsaKeyMaterial.java"
+     ]
+    },
+    {
+     "key": "java.time.temporal",
+     "count": 1,
+     "examples": [
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/RecurrenceExpansionServiceImplTest.java"
+     ]
+    },
+    {
+     "key": "org.apache.catalina",
+     "count": 1,
+     "examples": [
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/build/BomDriftTest.java"
+     ]
+    },
+    {
+     "key": "org.flywaydb.core",
+     "count": 1,
+     "examples": [
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/build/BomDriftTest.java"
+     ]
+    },
+    {
+     "key": "ch.qos.logback",
+     "count": 1,
+     "examples": [
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/config/ProdConfigStartupLoggerTest.java"
+     ]
+    },
+    {
+     "key": "java.net",
+     "count": 1,
+     "examples": [
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/PreferencesUserRateLimitPathVariantsIntegrationTest.java"
+     ]
+    },
+    {
+     "key": "java.net.http",
+     "count": 1,
+     "examples": [
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/PreferencesUserRateLimitPathVariantsIntegrationTest.java"
+     ]
+    }
+   ],
+   "class_suffixes": [
+    {
+     "key": "Test",
+     "count": 85,
+     "examples": [
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/dtos/EventCreationRequestContractTest.java",
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/AvatarServiceImplTest.java",
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/CategoryServiceImplTest.java"
+     ]
+    },
+    {
+     "key": "Exception",
+     "count": 21,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/exceptions/AccountDeletionMismatchException.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/exceptions/AvatarNotFoundException.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/exceptions/CategoryInUseException.java"
+     ]
+    },
+    {
+     "key": "Impl",
+     "count": 16,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/AvatarServiceImpl.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/CategoryServiceImpl.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/EventServiceImpl.java"
+     ]
+    },
+    {
+     "key": "Request",
+     "count": 15,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/AuthRequest.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/CategoryRequest.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/CategoryUpdateRequest.java"
+     ]
+    },
+    {
+     "key": "Service",
+     "count": 14,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/ports/services/AvatarService.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/ports/services/CategoryService.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/ports/services/EmailService.java"
+     ]
+    },
+    {
+     "key": "Response",
+     "count": 11,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/ArchivedProductResponse.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/AuthResponse.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/CategoryResponse.java"
+     ]
+    },
+    {
+     "key": "Controller",
+     "count": 10,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryController.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/EventController.java"
+     ]
+    },
+    {
+     "key": "Mapper",
+     "count": 7,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/mappers/CategoryMapper.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/mappers/EventMapper.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/mappers/PasswordResetTokenMapper.java"
+     ]
+    },
+    {
+     "key": "Repository",
+     "count": 7,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/ports/repositories/CategoryRepository.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/ports/repositories/EventRepository.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/ports/repositories/ExportJobRepository.java"
+     ]
+    },
+    {
+     "key": "Config",
+     "count": 7,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eTestSupportSecurityConfig.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/config/AsyncConfig.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/config/ClockConfig.java"
+     ]
+    },
+    {
+     "key": "Entity",
+     "count": 7,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/CategoryEntity.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/EventEntity.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/ExportJobEntity.java"
+     ]
+    },
+    {
+     "key": "Renderer",
+     "count": 5,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/ports/services/ExportRenderer.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/CsvExportRenderer.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/JsonExportRenderer.java"
+     ]
+    },
+    {
+     "key": "Filter",
+     "count": 3,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtFilter.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/RateLimitingFilter.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/UserRateLimitingFilter.java"
+     ]
+    },
+    {
+     "key": "Scheduler",
+     "count": 2,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportPurgeScheduler.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/PasswordResetTokenPurgeScheduler.java"
+     ]
+    },
+    {
+     "key": "Command",
+     "count": 2,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/EventCreateCommand.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/EventUpdateCommand.java"
+     ]
+    },
+    {
+     "key": "Export",
+     "count": 2,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/export/RenderedExport.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/export/UserDataExport.java"
+     ]
+    },
+    {
+     "key": "Adapter",
+     "count": 2,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapter.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenFinderJpaAdapter.java"
+     ]
+    },
+    {
+     "key": "Application",
+     "count": 1,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/EventmanagerApplication.java"
+     ]
+    },
+    {
+     "key": "Runner",
+     "count": 1,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/AsyncExportRunner.java"
+     ]
+    },
+    {
+     "key": "Registry",
+     "count": 1,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportRendererRegistry.java"
+     ]
+    },
+    {
+     "key": "Assembler",
+     "count": 1,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/UserDataExportAssembler.java"
+     ]
+    },
+    {
+     "key": "Password",
+     "count": 1,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/validation/StrongPassword.java"
+     ]
+    },
+    {
+     "key": "Validator",
+     "count": 1,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/validation/StrongPasswordValidator.java"
+     ]
+    },
+    {
+     "key": "Content",
+     "count": 1,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/AvatarContent.java"
+     ]
+    },
+    {
+     "key": "Counts",
+     "count": 1,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/CategoryProductCounts.java"
+     ]
+    },
+    {
+     "key": "Token",
+     "count": 1,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/PasswordResetToken.java"
+     ]
+    },
+    {
+     "key": "Expansion",
+     "count": 1,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/RecurrenceExpansion.java"
+     ]
+    },
+    {
+     "key": "Unit",
+     "count": 1,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/RecurrenceUnit.java"
+     ]
+    },
+    {
+     "key": "Preference",
+     "count": 1,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/ThemePreference.java"
+     ]
+    },
+    {
+     "key": "Format",
+     "count": 1,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/export/ExportFormat.java"
+     ]
+    },
+    {
+     "key": "Job",
+     "count": 1,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/export/ExportJob.java"
+     ]
+    },
+    {
+     "key": "Status",
+     "count": 1,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/export/ExportJobStatus.java"
+     ]
+    },
+    {
+     "key": "Port",
+     "count": 1,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/ports/services/StoragePort.java"
+     ]
+    },
+    {
+     "key": "Code",
+     "count": 1,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ErrorCode.java"
+     ]
+    },
+    {
+     "key": "Handler",
+     "count": 1,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/GlobalExceptionHandler.java"
+     ]
+    },
+    {
+     "key": "Indicator",
+     "count": 1,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoHealthIndicator.java"
+     ]
+    },
+    {
+     "key": "Template",
+     "count": 1,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/PasswordResetEmailTemplate.java"
+     ]
+    },
+    {
+     "key": "Filenames",
+     "count": 1,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/ExportFilenames.java"
+     ]
+    },
+    {
+     "key": "Finder",
+     "count": 1,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenFinder.java"
+     ]
+    },
+    {
+     "key": "Logger",
+     "count": 1,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/config/ProdConfigStartupLogger.java"
+     ]
+    },
+    {
+     "key": "Guard",
+     "count": 1,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/config/ProfileSafetyGuard.java"
+     ]
+    },
+    {
+     "key": "Converter",
+     "count": 1,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/converters/ThemePreferenceConverter.java"
+     ]
+    },
+    {
+     "key": "Resolver",
+     "count": 1,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/CallerResolver.java"
+     ]
+    },
+    {
+     "key": "Anonymizer",
+     "count": 1,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/ClientIpAnonymizer.java"
+     ]
+    },
+    {
+     "key": "Details",
+     "count": 1,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/CustomUserDetails.java"
+     ]
+    },
+    {
+     "key": "Material",
+     "count": 1,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/RsaKeyMaterial.java"
+     ]
+    },
+    {
+     "key": "Tests",
+     "count": 1,
+     "examples": [
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/EventmanagerApplicationTests.java"
+     ]
+    }
+   ],
+   "subfolders_by_layer": [
+    {
+     "key": "resources",
+     "count": 419,
+     "examples": [
+      "mytimeline:frontend/app/[locale]/(app)/dashboard/loading.test.tsx",
+      "mytimeline:frontend/app/[locale]/(app)/dashboard/loading.tsx",
+      "mytimeline:frontend/app/[locale]/(app)/dashboard/page.test.tsx"
+     ]
+    },
+    {
+     "key": "infrastructure/adapters",
+     "count": 76,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapter.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryController.java"
+     ]
+    },
+    {
+     "key": "infrastructure/security",
+     "count": 30,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/CallerResolver.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/ClientIpAnonymizer.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/CustomUserDetails.java"
+     ]
+    },
+    {
+     "key": "application/dtos",
+     "count": 27,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/ArchivedProductResponse.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/AuthRequest.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/AuthResponse.java"
+     ]
+    },
+    {
+     "key": "application/services",
+     "count": 24,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/AsyncExportRunner.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/AvatarServiceImpl.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/CategoryServiceImpl.java"
+     ]
+    },
+    {
+     "key": "domain/models",
+     "count": 22,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/AvatarContent.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/Category.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/CategoryProductCounts.java"
+     ]
+    },
+    {
+     "key": "domain/exceptions",
+     "count": 21,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/exceptions/AccountDeletionMismatchException.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/exceptions/AvatarNotFoundException.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/exceptions/CategoryInUseException.java"
+     ]
+    },
+    {
+     "key": "domain/ports",
+     "count": 19,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/ports/repositories/CategoryRepository.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/ports/repositories/EventRepository.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/ports/repositories/ExportJobRepository.java"
+     ]
+    },
+    {
+     "key": "db",
+     "count": 16,
+     "examples": [
+      "mytimeline:backend/src/main/resources/db/migration/V10__create_sessions.sql",
+      "mytimeline:backend/src/main/resources/db/migration/V11__events_conditional_check_constraints.sql",
+      "mytimeline:backend/src/main/resources/db/migration/V12__users_role_not_null_check.sql"
+     ]
+    },
+    {
+     "key": "infrastructure/config",
+     "count": 9,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/config/AsyncConfig.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/config/ClockConfig.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/config/ProdConfigStartupLogger.java"
+     ]
+    },
+    {
+     "key": "infrastructure/entities",
+     "count": 9,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/CategoryEntity.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/EventEntity.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/ExportJobEntity.java"
+     ]
+    },
+    {
+     "key": "application/mappers",
+     "count": 6,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/mappers/CategoryMapper.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/mappers/EventMapper.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/mappers/PasswordResetTokenMapper.java"
+     ]
+    },
+    {
+     "key": "application/validation",
+     "count": 3,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/validation/StrongPassword.java",
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/validation/StrongPasswordValidator.java",
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/validation/PasswordPolicyTest.java"
+     ]
+    },
+    {
+     "key": "",
+     "count": 2,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/EventmanagerApplication.java",
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/EventmanagerApplicationTests.java"
+     ]
+    },
+    {
+     "key": "utils",
+     "count": 2,
+     "examples": [
+      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/utils/Utils.java",
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/utils/UtilsTest.java"
+     ]
+    },
+    {
+     "key": "architecture",
+     "count": 1,
+     "examples": [
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/architecture/ArchitectureTest.java"
+     ]
+    },
+    {
+     "key": "build",
+     "count": 1,
+     "examples": [
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/build/BomDriftTest.java"
+     ]
+    },
+    {
+     "key": "support",
+     "count": 1,
+     "examples": [
+      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/support/AbstractPostgresIntegrationTest.java"
+     ]
+    }
+   ]
+  }
+ },
+ "duration_s": 0.25
+}

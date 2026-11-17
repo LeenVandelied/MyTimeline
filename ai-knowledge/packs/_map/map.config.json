@@ -1,0 +1,45 @@
+{
+ "project": "mytimeline",
+ "repos": [
+  {
+   "name": "mytimeline",
+   "root": "../../..",
+   "language": "java",
+   "include": [
+    "backend/src/main/java/**/*.java",
+    "backend/src/test/java/**/*.java",
+    "backend/src/main/resources/db/**/*.sql",
+    "frontend/src/**/*.ts",
+    "frontend/src/**/*.tsx",
+    "frontend/app/**/*.ts",
+    "frontend/app/**/*.tsx"
+   ],
+   "exclude": [
+    "**/.env*",
+    "**/application*.properties",
+    "**/application*.y*ml",
+    "**/*.pem",
+    "**/*secret*"
+   ]
+  }
+ ],
+ "seeds": {
+  "entities": true,
+  "routed_folders": true,
+  "extra": []
+ },
+ "edges": {
+  "source": "regex"
+ },
+ "tech_folders": [],
+ "thresholds": {
+  "min_seed_files": 6,
+  "merge_ratio": 0.6,
+  "max_merge_target": 40,
+  "pack_min_kb": 60,
+  "replay_agent_new_leftover": 10
+ },
+ "motifs_file": "motifs.json",
+ "aliases_file": "aliases.json",
+ "packs_dir": ".."
+}

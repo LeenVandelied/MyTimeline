@@ -104,3 +104,8 @@ node_modules/
 
 # === State local du plugin ai-env (régénérable, non projet) ===
 frontend/.ai-env/
+# ai-stack (config locale, porte la clé du tracker et l'équipe)
+.ai-stack/
+# ai-stack : base de faits et rejeux, hors git (install.py)
+ai-knowledge/base/
+ai-knowledge/base/_refresh/

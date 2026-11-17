@@ -91,3 +91,27 @@ condition = "AND"
 regexTarget = "line"
 regexes = ['''"-----BEGIN PRIVATE KEY-----\\n"''']
 paths = ['''(^|/)backend/src/test/java/.*/JwtServiceRs256Test\.java$''']
+
+# --- 4. Faux positif de règle : empreintes `key_sha256` des packs ai-stack.
+#
+# Les fichiers `ai-knowledge/packs/<pack>.curation.json` sont générés par le plugin ai-stack. Chacun
+# porte, par entrée de curation, un champ `"key_sha256": "<64 hex minuscules>"` : l'empreinte SHA-256
+# de la clé de cache de la curation. C'est un identifiant de cache dérivé, pas un secret. La règle
+# `generic-api-key` le signale à cause du NOM du champ (`key`) combiné à l'entropie d'une chaîne hex.
+# 19 constats sur la PR #912 (6 packs : authorization, backend-socle, batch, integrations,
+# state-machine, timeline).
+#
+# Triple restriction :
+#   - `targetRules` : n'exclut que `generic-api-key`. Les autres règles (`private-key`, préfixes
+#     connus) restent actives dans ces fichiers.
+#   - `paths` : uniquement les `*.curation.json` directement sous `ai-knowledge/packs/`.
+#   - `regexes` + `condition = "AND"` : la ligne doit avoir la forme exacte `"key_sha256": "<64 hex
+#     minuscules>"`. Une autre clé (`api_key`, `secret`…) ou une valeur d'une autre forme dans ces
+#     mêmes fichiers reste détectée.
+[[allowlists]]
+description = "Empreintes key_sha256 de curation des packs ai-stack (faux positif generic-api-key)"
+targetRules = ["generic-api-key"]
+condition = "AND"
+regexTarget = "line"
+regexes = ['''"key_sha256": "[0-9a-f]{64}"''']
+paths = ['''(^|/)ai-knowledge/packs/[^/]+\.curation\.json$''']
