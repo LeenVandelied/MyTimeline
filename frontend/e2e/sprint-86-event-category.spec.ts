@@ -2,6 +2,7 @@ import type { Locator } from '@playwright/test'
 
 import { expect, test } from './support/fixtures'
 import { PROD } from './support/accounts'
+import { sessionState } from './support/session'
 import { ensureAuthenticated } from './support/auth'
 import { neutralizeDevToolingPointerEvents } from './support/dev-tooling'
 import { getUserId, seedCategory, seedProduct, unique } from './support/products'
@@ -42,7 +43,7 @@ const paintedBackground = (swatch: Locator) =>
   swatch.evaluate((el) => getComputedStyle(el).backgroundColor)
 
 test.describe('#617 — catégorie dérivée du produit dans le formulaire d’événement', () => {
-  test.use({ storageState: PROD.storageState, viewport: DESKTOP })
+  test.use({ storageState: sessionState(PROD), viewport: DESKTOP })
 
   test('création : la catégorie suit le produit choisi', async ({ page }) => {
     test.setTimeout(150_000)

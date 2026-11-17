@@ -1,6 +1,7 @@
 import { type APIRequestContext, type Locator, type Page, type Route } from '@playwright/test'
 import { expect, test } from './support/fixtures'
 import { PROD } from './support/accounts'
+import { sessionState } from './support/session'
 import { ensureAuthenticated } from './support/auth'
 import { neutralizeDevToolingPointerEvents } from './support/dev-tooling'
 import {
@@ -113,7 +114,7 @@ function seededEventMore(page: Page, title: string): Locator {
 }
 
 test.describe('#767 — dernières cibles tactiles (375 px)', () => {
-  test.use({ viewport: MOBILE, storageState: PROD.storageState })
+  test.use({ viewport: MOBILE, storageState: sessionState(PROD) })
 
   test('produits : CTA de l’état vide', async ({ page }) => {
     await stubEmptyList(page, PRODUCTS_LIST_RE)
@@ -178,7 +179,7 @@ test.describe('#767 — dernières cibles tactiles (375 px)', () => {
  * utilitaire nu ferait rougir (même garde que le bloc desktop de `sprint-101`).
  */
 test.describe('#767 — desktop (1280×800) : CTA d’état vide inchangés', () => {
-  test.use({ viewport: { width: 1280, height: 800 }, storageState: PROD.storageState })
+  test.use({ viewport: { width: 1280, height: 800 }, storageState: sessionState(PROD) })
 
   test('produits et catégories : CTA à 36 px', async ({ page }) => {
     await stubEmptyList(page, PRODUCTS_LIST_RE)

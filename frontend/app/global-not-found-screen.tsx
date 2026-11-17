@@ -2,9 +2,8 @@
 
 import '../src/styles/globals.css'
 
-import { useEffect, useState } from 'react'
-
 import { EphemerisLeaf } from '@/components/shared/EphemerisLeaf'
+import { useHydrated } from '@/hooks/useHydrated'
 import { StateScreen, stateActionPrimary } from '@/components/shared/StateScreen'
 import { DEFAULT_LOCALE, isSupportedLocale, type Locale } from '@/i18n/locales'
 import { fontVariables } from './fonts'
@@ -133,11 +132,8 @@ function resolveLocale(): Locale {
 }
 
 export default function GlobalNotFoundScreen() {
-  const [locale, setLocale] = useState<Locale>(DEFAULT_LOCALE)
-
-  useEffect(() => {
-    setLocale(resolveLocale())
-  }, [])
+  // #891 — locale lue dans l'URL une fois hydraté (prérendu : `DEFAULT_LOCALE`).
+  const locale: Locale = useHydrated() ? resolveLocale() : DEFAULT_LOCALE
 
   const m = MESSAGES[locale]
 

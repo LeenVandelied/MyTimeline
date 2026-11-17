@@ -2,6 +2,7 @@ import { test, expect } from './support/fixtures'
 import { type Locator, type Page, type Route } from '@playwright/test'
 import { ensureAuthenticated } from './support/auth'
 import { PROD } from './support/accounts'
+import { sessionState } from './support/session'
 import { readStable, WCAG_AA_NON_TEXT } from './support/contrast'
 
 /**
@@ -29,7 +30,7 @@ import { readStable, WCAG_AA_NON_TEXT } from './support/contrast'
  * une lane zébrée (`--alt`) — asserté, pour que la mesure couvre bien ce fond-là.
  */
 
-test.use({ storageState: PROD.storageState })
+test.use({ storageState: sessionState(PROD) })
 
 const PRODUCTS_LIST_RE = /\/api\/users\/[^/]+\/products(\?.*)?$/
 const EVENT_OFFSET_DAYS = 5

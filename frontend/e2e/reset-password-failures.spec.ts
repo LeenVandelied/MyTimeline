@@ -53,7 +53,7 @@ import { waitForResetToken } from './support/reset-token'
  *   - mots de passe >= 6 + une MAJ + un chiffre (le form reset n'exige que >= 6,
  *     mais le form REGISTER est plus strict — on garde un jeu commun) ;
  *   - `reset-password` et `login` sont PUBLIQUES : la garde serveur #302
- *     (`middleware.ts`, ADR-004) ne les protège pas, aucune 307 attendue ici.
+ *     (`proxy.ts`, ADR-004) ne les protège pas, aucune 307 attendue ici.
  *
  * PRÉREQUIS RUNTIME (levés par le job CI `e2e` uniquement) : backend Spring Boot
  * :8080 en `SPRING_PROFILES_ACTIVE=dev,e2e` (le profil `e2e` expose le canal de

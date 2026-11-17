@@ -71,6 +71,13 @@ export interface ConflictDialogProps {
    * « Prendre la version serveur » reste actionnable - c'est la sortie du flux.
    */
   keepMineExhausted?: boolean
+  /**
+   * #836 — Place le focus à la fermeture (relayé à `DialogContent`). Par défaut, le
+   * focus revient à l'élément actif à l'ouverture ; or le 409 arrive pendant la
+   * soumission, bouton « Enregistrer » DÉSACTIVÉ donc rendu par le navigateur à
+   * `body` : l'hôte indique lui-même où rendre le focus.
+   */
+  onCloseAutoFocus?: React.ComponentPropsWithoutRef<typeof DialogContent>['onCloseAutoFocus']
 }
 
 /** Champs comparables local ↔ serveur (kind pilote la comparaison/affichage). */
@@ -113,6 +120,7 @@ export function ConflictDialog({
   onTakeServer,
   isSubmitting = false,
   keepMineExhausted = false,
+  onCloseAutoFocus,
 }: ConflictDialogProps) {
   const t = useTranslations('common.conflictDialog')
 
@@ -149,6 +157,7 @@ export function ConflictDialog({
       <DialogContent
         // role="dialog" + focus-trap + Échap : natifs Radix (cf. ux-patterns §4).
         data-testid={testId}
+        onCloseAutoFocus={onCloseAutoFocus}
         className={cn(
           // Mobile : bottom sheet ancré en bas. Desktop (sm+) : modal centré.
           'top-auto right-0 bottom-0 left-0 max-w-full translate-x-0 translate-y-0 rounded-t-2xl rounded-b-none',

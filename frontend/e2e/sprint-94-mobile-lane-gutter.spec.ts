@@ -1,6 +1,7 @@
 import { test, expect } from './support/fixtures'
 import { type Locator, type Page } from '@playwright/test'
 import { PROD } from './support/accounts'
+import { sessionState } from './support/session'
 import { ensureAuthenticated } from './support/auth'
 import { getUserId, seedCategory, seedProduct, todayIsoDate, unique } from './support/products'
 import { revealSeededLane } from './support/timeline-lanes'
@@ -235,7 +236,7 @@ function assertGutter(geo: LaneGeometry, label: string): void {
 }
 
 test.describe('#706 — frise mobile : gouttière de piste (portrait)', () => {
-  test.use({ storageState: PROD.storageState, viewport: PORTRAIT })
+  test.use({ storageState: sessionState(PROD), viewport: PORTRAIT })
 
   test("un événement du début de plage n'est jamais peint sous la colonne sticky", async ({
     page,
@@ -257,7 +258,7 @@ test.describe('#706 — frise mobile : gouttière de piste (portrait)', () => {
 })
 
 test.describe('#706 — frise mobile : gouttière de piste (paysage)', () => {
-  test.use({ storageState: PROD.storageState, viewport: LANDSCAPE })
+  test.use({ storageState: sessionState(PROD), viewport: LANDSCAPE })
 
   test("un événement du début de plage n'est jamais peint sous la colonne sticky", async ({
     page,

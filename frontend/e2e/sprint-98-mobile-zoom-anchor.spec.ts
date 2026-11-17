@@ -2,6 +2,7 @@ import { test, expect } from './support/fixtures'
 import { type Locator, type Page, type Route } from '@playwright/test'
 import { ensureAuthenticated } from './support/auth'
 import { PROD } from './support/accounts'
+import { sessionState } from './support/session'
 
 /**
  * #747 (Sprint 98) — Frises mobiles : la date regardée RESTE à l'écran au changement de
@@ -30,7 +31,7 @@ import { PROD } from './support/accounts'
  * dès le premier zoom avant.
  */
 
-test.use({ storageState: PROD.storageState })
+test.use({ storageState: sessionState(PROD) })
 
 const PRODUCTS_LIST_RE = /\/api\/users\/[^/]+\/products(\?.*)?$/
 

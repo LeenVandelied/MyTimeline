@@ -95,6 +95,11 @@ export const TimelineMobileLandscape: React.FC<TimelineMobileLandscapeProps> = (
   const gestures = injectedGestures ?? ownGestures
 
   const { selected, actionTarget, setSelected, setActionTarget } = selection
+  // #891 — refs extraites de `state` AVANT le JSX : passer `ref={state.railRef}` (ou la
+  // ref callback `state.setScrollNode`) fait traiter TOUT l'objet `state` comme une
+  // ref par `react-hooks/refs`, et chaque `state.xxx` lu ensuite au rendu est signalé.
+  // Pur renommage : mêmes valeurs, même identité (aucun changement de comportement).
+  const { railRef, setScrollNode } = state
 
   // Toggle utilisateur de la minimap. Masquage EFFECTIF = forcé (hauteur) OU choix.
   const [userHidden, setUserHidden] = useState(false)
@@ -158,7 +163,7 @@ export const TimelineMobileLandscape: React.FC<TimelineMobileLandscapeProps> = (
         className="mt-tlm__scroll"
         /* #328 — ref CALLBACK : restaure `scrollLeft` quand la rotation remonte
            cette variante (l'ancien `state.scrollRef` perdait la position). */
-        ref={state.setScrollNode}
+        ref={setScrollNode}
         onScroll={state.onScroll}
         onPointerDown={gestures.onScrollPointerDown}
         onPointerMove={gestures.onScrollPointerMove}
@@ -166,7 +171,7 @@ export const TimelineMobileLandscape: React.FC<TimelineMobileLandscapeProps> = (
         onPointerCancel={gestures.onScrollPointerUp}
         data-testid="timeline-scroll"
       >
-        <div className="mt-tlm__rail" ref={state.railRef} style={{ width: `${state.railWidth}px` }}>
+        <div className="mt-tlm__rail" ref={railRef} style={{ width: `${state.railWidth}px` }}>
           <div className="mt-tlm__ruler" data-testid="timeline-ruler">
             {state.ticks.map((tick, i) => (
               <div

@@ -1,30 +1,23 @@
 // For more info, see https://github.com/storybookjs/eslint-plugin-storybook#configuration-flat-config-format
 import storybook from 'eslint-plugin-storybook'
 
-import { dirname } from 'path'
-import { fileURLToPath } from 'url'
-import { FlatCompat } from '@eslint/eslintrc'
-
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
-
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-})
+// #885 — eslint-config-next 16 publie une config FLAT native : plus besoin de
+// `FlatCompat` (@eslint/eslintrc) pour traduire `next/core-web-vitals` et
+// `next/typescript`.
+import nextVitals from 'eslint-config-next/core-web-vitals'
+import nextTs from 'eslint-config-next/typescript'
 
 const eslintConfig = [
-  ...compat.extends('next/core-web-vitals', 'next/typescript'),
+  ...nextVitals,
+  ...nextTs,
   {
     // Artefacts générés / outillage — non lintés (#29).
     // next-env.d.ts (FU8, sprint 57) : régénéré par Next à chaque `next dev`/`next
     // build` (writeAppTypeDeclarations), jamais édité à la main — le laisser au lint
-    // ne prouve rien et le triple-slash `path` vers `.next/types/routes.d.ts` viole
-    // systématiquement `@typescript-eslint/triple-slash-reference` (défaut
-    // `path: 'never'`). `next lint` (donc la CI) ne le scanne déjà pas — il ne fait
-    // partie d'aucun des dossiers par défaut (`app`/`pages`/`components`/`lib`/`src`) —
-    // mais un lint plus large qu'un dev pourrait lancer localement (`eslint .`, un hook
-    // pre-commit, un plugin éditeur) le remonte en faux rouge. Exclusion CIBLÉE : la
-    // règle reste active pour tout code écrit à la main.
+    // ne prouve rien (Next 15 y écrivait un triple-slash `path` qui violait
+    // `@typescript-eslint/triple-slash-reference`). Depuis #885 (Next 16), le lint de la
+    // CI est `eslint .`, qui le scannerait : l'exclusion est donc NÉCESSAIRE. Exclusion
+    // CIBLÉE : les règles restent actives pour tout code écrit à la main.
     ignores: [
       'next-env.d.ts',
       '.next/**',
@@ -83,6 +76,11 @@ const eslintConfig = [
       ],
     },
   },
+  // #891 (S120) — les 5 règles d'eslint-plugin-react-hooks 7 coupées à la montée Next 16
+  // (#885 : refs, set-state-in-effect, preserve-manual-memoization, purity,
+  // incompatible-library) sont RÉACTIVÉES : le preset `core-web-vitals` s'applique tel quel.
+  // Désactivations locales justifiées : AuthContext (état posé après await), toaster
+  // (remise à zéro couplée à la restauration du focus), harnais perf story (chronométrage).
   ...storybook.configs['flat/recommended'],
 ]
 

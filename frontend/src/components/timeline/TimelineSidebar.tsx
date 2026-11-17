@@ -89,9 +89,13 @@ export function useTimelineSidebarPanel(enabled: boolean) {
 
   // Franchir le palier vers le haut referme le panneau : sinon un état « ouvert »
   // invisible survivrait et volerait la touche Échap au drawer.
-  useEffect(() => {
+  // #891 — ajustement d'état PENDANT le rendu au changement de la prop (patron « valeur
+  // précédente » de React) plutôt qu'un `setState` dans un effet.
+  const [wasPermanent, setWasPermanent] = useState(isPermanent)
+  if (isPermanent !== wasPermanent) {
+    setWasPermanent(isPermanent)
     if (isPermanent) setOpen(false)
-  }, [isPermanent])
+  }
 
   const toggle = useCallback(() => setOpen((v) => !v), [])
 

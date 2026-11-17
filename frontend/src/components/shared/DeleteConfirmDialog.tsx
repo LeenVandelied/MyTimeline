@@ -78,7 +78,9 @@ export interface DeleteConfirmDialogProps {
    * Callback de confirmation. Pour la variante `category` avec réassignation,
    * reçoit le `reassignToCategoryId` sélectionné. Peut être async : tant que la
    * promesse n'est pas résolue, l'état `deleting` reste actif.
-   * Rejeter la promesse (ex. axios 404/409) affiche l'erreur inline.
+   * Rejeter la promesse (ex. axios 403/404/409) affiche l'erreur inline.
+   * #766 — un 403 affiche `errors.forbidden` : la requête sous-jacente peut donc
+   * passer `HANDLES_FORBIDDEN_INLINE`, À CONDITION que `onConfirm` relance l'erreur.
    */
   onConfirm: (reassignToCategoryId?: string) => void | Promise<void>
   onCancel?: () => void
@@ -144,14 +146,18 @@ export function DeleteConfirmDialog({
 
   // Reset de l'état local à chaque (ré)ouverture pour éviter qu'une erreur ou
   // une sélection d'une session précédente persiste.
-  React.useEffect(() => {
+  // #891 — ajustement d'état PENDANT le rendu au changement de la prop (patron « valeur
+  // précédente » de React) plutôt qu'un `setState` dans un effet.
+  const [prevOpen, setPrevOpen] = React.useState(open)
+  if (open !== prevOpen) {
+    setPrevOpen(open)
     if (open) {
       setDeleting(false)
       setErrorMessage(null)
       setReassignTo(undefined)
       setReassignRequiredByServer(false)
     }
-  }, [open])
+  }
 
   const confirmDisabled = deleting || (needsReassign && (noOtherCategory || !reassignTo))
 
@@ -173,7 +179,11 @@ export function DeleteConfirmDialog({
       // réassignation (S10 #52). Autres → message générique.
       // #546 : 409 sur un DELETE catégorie SANS cible = catégorie encore occupée
       // (produits archivés, ou listing local périmé) → bascule en réassignation.
+      // #766 : 403 (ownership refusée) → cause explicite inline. C'est ce message qui
+      // autorise les appelants à passer `HANDLES_FORBIDDEN_INLINE` (toast global coupé) :
+      // le retirer rendrait le dialog muet sur un refus d'accès.
       if (status === 409 && isCategory && !needsReassign) setReassignRequiredByServer(true)
+      else if (status === 403) setErrorMessage(t('errors.forbidden'))
       else if (status === 404) setErrorMessage(t('errors.notFound'))
       else if (status === 409) setErrorMessage(t('errors.conflict'))
       else setErrorMessage(t('errors.generic'))
@@ -271,7 +281,7 @@ export function DeleteConfirmDialog({
           </div>
         )}
 
-        {/* Erreur API inline (404/409/générique). */}
+        {/* Erreur API inline (403/404/409/générique). */}
         {errorMessage && (
           <p role="alert" className="text-destructive text-sm">
             {errorMessage}

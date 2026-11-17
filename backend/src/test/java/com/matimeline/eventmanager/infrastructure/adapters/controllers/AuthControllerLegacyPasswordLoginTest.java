@@ -17,7 +17,7 @@ import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -136,9 +136,9 @@ class AuthControllerLegacyPasswordLoginTest extends AbstractPostgresIntegrationT
      *   <li><b>corps</b> — chaque cause a le sien et ils ne se confondent pas :
      *       {@code too_many_requests} (RateLimitingFilter), {@code unauthorized}
      *       (AuthController), {@code internal_error} (catch générique) ;</li>
-     *   <li><b>en-têtes</b> — énumérés SANS liste blanche : le filtre n'émet
-     *       aujourd'hui ni {@code Retry-After} ni {@code X-RateLimit-*}, mais si
-     *       #499 en ajoute, la capture les remontera sans nouvelle modification ;</li>
+     *   <li><b>en-têtes</b> — énumérés SANS liste blanche : depuis #567 un 429 porte
+     *       {@code Retry-After} (jamais de {@code X-RateLimit-*}), que la capture remonte
+     *       sans modification ;</li>
      *   <li><b>sonde DB</b> — nombre de lignes {@code users} COMMITTÉES pour ce
      *       username, lu dans une transaction à part. C'est ce qui départage les deux
      *       familles de 401 : seed invisible vs credentials refusés.</li>

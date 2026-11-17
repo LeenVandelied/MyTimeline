@@ -1,5 +1,10 @@
 import { test as setup, expect } from '@playwright/test'
-import { ALL_ACCOUNTS, persistAccounts, type E2eAccount } from './support/accounts'
+import {
+  SETUP_ACCOUNTS_ENV,
+  persistAccounts,
+  selectSetupAccounts,
+  type E2eAccount,
+} from './support/accounts'
 import { ensureRegisterForm } from './support/register-page'
 import {
   acceptedRegisterStatus,
@@ -24,10 +29,11 @@ import {
  *   2. le projet n'a AUCUN retry Playwright (`configure` ci-dessous) : depuis que 409 vaut
  *      succès, un `provision` retenté irait jusqu'au login et ré-émettrait register ET login.
  * ⚠ Ces ré-émissions sur échec consomment un jeton et sont EXCLUES du pire cas écrit (20) :
- * en les comptant, register est borné à 36 (3 soumissions × 4 comptes × 2 passes + 12 des
- * specs), au-dessus du plafond de 30. Un backend qui renvoie des 5xx fait donc rougir le job ;
+ * en les comptant, register est borné à 30 (3 soumissions × (4 + 1) comptes + 15 des specs),
+ * soit le plafond, marge NULLE. Un backend qui renvoie des 5xx peut donc faire rougir le job ;
  * un 429 register dans ce contexte est un symptôme de l'instabilité, pas un défaut de budget.
- * En CI la passe 2 rejoue ce fichier contre le même backend (seaux partagés). Le budget
+ * En CI la passe 2 rejoue ce fichier contre le même backend (seaux partagés), restreint à
+ * `SHARED` par `E2E_SETUP_ACCOUNTS=shared` (#839, cf. la boucle en fin de fichier). Le budget
  * complet est RECOMPTÉ par `src/__tests__/e2e-rate-limit-budget.test.ts`, qui lit la
  * fonction `provision`, la boucle annotée et le `configure` — c'est ce recomptage, pas
  * ce paragraphe, qui fait foi.
@@ -249,7 +255,10 @@ setup('persist account identities', async () => {
   persistAccounts()
 })
 
-for (const account of ALL_ACCOUNTS) {
+// #839 — `E2E_SETUP_ACCOUNTS` RESTREINT les comptes provisionnés (défaut : tous). Les
+// identités ci-dessus restent persistées EN ENTIER : seule la connexion est sautée. Ancré par
+// `e2e-rate-limit-budget.test.ts`, qui compte le setup de chaque passe CI par cette fonction.
+for (const account of selectSetupAccounts(process.env[SETUP_ACCOUNTS_ENV])) {
   setup(`provision ${account.key}`, async ({ browser }) => {
     // Sans ce budget, les retrys (rendu ET requête) expirent avant d'aboutir et le
     // message d'échec explicatif n'est jamais produit. Cf. PROVISION_TIMEOUT_MS.

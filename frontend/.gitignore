@@ -26,3 +26,4 @@ coverage/
 # naissent qu'en CI, mais rien n'empêchait un `git add` local de les ramasser si
 # quelqu'un rejouait la recette à la main. Motif ignoré, pas seulement ces 2 noms.
 *.log
+.vitest/

@@ -1,6 +1,7 @@
 import { type Locator, type Page } from '@playwright/test'
 import { expect, test } from './support/fixtures'
 import { PROD } from './support/accounts'
+import { sessionState } from './support/session'
 import { WCAG_AA_NON_TEXT } from './support/contrast'
 import { neutralizeDevToolingPointerEvents } from './support/dev-tooling'
 import { readStrip, settleForMeasurement } from './support/pixel'
@@ -163,7 +164,7 @@ async function expectPaint(
 
 for (const scheme of ['light', 'dark'] as const) {
   test.describe(`#757 — croix lisible sur contenu défilé — thème ${scheme}`, () => {
-    test.use({ storageState: PROD.storageState, viewport: SHORT, colorScheme: scheme })
+    test.use({ storageState: sessionState(PROD), viewport: SHORT, colorScheme: scheme })
 
     test('sheet produit : géométrie à défilement nul inchangée, contraste >= 3:1 défilée', async ({
       page,

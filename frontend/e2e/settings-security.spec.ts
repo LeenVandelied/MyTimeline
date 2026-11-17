@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { openSettingsChapter } from './support/auth'
 import { SHARED, PWD } from './support/accounts'
+import { sessionState } from './support/session'
 
 /**
  * #86 — E2E chapitre Sécurité (desktop) : changement de mot de passe
@@ -22,7 +23,7 @@ const INITIAL_PASSWORD = PWD.password
 // Le changement de mot de passe MODIFIE définitivement le compte -> compte DÉDIÉ
 // `PWD` (jamais réutilisé par un autre test). storageState = ZÉRO register.
 test.describe('Réglages — Sécurité : mot de passe (changement réussi)', () => {
-  test.use({ storageState: PWD.storageState })
+  test.use({ storageState: sessionState(PWD) })
 
   test('force réactive + changement réussi (ancien correct)', async ({ page }) => {
     await openSettingsChapter(page, 'security')
@@ -53,7 +54,7 @@ test.describe('Réglages — Sécurité : mot de passe (changement réussi)', ()
 // Ces tests ne MODIFIENT PAS le mot de passe (ancien-mdp-faux -> 400 ; sessions ->
 // révoque au plus les AUTRES sessions, jamais la courante) : compte partagé fixe.
 test.describe('Réglages — Sécurité : erreur mot de passe + sessions', () => {
-  test.use({ storageState: SHARED.storageState })
+  test.use({ storageState: sessionState(SHARED) })
 
   test('ancien mot de passe faux -> erreur, formulaire conservé', async ({ page }) => {
     await openSettingsChapter(page, 'security')

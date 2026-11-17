@@ -1,6 +1,7 @@
 import { test, expect } from './support/fixtures'
 import { type APIRequestContext } from '@playwright/test'
 import { PROD } from './support/accounts'
+import { assertUsableSession, sessionState } from './support/session'
 import { getUserId, seedCategory, seedProduct, unique } from './support/products'
 
 /**
@@ -21,7 +22,7 @@ import { getUserId, seedCategory, seedProduct, unique } from './support/products
  * PRÉREQUIS RUNTIME (job CI `e2e`) : backend Spring (:8080) + Postgres migré, front :3000.
  */
 
-test.use({ storageState: PROD.storageState })
+test.use({ storageState: sessionState(PROD) })
 
 const API = '/api'
 
@@ -247,6 +248,8 @@ test.describe('#230 UX de l’archivage — confirmation, grisage, verrou', () =
  */
 test.describe('#442 Désarchivage — conflit 409 sur version périmée', () => {
   test('version périmée -> 409 inline, données re-fetchées, 2e clic OK', async ({ browser }) => {
+    // `newContext` hors fixture `sessionState` : même contrôle, explicite (#840).
+    assertUsableSession(PROD)
     const ctxA = await browser.newContext({ storageState: PROD.storageState })
     const ctxB = await browser.newContext({ storageState: PROD.storageState })
     const pageA = await ctxA.newPage()

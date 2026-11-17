@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react'
+import { renderToStaticMarkup } from 'react-dom/server'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -21,15 +22,18 @@ import frErrors from '../public/locales/fr/errors.json'
  *
  * ⚠ #413 — ce composant est devenu un `global-error` : il rend SON PROPRE
  * `<html>` / `<body>` (il remplace le layout racine, qui ne porte plus la
- * balise). RTL monte donc ce `<html>` dans le `container` (un `<div>`) : le
- * `validateDOMNesting` de React est attendu, et absorbé par le spy
- * `console.error` déjà en place. Les requêtes `screen.*` restent valides — le
- * sous-arbre vit bien sous `document.body`.
+ * balise). ⚠ #892 — depuis React 19, `<html>` / `<head>` / `<body>` sont des
+ * SINGLETONS : rendus dans le `container` de RTL, ils ne s'y imbriquent plus, React
+ * les fusionne avec ceux du document (attributs posés sur `document.documentElement`,
+ * contenu monté sous `document.body`). On lit donc `lang` sur `document.documentElement`,
+ * remis à zéro avant chaque test pour qu'une valeur résiduelle ne rende pas l'assertion
+ * vacante ; la présence des balises dans le rendu est prouvée par `renderToStaticMarkup`.
  */
 let errorSpy: ReturnType<typeof vi.spyOn>
 
 beforeEach(() => {
   errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+  document.documentElement.removeAttribute('lang')
 })
 
 afterEach(() => {
@@ -42,6 +46,9 @@ describe('GlobalError', () => {
     render(<GlobalError error={new Error('boom')} reset={vi.fn()} />)
     // #413 : un global-error rend son propre document.
     expect(screen.getByTestId('global-error-screen').closest('body')).not.toBeNull()
+    expect(renderToStaticMarkup(<GlobalError error={new Error('boom')} reset={vi.fn()} />)).toMatch(
+      /^<html[^>]*>[\s\S]*<body[^>]*>[\s\S]*<\/body><\/html>$/,
+    )
     expect(screen.getByTestId('global-error-screen')).toBeInTheDocument()
     expect(screen.getByTestId('state-screen-code')).toHaveTextContent('500')
     expect(screen.getByTestId('global-error-retry')).toBeInTheDocument()
@@ -65,8 +72,8 @@ describe('GlobalError', () => {
     ['/zz/anything', 'fr'],
   ])('%s → <html lang="%s">', (pathname, expected) => {
     window.history.pushState({}, '', pathname)
-    const { container } = render(<GlobalError error={new Error('boom')} reset={vi.fn()} />)
-    expect(container.querySelector('html')).toHaveAttribute('lang', expected)
+    render(<GlobalError error={new Error('boom')} reset={vi.fn()} />)
+    expect(document.documentElement).toHaveAttribute('lang', expected)
   })
 
   it('segment inconnu → fallback fr', () => {

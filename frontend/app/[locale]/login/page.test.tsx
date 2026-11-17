@@ -24,7 +24,7 @@ vi.mock('next-intl', () => ({
   useLocale: () => 'fr',
 }))
 
-// React 18.3.1 (vitest) n'expose pas `use()` (dispo via le React de Next 15 au runtime).
+// React 18.3.1 (vitest) n'expose pas `use()` (dispo via le React embarqué par Next au runtime).
 // On le stubbe pour déballer `params` de façon synchrone dans les tests.
 vi.mock('react', async () => {
   const actual = await vi.importActual<typeof import('react')>('react')

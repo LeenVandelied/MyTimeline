@@ -1,6 +1,7 @@
 import { type APIRequestContext, type Locator, type Page } from '@playwright/test'
 import { expect, test } from './support/fixtures'
 import { PROD } from './support/accounts'
+import { assertUsableSession, sessionState } from './support/session'
 import { ensureAuthenticated } from './support/auth'
 import { neutralizeDevToolingPointerEvents } from './support/dev-tooling'
 import { MIN_TARGET, expectAllTouchable, expectHitbox } from './support/touch-targets'
@@ -100,7 +101,7 @@ async function openEventEditForm(page: Page, productId: string, mobile: boolean)
 }
 
 test.describe('#754 — drawers et dialogues mobiles (375 px) : cibles >= 44 px', () => {
-  test.use({ viewport: MOBILE, storageState: PROD.storageState })
+  test.use({ viewport: MOBILE, storageState: sessionState(PROD) })
 
   test('ProductDrawer (création puis édition), archivage, restauration', async ({ page }) => {
     test.setTimeout(120_000)
@@ -252,6 +253,8 @@ test.describe('#754 — drawers et dialogues mobiles (375 px) : cibles >= 44 px'
 
   test('édition d’événement : pied, confirmation d’archivage, conflit 409', async ({ browser }) => {
     test.setTimeout(150_000)
+    // `newContext` hors fixture `sessionState` : même contrôle, explicite (#840).
+    assertUsableSession(PROD)
     const ctxA = await browser.newContext({ storageState: PROD.storageState, viewport: DESKTOP })
     const ctxB = await browser.newContext({ storageState: PROD.storageState, viewport: MOBILE })
     const pageA = await ctxA.newPage()
@@ -326,7 +329,7 @@ test.describe('#754 — drawers et dialogues mobiles (375 px) : cibles >= 44 px'
  * (`content: none` : le `max-md:before:content-['']` ne s'applique pas).
  */
 test.describe('#754 — desktop (1280×800) : géométrie inchangée', () => {
-  test.use({ viewport: DESKTOP, storageState: PROD.storageState })
+  test.use({ viewport: DESKTOP, storageState: sessionState(PROD) })
 
   test('DeleteConfirmDialog 36 px + croix 16×16, cibles denses 32 px sans pseudo', async ({
     page,

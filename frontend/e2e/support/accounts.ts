@@ -33,15 +33,18 @@ import path from 'node:path'
  * ÉTAT RÉEL depuis #547 (S88) — le filtre est ARMÉ pendant les runs E2E :
  *   passe 1 CI    =  4 (ALL_ACCOUNTS) + 1 (golden-path)
  *                    + 4 (helper `registerOnly`, dont #653)  =  9
- *   passe 2 CI    =  4 (`auth.setup.ts` rejoué contre le MÊME backend)
- *   nominal CI    =                                          13 / min / IP
- *   pire cas CI   =  4 + 5 x 3 (retries: 2) + 4            = 23
+ *   passe 2 CI    =  1 (`auth.setup.ts` rejoué contre le MÊME backend, SHARED
+ *                    seul depuis #839 : `E2E_SETUP_ACCOUNTS=shared`, cf. plus bas)
+ *   nominal CI    =                                          10 / min / IP
+ *   pire cas CI   =  4 + 5 x 3 (retries: 2) + 1            = 20
  *   plafond e2e   =  app.rate-limit.register-per-minute    = 30 / min / IP
  *                    (backend/src/main/resources/application-e2e.properties)
  *
  * ⚠ HISTORIQUE DES CHIFFRES FAUX. Ce commentaire a annoncé 5 pendant le S79 (les 3
  * inscriptions de `registerOnly` manquaient), puis 8 jusqu'au S88 (la passe 2 CI
- * manquait). Le même budget existe pour `login` (4 comptes aussi) et `reset-password`.
+ * manquait). Le nominal 13 (S111→S116) était juste, mais la passe 2 re-provisionnait les 4
+ * comptes pour le seul SHARED dont elle se sert (#839). Le même budget existe pour `login`
+ * (mêmes comptes par passe) et `reset-password`.
  *
  * Ces nombres ne sont pas tenus par ce commentaire : ils sont RECOMPTÉS depuis les
  * sources par `frontend/src/__tests__/e2e-rate-limit-budget.test.ts` (comptes, specs,
@@ -344,6 +347,44 @@ export const PROD = makeAccount('prod', 'pr')
 
 /** Tous les comptes à provisionner par le setup (ordre = ordre de register). */
 export const ALL_ACCOUNTS: readonly E2eAccount[] = [SHARED, PWD, DEL, PROD]
+
+/**
+ * #839 — Variable qui RESTREINT les comptes provisionnés par le projet `setup` : clés
+ * séparées par des virgules (`shared`, `pwd`, `del`, `prod`). Absente ou vide : tous.
+ *
+ * POURQUOI une variable et pas le filtre CLI de Playwright : le filtre (fichiers, `-g`)
+ * s'applique à TOUS les projets de la commande, dépendances comprises (d'où `auth.setup.ts`
+ * nommé explicitement dans la passe 2). Choisir un compte par `-g` exigerait une regex de
+ * titres couvrant à la fois `persist account identities`, `provision shared` et chaque test
+ * de la spec — un couplage aux titres qui casse en silence au premier renommage.
+ * Seul usage : la passe 2 du job CI `e2e` (`E2E_SETUP_ACCOUNTS=shared`), dont l'unique spec
+ * (`auth-signature.spec.ts`) n'utilise que `SHARED` — 3 register et 3 login de moins
+ * dans les seaux partagés (budget recompté par `e2e-rate-limit-budget.test.ts`, qui lit ce
+ * préfixe dans `ci.yml` et rougit si une spec de la passe utilise un compte non provisionné).
+ */
+export const SETUP_ACCOUNTS_ENV = 'E2E_SETUP_ACCOUNTS'
+
+/**
+ * Comptes à provisionner pour la valeur `raw` de `E2E_SETUP_ACCOUNTS`, dans l'ordre de
+ * `ALL_ACCOUNTS`. Une clé inconnue LÈVE (une faute de frappe ne doit pas provisionner zéro
+ * compte en silence). Ne touche qu'à `key` : aucune identité résolue (getters, #469).
+ */
+export function selectSetupAccounts(raw: string | undefined): readonly E2eAccount[] {
+  const keys = (raw ?? '')
+    .split(',')
+    .map((key) => key.trim())
+    .filter((key) => key !== '')
+  if (keys.length === 0) return ALL_ACCOUNTS
+  const known: readonly string[] = ALL_ACCOUNTS.map((account) => account.key)
+  const unknown = keys.filter((key) => !known.includes(key))
+  if (unknown.length > 0) {
+    throw new Error(
+      `${SETUP_ACCOUNTS_ENV}: clé(s) inconnue(s) [${unknown.join(', ')}] — ` +
+        `clés admises : [${known.join(', ')}]`,
+    )
+  }
+  return ALL_ACCOUNTS.filter((account) => keys.includes(account.key))
+}
 
 /**
  * Écrit sur disque les identités effectivement provisionnées. N'est plus le canal

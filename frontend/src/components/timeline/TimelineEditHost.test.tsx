@@ -8,6 +8,7 @@ import type { TimelineResponsiveProps } from './TimelineResponsive'
 import type { PositionedEvent } from './zoom'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { deleteEvent } from '@/services/eventService'
+import { HANDLES_FORBIDDEN_INLINE } from '@/services/inlineErrorHandling'
 import { useRecurrencePreview } from '@/hooks/useRecurrencePreview'
 import { queryKeys } from '@/lib/query-keys'
 
@@ -376,7 +377,9 @@ describe('TimelineEditHost — suppression mobile (#309)', () => {
 
     // Réutilise l'unique chemin `deleteEvent` du host (pas de second callback → pas de
     // divergence d'invalidation de cache desktop/mobile, cf. plan d'implémentation).
-    await waitFor(() => expect(deleteEvent).toHaveBeenCalledWith('evt-mobile'))
+    await waitFor(() =>
+      expect(deleteEvent).toHaveBeenCalledWith('evt-mobile', HANDLES_FORBIDDEN_INLINE),
+    )
     expect(deleteEvent).toHaveBeenCalledTimes(1)
     await waitFor(() =>
       expect(screen.queryByTestId('delete-confirm-button')).not.toBeInTheDocument(),
@@ -405,10 +408,13 @@ describe('TimelineEditHost — échec de suppression (#review S46 MAJEUR)', () =
     fireEvent.click(screen.getByTestId('mobile-delete-trigger'))
     fireEvent.click(await screen.findByTestId('delete-confirm-button'))
 
-    await waitFor(() => expect(deleteEvent).toHaveBeenCalledWith('evt-mobile'))
-    // Feedback inline (mécanisme déjà en place sur le chemin desktop).
+    await waitFor(() =>
+      expect(deleteEvent).toHaveBeenCalledWith('evt-mobile', HANDLES_FORBIDDEN_INLINE),
+    )
+    // Feedback inline (mécanisme déjà en place sur le chemin desktop). #766 — la CAUSE
+    // (accès refusé) est affichée, plus le message générique.
     const alert = await screen.findByRole('alert')
-    expect(alert).toHaveTextContent('common.deleteDialog.errors.generic')
+    expect(alert).toHaveTextContent('common.deleteDialog.errors.forbidden')
     // Le dialog NE se referme PAS : l'utilisateur voit que rien n'a été supprimé.
     expect(screen.getByTestId('delete-confirm-button')).toBeInTheDocument()
   })
@@ -455,7 +461,9 @@ describe('TimelineEditHost — invalidation du cache après suppression', () => 
     fireEvent.click(await screen.findByTestId('event-form-delete'))
     fireEvent.click(await screen.findByTestId('delete-confirm-button'))
 
-    await waitFor(() => expect(deleteEvent).toHaveBeenCalledWith('evt-desktop'))
+    await waitFor(() =>
+      expect(deleteEvent).toHaveBeenCalledWith('evt-desktop', HANDLES_FORBIDDEN_INLINE),
+    )
     await waitFor(() =>
       expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: queryKeys.products.all }),
     )

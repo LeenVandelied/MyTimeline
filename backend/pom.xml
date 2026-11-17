@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.5.16</version>
+		<version>4.1.2</version>
 		<relativePath/>
 	</parent>
 	<groupId>com.matimeline</groupId>
@@ -36,9 +36,8 @@
 			Testcontainers conclut « Could not find a valid Docker environment ».
 			1.44 = plancher supporté par tout moteur ≥ 25.0. Injectée dans le JVM
 			forké par surefire (cf. build/plugins). Surcharge : -Ddocker.api.version=1.51.
-			NB : plus AUCun override de testcontainers.version — le BOM Boot 3.5.16
-			manage désormais Testcontainers 1.21.4 (docker-java récent, compatible),
-			l'override 1.20.6 (motivé sous les vieux BOM 3.2.x/3.4.x) est devenu superflu.
+			NB : aucun override de testcontainers.version — le BOM Boot manage
+			Testcontainers (2.0.5 sous Boot 4.1.2, #886).
 		-->
 		<docker.api.version>1.44</docker.api.version>
 		<!--
@@ -57,18 +56,21 @@
 			CVE-2026-22733 fix 3.5.12+). Le bump du parent BOM rend TOUS les overrides
 			de version #180/#223 superflus : le BOM 3.5.16 manage déjà des versions
 			≥ aux correctifs visés, donc les overrides ont été RETIRÉS (aucun skew).
-			Versions EFFECTIVES managées par le BOM 3.5.16 (cf. #224 garde anti-drift) :
-			  • spring-security 6.5.11   (couvre CVE-2026-22732 / CVE-2025-41232, ≥6.5.9)
-			  • spring-framework 6.2.19  (aligné SS 6.5.11)
-			  • tomcat-embed 10.1.55     (couvre CVE-2026-41293/43512/43515, ≥10.1.55)
-			  • jackson-bom 2.21.4       (couvre CVE-2026-54512/54513, ≫2.18.8)
-			  • postgresql 42.7.11       (couvre CVE-2026-42198)
-			  • flyway 11.7.2            (module flyway-database-postgresql requis, présent)
-			  • testcontainers 1.21.4    (docker-java récent, ≥ ex-override 1.20.6)
+			Boot 4.1.2 (#886) : versions EFFECTIVES managées par le BOM (cf. #224 garde
+			anti-drift BomDriftTest, planchers CVE inchangés) :
+			  • spring-security 7.1.2    (planchers CVE-2026-22732 / CVE-2025-41232 ≥6.5.9)
+			  • spring-framework 7.0.10
+			  • tomcat-embed 11.0.27     (plancher CVE-2026-41293/43512/43515 ≥10.1.55)
+			  • jackson 3.1.7 (tools.jackson, sérialiseur) + jackson 2.21.7 (runtime
+			    de jjwt-jackson uniquement ; plancher CVE-2026-54512/54513 ≥2.18.8)
+			  • hibernate-core 7.4.13
+			  • postgresql 42.7.14       (plancher CVE-2026-42198 ≥42.7.11)
+			  • flyway 12.4.0            (module flyway-database-postgresql requis, présent)
+			  • testcontainers 2.0.5
 			Seuls docker.api.version et jjwt.version (hors BOM) restent fixés ci-dessus.
 		-->
 		<!--
-			JaCoCo (#169) — NON gere par le BOM Spring Boot 3.5.16 (son parent ne
+			JaCoCo (#169) — NON gere par le BOM Spring Boot (son parent ne
 			declare aucun <jacoco.version> ni pluginManagement pour jacoco-maven-plugin) :
 			la version est donc EPINGLEE ici, comme jjwt. 0.8.13 = premiere ligne qui
 			instrumente le bytecode Java 21 sans avertissement de classfile version.
@@ -91,7 +93,15 @@
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
+			<artifactId>spring-boot-starter-webmvc</artifactId>
+		</dependency>
+		<!--
+			Boot 4 (#886) : RestClient.Builder (client Brevo) n'est plus auto-configuré
+			par le starter web ; il vient du module spring-boot-restclient.
+		-->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-restclient</artifactId>
 		</dependency>
 		<!--
 			Actuator (#37) — expose /actuator/health pour le healthcheck Docker
@@ -112,16 +122,18 @@
 			<scope>runtime</scope>
 		</dependency>
 		<!--
-			Flyway (#42, #162) — migrations versionnées. Spring Boot 3.5.16 gère la
-			version via son BOM : Flyway 11.7.2 (#260 : était 10.20.1 sous Boot 3.4.x).
+			Flyway (#42, #162) — migrations versionnées. Spring Boot gère la version via
+			son BOM. Boot 4 (#886) : l'auto-configuration Flyway vit dans le module
+			spring-boot-flyway ; sans spring-boot-starter-flyway, flyway-core seul ne
+			déclenche PLUS les migrations au démarrage (et ddl-auto=validate échoue).
 			En Flyway 10+/11+, le support Postgres a QUITTÉ flyway-core → il faut le
 			module dédié flyway-database-postgresql, sinon le démarrage Flyway casse
 			("Unsupported Database: PostgreSQL" / "no database module"). DEC-S3-001.
 			Version alignée sur le BOM Boot (pas de surcharge).
 		-->
 		<dependency>
-			<groupId>org.flywaydb</groupId>
-			<artifactId>flyway-core</artifactId>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-flyway</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.flywaydb</groupId>
@@ -132,31 +144,48 @@
 			<artifactId>lombok</artifactId>
 			<optional>true</optional>
 		</dependency>
+		<!--
+			Boot 4 (#886) : un starter de test par technologie testée (chacun tire
+			spring-boot-starter-test). webmvc-test porte @AutoConfigureMockMvc,
+			security-test porte spring-security-test (@WithMockUser), data-jpa-test
+			et flyway-test l'infrastructure de test JPA/Flyway.
+		-->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
+			<artifactId>spring-boot-starter-webmvc-test</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.springframework.security</groupId>
-			<artifactId>spring-security-test</artifactId>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jpa-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-flyway-test</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<!--
 			Testcontainers (#…) — les tests @SpringBootTest démarrent désormais
 			contre un conteneur Postgres JETABLE (même dialecte que la prod, Flyway
 			rejoue V1/V2 from scratch), plus contre la base dev partagée localhost:5432.
-			Version 100% managée par le BOM Spring Boot 3.5.16 (1.21.4) — plus
-			aucun override testcontainers.version (retiré en #260, cf. note l.39).
+			Version 100% managée par le BOM Spring Boot. Boot 4 (#886) gère
+			Testcontainers 2, qui préfixe ses artefacts : postgresql →
+			testcontainers-postgresql, junit-jupiter → testcontainers-junit-jupiter.
 		-->
 		<dependency>
 			<groupId>org.testcontainers</groupId>
-			<artifactId>postgresql</artifactId>
+			<artifactId>testcontainers-postgresql</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.testcontainers</groupId>
-			<artifactId>junit-jupiter</artifactId>
+			<artifactId>testcontainers-junit-jupiter</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

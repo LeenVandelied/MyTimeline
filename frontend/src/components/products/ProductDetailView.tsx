@@ -22,6 +22,7 @@ import { useProductsWithEvents } from '@/hooks/useProductsWithEvents'
 import { useSetEventArchived } from '@/hooks/useSetEventArchived'
 import { useAuth } from '@/hooks/useAuth'
 import { useArchiveProduct, useIsProductArchivedHere } from '@/hooks/useArchiveProduct'
+import { HANDLES_FORBIDDEN_INLINE } from '@/services/inlineErrorHandling'
 import { mapToFullCalendarEvent, type Event, type FullCalendarEvent } from '@/types/event'
 import type { Product } from '@/types/product'
 import { isPastEvent } from './isPastEvent'
@@ -120,7 +121,9 @@ export function ProductDetailView({ productId }: ProductDetailViewProps) {
   const [lastProduct, setLastProduct] = React.useState<Product | null>(liveProduct)
   if (liveProduct && liveProduct !== lastProduct) setLastProduct(liveProduct)
   const product = liveProduct ?? (archivedHere ? lastProduct : null)
-  const archiveMutation = useArchiveProduct(userId)
+  // #766 — `handleArchiveConfirm` relance l'erreur et `DeleteConfirmDialog` affiche `errors.forbidden`
+  // sur un 403 : la requête se retire du toast global (sinon double signalement).
+  const archiveMutation = useArchiveProduct(userId, HANDLES_FORBIDDEN_INLINE)
 
   const [editOpen, setEditOpen] = React.useState(false)
   const [archiveOpen, setArchiveOpen] = React.useState(false)

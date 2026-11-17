@@ -7230,3 +7230,220 @@ label sticky + événements absolus sans offset (#706), 4 chaînes en dur dans `
   Ratio discard 2/12.
 **Saturation contexte lead (mesure) :** non mesurée
 **Status :** Terminé — PR #835 mergée dans `dev`, issues #767/#768/#830/#831/#832/#833 et milestone #113 fermés après merge ; #700 ouverte (volet manuel)
+
+> **Plan S113 → S117 (2026-10-24)** — `/sprint plan 5` (déroulé à la main par le lead, skill non invocable par le modèle), base `86337a24`.
+> Reprise après un mois d'arrêt. Axe arbitré par le dev : **bugs visibles + suites du S112** (consolider S103-S112) ;
+> exclus : milestone « Mise en ligne (GELÉ) », montées majeures de dépendances (zod 4, vitest 5, Next 16, Spring Boot 4), features maquette nouvelles.
+> 29 candidates (bugs ouverts + #836-#840 + #700) ; détection NO-OP : 0 PR fermante mergée. Phase 0.5 scriptée **sautée** :
+> contre-vérification manuelle par l'architect sur chaque issue retenue, puis par le lead sur 8 affirmations clés (toutes confirmées).
+> 14 issues, 26 pts nominaux, aucune migration (V17 libre). Split S113 appliqué (#838 → S116, #755 → backlog) : cohésion moyenne 0.80.
+> Fermées au plan : #403 (déjà livrée, `27cba3ae`), #444 (livrée en pratique, seul appelant `palette-color-picker.tsx:239` passe un `<button>`).
+> Backlog motivé : #558 (prémisse fausse, ~30 specs naviguent vers un produit), #700 (reste la vérif lecteur d'écran, manuelle dev),
+> #563 (couplée à la mise en ligne), #620 (décision produit), #755, #741, #722, #707, #406, #364, #500, #272, #471.
+> Correctifs de briefing à reporter : catalogues i18n = `frontend/public/locales/{fr,en,es,de}/*.json` (pas `frontend/messages/`) ;
+> mesures avec `/usr/bin/grep` (RTK fausse `grep`, `grep -c`, `wc -l`). Branche : aucune créée au plan (convention S85).
+> Ordre imposé : S113 → S114 (`ProductsListView`, `ProductDetailView`) ; S115 → S117 (#840 migre `sprint-105-fit-shortcut.spec.ts`).
+> Mini-plans : `docs/memory/sprints/sprint-<N>/architect-plans.md`.
+
+### Sprint 113 — 2026-10-24 → 2026-10-24 (Terminé — merge PR #856 dans dev)
+**Objectif :** le focus revient au déclencheur à la fermeture de tous les dialogues (édition et mobile compris) ; un 403 sur l'édition d'un événement ou une confirmation de suppression est expliqué dans l'écran, pas seulement par le toast
+**Milestone GitHub :** #114 (fermé après merge)
+**Issues livrées (2) :** #766 (P2, S), #836 (P2, S — réel M) — fermées après merge
+**Vagues exécutées :** V1 = #766 (Vitest) | component-guardian (avis retour de focus) | V2 = #836 (E2E réel, pile e2e montée par le lead) | lead : `next build` + `next start`, E2E complet | revue batch ×2 en parallèle (code applicatif, tests/E2E) | corrections de revue | cycle 2 relu par le lead | E2E complet rejoué
+**Cohésion score :** 1.00
+**Migrations Flyway :** aucune — prochaine V17
+**Commits :** 6 — démarrage `dae66324` · #766 `667f5ad1` · #836 `550b416d` · revue `f558c5c6` · artefacts `b5734ab9` · clôture (ce commit)
+**BR impactées :** aucune règle métier modifiée (affichage d'erreur et accessibilité côté client)
+**Reviews :** reviewer code 0/0/3 (1 corrigé : repli de focus ; 1 corrigé : `data-reason` ; 1 → follow-up #857) · playwright-reviewer 0/2/9 (2 MAJEUR corrigés : course `waitForResponse`, tests 403 de bout en bout pour 3 vues ; 4 MINEUR corrigés/justifiés ; reste accepté) · cycle 2 relu par le lead
+**Tests :** Backend non concerné | Vitest 2301/2301 | tsc/lint/format verts | E2E complet contre `next build`+`next start`, backend e2e dédié depuis HEAD : 638 passés / 8 sautés / 1 rouge hors sprint (`sprint-77-theme-visual:620`, armement darwin) — identique avant et après corrections | CI PR : 4 checks requis verts ; `security` rouge préexistant sur dev (avis zod GHSA-mrhx-c7xc-m3w5, migration zod 4 en session séparée)
+**Mesure avant correctif #836 :** 10 dialogues sur 11 renvoyaient le focus sur `body`
+**Nouveaux pitfalls / décisions / patterns :** PIT-S113-001..003 · PAT-S113-001..003 · packs pit régénérés
+**Écarts de briefing :** `test-quiet`/E2E non délégués au test-runner (règle projet) ; 3 rouges `sprint-106` rendus par l'agent contre `next dev` → verts contre `next start` ; clé du formulaire en `validation.event.forbidden` (namespace du formulaire) au lieu de `errors.forbidden`
+**Absorbé en cours (XS) :** 2 — garde `e.target !== e.currentTarget` sur les lignes/cartes cliquables (#836, bloquait la mesure au clavier) ; tests 403 de bout en bout pour ProductsListView/ProductDetailView/CategoriesView (revue)
+**Follow-ups arbitrés (Phase 4 triage) :**
+  - Focus après archivage/suppression réussi (déclencheur disparu) [S | frontend/a11y] → issue #857 (backlog)
+  - Piège de focus du BottomSheet rejoué à chaque rendu [S | frontend/a11y] → issue #858 (backlog)
+  - Libellés de dialogue faux (`notFound` « catégorie » pour tout, sr-only « Close » anglais) [XS | frontend/i18n] → issue #859 (backlog)
+  - Focus sur « Enregistrer » après échec du keep-mine [XS | frontend/a11y] → issue #860 (backlog)
+  - Tests 403 de bout en bout pour 3 vues → absorbé (revue, `f558c5c6`)
+  Ratio discard 0/5.
+**Saturation contexte lead (mesure) :** non mesurée
+**Status :** Terminé
+
+### Sprint 114 — 2026-10-24 → 2026-10-25 (Terminé — merge PR #862 dans dev)
+**Objectif :** nom de produit lisible dans « Tes produits » du tableau de bord ; les flèches des onglets du DS déplacent le focus ; plus de débordement de la liste produits au-delà de sm
+**Milestone GitHub :** #115 (fermé après merge)
+**Issues livrées (3) :** #825 (P2, S), #815 (P2, S), #816 (P3, S — réel M après review) — fermées après merge
+**Vagues exécutées :** V1 = #825 ∥ #815 ∥ #816 (Vitest seul, specs E2E écrites et validées par `--list`) | lead : `next build` + `next start`, E2E complet | reviewer batch | correction de review #816 (même agent, SendMessage) | ui-design (arbitrage seuil de frise) | lead : base e2e recréée, E2E complet rejoué
+**Cohésion score :** 1.00
+**Migrations Flyway :** aucune — prochaine V17
+**Commits :** 9 — démarrage `2f36ab57` · #815 `09b72861` · #825 `24c0f4e5` · #816 `77126b1a` + review `be209310` · docs a11y `d1ce0192` · handoff §5 `32aaff7c` · artefacts `2238c8c6` · clôture (ce commit)
+**BR impactées :** aucune (présentation et accessibilité clavier)
+**Reviews :** reviewer batch 0 CRITIQUE / 1 MAJEUR / 5 MINEURS — MAJEUR (nom à ~27 px de 768 à 1023 px) et 4 MINEURS corrigés en `be209310` ; 1 MINEUR accepté (focus inconditionnel si un parent refusait le changement d'onglet, aucun consommateur ne refuse) · ui-design APPROUVE sous condition d'amender le handoff §5 (fait)
+**Tests :** Backend non concerné | Vitest 2322/2322 | `next build`, tsc, lint, `format:check` verts | E2E complet contre `next build`+`next start`, base e2e neuve : 653 passés / 8 sautés / 1 rouge hors sprint (`sprint-77-theme-visual:620`, armement darwin) ; sprint-114 4+4+7 verts | CI PR : 7/7 verts
+**Nouveaux pitfalls / décisions / patterns :** PIT-S114-001 · PAT-S114-001..003 · DEC-S114-001 · PIT-S107-001/002 marqués corrigés · packs pit régénérés
+**Écarts de briefing :** branche du worktree basée sur `main` → `sprint/114` recréée depuis `origin/dev` ; E2E non délégués (lead seul détenteur de la pile, agents en `--list`) ; `SettingsShell` retiré du périmètre de #815 (tablist propre déjà conforme) ; backend e2e réutilisé depuis l'image S113 (0 commit `backend/` depuis)
+**Absorbé en cours (XS) :** 2 — `a11y-audit.md` §8ter marqué corrigé (#815) ; densité md..xl de la liste produits (follow-up S de #816, absorbé par la review)
+**Follow-ups arbitrés (Phase 4 triage) :** aucun ouvert — les 2 signalés ont été absorbés dans la PR. Ratio discard 0/2.
+**Saturation contexte lead (mesure) :** non mesurée
+**Status :** Terminé
+
+### Sprint 115 — 2026-10-25 → 2026-10-25 (Terminé — merge PR #863 dans dev)
+**Objectif :** la landing ne promet plus de rappels qui n'existent pas ; aucun débordement horizontal à texte ×2 ; specs E2E sur la session contrôlée `sessionState(X)`
+**Milestone GitHub :** #116 (fermé après merge)
+**Issues livrées (3) :** #797 (P2, S), #799 (P2, S), #840 (P3, S — réel M : 99 sites dans 72 specs) — fermées après merge
+**Décision produit :** #797 — reformuler (décision dev du 2026-10-25), DEC-S115-001
+**Vagues exécutées :** V1 = #797 (Vitest seul) ∥ #799 (détient Playwright) | lead : rejeu frise + ×2 + sticky-nav 33/33 | V2 = #840 seul (8 lots de 9 rejoués) | lead : `next build` + `next start`, E2E complet | reviewer batch
+**Cohésion score :** 0.00 (hors br-packs ; cohésion par fichiers : #797 et #799 sur la landing)
+**Migrations Flyway :** aucune — prochaine V17
+**Commits :** 16 — démarrage `42745fe0` · #797 `49e712d1` · #799 `1eda8b9b` · artefacts V1 `28d05aba` · #840 `1ae0752d`…`e411cf96` (8 lots) + garde `402bb3b7` · artefact V2 · audit `e8d1c573` · clôture (ce commit)
+**BR impactées :** aucune (textes de landing, mise en page, harnais E2E)
+**Reviews :** reviewer batch 0 CRITIQUE / 0 MAJEUR / 8 MINEURS — non corrigés, regroupés dans l'issue #867
+**Tests :** Backend non concerné | Vitest 2328/2328 | `next build`, tsc, lint, `format:check` verts | E2E complet contre `next build`+`next start` : 657 passés / 8 sautés / 1 rouge hors sprint (`sprint-77-theme-visual:620`, armement darwin) / 1 non exécuté | CI PR : 7/7 verts (e2e 659 passés ; passe RS256 appairée `auth-signature` 13 passés)
+**Nouveaux pitfalls / décisions / patterns :** PIT-S115-001..005 · PAT-S115-001..002 · DEC-S115-001 · packs pit régénérés
+**Écarts de briefing :** branche du worktree basée sur `main` → `sprint/115` recréée depuis `origin/dev` ; backend e2e réutilisé depuis l'image S113 (0 commit `backend/` depuis) ; E2E non délégués à un test-runner ; briefings non committés (supprimés avant la PR)
+**Absorbé en cours (XS) :** 1 — titre du jalon `milestones.reminder.title` (hors balayage regex du plan, #797)
+**Follow-ups arbitrés (Phase 4 triage) :**
+  - `legal.json:116` non traduit en en/es/de [XS | i18n] → issue #864 (backlog)
+  - audit texte ×2 des autres écrans publics + 320 px/en/es sur la landing [S | frontend] → issue #865 (backlog)
+  - exercer `auth-signature` en pile appairée [XS | e2e] → issue #866 (backlog) — la CI la joue déjà (passe RS256, 13 passés)
+  - 8 mineurs de la review batch [S | test] → issue #867 (backlog)
+  Ratio discard 0/4.
+**Saturation contexte lead (mesure) :** non mesurée
+**Status :** Terminé
+
+### Sprint 116 — 2026-10-25 → 2026-10-25 (Terminé — merge PR #868 dans dev)
+**Objectif :** un 429 dit quand retenter ; la passe 2 CI ne recrée qu'un compte ; un 500 du PUT de thème traité inline n'allume plus la bannière serveur
+**Milestone GitHub :** #117 (fermé après merge)
+**Issues livrées (4) :** #567 (P2, S — + `UserRateLimitingFilter`), #838 (P3, XS), #839 (P2, S), #406 (P3, XS — absorbée dans #839, même fichier `ci.yml`) — fermées après merge
+**Arbitré au démarrage (2026-10-25) :** #567 → `Retry-After` seul (DEC-S116-001) ; #838 → un 500 inline n'alimente plus le bus #76 (DEC-S116-002) ; #406 absorbé ; modification de `ci.yml` autorisée, confirmée explicitement par le dev avant merge
+**Vagues exécutées :** V1 = #839+#406 ∥ #567 ∥ #838 (#838 seul détenteur de Playwright) | lead : security-expert sur #567, `next build`, Vitest complet | reviewer batch | lead : corrections des mineurs
+**Cohésion score :** 1.00 (br-auth)
+**Migrations Flyway :** aucune — prochaine V17
+**Commits :** 7 — #839 `4a73e76c` · #406 `1303d711` · #567 `7dc4242b` · #838 `23ebe9ce` · corrections review + audit sécurité `edfdcb4a` · artefacts `64cd6263` · clôture (ce commit)
+**BR impactées :** BR-AUT-013 (rate-limit par utilisateur, #831) ; rate-limit auth/export/me (#567) ; aucune BR métier modifiée par #838/#839
+**Reviews :** audit sécurité #567 APPROUVÉ (pas d'oracle sur le seau par jeton ; durcissement borne haute appliqué) · reviewer batch 0 CRITIQUE / 0 MAJEUR / 6 MINEURS — tous corrigés (`edfdcb4a`)
+**Tests :** Backend 687/687 + rate-limit/CORS rejoués après corrections | Vitest 2341/2341 | `next build`, tsc, prettier verts | E2E local (`next build`+`next start`) : spec neuve 3/3 ×3, 8 specs de surface 74/75 (rouge darwin attendu) | CI PR (SHA `64cd6263`) : 7/7 verts ; passe 1 670 = 662 passés + 8 sautés ; **passe 2 `Running 10 tests`, 10 passés (13 avant, PIT-S88-007 OK)** ; `Backend UP (/actuator/health)` après 6 tentatives
+**Nouveaux pitfalls / décisions / patterns / bugs :** PIT-S116-001..006 · PAT-S116-001..004 · DEC-S116-001..003 · BUG-S116-001 · ADR-010 §7 amendé · packs pit régénérés
+**Écarts de briefing :** branche du worktree basée sur `main` → `sprint/116` créée depuis `origin/dev` ; `node_modules` en zod 3 (`npm ci` par l'agent #838, PIT-S116-003) ; E2E non délégués à un test-runner ; briefings supprimés avant la PR
+**Absorbé en cours (XS) :** #406 (dans #839)
+**Follow-ups arbitrés (Phase 4 triage) :**
+  - borne register « ré-émissions du setup » non recomptée par le test de budget [XS | e2e/ci] → issue #869 (backlog)
+  - exemption inline étendue à 502/503/504 ? [XS | frontend] → issue #870 (backlog)
+  - barrière d'hydratation dans `loginViaForm` (sprint-111 rouge sous `next dev`) [XS | e2e] → issue #871 (backlog)
+  - exploiter `Retry-After` côté frontend [S | frontend/auth] → issue #872 (backlog)
+  Ratio discard 0/4.
+**Saturation contexte lead (mesure) :** non mesurée
+**Status :** Terminé
+
+### Sprint 117 — 2026-10-25 → 2026-10-25 (Terminé — merge PR #873 dans dev)
+**Objectif :** plus de dérive de position sur `[ ]` combinés à `+/-` ; libellé de pin entier après F ; dernières cibles tactiles mesurées
+**Milestone GitHub :** #118 (fermé après merge)
+**Issues livrées (3) :** #805 (P2, S — dérive reproduite et corrigée), #804 (P3, XS — + réserve dynamique du libellé de queue, follow-up absorbé), #837 (P3, XS) — fermées après merge
+**Vagues exécutées :** V1 = #804 (Vitest seul) ∥ #837 (seul détenteur de Playwright) | V2 = #805 + E2E #804 + réserve dynamique (même agent, `TimelineView.tsx` et `sprint-105-fit-shortcut.spec.ts` communs) | lead : Vitest complet, `next build`, E2E complète contre `next build`+`next start` | reviewer batch | lead : correction du mineur | correction CI (jeu 4 E2E #804 dépendant de la police)
+**Cohésion score :** 1.00 (br-events)
+**Migrations Flyway :** aucune — prochaine V17
+**Commits :** 10 — démarrage `cbff1c3d` · #804 `5cd78b37` · #837 `04a78c0f` · #805 `f0627005` · #804 réserve `b3f52fa8` · #804 E2E `a49b2e2c` · audit + JSDoc review `1ebadb5c` · review-batch `e0a2cf41` · correction CI `96508f0d` · clôture (ce commit)
+**BR impactées :** aucune BR métier (rendu de la frise et coque mobile ; 0 fichier backend)
+**Reviews :** reviewer batch 0 CRITIQUE / 0 MAJEUR / 5 MINEURS — 1 corrigé (`FIT_MARGINS_PX.mobile` signalé non branché), 1 en issue (#875), 3 assumés (`review-batch.md`)
+**Tests :** Vitest 2359/2359 | `next build`, `format:check`, tsc verts | E2E locale complète (`next build`+`next start`) : 654 passés / 8 sautés / 11 rouges = 10 références `-darwin` absentes (attendu) + `sprint-111-theme:88` (6/6 ×3 isolé, PIT-S117-005) | CI PR 1er run (`e0a2cf41`) : `e2e` rouge sur le jeu 4 de #804 (police Linux, PIT-S117-004) + 1 flaky `sprint-101-fab-landscape` (3/3 vert en local) → corrigé `96508f0d` : CI 7/7 verte
+**Nouveaux pitfalls / décisions / patterns / bugs :** PIT-S117-001..005 · PAT-S117-001..003 · DEC-S117-001..003 (DEC-S112-002 remplacée) · BUG-S117-001..003 · packs pit régénérés
+**Écarts de briefing :** branche du worktree basée sur `main` → `sprint/117` créée depuis `origin/dev` ; image backend e2e reconstruite (3 commits backend depuis la dernière) ; follow-up « réserve réelle du libellé de queue » de #804 absorbé en V2 ; E2E non délégués à un test-runner ; briefings supprimés avant la PR
+**Absorbé en cours :** réserve dynamique du libellé de queue (follow-up de #804, même fichier que #805)
+**Follow-ups arbitrés (Phase 4 triage) :**
+  - estimation de largeur #746 sous-dimensionnée sous Linux [S | events/frontend] → issue #874 (backlog)
+  - après F, pin antérieur à libellé long qui déborde [S | events/frontend] → issue #875 (backlog)
+  - `T` : deux positions au 1er et au 2e appui [XS | events/frontend] → issue #876 (backlog)
+  - zone tactile des barres de durée en paysage (~24 px) [XS | events] → issue #877 (backlog)
+  Ratio discard 0/4. Déjà traités pendant le sprint (non arbitrés) : E2E V2 de #804, réserve dynamique, jeu des specs contre `next build`.
+**Saturation contexte lead (mesure) :** non mesurée
+**Status :** Terminé
+
+### Sprint 118 — 2026-11-10 → 2026-11-10 (Terminé — merge PR #887 dans dev)
+**Objectif :** dépendances majeures frontend — débloquer Dependabot, Node 22, vitest 5, Next 16
+**Milestone GitHub :** #119 (fermé après merge)
+**Issues livrées (4) :** #882 (P2, S), #883 (P2, S), #884 (P2, M), #885 (P2, L) — fermées après merge
+**Vagues exécutées :** séquentiel par dépendance (#882 → #883 → #884 → #885), tout par le lead (configuration et outillage, pas de fullstack-dev) ; review batch par `reviewer` en fin
+**Cohésion score :** 1.00 (transversal frontend / devops)
+**Migrations Flyway :** aucune — prochaine V17
+**Commits :** #882 `204d3b58` · #883 `dc882ebc` + ci.yml `8b15c851` · merge dev (#880) `9d8d0b45` · #884 `7c7d3b0f` · #885 `c6bf4801` · oracle period-zoom `73a98a23` · #879 cherry-pick `55a89660` · e2e prefetch Next 16 `4ba1621a` · docs review `56f7f6de` · ci.yml commentaires `39b1ef7e` · artefacts `37b985dd` + `34810a4d` · clôture (ce commit)
+**BR impactées :** aucune
+**Reviews :** reviewer batch 0 CRITIQUE / 2 MAJEUR / 8 MINEURS — tous corrigés ou assumés (`sprints/sprint-118/review-batch.md`)
+**Tests :** Vitest 177/2359 identique avant/après | lint (`eslint .`), tsc, format:check, `next build` verts, 48 pages SSG comme sous Next 15 | E2E ciblée locale 71/71 ×3 | CI PR #887 sur `37b985dd` : 7/7 verte, e2e 676 passés / 0 échec / 0 flaky ; 1er run (`55a89660`) rouge sur 3 specs de préchargement (prefetch par segment de Next 16), corrigées `4ba1621a`
+**Dependabot :** #846 #848 #851 #852 #854 #849 #853 fermées vers #887 (lock Dependabot rejeté par `npm ci`) ; #880 mergée dans dev ; #879 intégrée par cherry-pick, laissée ouverte (fermeture non autorisée) ; #850 fermée au merge
+**`dev` trouvée rouge :** e2e (`sprint-117-period-zoom:196`, oracle dépendant de la date, corrigé) et security (follow-redirects GHSA-mrwp-f3q8-3g9p, corrigé) — #879 ne pouvait pas passer seule
+**Nouveaux pitfalls / décisions / bugs :** PIT-S118-001 (lock Dependabot) · PIT-S118-002 (SSG perdu sans `setRequestLocale`) · PIT-S118-003 (typage `Mock` vitest 5) · PIT-S118-004 (prefetch par segment, portes RSC inertes) · PIT-S118-005 (`@layer properties` Tailwind 4.2) · DEC-S118-001 (`--webpack` et `middleware.ts` gardés) · DEC-S118-002 (5 règles react-hooks coupées) · BUG-S118-001 (oracle period-zoom daté) ; packs `pit-*` régénérés
+**Écarts de briefing :** branche du worktree basée sur `main` → `sprint/118` créée depuis `origin/dev` ; skill `/sprint` lancé par l'utilisateur (non invocable par le modèle) ; issues traitées par le lead sans fullstack-dev ; E2E non délégués à un test-runner (`SKIP_DELEGATION=1`, sortie en fichier) ; PR ouverte en brouillon tôt pour obtenir la CI (la CI ne tourne que sur PR)
+**Follow-ups arbitrés (Phase 4 triage, 5/5 en issue, 0 discard, 0 absorbé) :**
+  - lock Dependabot rejeté par `npm ci` [S | devops] → #888 (Sprint 119)
+  - `middleware.ts` → `proxy.ts` [S | auth/frontend] → #889 (backlog)
+  - `next build` sur Turbopack [S | frontend] → #890 (backlog)
+  - 5 règles react-hooks 7 coupées (85 occurrences) [M | frontend] → #891 (backlog)
+  - React 18 → 19 [L | frontend] → #892 (backlog)
+**Restes connus :** Dependabot #879 ouverte (intégrée par cherry-pick ; Dependabot la fermera) ; flake isolé `sprint-90-first-contact:457` vu 1 fois sur une passe locale ×3, vert en CI
+**Status :** Terminé
+
+### Sprint 119 — 2026-11-10 → 2026-11-10 (Terminé — merge PR #893 dans dev)
+**Objectif :** dépendances majeures backend — Spring Boot 3.5.16 → 4.1.2 (remplace Dependabot #878, fermée avec renvoi)
+**Milestone GitHub :** #120 (fermé après merge)
+**Issues livrées (1) :** #886 (P2, L) — fermée après merge (base dev)
+**Vagues exécutées :** une issue, traitée par le lead (montée de plateforme itérative, pas de fullstack-dev) ; review batch par `reviewer` en fin
+**Cohésion score :** 1.00 (backend seul)
+**Migrations Flyway :** aucune — prochaine V17
+**Commits :** #886 `5d740f26` · sondes health + commentaires de versions `c2ab5f42` · artefacts `7e6b25f5` · clôture (ce commit)
+**BR impactées :** aucune
+**Reviews :** reviewer batch 0 CRITIQUE / 2 MAJEUR / 6 MINEURS — majeurs traités, 1 mineur corrigé, 3 assumés, 2 en follow-up (`sprints/sprint-119/review-batch.md`)
+**Tests :** backend `mvnw verify` 688/688 | boot réel `java -jar` base vierge : Flyway V1→V16 + `validate` OK | parcours navigateur inscription → connexion → catégorie → produit → événement → frise OK | CI PR #893 sur `7e6b25f5` : 7/7 verte, e2e 676 passés / 0 échec / 8 ignorés + RS256 10/10 ; 1er run (`5d740f26`) e2e annulé par le push suivant
+**Versions effectives :** Spring Framework 7.0.10, Spring Security 7.1.2, Hibernate 7.4.13, Jackson 3.1.7 (+ 2.21.7 runtime jjwt), Tomcat 11.0.27, Flyway 12.4.0, Testcontainers 2.0.5
+**Nouveaux pitfalls / décisions :** PIT-S119-001 (EntityManager introuvable au démarrage de Tomcat sous Spring 7, MockMvc vert) · PIT-S119-002 (Boot 4 modulaire : starters flyway/restclient/tests requis) · DEC-S119-001 (EntityManager `@Fallback`) · DEC-S119-002 (sondes health désactivées) ; packs `pit-*` régénérés
+**Écarts de briefing :** branche du worktree basée sur `main` → `sprint/119` créée depuis `origin/dev` ; skill `/sprint` lancé par l'utilisateur ; issue traitée par le lead ; PR ouverte en brouillon tôt (la CI ne tourne que sur PR) ; #888 (frontend) détachée du jalon (hors périmètre, pas de label `sprint-119`)
+**Follow-ups arbitrés (Phase 4 triage, 3/3 en issue backlog, 0 discard, 0 absorbé) :**
+  - test d'or de l'export RGPD JSON [XS | export] → #894 (backlog)
+  - retirer `spring.jpa.database-platform` (HHH90000025) [XS | transversal] → #895 (backlog)
+  - avertissement « Found 2 UserDetailsService beans » [XS | auth] → #896 (backlog)
+**Restes connus :** aucun bloquant ; `@Fallback` EntityManager à revisiter si Spring Data rétablit l'injection de `jpaSharedEM_*`
+**Saturation contexte lead (mesure) :** non mesurée
+**Status :** Terminé
+
+### Sprint 120 — 2026-11-10 → 2026-11-10 (Terminé — merge PR #897 dans dev)
+**Objectif :** solder les suivis frontend de la montée Next 16 (Sprint 118) — React 19, règles react-hooks 7, `proxy.ts`, build Turbopack, lock Dependabot
+**Milestone GitHub :** #121 (fermé après merge)
+**Issues livrées (5) :** #889 (P2, S), #888 (P2, S), #892 (P1, L), #891 (P1, M), #890 (P2, S) — fermées après merge (base dev)
+**Vagues exécutées :** séquentiel par le lead #889 → #888 → #892 → #891 → #890 ; #891 en fan-out : volet frise (5 fichiers, 59 occ.) par un fullstack-dev, le reste par le lead, sur fichiers disjoints ; review batch par `reviewer` en fin
+**Cohésion score :** 1.00 (frontend seul)
+**Migrations Flyway :** aucune — prochaine V17
+**Commits :** #889 `d3839c13` · #888 `f2c54752` · #892 `c27c6dfe` · #891 `39e68f19` + `bbf4cd6f` (frise) + `504fff6e` (réactivation) · #890 `8c22f64c` · cp-frontend `e632bdd2` · review `95912f8e` · artefacts `80b18c50` · clôture (ce commit)
+**BR impactées :** aucune (ADR-004 amendé : runtime Node du proxy)
+**Reviews :** reviewer batch 0 CRITIQUE / 1 MAJEUR / 5 MINEURS — majeur (format, `format:check` rouge en CI) corrigé, 2 mineurs corrigés, 3 assumés (`sprints/sprint-120/review-batch.md`)
+**Tests :** Vitest 2359/2359 sans stderr | `eslint .` 0 problème règles actives | tsc, format, `storybook build` | `next build` Turbopack 48 SSG identiques | E2E locale `next build`+`next start` : 674 passés / 1 échec attendu darwin (armement capture `sprint-77-theme-visual`, `--ignore-snapshots`) / 9 ignorés | navigateur : connexion, tableau de bord, frise, fiche produit, réglages | CI PR #897 : `frontend` rouge sur `504fff6e` (format), vert sur `95912f8e`
+**Versions effectives :** React 19.3.1, Next 16.4.6 (Turbopack en dev ET build), `@swc/helpers` 0.5.23 direct
+**Mesure #891 :** 89 occurrences (85 au S118) → 0 ; corriger `incompatible-library` en démasque d'autres (compilateur qui sautait le composant)
+**Nouveaux pitfalls / patterns :** PIT-S120-001 (singletons `<html>`/`<body>` React 19 en RTL) · PIT-S120-002 (`ref={obj.x}` contamine `obj`, react-hooks/refs ; `incompatible-library` masque d'autres erreurs) · PIT-S120-003 (chunks Turbopack plats, portes E2E par contenu) · PAT-S120-001 (`useSyncExternalStore`/`useHydrated`) · PAT-S120-002 (`useInsertionEffect` pour refs lues par ref callback enfant) ; packs `pit-*` régénérés
+**Écarts de briefing :** branche du worktree basée sur `main` → `sprint/120` créée depuis `origin/dev` ; skill `/sprint` lancé par l'utilisateur ; issues traitées par le lead sauf le volet frise de #891 ; E2E non déléguée (lead) ; PR ouverte en brouillon tôt pour la CI ; Dependabot #879 fermée (contenu déjà dans dev via cherry-pick S118, accord utilisateur)
+**Follow-ups arbitrés (Phase 4 triage, 2/2 en issue backlog, 0 discard, 0 absorbé) :**
+  - densité appliquée seulement à l'ouverture de Réglages › Préférences (préexistant) [S | frontend] → #898 (backlog)
+  - `ci.yml` cite encore `middleware.ts` (2 commentaires) [XS | devops] → #899 (backlog)
+**Restes connus :** #888 fermée avec note — critère « PR Dependabot npm verte sans retouche du lock » à constater au prochain passage Dependabot ; `forwardRef` (21 fichiers) toujours en place, supporté par React 19
+**Saturation contexte lead (mesure) :** non mesurée
+**Status :** Terminé
+
+### Sprint 121 — 2026-11-12 → 2026-11-12 (Terminé — merge PR #909 dans dev)
+**Objectif :** solder les suivis du Sprint 120 et deux bugs P2 frontend (densité persistée, piège de focus du panneau mobile)
+**Milestone GitHub :** #122 (fermé après merge)
+**Issues livrées (3) :** #898 (P2, S), #858 (P2, S), #899 (P3, XS) — fermées après merge (base dev)
+**Vagues exécutées :** V1 = #898 + #858 en fan-out (2 fullstack-dev, fichiers disjoints, même working tree) | #899 par le lead en parallèle (accord explicite du dev pour toucher au workflow) | review batch par `reviewer` en fin, correctifs par le lead
+**Cohésion score :** ~0.5 (frontend transverse + devops)
+**Migrations Flyway :** aucune — prochaine V17
+**Commits :** #899 `d5663546` · #858 `5e8bd9b2` + `802f8e35` (review) + `54342e2f` (commentaires d'appelants) · #898 `6faaa4ef` · artefacts `6c92a246` · clôture (ce commit)
+**BR impactées :** aucune
+**Reviews :** reviewer batch 0 CRITIQUE / 1 MAJEUR / 5 MINEURS — majeur (Tab parti de `body` sortait du panneau après « Continuer ») corrigé ; 1 mineur corrigé (assertion E2E densité), 3 assumés, 1 absorbé (`sprints/sprint-121/review-batch.md`)
+**Tests :** Vitest 2380/2380 sans stderr | tsc, eslint, `format:check`, `next build` Turbopack | E2E locale `next build`+`next start` : 678 passés / 2 échecs / 9 ignorés — `sprint-77-theme-visual:620` (darwin attendu) + `sprint-90-first-contact:413` **préexistant** (A/B build `origin/dev` 4/5 vs branche 1/5, helper `page-chunk-gate.ts:71`) | E2E ciblé après review 62/62 | CI PR #909 7/7
+**Mesure #858 :** pire qu'annoncé — au clavier seul le 1er caractère du username passait (re-rendu au passage dirty → piège rejoué → focus sur la croix) ; masqué par `fill()` dans tous les E2E
+**Nouveaux pitfalls / patterns :** PIT-S121-001 (`fill()` masque un vol de focus à la frappe) · PIT-S121-002 (`MutationObserver` aveugle au flash) · PAT-S121-001 (callback d'appelant en ref, `useFocusTrap`) · PAT-S121-002 (préférence locale appliquée avant 1re peinture, script inline du layout serveur) ; packs `pit-*` régénérés
+**Écarts de briefing :** planification faite par le lead sans architect (matrice triviale ; #874/#875 reportées) ; branche du worktree basée sur `main` → `sprint/121` créée depuis `origin/dev` et `npm ci` refait ; E2E non déléguée (lead) ; suivi créé par le lead sans `project-manager` (labels appliqués à la main) ; briefings non commités (suppression bloquée par un garde-fou, laissés non suivis)
+**Absorbé en cours (XS/S) :** focus sur le champ à l'étape 2 + Tab hors panneau (review, `802f8e35`) ; 5 commentaires d'appelants de `useFocusTrap` devenus faux (`54342e2f`) ; mentions « Edge » de `ci.yml` (#899)
+**Follow-ups arbitrés (Phase 4 triage, 1/1 en issue backlog, 0 discard, 0 absorbé) :**
+  - flake `sprint-90-first-contact:413` (`page-chunk-gate` « Response has been disposed »), préexistant [S | frontend/e2e] → #910 (backlog — pas de milestone Sprint 122)
+**Restes connus :** #874 + #875 (frise, `label-reserve.ts`) prévues pour le Sprint 122, non planifié
+**Saturation contexte lead (mesure) :** non mesurée
+**Status :** Terminé

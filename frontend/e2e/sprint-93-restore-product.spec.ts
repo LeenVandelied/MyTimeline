@@ -1,6 +1,7 @@
 import { type Page } from '@playwright/test'
 import { expect, test } from './support/fixtures'
 import { PROD } from './support/accounts'
+import { sessionState } from './support/session'
 import { ensureAuthenticated } from './support/auth'
 import { neutralizeDevToolingPointerEvents } from './support/dev-tooling'
 import { getUserId, gotoProducts, seedCategory, seedProduct, unique } from './support/products'
@@ -51,7 +52,7 @@ async function openTab(page: Page, name: 'Produits' | 'Archivés') {
 }
 
 test.describe('#711 — restaurer un produit archivé (desktop)', () => {
-  test.use({ storageState: PROD.storageState, viewport: DESKTOP })
+  test.use({ storageState: sessionState(PROD), viewport: DESKTOP })
 
   test('archiver → onglet Archivés → Désarchiver (annuler puis confirmer) → produit et événement de retour sans rechargement', async ({
     page,

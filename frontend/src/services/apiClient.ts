@@ -190,10 +190,24 @@ apiClient.interceptors.response.use(
     // au seul code `ECONNABORTED` (signal axios fiable d'un dépassement de `timeout`) ;
     // une 5xx à `response.status >= 500`. On n'utilise PAS le message d'erreur
     // (regex trop large : requalifierait des erreurs métier contenant "timeout").
+    //
+    // #838 — exception unique : un 500 que la requête a déclaré traiter elle-même
+    // (`inlineHandledStatuses: [500]`, aujourd'hui `PUT /me/preferences` via
+    // `persistThemeChoice`) n'alimente PAS le bus. Sinon `OfflineBanner` affichait
+    // « erreur serveur » pour un échec sans conséquence visible (thème local
+    // conservé). Coût assumé (arbitrage dev S116) : si cette requête est la SEULE
+    // en échec, un serveur malade passe inaperçu ; toute autre requête continue
+    // d'alimenter le bus. L'exception vise le 500 seul (un 502/503 reporte), et ne
+    // FAIT QUE s'abstenir : elle n'efface pas un état posé par une autre requête.
     const isTimeout = error.code === 'ECONNABORTED'
+    const status: unknown = error.response?.status
     if (isTimeout) {
       networkStatusStore.reportTimeout()
-    } else if (typeof error.response?.status === 'number' && error.response.status >= 500) {
+    } else if (
+      typeof status === 'number' &&
+      status >= 500 &&
+      !(status === 500 && handlesStatusInline(error.config, 500))
+    ) {
       networkStatusStore.reportServerError()
     }
     if (isInlineAuthRequest(error.config?.url)) {
@@ -239,10 +253,11 @@ apiClient.interceptors.response.use(
       // affichent `errors.forbidden` dans leur `catch`. Opt-out PAR REQUÊTE et non par
       // URL : un futur appelant de la même route sans gestion inline garde le toast.
       //
-      // ⚠ `TimelineEditHost` (formulaire d'événement) et `DeleteConfirmDialog`
-      // n'affichent PAS la cause d'un 403 : ils rendent un message générique. Sur ces
-      // écrans, ce toast est le SEUL porteur de « accès refusé » — ne pas les faire
-      // opter out tant qu'ils n'affichent pas `errors.forbidden` eux-mêmes.
+      // #766 — même opt-out pour le PATCH d'édition d'événement (`TimelineEditHost` →
+      // `EventEditForm`, état `forbidden`) et pour les suppressions/archivages confirmés
+      // par `DeleteConfirmDialog` (événement, produit, catégorie), qui affiche
+      // `errors.forbidden`. ⚠ Ce dialog ne rend le 403 que si l'`onConfirm` de l'appelant
+      // RELANCE l'erreur : un appelant qui l'avale ne doit pas passer l'opt-out.
       //
       // NE PAS logger error.config.headers : contient l'en-tête Authorization
       // (jeton porteur) + cookies → fuite de credentials dans la console / les
@@ -258,8 +273,9 @@ apiClient.interceptors.response.use(
     } else if (error.response?.status === 500) {
       // #833 — même opt-out PAR REQUÊTE que le 403 (#761) : `PUT /me/preferences`
       // (`persistThemeChoice`) déclare traiter le 500 en silence — thème local
-      // conservé, échec journalisé. Tout autre appelant garde le toast. Le bus
-      // réseau ci-dessus (`reportServerError`) reste alimenté dans les deux cas.
+      // conservé, échec journalisé. Tout autre appelant garde le toast. #838 — le
+      // même opt-out tait aussi le bus réseau ci-dessus (pas de `reportServerError`,
+      // donc pas de bannière `OfflineBanner`) ; sans l'option, les deux restent.
       if (!handlesStatusInline(error.config, 500)) {
         toast.error(translateApiError(API_ERROR_KEYS.serverError))
       }

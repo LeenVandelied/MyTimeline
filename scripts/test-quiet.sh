@@ -16,7 +16,7 @@
 #   coverage                  → idem + rapport de couverture si jacoco est configuré
 #   frontend                  → vérification frontend COMPLÈTE, alignée sur le job CI `frontend` :
 #                               build (next build) → tests unitaires (vitest run) → typecheck
-#                               (tsc --noEmit) → lint (next lint). S'arrête au premier échec.
+#                               (tsc --noEmit) → lint (eslint .). S'arrête au premier échec.
 #                               E2E NON inclus. Ordre de grandeur mesuré (#434, cache .next
 #                               chaud, macOS/M-series) : ~90 s au total (build 49 s, vitest 27 s,
 #                               typecheck 7 s, lint 5 s). Un cache .next froid rallonge le build.

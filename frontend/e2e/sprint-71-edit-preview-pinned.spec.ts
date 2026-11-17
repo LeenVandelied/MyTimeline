@@ -1,5 +1,6 @@
 import { expect, test } from './support/fixtures'
 import { PROD } from './support/accounts'
+import { sessionState } from './support/session'
 import { ensureAuthenticated } from './support/auth'
 import { neutralizeDevToolingPointerEvents } from './support/dev-tooling'
 import { getUserId, seedCategory, seedProduct, unique } from './support/products'
@@ -63,7 +64,7 @@ const FIRST_NAV_BUDGET = 60_000
 const EPSILON = 1.5
 
 test.describe('#495 — aperçu épinglé sur la surface d’édition', () => {
-  test.use({ storageState: PROD.storageState, viewport: DESKTOP_SHORT })
+  test.use({ storageState: sessionState(PROD), viewport: DESKTOP_SHORT })
 
   test('l’aperçu reste à sa place pendant que le formulaire d’édition défile', async ({ page }) => {
     test.setTimeout(150_000)
@@ -175,7 +176,7 @@ test.describe('#495 — aperçu épinglé sur la surface d’édition', () => {
  * prouve la LARGEUR peinte (token `--drawer-width-form`) et la fermeture réelle.
  */
 test.describe('#618 — édition et création : même surface', () => {
-  test.use({ storageState: PROD.storageState })
+  test.use({ storageState: sessionState(PROD) })
 
   async function openEdit(page: import('@playwright/test').Page, label: string) {
     await neutralizeDevToolingPointerEvents(page)

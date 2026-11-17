@@ -195,3 +195,18 @@ Annulation ou création depuis le CTA d'état vide ou le bouton permanent : Radi
 
 ## BUG-S112-002 — Trois cibles tactiles mobiles à 36 px de haut
 CTA d'état vide Produits (168×36) et Catégories (182×36) → `TOUCH_TARGET_BUTTON` (44 px en mobile, 36 px conservés sur desktop) ; bascule de thème `labeled` du tiroir mobile (285,75×36) → `h-11`. Mesurés à 375 px avant correction ; désarchiver et `⋯` portrait déjà conformes, non modifiés. (Sprint 112, #767, #830)
+
+## BUG-S116-001 — Le 429 du rate-limit n'indiquait jamais quand retenter
+Ni `Retry-After` ni `X-RateLimit-*` sur les 429 des 11 slots par IP, du seau par jeton de reset-password et du seau par utilisateur `PUT /api/me/preferences` : aucun backoff informé possible. Correctif : `Retry-After` seul (secondes entières arrondies au supérieur, bornées [1, 60], lu dans `ConsumptionProbe`), exposé au CORS ; tests à TimeMeter piloté, contrôles négatifs. (Sprint 116, #567)
+
+## BUG-S117-001 — La frise dérivait sur `[`/`]` enchaînés à `+`/`-`
+`el.scrollLeft = X` sous `scroll-behavior:smooth` puis relecture immédiate (`recordScrollAnchor`) : l'ancre enregistrée était la position de DÉPART de l'animation, et un zoom frappé pendant le vol la re-projetait (`] +` : 20 425 px au lieu de 1 020). Correctif : `scrollTo({ left, behavior: 'instant' })` aux 3 sites (`offsetDays` en gardant le repère piste #392, `scrollToToday`, `onMinimapSeek`) → écart 0 ; `T`/`[`/`]`/minimap ne glissent plus. (Sprint 117, #805)
+
+## BUG-S117-002 — Libellé du dernier pin coupé au bord droit après la touche F
+Marge de cadrage unique de 40 px alors que le libellé s'étend ~100 px à droite du pin (45 px coupés mesurés). Correctif : marges 40/135 dérivées de l'emprise du pin, élargies à la réserve réelle du libellé de queue (DEC-S117-001/002). (Sprint 117, #804)
+
+## BUG-S117-003 — Déconnexion du tiroir mobile à 36 px et `⋯` paysage recouvert
+Déconnexion 285,8×36 → 44 px (`TOUCH_TARGET_BUTTON`, desktop 36 conservé) ; `⋯` d'une durée en paysage : 3 points sur 8 manqués (lane suivante par-dessus) → 0 sur 8 avec `z-index:1` sur le bouton (PIT-S117-003). (Sprint 117, #837)
+
+## BUG-S118-001 — `sprint-117-period-zoom-no-drift:196` rouge sur `dev` selon la date
+L'oracle attendait un `scrollLeft` centré que le navigateur ne peut atteindre (clamp à 2777 px) certains jours. Correctif : attendu = `min(maxScroll mesuré, centré)`, annotation `oracle-borné`. Avec l'avis `follow-redirects` (GHSA-mrwp-f3q8-3g9p, corrigé en 1.16.3), il rendait `dev` rouge avant le sprint. (Sprint 118)

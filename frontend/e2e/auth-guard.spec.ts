@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test'
 import { SHARED } from './support/accounts'
+import { sessionState } from './support/session'
 // Import RELATIF (et non l'alias `@/`) : ce module est chargé par le transpileur
 // Playwright, qui n'a pas la même résolution que le bundler Next. `locales.ts` est
 // pur (aucun import Node/Next), il se charge donc tel quel. Source de vérité #235.
@@ -7,7 +8,7 @@ import { SUPPORTED_LOCALES } from '../src/i18n/locales'
 import { SIGNATURE_VERIFICATION_CONFIGURED } from './support/rs256'
 
 /**
- * #302 — Garde SERVEUR des routes connectées (`middleware.ts`, cf. ADR-004).
+ * #302 — Garde SERVEUR des routes connectées (`proxy.ts`, cf. ADR-004).
  *
  * Ce que ce fichier prouve, et que les tests unitaires ne peuvent pas prouver :
  * que Next applique RÉELLEMENT le middleware sur ces URLs (matcher, route group
@@ -81,7 +82,7 @@ test.describe('Garde serveur — visiteur anonyme', () => {
 
   /**
    * ANCRAGE RÉEL DU MATCHER (revue S45) — seul niveau où le matcher de
-   * `middleware.ts` est évalué par Next lui-même. `middleware.test.ts` compile les
+   * `proxy.ts` est évalué par Next lui-même. `proxy.test.ts` compile les
    * entrées avec le path-to-regexp embarqué de Next, ce qui est déjà bien plus
    * fidèle qu'une regex reconstruite à la main, mais reste une SIMULATION : rien
    * n'y prouve que Next applique ces entrées au moment où il route la requête.
@@ -123,7 +124,7 @@ test.describe('Garde serveur — visiteur anonyme', () => {
    * #322 — un en-tête d'hôte falsifié ne doit JAMAIS déplacer la cible de la
    * redirection hors de l'origine servie.
    *
-   * Ce que ce test ancre, et que `middleware.test.ts` ne peut pas ancrer : le
+   * Ce que ce test ancre, et que `proxy.test.ts` ne peut pas ancrer : le
    * comportement du RUNTIME Next complet (construction d'`initURL`, puis
    * relativisation du `Location` par `resolve-routes.js`), pas celui d'une
    * `NextRequest` fabriquée à la main.
@@ -184,7 +185,7 @@ test.describe('Garde serveur — visiteur anonyme', () => {
     // par défaut, preview mal configurée), et il doit continuer de fonctionner.
     //
     // La vérification de signature elle-même est couverte en UNITAIRE :
-    // `frontend/middleware.test.ts` (§ signature RS256) et
+    // `frontend/proxy.test.ts` (§ signature RS256) et
     // `frontend/src/lib/auth-token-verify.test.ts`, et désormais en E2E par
     // `e2e/auth-signature.spec.ts` sur une stack appairée (audit de couverture S50).
     //
@@ -234,7 +235,7 @@ test.describe('Garde serveur — utilisateur authentifié', () => {
   // Compte partagé fixe provisionné par le projet `setup` (cookie JWT HttpOnly
   // réel). ZÉRO register ici : anti rate-limit (5/min/IP). Ce fichier ne MUTE
   // aucun état backend -> pas de `serial` nécessaire.
-  test.use({ storageState: SHARED.storageState })
+  test.use({ storageState: sessionState(SHARED) })
 
   test('/fr/dashboard est rendu normalement (aucune redirection)', async ({ page }) => {
     const response = await page.request.get('/fr/dashboard', { maxRedirects: 0 })

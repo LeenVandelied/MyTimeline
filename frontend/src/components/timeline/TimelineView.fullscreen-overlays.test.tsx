@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest'
 
 import { TimelineView } from './TimelineView'
 import { CreateEventProvider } from '@/components/layout/CreateEventContext'
@@ -52,7 +52,7 @@ const RESOURCES: Resource[] = [{ id: 'p1', title: 'Lait bio', category: 'Frais' 
 
 /** Élément déclaré « en plein écran » par le faux `document.fullscreenElement`. */
 let fullscreenElement: Element | null = null
-let exitFullscreenMock: ReturnType<typeof vi.fn>
+let exitFullscreenMock: Mock<() => Promise<void>>
 
 function markFullscreen(element: Element | null) {
   fullscreenElement = element

@@ -1,6 +1,7 @@
 import { expect, test } from './support/fixtures'
 import { type Page } from '@playwright/test'
 import { PROD } from './support/accounts'
+import { sessionState } from './support/session'
 import { ensureAuthenticated } from './support/auth'
 import { neutralizeDevToolingPointerEvents } from './support/dev-tooling'
 import { getUserId, openCategoriesTab, seedCategory, seedProduct, unique } from './support/products'
@@ -82,7 +83,7 @@ import { EVENT_PALETTE } from '../src/lib/event-palette'
  * le trou que comble le bloc `@1280` ci-dessous.
  */
 
-test.use({ storageState: PROD.storageState })
+test.use({ storageState: sessionState(PROD) })
 
 /** Minimum de cible tactile — `styles/ds/a11y-audit.md` §1 l.24 (WCAG 2.5.5). */
 const TOUCH_TARGET_MIN_PX = 44

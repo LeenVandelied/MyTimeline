@@ -1,6 +1,7 @@
 import { test, expect } from './support/fixtures'
 import { type Locator, type Page } from '@playwright/test'
 import { PROD } from './support/accounts'
+import { sessionState } from './support/session'
 import { ensureAuthenticated } from './support/auth'
 import {
   deleteProduct,
@@ -103,7 +104,7 @@ import {
  * `PopoverPicker` non plus (`swatchGlyphInk` ne s'applique qu'aux 12 swatches).
  */
 
-test.use({ storageState: PROD.storageState })
+test.use({ storageState: sessionState(PROD) })
 
 /** `#rrggbb` (sortie de `contrast.ts`) -> octets, pour comparer deux luminances. */
 function hexToRgb(hex: string): Rgb {

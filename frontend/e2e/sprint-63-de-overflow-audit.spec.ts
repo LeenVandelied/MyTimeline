@@ -5,6 +5,7 @@ import { waitForFonts } from './support/contrast'
 import { devToolingSelectors, neutralizeDevToolingPointerEvents } from './support/dev-tooling'
 import { ensureAuthenticated } from './support/auth'
 import { PROD, SHARED } from './support/accounts'
+import { sessionState } from './support/session'
 import { getUserId, seedCategory, seedProduct, todayIsoDate } from './support/products'
 
 /**
@@ -391,7 +392,7 @@ async function settle(page: Page) {
 /* ------------------------------------------------------------------ FRISE */
 
 test.describe('#74 — frise chronologique', () => {
-  test.use({ storageState: PROD.storageState })
+  test.use({ storageState: sessionState(PROD) })
 
   for (const locale of LOCALES) {
     test(`timeline · ${locale} · ${WIDTHS.length} largeurs`, async ({ page }) => {
@@ -431,7 +432,7 @@ test.describe('#74 — frise chronologique', () => {
 /* -------------------------------------------------------------- RÉGLAGES */
 
 test.describe('#74 — réglages', () => {
-  test.use({ storageState: SHARED.storageState })
+  test.use({ storageState: sessionState(SHARED) })
 
   for (const locale of LOCALES) {
     test(`settings · ${locale} · ${WIDTHS.length} largeurs`, async ({ page }) => {
@@ -455,7 +456,7 @@ test.describe('#74 — réglages', () => {
 /* --------------------------------------------------- FORMULAIRE ÉVÉNEMENT */
 
 test.describe('#74 — formulaire d’événement', () => {
-  test.use({ storageState: PROD.storageState })
+  test.use({ storageState: sessionState(PROD) })
 
   for (const locale of LOCALES) {
     test(`event-form · ${locale} · ${WIDTHS.length} largeurs`, async ({ page }) => {
@@ -565,7 +566,7 @@ test.describe('#74 — formulaire d’événement', () => {
  *    visible en production.
  */
 test.describe('#74 — formulaire de création', () => {
-  test.use({ storageState: PROD.storageState })
+  test.use({ storageState: sessionState(PROD) })
 
   for (const locale of LOCALES) {
     test(`create-form · ${locale}`, async ({ page }) => {
@@ -608,7 +609,7 @@ test.describe('#74 — formulaire de création', () => {
  * pourrait n'être qu'un aveuglement du harnais.
  */
 test.describe('#74 — auto-contrôle du harnais', () => {
-  test.use({ storageState: PROD.storageState })
+  test.use({ storageState: sessionState(PROD) })
 
   test('une largeur excessive injectée dans la frise EST détectée', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 800 })

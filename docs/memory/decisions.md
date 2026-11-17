@@ -1204,7 +1204,7 @@ security-expert (MINEUR) recommandait 10/min/IP comme `PATCH /api/me`. Non appli
 ## DEC-S112-001 — Périmètre S112 recalibré à 7 issues ; #832 par helper `storageState` ; #700 reste ouverte
 Arbitrage dev au `/sprint start` : les 4 suites du S111 gardées (~11 pts) ; #832 → option helper `storageState`, plafond `login-per-minute=30` inchangé (relever le plafond rachète de la marge sans rien protéger) ; #700 → E2E livrés, volet VoiceOver/NVDA manuel au dev, issue laissée ouverte (grille `sprints/sprint-112/issue-700-sr-checklist.md`). (Sprint 112)
 
-## DEC-S112-002 — `e2e/support/touch-targets.ts` : profil complet par défaut, `sprint-99` en `BOX_ONLY`
+## DEC-S112-002 — `e2e/support/touch-targets.ts` : profil complet par défaut, `sprint-99` en `BOX_ONLY` (REMPLACÉE par DEC-S117-003)
 La factorisation ne devait rien changer à ce que mesure une spec : les 3 divergences deviennent 3 options, et sprint-99 garde son ancien comportement. L'alignement serait neutre aujourd'hui (mesuré) mais reste une décision à part (suite). (Sprint 112 #768)
 
 ## DEC-S112-003 — Plafond de `PUT /api/me/preferences` : 30/min par id de compte, filtre dédié, fail-closed
@@ -1215,3 +1215,39 @@ La factorisation ne devait rien changer à ce que mesure une spec : les 3 diverg
 
 ## DEC-S112-005 — Session E2E : `sessionState(X)` pour toute spec qui ne teste pas la connexion ; aucun helper de support ne se connecte par formulaire
 `registerAndLogin` supprimé (0 appelant) ; le Vitest de budget refuse tout helper de `e2e/support/` qui émet `login`. Aucune session ne s'obtient sans `POST /api/auth/login`, la seule économie est de ne pas se reconnecter. Budget inchangé (login 14/26/30) ; le vrai levier (passe 2 CI à un seul compte) touche `ci.yml` → suite soumise au dev. (Sprint 112 #832)
+
+## DEC-S114-001 — Liste produits : frise pleine (220×40) à partir de `xl` seulement, compacte (64×24) en dessous
+Le handoff §5 la plaçait dès `md`, ce qui laissait ~27 px au nom à 768 px (même défaut que #825) et contredisait son propre invariant (table sans débordement, nom lisible). Arbitré par ui-design (APPROUVE), `docs/design/graphite-handoff.md` §5 amendé ; titre du prochain événement plafonné à 80 px sous `xl`, texte complet en `title`. (Sprint 114 #816)
+
+## DEC-S115-001 — Landing : la frise reformulée (l'échéance se voit venir), pas de fonction de rappel
+Décision dev du 2026-10-25 sur #797 : aucune fonction de rappel ou de notification n'existe ni n'est au backlog immédiat, donc la landing ne la promet plus. Le jalon dit qu'on voit l'échéance approcher sur la frise ; clé i18n `reminder` et `data-testid` conservés ; `HowItWorksSection.test.tsx` garde le texte rendu des 4 locales. Développer de vrais rappels reste possible, à rechiffrer séparément. (Sprint 115 #797)
+
+## DEC-S116-001 — 429 : `Retry-After` seul, aucun `X-RateLimit-*`
+Décision dev du 2026-10-25 sur #567 : tout 429 du rate-limit porte `Retry-After` (secondes entières, arrondi supérieur, bornées [1, fenêtre]), exposé au CORS. `X-RateLimit-*` écartés : ils publieraient le plafond et le restant de chaque slot ; la fenêtre (60 s) est déjà observable, la capacité ne l'est pas sans compter les requêtes. Audit sécurité : approuvé. ADR-010 §7 amendé. (Sprint 116 #567)
+
+## DEC-S116-002 — Un 500 traité inline n'alimente plus le bus d'erreurs serveur
+Décision dev du 2026-10-25 sur #838 : si `handlesStatusInline(config, 500)` est vrai, l'intercepteur n'appelle pas `reportServerError()`. Vaut pour le 500 seul (502/503/504 reportent, question au backlog), s'abstient sans `clear()`, les autres requêtes alimentent toujours le bus #76. (Sprint 116 #838)
+
+## DEC-S116-003 — Job CI `e2e` : attente du backend sur `/actuator/health`
+#406 : le poll de disponibilité passe de `/api/auth/me` (un 401 ne prouve que la levée des filtres web) à `/actuator/health` UP, `--max-time 5`, avec sortie immédiate si la JVM meurt (`kill -0`). Endpoint public, hors rate-limit, déjà healthcheck de `backend-e2e` ; vérifié sur la CI de la PR #868 (UP après 6 tentatives). (Sprint 116 #406)
+
+## DEC-S117-001 — Recadrage F : marges asymétriques dérivées de l'emprise du pin
+`computeFit` : 40 px à gauche (demi-pin 5 + air 35), 135 px à droite (emprise plancher pin + libellé 100 + air 35) en desktop (`FIT_MARGINS_PX`, `mobile` réservé, non branché). Le libellé est à DROITE du pin, d'où l'asymétrie. Remplace la marge unique 40/40 du #597. (Sprint 117 #804)
+
+## DEC-S117-002 — Réserve de queue du recadrage F = libellés du DERNIER jour seulement
+`fitToEvents` passe `trailPx = max(135, réserve + 35)`, réserve = max des emprises de libellé des événements du dernier jour (`trailingLabelReservePx`, même estimation que le rendu `--mt-label-max`). Les jours antérieurs sont ignorés pour éviter un calcul circulaire (la marge dépend du niveau qu'elle choisit) ; limite connue et suivie en issue (pin antérieur à libellé long). (Sprint 117 #804)
+
+## DEC-S117-003 — Cibles tactiles : profil de mesure complet partout, `BOX_ONLY` supprimé
+Remplace DEC-S112-002. `sprint-99-touch-targets` passe au profil complet : mesuré neutre 3 runs sur 3 (14 passed, 17 lignes identiques au diff) ; `BOX_ONLY` retiré du helper `e2e/support/touch-targets.ts` (0 appelant), les 3 options `MeasureOptions` restent. (Sprint 117 #837)
+
+## DEC-S118-001 — Montée Next 16 : `next build --webpack` et `middleware.ts` conservés
+Le build de production reste sur webpack pour isoler le changement de framework du changement de bundler (`next dev` passe à Turbopack, la recette Playwright locale reste `next dev --webpack`) ; `middleware.ts` gardé (convention dépréciée mais supportée). Suivis : #890 (Turbopack), #889 (`proxy.ts`). (Sprint 118 #885)
+
+## DEC-S118-002 — 5 règles react-hooks 7 coupées à la montée Next 16
+`refs`, `set-state-in-effect`, `preserve-manual-memoization`, `purity`, `incompatible-library` (85 occurrences préexistantes) désactivées avec justification dans `frontend/eslint.config.mjs` ; le reste du preset `eslint-config-next` 16 reste actif ; `lint` = `eslint .` (flat config native). Suivi : #891. (Sprint 118 #885)
+
+## DEC-S119-001 — `EntityManager` partagé `@Fallback` plutôt que réécrire les adaptateurs JPA
+Un bean central (`JpaSharedEntityManagerConfig`) comble le créneau de démarrage de Tomcat (PIT-S119-001) ; `@Fallback` laisse l'`EntityManager` primaire de la fabrique prioritaire une fois instanciée (deux proxys partagés équivalents sur la même EMF). Écarté : `@PersistenceContext` ou `@Lazy` dans 8 adaptateurs (diff plus large, régression à réintroduire au prochain adaptateur). Garde : les tests `RANDOM_PORT` rougissent sans le bean. (Sprint 119 #886)
+
+## DEC-S119-002 — Sondes liveness/readiness désactivées sous Boot 4
+Boot 4 les active par défaut et ajoute `"groups"` au corps de `/actuator/health` ; aucun orchestrateur ne les consomme (healthchecks Docker/CI = `/actuator/health`). `management.endpoint.health.probes.enabled=false` garde le corps `{"status":"UP"}`. À réactiver avec un déploiement Kubernetes. (Sprint 119 #886)

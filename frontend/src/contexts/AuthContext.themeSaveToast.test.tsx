@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { AxiosError, type AxiosResponse, type InternalAxiosRequestConfig } from 'axios'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import apiClient from '@/services/apiClient'
+import { networkStatusStore } from '@/services/networkStatus'
 import { updatePreferences } from '@/services/userService'
 import { AuthProvider, useAuth } from './AuthContext'
 import { useThemeChoice } from '@/hooks/useThemeChoice'
@@ -24,6 +25,10 @@ import type { User } from '@/types/auth'
  * pas, opt-out ou non. Les deux tests 409 figent ce fait : si une branche 409
  * toastante est ajoutée un jour, le test de la bascule rougit et force à étendre
  * l'opt-out (`inlineErrorHandling.ts`) au lieu de réintroduire le toast ici.
+ *
+ * #838 — même chaîne réelle, côté bus réseau #76 (`networkStatusStore`, qui monte
+ * `OfflineBanner`) : le 500 opt-out ne pose plus `server-error` ; le témoin sans
+ * opt-out le pose toujours. Le 429 (#831) : ni toast ni report, inchangé.
  */
 
 const toastErrorMock = vi.hoisted(() => vi.fn())
@@ -60,22 +65,28 @@ const ACCOUNT: User = {
 const originalAdapter = apiClient.defaults.adapter
 const seenRequests: string[] = []
 
+const STATUS_TEXT = {
+  409: 'Conflict',
+  429: 'Too Many Requests',
+  500: 'Internal Server Error',
+} as const
+
 /** Adaptateur axios : toute requête reçoit `status`, comme le ferait le backend. */
 const failingAdapter =
-  (status: 409 | 500) =>
+  (status: keyof typeof STATUS_TEXT) =>
   (config: InternalAxiosRequestConfig): Promise<AxiosResponse> => {
     seenRequests.push(`${config.method?.toUpperCase()} ${config.url}`)
     const response: AxiosResponse = {
-      data: { message: status === 409 ? 'Conflict' : 'Internal Server Error' },
+      data: { message: STATUS_TEXT[status] },
       status,
-      statusText: status === 409 ? 'Conflict' : 'Internal Server Error',
+      statusText: STATUS_TEXT[status],
       headers: {},
       config,
     }
     return Promise.reject(
       new AxiosError(
         `Request failed with status code ${status}`,
-        status === 409 ? 'ERR_BAD_REQUEST' : 'ERR_BAD_RESPONSE',
+        status >= 500 ? 'ERR_BAD_RESPONSE' : 'ERR_BAD_REQUEST',
         config,
         null,
         response,
@@ -117,17 +128,19 @@ beforeEach(() => {
   getUserProfileMock.mockReset()
   toastErrorMock.mockReset()
   seenRequests.length = 0
+  networkStatusStore.clear()
   errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 })
 
 afterEach(() => {
   apiClient.defaults.adapter = originalAdapter
+  networkStatusStore.clear()
   errorSpy.mockRestore()
   localStorage.clear()
 })
 
 describe('#833 — échec du PUT /me/preferences sur une bascule de thème : aucun toast global', () => {
-  it.each([500, 409] as const)(
+  it.each([500, 409, 429] as const)(
     '%i : aucun toast, thème local conservé, échec journalisé',
     async (status) => {
       apiClient.defaults.adapter = failingAdapter(status)
@@ -145,6 +158,8 @@ describe('#833 — échec du PUT /me/preferences sur une bascule de thème : auc
       // La requête est bien partie par le transport réel (pas un service mocké).
       expect(seenRequests).toEqual(['PUT /me/preferences'])
       expect(toastErrorMock).not.toHaveBeenCalled()
+      // #838 — ni bannière « erreur serveur » : le bus réseau n'a rien reçu.
+      expect(networkStatusStore.getIssue()).toBeNull()
       // Comportement silencieux inchangé : le thème choisi reste appliqué localement.
       expect(setTheme).toHaveBeenCalledTimes(1)
       expect(setTheme).toHaveBeenCalledWith('dark')
@@ -162,6 +177,8 @@ describe('#833 — témoins : même route, SANS opt-out', () => {
     expect(seenRequests).toEqual(['PUT /me/preferences'])
     expect(toastErrorMock).toHaveBeenCalledTimes(1)
     expect(toastErrorMock.mock.calls[0][0]).toMatch(/serveur/i)
+    // #838 — sans opt-out, le bus réseau est toujours alimenté (bannière possible).
+    expect(networkStatusStore.getIssue()).toBe('server-error')
   })
 
   it("409 : aucun toast même sans opt-out (l'intercepteur n'a pas de branche 409)", async () => {

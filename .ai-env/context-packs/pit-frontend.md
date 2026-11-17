@@ -1790,11 +1790,11 @@ Front sur `:3106` contre un backend `:8086` lancé ailleurs : son CORS dev n'aut
 
 
 ## PIT-S107-001 — Tabs du DS : les flèches changent `aria-selected` sans déplacer le focus
-Dans `frontend/src/components/ui/tabs.tsx`, `→`/`←` sélectionnent l'onglet voisin mais n'appellent aucun `.focus()` : le focus reste sur l'onglet précédent, devenu `tabIndex=-1` et non sélectionné (8/8 configurations mesurées, `/products` et fiche produit). Contraire au motif APG « tablist à activation automatique ». Prévention : tout test clavier de Tabs vérifie `toBeFocused()` sur l'onglet NOUVELLEMENT sélectionné, pas seulement `aria-selected`. Correctif suivi en #815. (Sprint 107 #524)
+Dans `frontend/src/components/ui/tabs.tsx`, `→`/`←` sélectionnent l'onglet voisin mais n'appellent aucun `.focus()` : le focus reste sur l'onglet précédent, devenu `tabIndex=-1` et non sélectionné (8/8 configurations mesurées, `/products` et fiche produit). Contraire au motif APG « tablist à activation automatique ». Prévention : tout test clavier de Tabs vérifie `toBeFocused()` sur l'onglet NOUVELLEMENT sélectionné, pas seulement `aria-selected`. Correctif suivi en #815. (Sprint 107 #524) — **Corrigé au Sprint 114 (#815)** : `.focus()` posé dans le gestionnaire clavier ; gardes `ui/tabs.test.tsx` et `e2e/sprint-114-tabs-focus-follows.spec.ts` (PAT-S114-002).
 
 
 ## PIT-S107-002 — Un `sr-only` dans un conteneur `overflow-x-auto` NON positionné fait défiler la page
-`sr-only` est `position:absolute` : son bloc conteneur est le premier ancêtre positionné, pas la boîte de défilement. Si celle-ci n'est pas `relative`, le texte masqué échappe à son clip et élargit le DOCUMENT (1535 px mesurés à 1280 avec un nom de produit long dans `ProductsListView`). Prévention : `relative` sur tout conteneur `overflow-*` qui contient des cellules avec `sr-only` ; sonder `document.documentElement.scrollWidth == innerWidth`, pas seulement le conteneur. Correctif suivi en #816. (Sprint 107 #608)
+`sr-only` est `position:absolute` : son bloc conteneur est le premier ancêtre positionné, pas la boîte de défilement. Si celle-ci n'est pas `relative`, le texte masqué échappe à son clip et élargit le DOCUMENT (1535 px mesurés à 1280 avec un nom de produit long dans `ProductsListView`). Prévention : `relative` sur tout conteneur `overflow-*` qui contient des cellules avec `sr-only` ; sonder `document.documentElement.scrollWidth == innerWidth`, pas seulement le conteneur. Correctif suivi en #816. (Sprint 107 #608) — **Corrigé au Sprint 114 (#816)** : `relative` sur la boîte de défilement ; garde `e2e/sprint-114-products-list-overflow.spec.ts` (`offsetParent` des `sr-only` asserté).
 
 
 ## PIT-S108-001 — jsdom n'a pas de `PointerEvent` : un test de glisser passe vert sans rien prouver
@@ -1884,6 +1884,118 @@ Sortie `command not found` (exit 127) avalée par un `;`, puis la sonde `/api/au
 ## PIT-S112-010 — Un test Vitest qui analyse l'AST de tout le dépôt passe en local et dépasse 5 s en CI sous couverture
 `e2e-rate-limit-budget.test.ts` « les lignes BUDGET… disent vrai » : 870 ms en local, > 5 s (délai par défaut) sur le runner CI avec couverture (~6× plus lent) — rouge sur un commit de docs seules, vert sur le précédent. Tout test qui parcourt le dépôt réel porte un délai explicite (`describe(nom, { timeout }, fn)`) ; un rouge « Test timed out » sur un diff sans code se relit comme une lenteur, pas comme un budget faux. (Sprint 112, lead, clôture)
 
+
+
+## PIT-S113-001 — Une ligne ou carte cliquable au clavier avale les touches de ses propres boutons
+`role="button"` + `onKeyDown` Entrée/Espace + `preventDefault` sur la ligne produit (`ProductsListView`) et la carte catégorie (`CategoriesView`) : l'Entrée sur « Éditer »/« Archiver » ou la poubelle remontait à la ligne, qui annulait l'action du bouton et exécutait la sienne (détail produit, tiroir d'édition). Invisible aux tests au clic. Garde `if (e.target !== e.currentTarget) return` et toute spec de dialogue l'ouvre AU CLAVIER. (Sprint 113 #836)
+
+
+## PIT-S113-002 — Rendre le focus à un bouton désactivé pendant l'envoi ne rend rien
+Le `ConflictDialog` s'ouvre sur un 409 alors qu'« Enregistrer » est `disabled` (Chromium a déjà mis le focus sur `body` : rien à capturer), et « garder mes modifications » le referme en passant à `submitting` (`open` dérivé de `'conflict'`) avec le bouton encore désactivé. Un `onCloseAutoFocus` qui vise ce bouton doit avoir un repli focalisable (`<form tabIndex={-1}>`). (Sprint 113 #836, review)
+
+
+## PIT-S113-003 — Sous le hook RTK, `vitest run` ne donne que `PASS (n) FAIL (n)`, même redirigé vers un fichier
+Aucun nom de test : impossible de savoir QUEL test a rougi lors d'un test de mutation. `rtk proxy npx vitest run --reporter=verbose`. À mettre dans tout briefing qui demande une preuve de non-vacuité. (Sprint 113, review)
+
+
+## PIT-S114-001 — Plafonner UNE colonne de table ne suffit pas si les AUTRES dépassent déjà la boîte
+#816 demandait de « plafonner la colonne Produit » : à 1024 px la table débordait même avec la colonne Produit à 0, car frise 220 px + titre 256 px + compteur + actions = 751 px pour une boîte de 710 px. Et le correctif `w-full max-w-0` réduisait alors le nom à ~27 px entre 768 et 1023 px (attrapé par la review, pas par l'énoncé). Prévention : sommer les min-content des autres colonnes à CHAQUE palier (sm/md/lg/xl) avec un contenu long dans toutes, et asserter une largeur VISIBLE minimale de la colonne protégée, pas seulement l'absence de débordement. (Sprint 114 #816)
+
+
+## PIT-S115-001 — Un balayage regex de « promesse » rate les participes et les formules : relire le bloc par le SENS
+Le briefing de #797 balayait `rappel|remind|…|prévien` : `prévien` ne matche pas `prévenu`, et le titre de jalon « Vous êtes prévenu à temps » (« You are warned in time », « Te avisamos a tiempo », « Rechtzeitig informiert ») promettait lui aussi un envoi sans contenir le mot-racine. Prévention : relire chaque valeur du bloc i18n rendu, puis seulement grepper ; la regex inclut participes et tournures des 4 langues. (Sprint 115 #797)
+
+
+## PIT-S115-002 — Audit WCAG 1.4.4 : un mot qui déborde sur sa voisine n'élargit PAS le document
+#799 ne citait que le header ; la sonde par élément a trouvé 4 sections fautives sur 5, dont le h1 du hero et la frise à 1024 px, où le texte passe sur la colonne voisine sans que `documentElement.scrollWidth` bouge. Prévention : à texte ×2, sonder `scrollWidth > clientWidth` et le rectangle de chaque élément porteur de texte, pas seulement le document. (Sprint 115 #799)
+
+
+## PIT-S115-003 — `break-words` ne réduit pas la min-content : un `inline-flex` déborde quand même
+Le bouton final (`inline-flex`, `whitespace-normal`) débordait à ×2 avec `overflow-wrap: break-word` hérité : sa largeur est bornée par la min-content de son texte, que `break-word` ne change pas. `[overflow-wrap:anywhere]` la réduit. Prévention : `break-words` suffit pour un bloc de largeur définie, pas pour un `inline-flex` ou un item flex sans `min-w-0`. (Sprint 115 #799)
+
+
+## PIT-S115-004 — Une sonde `Range`/TreeWalker de texte doit filtrer `.sr-only`
+Le relevé « texte contenu dans la barre » de `sprint-104-landing-sticky-nav` a rougi après le repli légitime du groupe à ×2 : le texte `.sr-only` est rapporté hors de son clip. Récurrence de PIT-S77-002. Prévention : toute sonde de texte par `Range` ou TreeWalker exclut `.sr-only` et les sous-arbres `aria-hidden`. (Sprint 115 #799)
+
+
+## PIT-S115-005 — Contre `next dev`, 7 faux rouges de préchargement connus, pas 4
+`sprint-106-product-detail` #698 (`:495`, `:529`, `:549`) rougit ×3 contre `next dev`, comme `sprint-90-first-contact` #629 ×4 : préchargement RSC absent en dev. A/B sur la version non migrée → mêmes rouges. Prévention : imputer ces 7 cas à l'environnement ; la suite qui fait foi tourne contre `next build` + `next start`. (Sprint 115 #840)
+
+
+## PIT-S116-003 — Un `node_modules` resté en zod 3 se déguise en régression du code
+Après le passage à zod 4, le `node_modules` du worktree était en zod 3.24.2 : tous les tests important `types/settings.ts` levaient `z.guid is not a function`. Prévention : en début de sprint, comparer la version INSTALLÉE (`node -p "require('./node_modules/zod/package.json').version"`) au `package.json`, ou `npm ci` d'office si le lock a bougé. (Sprint 116 #838)
+
+
+## PIT-S116-004 — `sprint-111-theme-account-preference:88` rougit sous `next dev` (hydratation)
+`loginViaForm` remplit le formulaire avant l'hydratation : champs vidés, `[invalid]`, aucun `POST /api/auth/login`. Même rouge sur HEAD (A/B), vert sous `next build` + `next start`. Prévention : s'ajoute aux faux rouges `next dev` (PIT-S115-005) ; rejouer contre le build de production avant tout diagnostic. Suivi : issue de barrière d'hydratation. (Sprint 116 #838)
+
+
+## PIT-S116-005 — `warn-test-delegation` refuse toute commande dont le TEXTE contient `npx playwright test`
+Y compris un heredoc qui écrit cette chaîne dans un test ou un commentaire `ci.yml` : l'édition entière est refusée SANS être appliquée. Prévention : préfixer `SKIP_DELEGATION=1` ou passer par Write, et vérifier après un refus que rien n'a été écrit avant de rejouer. (Sprint 116 #839)
+
+
+## PIT-S116-006 — Une borne de budget écrite en prose n'est gardée par rien
+« borne register avec ré-émissions du setup = 36 » (`application-e2e.properties`, `auth.setup.ts`) était périmée depuis S111 (valait 39) ; recomptée 30 au S116. Prévention : toute borne de budget E2E est une ligne lue par `e2e-rate-limit-budget.test.ts`, ou se recompte à chaque changement de passe/compte. Suivi : issue backlog. (Sprint 116 #839)
+
+
+## PIT-S117-001 — Une constante de module dérivée d'une autre déclarée plus bas plante au chargement, pas au typage
+`FIT_MARGINS_PX` (`zoom.ts`) est calculée depuis `PIN_FOOTPRINT_PX` : déclarée avant elle, elle lève une `ReferenceError` (TDZ) à l'import, invisible pour `tsc`. Même piège entre modules : `label-reserve.ts` importe `zoom.ts` et évalue `PIN_HALF_WIDTH_PX` au chargement, donc `zoom.ts` ne peut pas importer `label-reserve.ts` (cycle). Prévention : déclarer une constante dérivée APRÈS ses sources ; placer le calcul côté appelant quand l'import serait circulaire. (Sprint 117 #804)
+
+
+## PIT-S117-002 — Un oracle de marge sur des niveaux de zoom DISCRETS est vacant si l'étendue n'est pas serrée
+Frise : 96/34/12/5/2,2 px/j. Une étendue « au hasard » laisse jusqu'à un niveau entier de mou : l'oracle « libellé dans la piste » passait avec les marges fautives 40/40 (150 à 570 px d'air, mutation verte). Prévention : jeu serré calculé depuis la piste mesurée (charger, mesurer `clientWidth`, recharger avec la plus grande étendue qui tient au niveau visé) et contrôle négatif par mutation avant de déclarer l'oracle. (Sprint 117 #804/#805)
+
+
+## PIT-S117-003 — Remonter une cible qui déborde de sa lane : z-index sur la CIBLE, pas sur son conteneur
+Paysage : le `⋯` (44 px) d'une durée dans une lane de 34 px était recouvert par la lane suivante. Un `z-index:1` sur le wrap `.mt-tlm__evt-wrap` le corrigeait mais le wrap couvre toute sa lane et captait le bas du pin voisin à la même date (`sprint-91-event-pin` paysage/Jour rouge). Solution : `z-index` sur le bouton (item flex, actif sans `position`). Prévention : rejouer les specs des cibles VOISINES. (Sprint 117 #837)
+
+
+## PIT-S117-004 — La largeur rendue d'un libellé dépend de la police : un oracle « non tronqué » vert sur macOS rougit en CI Linux
+Titre de 31 caractères : 188 px rendus sur macOS, 205 px sur la CI Linux, pour 196 px réservés par l'estimation #746 (`--mt-label-max`, 6,3 px/car.) → ellipse sous Linux seulement. Prévention : un oracle E2E de géométrie de texte porte sur la RÉSERVE (départ + `max-width` calculé), pas sur `scrollWidth ≤ clientWidth`, sauf titres courts. Suivi : recalibrage de l'estimation, issue #874. (Sprint 117 #804, CI PR #873)
+
+
+## PIT-S117-005 — `sprint-111-theme-account-preference:88` rougit AUSSI contre `next build` + `next start` en suite complète
+Complète PIT-S116-004 (rouge sous `next dev`) : au S117, 1 rouge en suite complète locale contre le build de production (timeout 5 s sur le PUT de préférence à la connexion), puis 6/6 sur 3 rejeux isolés ; vert en CI. Prévention : ne pas l'imputer au sprint sans recoupement du diff ; l'issue de barrière d'hydratation (#871) est la piste. (Sprint 117, lead)
+
+
+## PIT-S118-001 — PR Dependabot npm rouges après rebase : le lock régénéré perd un pair optionnel imbriqué
+Dependabot retire `next-intl/node_modules/@swc/helpers` (pair optionnel de `@swc/core`) ; `npm ci` (npm 10) refuse le lock (`Missing: @swc/helpers@… from lock file`) et chaque `@dependabot rebase` reproduit l'erreur. Prévention : appliquer la montée en local (`npm install`, lock régénéré par npm 10) au lieu de re-rebaser. Suivi : #888. (Sprint 118 #882)
+
+
+## PIT-S118-002 — Next 16 + next-intl sans paramètre racine : la branche `[locale]` sort du SSG en silence
+`unstable_rootParams` retiré : sans `setRequestLocale(locale)` dans `app/[locale]/layout.tsx`, le `NextIntlClientProvider` serveur lit la locale via `headers()` et les routes `/[locale]/*` passent de ● à ƒ, build vert. `next/root-params` ne s'applique pas (le layout racine est `app/layout.tsx`, #413). Prévention : comparer la table des routes de `next build` avant/après toute montée de Next ou de next-intl. (Sprint 118 #885)
+
+
+## PIT-S118-003 — vitest 5 : `ReturnType<typeof vi.fn>` n'est plus assignable à une méthode DOM
+Le type de `vi.fn()` devient `Mock<Procedure | Constructable>` : l'affecter à `requestFullscreen` & co. casse `tsc`. Typer `Mock<() => Promise<void>>`. vitest 5 exige aussi Node ≥ 22.12 et `@types/node` ≥ 22 (sinon ERESOLVE), et écrit `.vitest/` (à ignorer dans `.gitignore` et `.prettierignore`). (Sprint 118 #884)
+
+
+## PIT-S118-004 — Prefetch par segment de Next 16 : une porte sur la « requête RSC de navigation » devient inerte
+Next 16 précharge `/_tree` puis `__PAGE__`, tous marqués `next-router-prefetch: 1` : au clic vers une route SSG, aucune requête RSC de navigation ne part, donc une porte `page.route` qui la retient ne retient rien et le squelette `loading.tsx` n'est jamais observé. Prévention : retenir le chunk JS de la page (`/_next/static/chunks/app/…/<segment>/page-*.js`), armer la porte APRÈS la connexion, et exclure `next-router-segment-prefetch: /_tree` des comptes RSC. (Sprint 118 #885, CI PR #887)
+
+
+## PIT-S118-005 — Tailwind ≥ 4.2 émet `@layer properties;` avant l'ordre déclaré des layers
+Un test qui lit l'ordre des layers sur la PREMIÈRE instruction `@layer` voit `properties` seul. Prévention : fusionner toutes les instructions `@layer` par ordre de première apparition (règle CSS). (Sprint 118 #882)
+
+
+## PIT-S120-001 — React 19 : un composant qui rend `<html>`/`<body>` ne s'imbrique plus dans le `container` RTL
+`<html>`, `<head>`, `<body>` sont des singletons depuis React 19 : rendus par RTL dans un `<div>`, ils fusionnent avec ceux du document (attributs sur `document.documentElement`, contenu sous `document.body`). `container.querySelector('html')` rend `null`. Lire `document.documentElement` et le remettre à zéro avant chaque test, sinon une valeur résiduelle rend l'assertion vacante ; prouver la présence des balises par `renderToStaticMarkup`. (Sprint 120 #892)
+
+
+## PIT-S120-002 — react-hooks 7 : `ref={obj.xRef}` dans le JSX fait traiter tout `obj` comme une ref
+La règle `react-hooks/refs` signale alors chaque `obj.y` lu au rendu (dizaines d'occurrences sur la frise). Déstructurer les refs d'un hook avant le JSX. Et corriger `incompatible-library` (RHF `watch()`) démasque d'autres erreurs dans le même composant, que le compilateur sautait : recompter après chaque règle. (Sprint 120 #891)
+
+
+## PIT-S120-003 — Turbopack (`next build`) : chunks plats nommés par hash, les portes E2E par chemin ne s'arment plus
+Sous webpack, le chunk d'une page se reconnaissait à `/_next/static/chunks/app/…/page-<hash>.js` ; Turbopack produit `/_next/static/chunks/<hash>.js`. Une porte `page.route` sur ce chemin n'intercepte plus rien et la spec attend `held` jusqu'au timeout. Reconnaître le chunk par son CONTENU (un `data-testid` propre à la page, absent du `loading`) : `e2e/support/page-chunk-gate.ts`. (Sprint 120 #890)
+
+
+## PIT-S121-001 — Un E2E qui remplit par `fill()` ne voit pas un vol de focus déclenché par la frappe
+`fill()` émet un seul `input` : le champ passe dirty en une fois et un re-rendu qui déplace le focus APRÈS coup ne coupe rien. Au S121, `useFocusTrap` (`onEscape` en dépendance d'effet + callback inline) rejouait le piège au 1er caractère : seul le 1er caractère du username passait au clavier, tous les E2E existants restaient verts. Dès qu'un champ vit dans un conteneur piégé ou un formulaire dont le parent re-rend, saisir caractère par caractère (`keyboard.press`, `user.keyboard`) et asserter `document.activeElement` à chaque frappe. Corollaire : supprimer le re-rendu peut DÉMASQUER un autre trou (focus sur `body` après démontage du bouton focusé → Tab hors du panneau). (Sprint 121 #858)
+
+
+## PIT-S121-002 — Un `MutationObserver` qui relit l'attribut dans son callback ne voit pas un flash
+Le callback est une microtâche : il lit la valeur FINALE d'un lot d'écritures ; un `normal → compact` écrit dans la même tâche est invisible, l'oracle anti-flash est vacant (constaté au contrôle négatif). Intercepter `setAttribute` (ou `attributeOldValue: true`) et asserter la liste des écritures. (Sprint 121 #898)
 
 ---
 

@@ -18,9 +18,9 @@ import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -43,7 +43,7 @@ import com.matimeline.eventmanager.domain.ports.services.PasswordResetService;
  * passe ici par le contexte Spring (donc par le PROXY async) :
  * <ul>
  *   <li>les ports {@link UserRepository}, {@link PasswordResetTokenRepository},
- *       {@link EmailService} sont mockés ({@code @MockBean}) : pas de DB, pas de Brevo ;</li>
+ *       {@link EmailService} sont mockés ({@code @MockitoBean}) : pas de DB, pas de Brevo ;</li>
  *   <li>l'envoi d'email est BLOQUÉ sur un latch (simule la latence réseau Brevo).</li>
  * </ul>
  * Preuve du fix : le endpoint répond 200 et la méthode du service rend la main AVANT
@@ -61,13 +61,13 @@ class ForgotPasswordAsyncTest extends com.matimeline.eventmanager.support.Abstra
     @Autowired
     private PasswordResetService passwordResetService;
 
-    @MockBean
+    @MockitoBean
     private UserRepository userRepository;
 
-    @MockBean
+    @MockitoBean
     private PasswordResetTokenRepository tokenRepository;
 
-    @MockBean
+    @MockitoBean
     private EmailService emailService;
 
     private final CountDownLatch sendBlock = new CountDownLatch(1);

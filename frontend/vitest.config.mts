@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react'
 import { fileURLToPath } from 'node:url'
 
 /**
- * Config Vitest — tests unitaires + composants (Next 15 / React 18 / Tailwind 4).
+ * Config Vitest — tests unitaires + composants (Next 16 / React 18 / Tailwind 4).
  * Env jsdom pour RTL. Les alias `@/*` et `@/app/*` (tsconfig.json) sont mappés
  * en dur via `resolve.alias` — on évite `vite-tsconfig-paths` (ESM-only, charge
  * mal dans une config `.ts` require-CJS, vu que package.json n'est pas `"module"`).
@@ -32,14 +32,14 @@ export default defineConfig({
     // ⚠ Le motif est comparé à l'ID COMPLET du module (`/…/node_modules/next-intl/
     // dist/…`) : une ancre `^next-intl` ne matche jamais. Ne pas « corriger ».
     server: { deps: { inline: [/node_modules[\\/]next-intl[\\/]/] } },
-    // `middleware.test.ts` vit à la RACINE (à côté de `middleware.ts`, seul
-    // emplacement où Next reconnaît le middleware) — #302 / ADR-004. Il déclare
+    // `proxy.test.ts` vit à la RACINE (à côté de `proxy.ts`, seul
+    // emplacement où Next reconnaît le proxy, ex-`middleware.ts` — #889) — #302 / ADR-004. Il déclare
     // `// @vitest-environment node` : `NextRequest` exige les primitives Fetch
     // globales, absentes de jsdom.
     include: [
       'src/**/*.{test,spec}.{ts,tsx}',
       'app/**/*.{test,spec}.{ts,tsx}',
-      'middleware.{test,spec}.ts',
+      'proxy.{test,spec}.ts',
     ],
     exclude: ['node_modules/**', '.next/**', 'e2e/**', '**/*.stories.{ts,tsx}'],
     // #169 — COUVERTURE : mesure seule, AUCUN seuil bloquant.
@@ -50,9 +50,9 @@ export default defineConfig({
     coverage: {
       // Provider v8 (instrumentation native du moteur) plutôt qu'istanbul : pas
       // de transformation supplémentaire du bundle, donc pas de coût sur la durée
-      // de la suite. `@vitest/coverage-v8` doit rester aligné sur la MINEURE de
-      // `vitest` (3.2.x) — un provider en avance échoue avec un message qui ne
-      // parle pas de version.
+      // de la suite. `@vitest/coverage-v8` doit rester aligné sur la version EXACTE
+      // de `vitest` (peer `vitest@5.1.0` depuis la v5) — un provider désaligné
+      // échoue avec un message qui ne parle pas de version.
       provider: 'v8',
       // `lcov` = exigence de l'issue (fichier coverage/lcov.info consommable par
       // un outil tiers) ; `text-summary` donne les 4 chiffres directement dans le

@@ -15,6 +15,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.util.UrlPathHelper;
 
 import io.github.bucket4j.Bucket;
+import io.github.bucket4j.ConsumptionProbe;
 import io.github.bucket4j.TimeMeter;
 
 import jakarta.servlet.FilterChain;
@@ -41,7 +42,8 @@ import jakarta.servlet.http.HttpServletResponse;
  * transport concern (HTTP status 429, per-route table, in-memory bucket4j state): keeping it
  * in {@code infrastructure/security}, next to {@link RateLimitingFilter}, leaves the domain
  * and application layers untouched (no technical port, no exception mapped to 429) and gives
- * the SAME 429 as every other throttled route ({@link RateLimitingFilter#writeTooManyRequests}).
+ * the SAME 429 as every other throttled route ({@link RateLimitingFilter#writeTooManyRequests},
+ * {@code Retry-After} included since #567).
  *
  * <p><b>Key.</b> The user id (UUID) carried by {@link CustomUserDetails} — stable across a
  * username change ({@code PATCH /api/me}), so renaming the account does not reset the bucket.
@@ -142,11 +144,13 @@ public class UserRateLimitingFilter extends OncePerRequestFilter {
             return;
         }
         // computeIfAbsent atomique sur la map synchronisée ; l'éviction LRU s'exécute sous le
-        // même verrou. tryConsume hors verrou (le bucket est thread-safe).
+        // même verrou. La consommation se fait hors verrou (le bucket est thread-safe).
         Bucket bucket = buckets.computeIfAbsent(userKey + "|" + methodAndPath,
                 k -> RateLimitingFilter.newMinuteBucket(limit, timeMeter));
-        if (!bucket.tryConsume(1)) {
-            RateLimitingFilter.writeTooManyRequests(response);
+        ConsumptionProbe probe = bucket.tryConsumeAndReturnRemaining(1);
+        if (!probe.isConsumed()) {
+            // #567 : même 429 que le limiteur par IP, Retry-After compris.
+            RateLimitingFilter.writeTooManyRequests(response, RateLimitingFilter.retryAfterSeconds(probe));
             return;
         }
         chain.doFilter(request, response);
