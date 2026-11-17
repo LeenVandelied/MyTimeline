@@ -1,0 +1,141 @@
+{
+ "scores": {
+  "requests": 8,
+  "simple": 3,
+  "cross": 2,
+  "technical": 3,
+  "simple_expected_selected": 1.0,
+  "simple_sole_domain": 1.0,
+  "simple_by_variant": {
+   "entité": {
+    "n": 1,
+    "selected": 1.0,
+    "sole": 1.0
+   },
+   "mots-clés": {
+    "n": 1,
+    "selected": 1.0,
+    "sole": 1.0
+   },
+   "route": {
+    "n": 1,
+    "selected": 1.0,
+    "sole": 1.0
+   }
+  },
+  "cross_both_selected": 1.0,
+  "technical_selected": 1.0,
+  "mean_selected_packs": 1.12,
+  "mean_selected_domains_simple": 1.0
+ },
+ "requests": [
+  {
+   "kind": "simple",
+   "variant": "mots-clés",
+   "expected": [
+    "timeline"
+   ],
+   "text": "Ajouter un filtre sur user et utilisateur.",
+   "selected": {
+    "timeline": "mot-clé user"
+   },
+   "ok": true,
+   "sole": true
+  },
+  {
+   "kind": "simple",
+   "variant": "route",
+   "expected": [
+    "timeline"
+   ],
+   "text": "Corriger l'écran de la route /api/auth.",
+   "selected": {
+    "timeline": "motif de nom **/*auth*"
+   },
+   "ok": true,
+   "sole": true
+  },
+  {
+   "kind": "simple",
+   "variant": "entité",
+   "expected": [
+    "timeline"
+   ],
+   "text": "Ajouter un champ à l'entité UserEntity.",
+   "selected": {
+    "timeline": "mot-clé user"
+   },
+   "ok": true,
+   "sole": true
+  },
+  {
+   "kind": "croisée",
+   "variant": "deux domaines",
+   "expected": [
+    "timeline",
+    "timeline"
+   ],
+   "text": "Afficher user dans l'écran user.",
+   "selected": {
+    "timeline": "mot-clé user"
+   },
+   "ok": true,
+   "sole": false
+  },
+  {
+   "kind": "croisée",
+   "variant": "domaine et transversal",
+   "expected": [
+    "timeline",
+    "authorization"
+   ],
+   "text": "Revoir la règle authorization pour user.",
+   "selected": {
+    "timeline": "mot-clé user",
+    "authorization": "motif authorization (domaine dans crosses)"
+   },
+   "ok": true,
+   "sole": false
+  },
+  {
+   "kind": "technique",
+   "variant": "couche",
+   "expected": [
+    "backend-socle"
+   ],
+   "text": "Mettre à jour la couche infrastructure.",
+   "selected": {
+    "backend-socle": "couche mytimeline/infrastructure"
+   },
+   "ok": true,
+   "sole": false
+  },
+  {
+   "kind": "technique",
+   "variant": "couche",
+   "expected": [
+    "frontend-socle"
+   ],
+   "text": "Mettre à jour la couche resources.",
+   "selected": {
+    "frontend-socle": "couche mytimeline/resources"
+   },
+   "ok": true,
+   "sole": false
+  },
+  {
+   "kind": "technique",
+   "variant": "couche",
+   "expected": [
+    "migrations"
+   ],
+   "text": "Mettre à jour la couche db.",
+   "selected": {
+    "migrations": "couche mytimeline/db"
+   },
+   "ok": true,
+   "sole": false
+  }
+ ],
+ "failures": []
+}

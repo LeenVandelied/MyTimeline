@@ -1,0 +1,1155 @@
+{
+ "pack": "migrations",
+ "schema": 1,
+ "curated_at": "2026-11-17T10:45:42Z",
+ "curator": "curate/1",
+ "base_sha256": "5c6c233df9a7f74143ac7de6f61b8b98877ea0aeafd0900431ed5ca050f96de2",
+ "pack_sha256_before": "80cc8a05170d82a186193d0baab9455a83ac559f8931bdf79bc22a3a8fd71362",
+ "pack_sha256_after": "99f4796f5eeb02a960504216fd01919999992ad0ab5aa154c77610cb91639217",
+ "criteria_sha256": "75e38f096df69288e5ef9ef740a5a812f65b1bb381255f75045d285103cef042",
+ "models": {
+  "measure": "haiku",
+  "refute": "sonnet"
+ },
+ "base_fingerprint": "d755987e1dee6ca134d588a4f60006b875efda056dfef4168727ecfbe4482696",
+ "bytes": {
+  "before": 5334,
+  "after": 5334,
+  "by_section": {
+   "activate": {
+    "before": 168,
+    "after": 168
+   },
+   "lexicon": {
+    "before": 78,
+    "after": 78
+   },
+   "rules": {
+    "before": 1732,
+    "after": 1732
+   },
+   "structure": {
+    "before": 82,
+    "after": 82
+   },
+   "surface": {
+    "before": 96,
+    "after": 96
+   },
+   "files": {
+    "before": 1369,
+    "after": 1369
+   },
+   "relations": {
+    "before": 321,
+    "after": 321
+   },
+   "tests": {
+    "before": 83,
+    "after": 83
+   },
+   "questions": {
+    "before": 91,
+    "after": 91
+   },
+   "alerts": {
+    "before": 332,
+    "after": 332
+   },
+   "coverage": {
+    "before": 575,
+    "after": 575
+   }
+  }
+ },
+ "units": [
+  {
+   "id": "migrations:rules:1",
+   "section": "rules",
+   "rank": 1,
+   "text": "- Sur une base peuplée, un bloc DO compte les lignes non conformes et lève une exception avant tout ALTER, sans coercition silencieuse [#a3f563bc2f9587a4-1].",
+   "fact_text": "Sur une base peuplée, un bloc DO compte les lignes non conformes et lève une exception avant tout ALTER, sans coercition silencieuse",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "migrations/a3f563bc2f9587a4-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/resources/db/migration/V4__reconcile_events_constraints.sql"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/resources/db/migration/V4__reconcile_events_constraints.sql",
+     54,
+     54,
+     "7d58a06a2838644bb60eb857548d2cabf8401a3274eaa970c356d84233addd79"
+    ]
+   ],
+   "code_sha256": "7d58a06a2838644bb60eb857548d2cabf8401a3274eaa970c356d84233addd79",
+   "verdict": "annex",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
+      "terms": 0.2,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 10
+      }
+     },
+     "restatement": "Dans V4, une condition PL/pgSQL teste si l'un des compteurs v_type_null, v_type_long, v_type_enum, v_dur_enum ou v_rec_enum est supérieur à zéro. Seule la ligne de condition est visible, le corps du bloc IF ne figure pas dans l'extrait, donc l'action déclenchée reste inconnue.",
+     "confidence": "medium"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 13,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/backend/src/main/resources/db/migration/V4__reconcile_events_constraints.sql",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.8,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 10
+      }
+     },
+     "job": "migrations:rediscover:mytimeline_backend_src_main_resources_db_migration_V11__events_conditional_check_constraints.sql:1",
+     "rank_in_lot": 7
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 30,
+    "annex_table": {
+     "part": "migrations.details.md",
+     "row": 1
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-17T10:40:47Z"
+  },
+  {
+   "id": "migrations:rules:2",
+   "section": "rules",
+   "rank": 2,
+   "text": "- Avant d'ajouter un CHECK ou un not null, les lignes incohérentes sont neutralisées par UPDATE ciblé, vers ROLE_USER pour le rôle ou vers NULL pour une unité de récurrence invalide [#6d2386c8809cdfd6-1] [#1c7402a0f5b734f9-1] [#0049acf39aaa5953-1].",
+   "fact_text": "Avant d'ajouter un CHECK ou un not null, les lignes incohérentes sont neutralisées par UPDATE ciblé, vers ROLE_USER pour le rôle ou vers NULL pour une unité de récurrence invalide",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "migrations/6d2386c8809cdfd6-1",
+    "migrations/1c7402a0f5b734f9-1",
+    "migrations/0049acf39aaa5953-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/resources/db/migration/V11__events_conditional_check_constraints.sql",
+    "mytimeline:backend/src/main/resources/db/migration/V12__users_role_not_null_check.sql",
+    "mytimeline:backend/src/main/resources/db/migration/V9__neutralize_invalid_recurrence_unit.sql"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/resources/db/migration/V11__events_conditional_check_constraints.sql",
+     55,
+     64,
+     "7719d27d497a47be83eb5e6efa1b9ee1053a94185a94b07bbd27d840a0c3f7a7"
+    ],
+    [
+     "mytimeline:backend/src/main/resources/db/migration/V12__users_role_not_null_check.sql",
+     35,
+     52,
+     "ee45ce1d5a0aa1d8636c5d669eee445063b6a0210bc803814850370b4d0a713e"
+    ],
+    [
+     "mytimeline:backend/src/main/resources/db/migration/V9__neutralize_invalid_recurrence_unit.sql",
+     31,
+     68,
+     "20a783c81919f1e87cebc95da7dfcc50976a549fd89b89bf51a73b188819f3f5"
+    ]
+   ],
+   "code_sha256": "44030a44b2f6978ab2f9cfe1f92b83745266ebe5b8beca202b6cdd23191e8a95",
+   "verdict": "annex",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.25,
+      "values": null,
+      "terms": 0.222,
+      "n": {
+       "identifiers": 4,
+       "values": 0,
+       "terms": 9
+      }
+     },
+     "restatement": "Dans V11, avant l'ajout des contraintes, deux UPDATE corrigent les lignes incohérentes de la table events : le type 'duration' sans duration_unit passe à 'single', et is_recurring à true sans recurrence_unit passe à false. Le commentaire indique que c'est sans effet sur une base propre.",
+     "confidence": "high"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 9,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/backend/src/main/resources/db/migration/V12__users_role_not_null_check.sql",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.889,
+      "n": {
+       "identifiers": 4,
+       "values": 0,
+       "terms": 9
+      }
+     },
+     "job": "migrations:rediscover:mytimeline_backend_src_main_resources_db_migration_V11__events_conditional_check_constraints.sql:1",
+     "rank_in_lot": 4
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 31,
+    "annex_table": {
+     "part": "migrations.details.md",
+     "row": 2
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-17T10:40:47Z"
+  },
+  {
+   "id": "migrations:rules:3",
+   "section": "rules",
+   "rank": 3,
+   "text": "- Un CHECK se rejoue par drop constraint if exists puis add constraint, et les index de clé étrangère par create index if not exists [#333e76b9ff028bb8-1] [#b3fc78ae062be38b-1].",
+   "fact_text": "Un CHECK se rejoue par drop constraint if exists puis add constraint, et les index de clé étrangère par create index if not exists",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "migrations/333e76b9ff028bb8-1",
+    "migrations/b3fc78ae062be38b-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/resources/db/migration/V4__reconcile_events_constraints.sql",
+    "mytimeline:backend/src/main/resources/db/migration/V5__fk_indexes.sql"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/resources/db/migration/V4__reconcile_events_constraints.sql",
+     83,
+     88,
+     "a5f8840ce4ebe49b6141df5fb78b42355175739ff637c2a1168683e5cf457812"
+    ],
+    [
+     "mytimeline:backend/src/main/resources/db/migration/V5__fk_indexes.sql",
+     25,
+     29,
+     "58167465c0e2c598e3fa4bc7b3fb1dec40941e9898484f9efe79b22979c8baa8"
+    ]
+   ],
+   "code_sha256": "8af8cc8606328e946cd40a00bb21e58bc91424c6f63d55075ec247515537b606",
+   "verdict": "annex",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
+      "terms": 0.0,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "restatement": "V4 supprime puis recrée ck_events_duration_unit : duration_unit doit être null ou valoir 'days', 'weeks', 'months' ou 'years'.",
+     "confidence": "high"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 10,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/backend/src/main/resources/db/migration/V5__fk_indexes.sql",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 1.0,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "job": "migrations:rediscover:mytimeline_backend_src_main_resources_db_migration_V11__events_conditional_check_constraints.sql:1",
+     "rank_in_lot": 5
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 32,
+    "annex_table": {
+     "part": "migrations.details.md",
+     "row": 3
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-17T10:40:47Z"
+  },
+  {
+   "id": "migrations:rules:4",
+   "section": "rules",
+   "rank": 4,
+   "text": "- Une migration sur table peuplée pose set local lock_timeout à 5 secondes en tête pour échouer vite [#58bbdf47e30dcfc8-1].",
+   "fact_text": "Une migration sur table peuplée pose set local lock_timeout à 5 secondes en tête pour échouer vite",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "migrations/58bbdf47e30dcfc8-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/resources/db/migration/V16__user_theme_preference.sql"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/resources/db/migration/V16__user_theme_preference.sql",
+     35,
+     35,
+     "1e74ea4b7dfbb682a39dc7eebeaf4080baf9cf73066a02e4bc0f70040c02df7e"
+    ]
+   ],
+   "code_sha256": "1e74ea4b7dfbb682a39dc7eebeaf4080baf9cf73066a02e4bc0f70040c02df7e",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 0.333,
+      "n": {
+       "identifiers": 1,
+       "values": 1,
+       "terms": 9
+      }
+     },
+     "restatement": "V16 fixe set local lock_timeout à '5s', ce qui limite à 5 secondes l'attente d'un verrou pour la transaction de migration en cours (portée locale à la transaction).",
+     "confidence": "high",
+     "reused": true,
+     "reused_from": "2026-11-17T10:40:47Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 4,
+     "within_budget": true,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/backend/src/main/resources/db/migration/V16__user_theme_preference.sql",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 0.0,
+      "terms": 0.556,
+      "n": {
+       "identifiers": 1,
+       "values": 1,
+       "terms": 9
+      }
+     },
+     "job": "migrations:rediscover:mytimeline_backend_src_main_resources_db_migration_V11__events_conditional_check_constraints.sql:1",
+     "reused": true,
+     "reused_from": "2026-11-17T10:40:47Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "V16 L35 pose set local lock_timeout = '5s'; le constat est cohérent avec ce code.",
+      "V16 L35 pose set local lock_timeout = '5s'; la position exacte en tête n'est pas contredite par l'extrait.",
+      "V16 L35 pose `set local lock_timeout = '5s'`, cohérent avec la ligne."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-17T10:40:47Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 33,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "migrations:rules:5",
+   "section": "rules",
+   "rank": 5,
+   "text": "- Un CHECK conditionnel se nomme ck_<table>_<colonne>_required et utilise is not true pour traiter NULL comme absence de condition [#b835f993630cd219-1].",
+   "fact_text": "Un CHECK conditionnel se nomme ck_<table>_<colonne>_required et utilise is not true pour traiter NULL comme absence de condition",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "migrations/b835f993630cd219-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/resources/db/migration/V11__events_conditional_check_constraints.sql"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/resources/db/migration/V11__events_conditional_check_constraints.sql",
+     75,
+     80,
+     "f78ca65832a22bf89ae4f3d02385663fed10a1f7f8433cb95e942295b2356aa4"
+    ]
+   ],
+   "code_sha256": "f78ca65832a22bf89ae4f3d02385663fed10a1f7f8433cb95e942295b2356aa4",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.25,
+      "values": null,
+      "terms": 0.111,
+      "n": {
+       "identifiers": 4,
+       "values": 0,
+       "terms": 9
+      }
+     },
+     "restatement": "La contrainte ck_events_recurrence_unit_required (V11) est recréée après un DROP IF EXISTS avec la règle is_recurring is not true or recurrence_unit is not null : un événement récurrent doit avoir une recurrence_unit non nulle.",
+     "confidence": "high",
+     "reused": true,
+     "reused_from": "2026-11-17T10:40:47Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 5,
+     "within_budget": true,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/backend/src/main/resources/db/migration/V11__events_conditional_check_constraints.sql",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": null,
+      "terms": 0.556,
+      "n": {
+       "identifiers": 4,
+       "values": 0,
+       "terms": 9
+      }
+     },
+     "job": "migrations:rediscover:mytimeline_backend_src_main_resources_db_migration_V11__events_conditional_check_constraints.sql:1",
+     "reused": true,
+     "reused_from": "2026-11-17T10:40:47Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "V11 L78-80 nomme ck_events_recurrence_unit_required et utilise 'is_recurring is not true or recurrence_unit is not null', conforme au constat.",
+      "V11 L75-80 nomme ck_events_recurrence_unit_required et utilise 'is_recurring is not true or recurrence_unit is not null', conforme au constat.",
+      "V11 L80 `check (is_recurring is not true or recurrence_unit is not null)` suit le nommage ck_events_recurrence_unit_required et l'usage de is not true."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-17T10:40:47Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 35,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "migrations:rules:6",
+   "section": "rules",
+   "rank": 6,
+   "text": "- Un CHECK d'énumération sur colonne nullable place is null or devant le IN [#333e76b9ff028bb8-2], une énumération est un varchar borné et not null [#145dc0442b68f3c1-1].",
+   "fact_text": "Un CHECK d'énumération sur colonne nullable place is null or devant le IN, une énumération est un varchar borné et not null",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "migrations/333e76b9ff028bb8-2",
+    "migrations/145dc0442b68f3c1-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/resources/db/migration/V4__reconcile_events_constraints.sql",
+    "mytimeline:backend/src/main/resources/db/migration/V13__export_jobs.sql"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/resources/db/migration/V4__reconcile_events_constraints.sql",
+     88,
+     88,
+     "5af743f2d023b021b09c6621e67aa3c5cdc78aeae4a779b7f9c562d03496e7cb"
+    ],
+    [
+     "mytimeline:backend/src/main/resources/db/migration/V13__export_jobs.sql",
+     41,
+     41,
+     "37dd3ed9ac4cef53f309db932dabb45bab21594374b01e257382cb2cf13ecd50"
+    ]
+   ],
+   "code_sha256": "5d700d0933d482051d6c0415233971276ff0676a0af03e03fb2b1539b578998c",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.286,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "restatement": "Deux contraintes CHECK : dans V4, ck_events_duration_unit accepte duration_unit null ou 'days', 'weeks', 'months', 'years' (même règle que la ligne précédente). Dans V13, ck_export_jobs_format n'accepte que 'ZIP' ou 'CSV' pour la colonne format de export_jobs.",
+     "confidence": "high",
+     "reused": true,
+     "reused_from": "2026-11-17T10:40:47Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 13,
+     "within_budget": false,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/backend/src/main/resources/db/migration/V9__neutralize_invalid_recurrence_unit.sql",
+     "file_ok": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.857,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "job": "migrations:rediscover:mytimeline_backend_src_main_resources_db_migration_V11__events_conditional_check_constraints.sql:1",
+     "reused": true,
+     "reused_from": "2026-11-17T10:40:47Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "V4 L88 met 'is null or' devant le IN pour duration_unit nullable, et V13 L30,41 déclare format varchar(16) not null avec CHECK IN, cohérent.",
+      "V4 L88 place 'duration_unit is null or' devant le IN, et V13 L30-41 déclare format varchar(16) not null avec CHECK IN.",
+      "V4 L88 place `duration_unit is null or` devant le IN, et V13 L30-41 montre un varchar(16) not null avec CHECK IN ; la ligne est cohérente."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-17T10:40:47Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 36,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "migrations:rules:7",
+   "section": "rules",
+   "rank": 7,
+   "text": "- Les clés étrangères se nomment fk_<table>_<reference> et déclarent on delete cascade quand les lignes dépendent du compte [#565bd4a0b8a73ce3-1] [#9a99540b375d30ed-1].",
+   "fact_text": "Les clés étrangères se nomment fk_<table>_<reference> et déclarent on delete cascade quand les lignes dépendent du compte",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "migrations/565bd4a0b8a73ce3-1",
+    "migrations/9a99540b375d30ed-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/resources/db/migration/V6__create_password_reset_tokens.sql",
+    "mytimeline:backend/src/main/resources/db/migration/V13__export_jobs.sql"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/resources/db/migration/V6__create_password_reset_tokens.sql",
+     40,
+     42,
+     "e27164e98c1342f1b9db56e59702a05750afd669e18db0168c275b0b239ccc03"
+    ],
+    [
+     "mytimeline:backend/src/main/resources/db/migration/V13__export_jobs.sql",
+     27,
+     44,
+     "2644b8204cea90c5198205c56983ec3543a0e656af5d7e1733f12d69ceadfa95"
+    ]
+   ],
+   "code_sha256": "fe8b5767a004b28bfe59492e6da6991f4fd4d211e900f0fb2b572668af2ee1fe",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
+      "terms": 0.091,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 11
+      }
+     },
+     "restatement": "V6 ajoute la clé étrangère fk_password_reset_tokens_user vers users(id) avec ON DELETE CASCADE. V13 crée export_jobs avec user_id NOT NULL lié à users(id) en cascade, format limité à 'ZIP' ou 'CSV' et status limité à 'PENDING', 'RUNNING', 'COMPLETED' ou 'FAILED'. La suppression d'un utilisateur supprime donc ses jobs d'export.",
+     "confidence": "high",
+     "reused": true,
+     "reused_from": "2026-11-17T10:40:47Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 14,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/backend/src/main/resources/db/migration/V6__create_password_reset_tokens.sql",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
+      "terms": 0.273,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 11
+      }
+     },
+     "job": "migrations:rediscover:mytimeline_backend_src_main_resources_db_migration_V11__events_conditional_check_constraints.sql:1",
+     "reused": true,
+     "reused_from": "2026-11-17T10:40:47Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "V6 L41-42 fk_password_reset_tokens_user et V13 L38-39 fk_export_jobs_user suivent fk_<table>_<reference> avec on delete cascade.",
+      "fk_password_reset_tokens_user (V6 L40-42) et fk_export_jobs_user (V13 L38-39) suivent fk_<table>_<reference> avec on delete cascade sur user_id.",
+      "V6 L41-42 et V13 L38-39 nomment fk_<table>_<reference> avec on delete cascade vers users."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-17T10:40:47Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 37,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "migrations:rules:8",
+   "section": "rules",
+   "rank": 8,
+   "text": "- Les index se nomment idx_<table>_<colonne>, aussi pour une colonne de purge temporelle [#e7d8e73c2ca02741-1].",
+   "fact_text": "Les index se nomment idx_<table>_<colonne>, aussi pour une colonne de purge temporelle",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "migrations/e7d8e73c2ca02741-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/resources/db/migration/V14__idx_export_jobs_expires_at.sql"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/resources/db/migration/V14__idx_export_jobs_expires_at.sql",
+     18,
+     18,
+     "43ae527b84458f71b76101801cd14ce2777412673b777fcfa37844445c78d572"
+    ]
+   ],
+   "code_sha256": "43ae527b84458f71b76101801cd14ce2777412673b777fcfa37844445c78d572",
+   "verdict": "annex",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 6
+      }
+     },
+     "restatement": "V14 crée un index simple idx_export_jobs_expires_at sur la colonne expires_at de la table export_jobs.",
+     "confidence": "high"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 15,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/backend/src/main/resources/db/migration/V14__idx_export_jobs_expires_at.sql",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.833,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 6
+      }
+     },
+     "job": "migrations:rediscover:mytimeline_backend_src_main_resources_db_migration_V11__events_conditional_check_constraints.sql:1",
+     "rank_in_lot": 8
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 38,
+    "annex_table": {
+     "part": "migrations.details.md",
+     "row": 4
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-17T10:40:47Z"
+  },
+  {
+   "id": "migrations:rules:9",
+   "section": "rules",
+   "rank": 9,
+   "text": "- Les colonnes d'audit sont created_at et updated_at en timestamp not null default now() [#87c989e06096a13a-1], et le verrou optimiste est version integer not null default 0 [#d3007a27b545f1b8-1].",
+   "fact_text": "Les colonnes d'audit sont created_at et updated_at en timestamp not null default now(), et le verrou optimiste est version integer not null default 0",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "migrations/87c989e06096a13a-1",
+    "migrations/d3007a27b545f1b8-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/resources/db/migration/V3__add_audit_columns.sql",
+    "mytimeline:backend/src/main/resources/db/migration/V15__password_reset_tokens_version.sql"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/resources/db/migration/V3__add_audit_columns.sql",
+     16,
+     19,
+     "a22af1d1d36a5fb489bdb537f44b1f6d41a646d15ba61ed7a56b941b84d0bd62"
+    ],
+    [
+     "mytimeline:backend/src/main/resources/db/migration/V15__password_reset_tokens_version.sql",
+     28,
+     29,
+     "f3b64d56532a6680c53576fcb6329df74c6cd565377b89e78b123a52344d936f"
+    ]
+   ],
+   "code_sha256": "c8d42d8cbc937c02b9cd5461531bb8dc84104f72b6b9aa4b1c23cc29ecd0c64d",
+   "verdict": "annex",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 0.444,
+      "n": {
+       "identifiers": 2,
+       "values": 1,
+       "terms": 9
+      }
+     },
+     "restatement": "V3 ajoute à users les colonnes created_at et updated_at de type timestamp NOT NULL avec défaut now(), et version de type integer NOT NULL avec défaut 0. Dans l'extrait, la colonne version de password_reset_tokens (V15) suit le même schéma, avec défaut 0 et NOT NULL.",
+     "confidence": "high"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 11,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/backend/src/main/resources/db/migration/V3__add_audit_columns.sql",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 0.556,
+      "n": {
+       "identifiers": 2,
+       "values": 1,
+       "terms": 9
+      }
+     },
+     "job": "migrations:rediscover:mytimeline_backend_src_main_resources_db_migration_V11__events_conditional_check_constraints.sql:1",
+     "rank_in_lot": 6
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 40,
+    "annex_table": {
+     "part": "migrations.details.md",
+     "row": 5
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-17T10:40:47Z"
+  },
+  {
+   "id": "migrations:rules:10",
+   "section": "rules",
+   "rank": 10,
+   "text": "- Les opérations d'une même table sont regroupées dans un seul ALTER TABLE avec if not exists [#61b42db9757c6a8e-2].",
+   "fact_text": "Les opérations d'une même table sont regroupées dans un seul ALTER TABLE avec if not exists",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "migrations/61b42db9757c6a8e-2"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/resources/db/migration/V16__user_theme_preference.sql"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/resources/db/migration/V16__user_theme_preference.sql",
+     37,
+     41,
+     "c11f992222188800b15dddb6edf5bb725eed4dcc912a69a50f6377f7ed9b8d1f"
+    ]
+   ],
+   "code_sha256": "c11f992222188800b15dddb6edf5bb725eed4dcc912a69a50f6377f7ed9b8d1f",
+   "verdict": "annex",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
+      "terms": 0.0,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 3
+      }
+     },
+     "restatement": "V16 ajoute la colonne theme_preference varchar(16) à users (sans NOT NULL, donc nullable), puis recrée la contrainte ck_users_theme_preference qui n'accepte que 'light', 'dark' ou 'system'.",
+     "confidence": "high"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 4,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/backend/src/main/resources/db/migration/V16__user_theme_preference.sql",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 1.0,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 3
+      }
+     },
+     "job": "migrations:rediscover:mytimeline_backend_src_main_resources_db_migration_V11__events_conditional_check_constraints.sql:1",
+     "rank_in_lot": 1
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 41,
+    "annex_table": {
+     "part": "migrations.details.md",
+     "row": 6
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-17T10:40:47Z"
+  },
+  {
+   "id": "migrations:alerts:1",
+   "section": "alerts",
+   "rank": 1,
+   "text": "- La FK owner_id de la table categories n'a pas de on delete, donc RESTRICT, alors que les autres FK vers users du lot utilisent on delete cascade, donc supprimer un utilisateur qui possède des catégories échoue : avant de toucher à la suppression d'utilisateurs, aligner la FK par une nouvelle migration ou supprimer les catégories d'abord `mytimeline:backend/src/main/resources/db/migration/V8__category_ownership.sql:37-39` [#dbca7a316c0c1c8c-1].",
+   "fact_text": "La FK owner_id de la table categories n'a pas de on delete, donc RESTRICT, alors que les autres FK vers users du lot utilisent on delete cascade, donc supprimer un utilisateur qui possède des catégories échoue : avant de toucher à la suppression d'utilisateurs",
+   "consigne": "aligner la FK par une nouvelle migration ou supprimer les catégories d'abord V8__category_ownership.sql",
+   "consigne_dropped": false,
+   "cites": [
+    "migrations/dbca7a316c0c1c8c-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/resources/db/migration/V8__category_ownership.sql"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/resources/db/migration/V8__category_ownership.sql",
+     37,
+     39,
+     "4ea0a140d505bb8023d1394ee670cdd03fe93831394bd5a6d35395699f3a1c2d"
+    ]
+   ],
+   "code_sha256": "4ea0a140d505bb8023d1394ee670cdd03fe93831394bd5a6d35395699f3a1c2d",
+   "verdict": "annex",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": {
+     "fact_supported": false,
+     "consigne_supported": true,
+     "reason": "Le fait cité établit que la FK owner_id n'a pas de on delete (donc RESTRICT par défaut) alors que les autres FK vers users utilisent cascade, mais l'échec de la suppression d'un utilisateur qui possède des catégories est une conséquence déduite, non portée par un fait cité. La consigne d'aligner la FK découle de la pratique cascade citée, en revanche le nom de fichier V8__category_ownership.sql et l'option de supprimer les catégories d'abord ne viennent d'aucun fait cité."
+    },
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": null,
+      "terms": 0.417,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 12
+      }
+     },
+     "restatement": "V8 ajoute la clé étrangère fk_categories_owner de categories.owner_id vers users(id) sans clause ON DELETE. Le comportement par défaut (NO ACTION) empêche donc de supprimer un utilisateur encore propriétaire de catégories, contrairement aux clés en cascade de V6 et V13.",
+     "confidence": "high"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 6,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/backend/src/main/resources/db/migration/V8__category_ownership.sql",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.583,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 12
+      }
+     },
+     "job": "migrations:rediscover:mytimeline_backend_src_main_resources_db_migration_V11__events_conditional_check_constraints.sql:1",
+     "rank_in_lot": 2
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 88,
+    "annex_table": {
+     "part": "migrations.details.md",
+     "row": 7
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-17T10:40:47Z"
+  },
+  {
+   "id": "migrations:alerts:2",
+   "section": "alerts",
+   "rank": 2,
+   "text": "- Selon le commentaire de V9, la V10 est réservée (#158), mais V10__create_sessions.sql existe dans le lot, donc le commentaire est périmé : ne pas se fier à ce texte de réservation pour numéroter une migration et vérifier les fichiers présents `mytimeline:backend/src/main/resources/db/migration/V9__neutralize_invalid_recurrence_unit.sql:28` [#dbd260bc254e104d-1].",
+   "fact_text": "Selon le commentaire de V9, la V10 est réservée (#158), mais V10__create_sessions.sql existe dans le lot, donc le commentaire est périmé",
+   "consigne": "ne pas se fier à ce texte de réservation pour numéroter une migration et vérifier les fichiers présents V9__neutralize_invalid_recurrence_unit.sql",
+   "consigne_dropped": false,
+   "cites": [
+    "migrations/dbd260bc254e104d-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/resources/db/migration/V9__neutralize_invalid_recurrence_unit.sql"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/resources/db/migration/V9__neutralize_invalid_recurrence_unit.sql",
+     28,
+     28,
+     "80406af174862130413d1695ac247f315c098215f363d11befa7e7c12ddbc3ac"
+    ]
+   ],
+   "code_sha256": "80406af174862130413d1695ac247f315c098215f363d11befa7e7c12ddbc3ac",
+   "verdict": "annex",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": {
+     "fact_supported": true,
+     "consigne_supported": true,
+     "reason": "Le fait cité (commentaire réservant V10 avec le ticket #158 alors que V10__create_sessions.sql existe dans le lot) porte le constat de commentaire périmé, et la consigne de ne pas se fier à ce texte et de vérifier les fichiers présents en découle directement."
+    },
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": 1.0,
+      "terms": 0.25,
+      "n": {
+       "identifiers": 2,
+       "values": 1,
+       "terms": 4
+      }
+     },
+     "restatement": "L'extrait ne contient qu'un commentaire dans V9 : il interdit de modifier V1 à V8 car elles sont déjà appliquées, et il réserve le numéro V10 (référence #158). Aucun code SQL n'est exécuté ici. Ce commentaire s'adresse aux développeurs et n'est pas une consigne pour l'agent.",
+     "confidence": "high"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 8,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/backend/src/main/resources/db/migration/V9__neutralize_invalid_recurrence_unit.sql",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 1.0,
+      "n": {
+       "identifiers": 2,
+       "values": 1,
+       "terms": 4
+      }
+     },
+     "job": "migrations:rediscover:mytimeline_backend_src_main_resources_db_migration_V11__events_conditional_check_constraints.sql:1",
+     "rank_in_lot": 3
+    },
+    "comment": [
+     {
+      "id": "migrations/dbd260bc254e104d-1",
+      "verdict": "unverifiable"
+     }
+    ],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 89,
+    "annex_table": {
+     "part": "migrations.details.md",
+     "row": 8
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-17T10:40:47Z"
+  }
+ ],
+ "comment_facts": [],
+ "facts_validated": [
+  "migrations/58bbdf47e30dcfc8-1",
+  "migrations/b835f993630cd219-1",
+  "migrations/333e76b9ff028bb8-2",
+  "migrations/145dc0442b68f3c1-1",
+  "migrations/565bd4a0b8a73ce3-1",
+  "migrations/9a99540b375d30ed-1"
+ ],
+ "counts": {
+  "units": 12,
+  "admit": 4,
+  "annex": 8,
+  "drop": 0,
+  "hold": 0,
+  "pending": 0,
+  "consigne_before_unsupported": 0,
+  "consigne_after_dropped": 0,
+  "structure_rows_removed": 0,
+  "framework": 0
+ },
+ "structure_rows_removed": [],
+ "notes": [],
+ "base_sha256_after": "5c6c233df9a7f74143ac7de6f61b8b98877ea0aeafd0900431ed5ca050f96de2",
+ "bases_touched": {
+  "migrations": {
+   "fingerprint": "d755987e1dee6ca134d588a4f60006b875efda056dfef4168727ecfbe4482696",
+   "sha256_after": "5c6c233df9a7f74143ac7de6f61b8b98877ea0aeafd0900431ed5ca050f96de2"
+  }
+ },
+ "lint": {
+  "ok": true,
+  "errors": 0,
+  "warnings": 0
+ }
+}

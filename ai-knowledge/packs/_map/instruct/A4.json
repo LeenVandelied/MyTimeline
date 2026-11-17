@@ -1,0 +1,21 @@
+{
+ "id": "A4",
+ "question": "Les fichiers frontend non rattachés vont-ils au pack timeline (par alias) ou au socle frontend ?",
+ "decision": "les composants nommés timeline, event, product, category, auth, theme ou conflict vont à timeline par alias, le reste (ui, layout, styles, lib générique) reste au socle frontend",
+ "rule": "R3 aucun import mesuré (arêtes de groupe vides), décision par noms de fichiers",
+ "confidence": "low",
+ "seeds": [
+  "EventEntity",
+  "CategoryEntity",
+  "ProductEntity"
+ ],
+ "evidence": [
+  "mytimeline:frontend/src/components/timeline/TimelineView.tsx",
+  "mytimeline:frontend/src/components/layout/AppShell.tsx",
+  "mytimeline:frontend/src/components/ui/toaster.tsx"
+ ],
+ "falsified_if": "un ticket sur un composant de timeline ou d'événement ne charge pas le pack timeline, ou un composant d'ui générique y est rattaché à tort",
+ "status": "open",
+ "opened": "2026-11-17",
+ "touched_by": []
+}

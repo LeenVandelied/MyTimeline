@@ -1,0 +1,69 @@
+{
+ "mode": "rejeu",
+ "errors": [],
+ "warnings": [
+  "hypothèse A1 : decision 'un seul pack domain timeline, pivot UserEntity' n'est pas un pack",
+  "hypothèse A2 : decision 'fondu dans timeline' n'est pas un pack",
+  "hypothèse A3 : decision 'fondu dans timeline' n'est pas un pack",
+  "hypothèse A4 : decision 'les composants nommés timeline, event, product, category, auth, theme ou conflict vont à timeline par alias, le reste (ui, layout, styles, lib générique) reste au socle frontend' n'est pas un pack",
+  "hypothèse A5 : decision 'oui, pack transversal batch' n'est pas un pack",
+  "hypothèse A6 : decision 'revendiqués par le transversal state-machine via path_rules, sans retirer leur propriétaire' n'est pas un pack",
+  "hypothèse A7 : decision \"nombre de fichiers du motif ou de la couche tel que donné, 0 ko tant que la taille n'est pas mesurée\" n'est pas un pack",
+  "hypothèse A8 : decision 'trois packs techniques par règle de chemin : backend-socle, frontend-socle, migrations' n'est pas un pack"
+ ],
+ "invented": {},
+ "leftover": [],
+ "leftover_rate": 0.0,
+ "assigned": 688,
+ "total": 688,
+ "sizes": {
+  "timeline": {
+   "files": 388,
+   "kb": 2584
+  },
+  "frontend-socle": {
+   "files": 257,
+   "kb": 1480
+  },
+  "authorization": {
+   "files": 15,
+   "kb": 141
+  },
+  "backend-socle": {
+   "files": 16,
+   "kb": 132
+  },
+  "integrations": {
+   "files": 4,
+   "kb": 12
+  },
+  "migrations": {
+   "files": 5,
+   "kb": 12
+  },
+  "batch": {
+   "files": 2,
+   "kb": 3
+  },
+  "state-machine": {
+   "files": 1,
+   "kb": 0
+  }
+ },
+ "small_domain_packs_R7": {},
+ "giant_domain_packs_R8": {},
+ "median_domain_kb": 2585,
+ "overlay_claims": {
+  "batch": 5,
+  "integrations": 14,
+  "state-machine": 7,
+  "authorization": 25
+ },
+ "by_how": {
+  "seed": 388,
+  "path_rule": 300
+ },
+ "assumptions": {
+  "open": 8
+ }
+}

@@ -1,0 +1,2754 @@
+{
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/EventmanagerApplication.java": {
+"pack": "backend-socle",
+"how": "path_rule:tech"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/ArchivedProductResponse.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/AuthRequest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/AuthResponse.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/CategoryRequest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/CategoryResponse.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/CategoryUpdateRequest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/ChangePasswordRequest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/DeleteAccountRequest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/EventCreationRequest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/EventResponse.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/EventUpdateRequest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/ExportJobResponse.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/ForgotPasswordRequest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/JwkResponse.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/JwksResponse.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/ProductCreationRequest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/ProductResponse.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/ProductUpdateRequest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/RecurrencePreviewRequest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/RecurrencePreviewResponse.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/RegisterRequest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/ResetPasswordRequest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/SessionResponse.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/UpdatePreferencesRequest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/UserResponse.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/UserUpdateRequest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/mappers/CategoryMapper.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/mappers/EventMapper.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/mappers/PasswordResetTokenMapper.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/mappers/ProductMapper.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/mappers/SessionMapper.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/mappers/UserMapper.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/AsyncExportRunner.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/AvatarServiceImpl.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/CategoryServiceImpl.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/EventServiceImpl.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportPurgeScheduler.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportRendererRegistry.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportServiceImpl.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/PasswordResetServiceImpl.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/PasswordResetTokenPurgeScheduler.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/RecurrenceExpansionServiceImpl.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/SessionServiceImpl.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/UserDataExportAssembler.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/UserServiceImpl.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/validation/StrongPassword.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/validation/StrongPasswordValidator.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/exceptions/AccountDeletionMismatchException.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/exceptions/AvatarNotFoundException.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/exceptions/CategoryInUseException.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/exceptions/CategoryNameConflictException.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/exceptions/CategoryNotFoundException.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/exceptions/CategoryReassignTargetInvalidException.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/exceptions/EndDateBeforeStartException.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/exceptions/EventConflictException.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/exceptions/EventNotFoundException.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/exceptions/ExportFormatNotSupportedException.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/exceptions/InvalidAvatarException.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/exceptions/InvalidCredentialsException.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/exceptions/InvalidDurationUnitException.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/exceptions/InvalidEventTypeException.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/exceptions/InvalidPasswordResetTokenException.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/exceptions/ProductNotFoundException.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/exceptions/RecurrenceEndDateBeforeStartException.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/exceptions/RecurrenceUnitRequiredException.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/exceptions/SamePasswordException.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/exceptions/SessionNotFoundException.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/exceptions/UserNotFoundException.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/AvatarContent.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/Category.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/CategoryProductCounts.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/Event.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/EventCreateCommand.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/EventUpdateCommand.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/PasswordResetToken.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/Product.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/RecurrenceExpansion.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/RecurrenceUnit.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/Role.java": {
+"pack": "state-machine",
+"how": "path_rule:home"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/Session.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/ThemePreference.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/User.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/export/ExportFormat.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/export/ExportJob.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/export/ExportJobStatus.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/export/RenderedExport.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/export/UserDataExport.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/ports/repositories/CategoryRepository.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/ports/repositories/EventRepository.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/ports/repositories/ExportJobRepository.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/ports/repositories/PasswordResetTokenRepository.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/ports/repositories/ProductRepository.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/ports/repositories/SessionRepository.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/ports/repositories/UserRepository.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/ports/services/AvatarService.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/ports/services/CategoryService.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/ports/services/EmailService.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/ports/services/EventService.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/ports/services/ExportRenderer.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/ports/services/ExportService.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/ports/services/PasswordResetService.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/ports/services/ProductService.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/ports/services/RecurrenceExpansionService.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/ports/services/SessionService.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/ports/services/StoragePort.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/ports/services/UserService.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapter.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryController.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ErrorCode.java": {
+"pack": "backend-socle",
+"how": "path_rule:tech"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/EventController.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ExportController.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/GlobalExceptionHandler.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/JwksController.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/RecurrencePreviewController.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/SessionController.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/UserController.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailService.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoHealthIndicator.java": {
+"pack": "integrations",
+"how": "path_rule:tech"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/PasswordResetEmailTemplate.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/CsvExportRenderer.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/ExportFilenames.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/JsonExportRenderer.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/MarkdownExportRenderer.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/ZipExportRenderer.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/CategoryRepositoryJpaImpl.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/EventRepositoryJpaImpl.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ExportJobMapper.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ExportJobRepositoryJpaImpl.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/PasswordResetTokenRepositoryJpaImpl.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ProductRepositoryJpaImpl.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/SessionRepositoryJpaImpl.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/UserRepositoryJpaImpl.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenController.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenFinder.java": {
+"pack": "backend-socle",
+"how": "path_rule:tech"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenFinderJpaAdapter.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eTestSupportSecurityConfig.java": {
+"pack": "authorization",
+"how": "path_rule:tech"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/config/AsyncConfig.java": {
+"pack": "batch",
+"how": "path_rule:tech"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/config/ClockConfig.java": {
+"pack": "backend-socle",
+"how": "path_rule:tech"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/config/ProdConfigStartupLogger.java": {
+"pack": "backend-socle",
+"how": "path_rule:tech"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/config/ProfileSafetyGuard.java": {
+"pack": "backend-socle",
+"how": "path_rule:tech"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/config/SchedulingConfig.java": {
+"pack": "batch",
+"how": "path_rule:tech"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/config/StorageConfig.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/CategoryEntity.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/EventEntity.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/ExportJobEntity.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/PasswordResetTokenEntity.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/ProductEntity.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/SessionEntity.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/UserEntity.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/converters/ThemePreferenceConverter.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/CallerResolver.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/ClientIpAnonymizer.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/CustomUserDetails.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/CustomUserDetailsService.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/ExportTokenService.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtFilter.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtService.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/RateLimitConfig.java": {
+"pack": "authorization",
+"how": "path_rule:tech"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/RateLimitingFilter.java": {
+"pack": "authorization",
+"how": "path_rule:tech"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/RsaKeyMaterial.java": {
+"pack": "authorization",
+"how": "path_rule:tech"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/SecurityConfig.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/UserRateLimitingFilter.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/utils/Utils.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/resources/db/migration/V10__create_sessions.sql": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/resources/db/migration/V11__events_conditional_check_constraints.sql": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/resources/db/migration/V12__users_role_not_null_check.sql": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/resources/db/migration/V13__export_jobs.sql": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/resources/db/migration/V14__idx_export_jobs_expires_at.sql": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/resources/db/migration/V15__password_reset_tokens_version.sql": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/resources/db/migration/V16__user_theme_preference.sql": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/resources/db/migration/V1__baseline.sql": {
+"pack": "migrations",
+"how": "path_rule:unassigned"
+},
+"mytimeline:backend/src/main/resources/db/migration/V2__unique_constraints.sql": {
+"pack": "migrations",
+"how": "path_rule:unassigned"
+},
+"mytimeline:backend/src/main/resources/db/migration/V3__add_audit_columns.sql": {
+"pack": "migrations",
+"how": "path_rule:unassigned"
+},
+"mytimeline:backend/src/main/resources/db/migration/V4__reconcile_events_constraints.sql": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/resources/db/migration/V5__fk_indexes.sql": {
+"pack": "migrations",
+"how": "path_rule:unassigned"
+},
+"mytimeline:backend/src/main/resources/db/migration/V6__create_password_reset_tokens.sql": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/resources/db/migration/V7__design_v3_schema.sql": {
+"pack": "migrations",
+"how": "path_rule:unassigned"
+},
+"mytimeline:backend/src/main/resources/db/migration/V8__category_ownership.sql": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/main/resources/db/migration/V9__neutralize_invalid_recurrence_unit.sql": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/EventmanagerApplicationTests.java": {
+"pack": "backend-socle",
+"how": "path_rule:tech"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/dtos/EventCreationRequestContractTest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/AvatarServiceImplTest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/CategoryServiceImplTest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/EventServiceImplTest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/ExportPurgeSchedulerIntegrationTest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/PasswordResetServiceImplTest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/PasswordResetTokenPurgeSchedulerIntegrationTest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/ProductServiceImplTest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/RecurrenceExpansionServiceImplTest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/SessionServiceImplTest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/UserServiceImplTest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/validation/PasswordPolicyTest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/architecture/ArchitectureTest.java": {
+"pack": "backend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/build/BomDriftTest.java": {
+"pack": "backend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/domain/models/ThemePreferenceTest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/domain/models/export/ExportJobTest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/domain/models/export/UserDataExportTest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapterTest.java": {
+"pack": "integrations",
+"how": "path_rule:tech"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AccountDeletionIntegrationTest.java": {
+"pack": "backend-socle",
+"how": "path_rule:tech"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthControllerDevProfileCookieTest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthControllerErrorContractTest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthControllerLegacyPasswordLoginTest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthControllerProdProfileCookieTest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthControllerSecurityTest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthControllerValidationTest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryControllerTest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/EventControllerOwnershipTest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/EventControllerValidationTest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ExportEndpointsIntegrationTest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ForgotPasswordAsyncTest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/GlobalExceptionHandlerContractTest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/GlobalExceptionHandlerErrorCodeTest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/GlobalExceptionHandlerOptimisticLockTest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/GlobalExceptionHandlerValidationTest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/JwksEndpointIntegrationTest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/PasswordResetEndpointsIntegrationTest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductControllerOwnershipTest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductRestoreIntegrationTest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/RecurrencePreviewControllerTest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/RegisterLoginIntegrationTest.java": {
+"pack": "backend-socle",
+"how": "path_rule:tech"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/SessionControllerTest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/SessionRevocationIntegrationTest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ThemePreferenceIntegrationTest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/UserControllerTest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailServiceLocaleTest.java": {
+"pack": "integrations",
+"how": "path_rule:tech"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoHealthIndicatorTest.java": {
+"pack": "integrations",
+"how": "path_rule:tech"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/email/PasswordResetEmailTemplateTest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/export/ExportRenderersTest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/CategoryDeleteReassignIntegrationTest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/EventConditionalCheckConstraintIntegrationTest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/EventDeleteStatisticsIntegrationTest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/EventOptimisticLockConflictIntegrationTest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/EventPatchAndRecurrenceIntegrationTest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/ProductArchivedFilterIntegrationTest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/ProductEventCreationIntegrationTest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/UserRoleConstraintIntegrationTest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/PasswordResetTokenConcurrencyIntegrationTest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/PasswordResetTokenCreateStatisticsIntegrationTest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenEndpointIntegrationTest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eTestSupportPackageGuardTest.java": {
+"pack": "backend-socle",
+"how": "path_rule:tech"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eTestSupportProfileTest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/config/ProdConfigStartupLoggerTest.java": {
+"pack": "backend-socle",
+"how": "path_rule:tech"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/config/ProfileSafetyGuardTest.java": {
+"pack": "backend-socle",
+"how": "path_rule:tech"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/config/StorageConfigTest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/entities/AuditingAndEqualityTest.java": {
+"pack": "backend-socle",
+"how": "path_rule:tech"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/AuthErrorContractIntegrationTest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/CallerResolverTest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/ClientIpAnonymizerTest.java": {
+"pack": "authorization",
+"how": "path_rule:tech"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/CorsAllowedOriginsConfigIntegrationTest.java": {
+"pack": "authorization",
+"how": "path_rule:tech"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/ExportTokenServiceTest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/JwtFilterTest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/JwtServiceRs256Test.java": {
+"pack": "authorization",
+"how": "path_rule:tech"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/PreferencesUserRateLimitIntegrationTest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/PreferencesUserRateLimitPathVariantsIntegrationTest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/RateLimitDefaultCeilingsIntegrationTest.java": {
+"pack": "authorization",
+"how": "path_rule:tech"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/RateLimitE2eProfileIntegrationTest.java": {
+"pack": "authorization",
+"how": "path_rule:tech"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/RateLimitTunableCeilingTest.java": {
+"pack": "authorization",
+"how": "path_rule:tech"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/RateLimitingAndHeadersIntegrationTest.java": {
+"pack": "authorization",
+"how": "path_rule:tech"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/RateLimitingDisabledIntegrationTest.java": {
+"pack": "authorization",
+"how": "path_rule:tech"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/ResetPasswordTokenRateLimitIntegrationTest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/SecurityConfigWriteJsonErrorTest.java": {
+"pack": "authorization",
+"how": "path_rule:tech"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/StatelessSessionGuardTest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/UserRateLimitingFilterTest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/support/AbstractPostgresIntegrationTest.java": {
+"pack": "backend-socle",
+"how": "path_rule:tech"
+},
+"mytimeline:backend/src/test/java/com/matimeline/eventmanager/utils/UtilsTest.java": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/app/[locale]/(app)/dashboard/loading.test.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/app/[locale]/(app)/dashboard/loading.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/app/[locale]/(app)/dashboard/page.test.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/app/[locale]/(app)/dashboard/page.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/app/[locale]/(app)/layout.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/app/[locale]/(app)/products/[productId]/loading.test.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/app/[locale]/(app)/products/[productId]/loading.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/app/[locale]/(app)/products/[productId]/page.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/app/[locale]/(app)/products/loading.test.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/app/[locale]/(app)/products/loading.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/app/[locale]/(app)/products/page.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/app/[locale]/(app)/settings/loading.test.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/app/[locale]/(app)/settings/loading.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/app/[locale]/(app)/settings/page.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/app/[locale]/(app)/timeline/loading.test.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/app/[locale]/(app)/timeline/loading.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/app/[locale]/(app)/timeline/page.test.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/app/[locale]/(app)/timeline/page.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/app/[locale]/error.test.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/app/[locale]/error.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/app/[locale]/forgot-password/page.test.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/app/[locale]/forgot-password/page.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/app/[locale]/home/page.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/app/[locale]/layout.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/app/[locale]/login/page.test.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/app/[locale]/login/page.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/app/[locale]/page.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/app/[locale]/privacy/page.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/app/[locale]/register/page.test.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/app/[locale]/register/page.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/app/[locale]/reset-password/page.test.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/app/[locale]/reset-password/page.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/app/[locale]/terms/page.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/app/fonts.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/app/global-error.test.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/app/global-error.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/app/global-not-found-screen.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/app/global-not-found.test.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/app/global-not-found.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/app/layout.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/app/page.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/__tests__/console-error-guard.test.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/__tests__/ds-type-scale.test.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/__tests__/e2e-pixel-guards.test.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/__tests__/e2e-rate-limit-budget.test.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/__tests__/i18n-namespaces.test.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/__tests__/i18n-request-config.test.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/__tests__/seed-cleanup-outcome.test.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/__tests__/smoke.test.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/__tests__/support/visualViewport.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/EventEditForm.debounce.test.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/EventEditForm.test.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/EventEditForm.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/__tests__/date-time-semantics.test.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/categories/CategoryDrawer.forbidden.test.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/categories/CategoryDrawer.test.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/categories/CategoryDrawer.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/dashboard/CompactAgenda.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/dashboard/CompactRail.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/dashboard/DensityRibbon.intl.test.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/dashboard/DensityRibbon.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/dashboard/DensityRibbon.window.test.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/dashboard/GreetingHeader.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/dashboard/KpiMarginalia.intl.test.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/dashboard/KpiMarginalia.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/dashboard/MobileDrawer.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/dashboard/ProductCarousel.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/dashboard/ProductList.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/dashboard/WeekAgenda.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/dashboard/dashboard-components.test.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/dashboard/dashboard-landscape.test.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/dashboard/dashboard-lib.test.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/dashboard/dashboard-mobile.test.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/dashboard/densityWindow.test.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/dashboard/densityWindow.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/dashboard/index.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/dashboard/intl-formats.test.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/dashboard/kpis.test.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/dashboard/kpis.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/dashboard/lib.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/dashboard/section-counts.test.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/dashboard/section-titles.test.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/events/ArchiveConfirmDialog.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/events/EventCategoryField.test.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/events/EventCategoryField.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/events/EventFormDrawer.test.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/events/EventFormDrawer.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/events/EventPreviewTimeline.test.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/events/EventPreviewTimeline.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/events/NewEventDrawer.test.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/events/NewEventDrawer.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/events/previewTimeline.test.ts": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/events/previewTimeline.ts": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/landing/CtaSection.test.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/landing/CtaSection.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/landing/FooterSection.test.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/landing/FooterSection.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/landing/HeaderSection.test.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/landing/HeaderSection.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/landing/HeroSection.flex-min-size.test.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/landing/HeroSection.test.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/landing/HeroSection.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/landing/HeroTimelineAnimation.test.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/landing/HeroTimelineAnimation.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/landing/HowItWorksSection.test.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/landing/HowItWorksSection.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/landing/LandingMobileMenu.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/landing/landing-nav.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/landing/landing.hover-pairing.test.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/layout/AppShell.test.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/layout/AppShell.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/layout/CreateEventContext.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/layout/index.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/legal/legal-disclaimer.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/legal/legal-table-of-contents.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/pages/HomePage.accent-roles.test.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/pages/HomePage.test.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/pages/HomePage.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/products/ArchivedProductsView.intl.test.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/products/ArchivedProductsView.test.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/products/ArchivedProductsView.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/products/CategoriesView.test.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/products/CategoriesView.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/products/ProductDetailView.test.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/products/ProductDetailView.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/products/ProductDrawer.forbidden.test.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/products/ProductDrawer.test.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/products/ProductDrawer.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/products/ProductSparkline.test.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/products/ProductSparkline.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/products/ProductsListView.test.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/products/ProductsListView.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/products/RestoreProductDialog.test.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/products/RestoreProductDialog.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/products/eventSpan.test.ts": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/products/eventSpan.ts": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/products/isPastEvent.test.ts": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/products/isPastEvent.ts": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/settings/AccountSection.test.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/settings/AccountSection.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/settings/AvatarUpload.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/settings/DeleteAccountSteps.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/settings/ExportDataFlow.intl.test.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/settings/ExportDataFlow.test.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/settings/ExportDataFlow.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/settings/PasswordStrength.test.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/settings/PasswordStrength.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/settings/PreferencesSection.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/settings/ProfileSection.test.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/settings/ProfileSection.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/settings/SecuritySection.test.tsx": {
+"pack": "authorization",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/settings/SecuritySection.tsx": {
+"pack": "authorization",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/settings/SessionList.test.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/settings/SessionList.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/settings/SettingsShell.test.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/settings/SettingsShell.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/settings/mobile/BottomSheet.test.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/settings/mobile/BottomSheet.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/settings/mobile/MobileSettings.test.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/settings/mobile/MobileSettings.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/settings/mobile/SettingsIndex.test.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/settings/mobile/SettingsIndex.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/settings/mobile/chapters.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/settings/touchTarget.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/settings/useDeleteAccountFlow.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/shared/ConflictDialog.intl.test.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/shared/ConflictDialog.test.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/shared/ConflictDialog.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/shared/DeleteConfirmDialog.intl.test.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/shared/DeleteConfirmDialog.test.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/shared/DeleteConfirmDialog.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/shared/EmptyState.test.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/shared/EmptyState.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/shared/EphemerisLeaf.test.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/shared/EphemerisLeaf.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/shared/LoadingSkeleton.test.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/shared/LoadingSkeleton.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/shared/OfflineBanner.test.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/shared/OfflineBanner.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/shared/StateScreen.test.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/shared/StateScreen.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/shared/empty-states.i18n.test.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/theme-provider.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/timeline/Cursor.stories.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/timeline/Cursor.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/timeline/DateStamp.stories.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/timeline/DateStamp.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/timeline/EventDrawer.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/timeline/EventPill.stories.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/timeline/EventPill.test.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/timeline/EventPill.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/timeline/EventPin.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/timeline/Minimap.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/timeline/RecurrenceMarks.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/timeline/Ruler.stories.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/timeline/Ruler.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/timeline/TimelineActionSheet.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/timeline/TimelineBottomSheet.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/timeline/TimelineEditHost.test.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/timeline/TimelineEditHost.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/timeline/TimelineGroupHead.test.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/timeline/TimelineLandscapeDrawer.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/timeline/TimelineMobileLandscape.stories.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/timeline/TimelineMobileLandscape.test.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/timeline/TimelineMobileLandscape.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/timeline/TimelineMobilePortrait.stories.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/timeline/TimelineMobilePortrait.test.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/timeline/TimelineMobilePortrait.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/timeline/TimelineResponsive.rotation.test.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/timeline/TimelineResponsive.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/timeline/TimelineSidebar.test.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/timeline/TimelineSidebar.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/timeline/TimelineStacking.test.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/timeline/TimelineToolbarActions.test.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/timeline/TimelineView.fit-shortcut.test.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/timeline/TimelineView.fullscreen-overlays.test.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/timeline/TimelineView.modal-shortcuts.test.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/timeline/TimelineView.perf.stories.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/timeline/TimelineView.test.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/timeline/TimelineView.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/timeline/TimelineView.zoom-cache.test.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/timeline/fixtures.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/timeline/index.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/timeline/label-reserve.test.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/timeline/label-reserve.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/timeline/lane-layout.test.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/timeline/lane-layout.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/timeline/lib-a11y.test.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/timeline/lib.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/timeline/mobile-zoom-anchor.test.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/timeline/mobile-zoom-anchor.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/timeline/recurrence-marks.test.ts": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/timeline/recurrence-marks.ts": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/timeline/stress-fixtures.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/timeline/useFocusTrap.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/timeline/useTimelineMobileGestures.ts": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/timeline/useTimelineMobileSelection.ts": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/timeline/useTimelineMobileState.ts": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/timeline/useTimelineViewport.scroll.test.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/timeline/useTimelineViewport.ts": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/timeline/virtualization.test.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/timeline/virtualization.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/timeline/zoom-incremental.test.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/timeline/zoom.test.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/timeline/zoom.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/ui/avatar.stories.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/ui/avatar.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/ui/badge.stories.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/ui/badge.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/ui/button.hover-pairing.test.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/ui/button.stories.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/ui/button.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/ui/card.stories.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/ui/card.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/ui/checkbox.stories.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/ui/checkbox.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/ui/dialog.stories.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/ui/dialog.test.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/ui/dialog.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/ui/dropdown-menu.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/ui/footer-app.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/ui/form.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/ui/icon-button.stories.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/ui/icon-button.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/ui/input.stories.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/ui/input.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/ui/label.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/ui/language-selector.a11y.test.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/ui/language-selector.i18n.test.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/ui/language-selector.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/ui/palette-color-picker.test.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/ui/palette-color-picker.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/ui/popover.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/ui/popoverPicker.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/ui/radio.stories.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/ui/radio.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/ui/select.stories.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/ui/select.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/ui/spinner.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/ui/switch.stories.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/ui/switch.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/ui/table.stories.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/ui/table.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/ui/tabs.stories.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/ui/tabs.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/ui/tag.stories.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/ui/tag.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/ui/textarea.stories.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/ui/textarea.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/ui/theme-toggle.i18n.test.ts": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/ui/theme-toggle.test.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/ui/theme-toggle.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/ui/toast.stories.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/ui/toast.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/ui/toaster.test.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/ui/toaster.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/ui/tooltip.stories.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/ui/tooltip.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/contexts/AuthContext.test.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/contexts/AuthContext.theme.test.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/contexts/AuthContext.themeSaveToast.test.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/contexts/AuthContext.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/contexts/NetworkStatusContext.test.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/contexts/NetworkStatusContext.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/contexts/QueryProvider.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/hooks/useArchiveProduct.test.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/hooks/useArchiveProduct.ts": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/hooks/useArchivedProducts.ts": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/hooks/useAuth.ts": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/hooks/useAuthGuard.ts": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/hooks/useCategories.ts": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/hooks/useCreateCategory.ts": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/hooks/useCreateEvent.ts": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/hooks/useCreateProduct.test.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/hooks/useCreateProduct.ts": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/hooks/useCurrentUser.test.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/hooks/useCurrentUser.ts": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/hooks/useDashboardData.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/hooks/useDeleteCategory.test.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/hooks/useDeleteCategory.ts": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/hooks/useDensity.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/hooks/useEventEditConflict.test.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/hooks/useEventEditConflict.ts": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/hooks/useExportFlow.test.ts": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/hooks/useExportFlow.ts": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/hooks/useMediaQuery.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/hooks/useMobileKeyboard.test.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/hooks/useMobileKeyboard.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/hooks/useProductsWithEvents.test.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/hooks/useProductsWithEvents.ts": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/hooks/useRecurrencePreview.ts": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/hooks/useRestoreProduct.test.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/hooks/useRestoreProduct.ts": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/hooks/useSectionAnimation.test.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/hooks/useSectionAnimation.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/hooks/useSessionManager.test.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/hooks/useSessionManager.ts": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/hooks/useSetEventArchived.test.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/hooks/useSetEventArchived.ts": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/hooks/useSettings.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/hooks/useThemeChoice.test.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/hooks/useThemeChoice.ts": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/hooks/useUpdateCategory.ts": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/hooks/useUpdateProduct.test.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/hooks/useUpdateProduct.ts": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/i18n/locales.test.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/i18n/locales.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/lib/auth-guard-paths.test.ts": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/lib/auth-guard-paths.ts": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/lib/auth-jwks.test.ts": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/lib/auth-jwks.ts": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/lib/auth-token-verify.test.ts": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/lib/auth-token-verify.ts": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/lib/canonical-host.test.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/lib/canonical-host.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/lib/color.test.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/lib/color.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/lib/date-iso.local-date.test.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/lib/date-iso.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/lib/ephemeris.test.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/lib/ephemeris.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/lib/event-palette.test.ts": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/lib/event-palette.ts": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/lib/legal-pages.test.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/lib/legal-pages.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/lib/next-occurrence.test.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/lib/next-occurrence.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/lib/query-keys.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/lib/recurrence.test.ts": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/lib/recurrence.ts": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/lib/safe-error.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/lib/schemas/auth.ts": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/lib/schemas/export.ts": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/lib/schemas/password-policy.test.ts": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/lib/schemas/settings.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/lib/state-errors.test.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/lib/state-errors.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/lib/touchTarget.test.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/lib/touchTarget.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/lib/utils.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/services/ApiErrorTranslatorBridge.intl.test.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/services/ApiErrorTranslatorBridge.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/services/apiClient.multipart.test.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/services/apiClient.test.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/services/apiClient.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/services/apiErrorMessages.test.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/services/apiErrorMessages.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/services/authService.test.ts": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/services/authService.ts": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/services/categoryService.ts": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/services/eventService.ts": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/services/exportService.test.ts": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/services/exportService.ts": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/services/inlineErrorHandling.test.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/services/inlineErrorHandling.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/services/networkStatus.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/services/productService.ts": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/services/sessionService.ts": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/services/userService.test.ts": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/services/userService.ts": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/styles/__tests__/base-layer.test.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/styles/__tests__/control-border-tier.test.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/styles/__tests__/eyebrow-consumers.test.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/styles/__tests__/i18n-intl-classes.test.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/styles/__tests__/ink-faint-non-text.test.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/styles/__tests__/landing-palette.test.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/styles/__tests__/nav-label-class.test.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/styles/__tests__/storybook-font-shell.test.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/styles/__tests__/tsx-focus-utility.test.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/types/auth.ts": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/types/category.ts": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/types/event.test.ts": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/types/event.ts": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/types/product.test.ts": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/types/product.ts": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/types/settings.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/types/user.test.ts": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/types/user.ts": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/utils/time-utils.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+}
+}

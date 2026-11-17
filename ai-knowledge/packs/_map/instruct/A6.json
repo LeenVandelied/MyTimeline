@@ -1,0 +1,16 @@
+{
+ "id": "A6",
+ "question": "Les foyers state-machine sans seed (Role, ThemePreferenceTest, ExportJobTest) relèvent-ils du transversal ou du domaine ?",
+ "decision": "revendiqués par le transversal state-machine via path_rules, sans retirer leur propriétaire",
+ "rule": "R10 recouvrement par path_rules, pas de transfert",
+ "confidence": "low",
+ "seeds": [
+  "ExportJobEntity",
+  "UserEntity"
+ ],
+ "evidence": [],
+ "falsified_if": "un ticket sur le rôle ou la préférence de thème ne concerne jamais les états d'export ni de session",
+ "status": "open",
+ "opened": "2026-11-17",
+ "touched_by": []
+}

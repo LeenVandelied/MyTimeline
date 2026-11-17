@@ -1,0 +1,41 @@
+{
+ "files": 688,
+ "bytes": 4473123,
+ "by_repo": {
+  "mytimeline": 688
+ },
+ "entities": 7,
+ "seeds": 7,
+ "seeds_by_origin": {
+  "entity": 7
+ },
+ "seeds_from_folders": [],
+ "folders_on_entity_seeds": [],
+ "groups": 1,
+ "groups_with_files": 1,
+ "labelled": 388,
+ "by_how": {
+  "name": 347,
+  "fanin": 18,
+  "imports": 23
+ },
+ "tech": 33,
+ "transversal_home": 1,
+ "ambiguous": 0,
+ "unassigned": 266,
+ "unassigned_rate": 0.3866,
+ "unassigned_bytes_rate": 0.3479,
+ "edges_source": "regex",
+ "file_edges": 627,
+ "graphify": {},
+ "motifs": [
+  "authorization",
+  "batch",
+  "integrations",
+  "state-machine"
+ ],
+ "notes": [
+  "instabilité au premier figement (189 fichiers basculés vers timeline par les alias du catalogue), phase 2 rejouée une fois avec aliases.json : diff « rien à faire »"
+ ],
+ "duration_s": 0.28
+}

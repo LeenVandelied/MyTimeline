@@ -1,0 +1,139 @@
+{
+ "packs": {
+  "timeline": {
+   "kind": "domain",
+   "keywords": [
+    "user",
+    "utilisateur",
+    "event",
+    "événement",
+    "evenement",
+    "category",
+    "catégorie",
+    "categorie",
+    "product",
+    "produit",
+    "session",
+    "export",
+    "password reset",
+    "mot de passe",
+    "timeline",
+    "chronologie",
+    "recurrence",
+    "récurrence",
+    "avatar"
+   ],
+   "routes": [
+    "/api/auth",
+    "/api/categories",
+    "/api/events",
+    "/api/export",
+    "/api/me",
+    "/api/sessions",
+    "/api/test-support"
+   ],
+   "entities": [
+    "UserEntity",
+    "CategoryEntity",
+    "EventEntity",
+    "ExportJobEntity",
+    "PasswordResetTokenEntity",
+    "ProductEntity",
+    "SessionEntity"
+   ],
+   "paths": [
+    "mytimeline:backend/",
+    "mytimeline:frontend/src/hooks/",
+    "mytimeline:frontend/src/types/",
+    "mytimeline:frontend/src/components/events/",
+    "mytimeline:frontend/src/components/products/"
+   ],
+   "name_globs": [
+    "**/UserEntity*",
+    "**/CategoryEntity*",
+    "**/EventEntity*",
+    "**/ExportJobEntity*",
+    "**/PasswordResetTokenEntity*",
+    "**/ProductEntity*",
+    "**/SessionEntity*",
+    "**/*user*",
+    "**/*event*",
+    "**/*category*",
+    "**/*product*",
+    "**/*session*",
+    "**/*export*",
+    "**/*password*",
+    "**/*recurrence*",
+    "**/*auth*",
+    "**/*theme*"
+   ]
+  },
+  "authorization": {
+   "kind": "transversal",
+   "motif": "authorization",
+   "crosses": [
+    "timeline"
+   ]
+  },
+  "state-machine": {
+   "kind": "transversal",
+   "motif": "state-machine",
+   "crosses": [
+    "timeline"
+   ]
+  },
+  "integrations": {
+   "kind": "transversal",
+   "motif": "integrations",
+   "crosses": [
+    "timeline"
+   ]
+  },
+  "batch": {
+   "kind": "transversal",
+   "motif": "batch",
+   "crosses": [
+    "timeline"
+   ]
+  },
+  "backend-socle": {
+   "kind": "technical",
+   "layers": [
+    "mytimeline/infrastructure",
+    "mytimeline/",
+    "mytimeline/support",
+    "mytimeline/architecture",
+    "mytimeline/build"
+   ],
+   "paths": []
+  },
+  "frontend-socle": {
+   "kind": "technical",
+   "layers": [
+    "mytimeline/resources"
+   ],
+   "paths": [
+    "mytimeline:frontend/app/",
+    "mytimeline:frontend/src/__tests__/",
+    "mytimeline:frontend/src/styles/",
+    "mytimeline:frontend/src/components/dashboard/",
+    "mytimeline:frontend/src/components/landing/",
+    "mytimeline:frontend/src/components/shared/",
+    "mytimeline:frontend/src/components/ui/",
+    "mytimeline:frontend/src/components/settings/mobile/"
+   ]
+  },
+  "migrations": {
+   "kind": "technical",
+   "layers": [
+    "mytimeline/db"
+   ],
+   "paths": []
+  }
+ },
+ "rules": {
+  "domain": "un mot-clé, une route, une entité ou un chemin cité dans la demande ou dans le diff",
+  "transversal": "chargé si un fichier du périmètre a une densité de motif ≥ 3, ou si le domaine chargé est dans crosses et la demande touche la préoccupation",
+  "technical": "chargé par couche touchée (backend, frontend, base)"
+ }
+}

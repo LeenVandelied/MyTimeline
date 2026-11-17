@@ -1,0 +1,18 @@
+{
+ "id": "A2",
+ "question": "ProductEntity (1 fichier) reste-t-il dans le pack timeline ou forme-t-il un pack à part ?",
+ "decision": "fondu dans timeline",
+ "rule": "R7 pack sous pack_min_kb=60, liens 9/10 vers UserEntity",
+ "confidence": "medium",
+ "seeds": [
+  "ProductEntity"
+ ],
+ "evidence": [
+  "mytimeline:frontend/src/components/products/ProductDetailView.tsx",
+  "mytimeline:frontend/src/components/products/ProductsListView.tsx"
+ ],
+ "falsified_if": "les écrans de produits évoluent seuls, sans toucher aux événements, aux catégories ni au compte",
+ "status": "open",
+ "opened": "2026-11-17",
+ "touched_by": []
+}

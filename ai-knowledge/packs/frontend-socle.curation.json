@@ -1,0 +1,1802 @@
+{
+ "pack": "frontend-socle",
+ "schema": 1,
+ "curated_at": "2026-11-17T10:45:42Z",
+ "curator": "curate/1",
+ "base_sha256": "91e9615691b8ead0a29e7eab9fb9497a7874cdfcc57d4fd2fc8cb3fced34509a",
+ "pack_sha256_before": "15ac29e5f8e341d75ad168d7b298f993c4a8cf03279ccb4f5e392193fda7e6ed",
+ "pack_sha256_after": "53d14656af631cd3a58effd55db87cd4850840afb223d673b941db5ce0c79023",
+ "criteria_sha256": "75e38f096df69288e5ef9ef740a5a812f65b1bb381255f75045d285103cef042",
+ "models": {
+  "measure": "haiku",
+  "refute": "sonnet"
+ },
+ "base_fingerprint": "126ede90106c356a0c4586ee2e9bef715e99fb1564a2aae646c04f6596172516",
+ "bytes": {
+  "before": 6248,
+  "after": 6248,
+  "by_section": {
+   "activate": {
+    "before": 147,
+    "after": 147
+   },
+   "lexicon": {
+    "before": 78,
+    "after": 78
+   },
+   "rules": {
+    "before": 1810,
+    "after": 1810
+   },
+   "structure": {
+    "before": 82,
+    "after": 82
+   },
+   "surface": {
+    "before": 347,
+    "after": 347
+   },
+   "files": {
+    "before": 1231,
+    "after": 1231
+   },
+   "relations": {
+    "before": 325,
+    "after": 325
+   },
+   "tests": {
+    "before": 1072,
+    "after": 1072
+   },
+   "questions": {
+    "before": 91,
+    "after": 91
+   },
+   "alerts": {
+    "before": 78,
+    "after": 78
+   },
+   "coverage": {
+    "before": 580,
+    "after": 580
+   }
+  }
+ },
+ "units": [
+  {
+   "id": "frontend-socle:rules:1",
+   "section": "rules",
+   "rank": 1,
+   "text": "- Un hook de requête lit sa clé dans `queryKeys` et reste désactivé tant que `userId` est absent. [#b485fe301f167807-2]",
+   "fact_text": "Un hook de requête lit sa clé dans `queryKeys` et reste désactivé tant que `userId` est absent",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-socle/b485fe301f167807-2"
+   ],
+   "files": [
+    "mytimeline:frontend/src/hooks/useArchivedProducts.ts"
+   ],
+   "ranges": [
+    [
+     "mytimeline:frontend/src/hooks/useArchivedProducts.ts",
+     17,
+     17,
+     "b82f24af0b64b97e82e9e18726412bd7f4bed975955b549fbc6b6edfeb55bc18"
+    ]
+   ],
+   "code_sha256": "b82f24af0b64b97e82e9e18726412bd7f4bed975955b549fbc6b6edfeb55bc18",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.333,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 6
+      }
+     },
+     "restatement": "Le hook useArchivedProducts construit sa queryKey avec queryKeys.products.archived(userId ?? ''), donc sans utilisateur la clé utilise une chaîne vide. Le reste du hook n'est pas visible.",
+     "confidence": "medium",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-17T10:40:47Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 10,
+     "within_budget": false,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/frontend/src/hooks/useProductsWithEvents.ts",
+     "file_ok": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.833,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 6
+      }
+     },
+     "job": "frontend-socle:rediscover:mytimeline_frontend_app_locale_app_products_productId_loading.test.tsx:1",
+     "reused": true,
+     "reused_from": "2026-11-17T10:40:47Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "useArchivedProducts.ts L17 lit la clé via queryKeys.products.archived(userId ?? ''). La désactivation (enabled) n'est pas visible dans l'extrait mais rien ne contredit la ligne.",
+      "useArchivedProducts.ts L17 lit queryKeys.products.archived(userId ?? ''), la désactivation sans userId n'est pas visible dans l'extrait, pas de preuve contraire.",
+      "useArchivedProducts.ts L17 lit sa clé dans queryKeys avec `userId ?? ''`. L'extrait ne montre pas `enabled`, donc rien ne réfute."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-17T10:40:47Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 30,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "frontend-socle:rules:2",
+   "section": "rules",
+   "rank": 2,
+   "text": "- Une mutation invalide le préfixe de clés de sa ressource dans `onSuccess`. [#434468f4e9a0a882-2]",
+   "fact_text": "Une mutation invalide le préfixe de clés de sa ressource dans `onSuccess`",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-socle/434468f4e9a0a882-2"
+   ],
+   "files": [
+    "mytimeline:frontend/src/hooks/useCreateCategory.ts"
+   ],
+   "ranges": [
+    [
+     "mytimeline:frontend/src/hooks/useCreateCategory.ts",
+     23,
+     28,
+     "5dc569ce5817d8b057a94f2266834fa32bac5b4c39567d81e17a908c9b25728a"
+    ]
+   ],
+   "code_sha256": "5dc569ce5817d8b057a94f2266834fa32bac5b4c39567d81e17a908c9b25728a",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.4,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 5
+      }
+     },
+     "restatement": "useCreateCategory est une mutation dont mutationFn appelle createCategory(data, options), et qui invalide la requête queryKeys.categories.all à la réussite (onSuccess).",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-17T10:40:47Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 2,
+     "within_budget": true,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/frontend/src/hooks/useCreateCategory.ts",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
+      "terms": 1.0,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 5
+      }
+     },
+     "job": "frontend-socle:rediscover:mytimeline_frontend_app_locale_app_products_productId_loading.test.tsx:1",
+     "reused": true,
+     "reused_from": "2026-11-17T10:40:47Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "useCreateCategory.ts L25-27 invalide queryKeys.categories.all dans onSuccess.",
+      "useCreateCategory.ts L25-27 invalide queryKeys.categories.all dans onSuccess.",
+      "useCreateCategory.ts L25-26 invalide queryKeys.categories.all dans onSuccess."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-17T10:40:47Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 31,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "frontend-socle:rules:3",
+   "section": "rules",
+   "rank": 3,
+   "text": "- Une réponse de service est validée par `parse` avec un schéma Zod, et le type est dérivé du schéma par `z.infer`. [#03037b579b39b673-1] [#b0cbae33933771ad-1]",
+   "fact_text": "Une réponse de service est validée par `parse` avec un schéma Zod, et le type est dérivé du schéma par `z.infer`",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-socle/03037b579b39b673-1",
+    "frontend-socle/b0cbae33933771ad-1"
+   ],
+   "files": [
+    "mytimeline:frontend/src/services/sessionService.ts",
+    "mytimeline:frontend/src/types/user.ts"
+   ],
+   "ranges": [
+    [
+     "mytimeline:frontend/src/services/sessionService.ts",
+     16,
+     16,
+     "f2887728086393e8327338b1387f050540e5d0f06597c39ac21cb4085aa373e6"
+    ],
+    [
+     "mytimeline:frontend/src/types/user.ts",
+     20,
+     20,
+     "a9b7c879e499a1a7de1c649e505caa803d0df6303b8176f5bb0760538e41f65e"
+    ]
+   ],
+   "code_sha256": "34b23ffa13fefdbb872b4dd208d9379876d4fd687438536f1d8a3e2054206d2c",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 0.571,
+      "n": {
+       "identifiers": 1,
+       "values": 1,
+       "terms": 7
+      }
+     },
+     "restatement": "`getActiveSessions` valide la réponse de l'API avec `SessionListSchema.parse(response.data)`, donc une donnée non conforme au schéma Zod lève une erreur au lieu d'être passée telle quelle. Le type `User` (L20) est seulement un `z.infer<typeof UserSchema>`, c'est-à-dire un type dérivé du schéma, sans logique.",
+     "confidence": "high"
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 32,
+    "annex_table": {
+     "part": "frontend-socle.details.md",
+     "row": 1
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-17T10:40:47Z"
+  },
+  {
+   "id": "frontend-socle:rules:4",
+   "section": "rules",
+   "rank": 4,
+   "text": "- Le pont d'erreurs ne rend rien et remet le registre à `null` au cleanup. [#3d7ba2b79879606f-2] [#3d7ba2b79879606f-3]",
+   "fact_text": "Le pont d'erreurs ne rend rien et remet le registre à `null` au cleanup",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-socle/3d7ba2b79879606f-2",
+    "frontend-socle/3d7ba2b79879606f-3"
+   ],
+   "files": [
+    "mytimeline:frontend/src/services/ApiErrorTranslatorBridge.tsx"
+   ],
+   "ranges": [
+    [
+     "mytimeline:frontend/src/services/ApiErrorTranslatorBridge.tsx",
+     21,
+     30,
+     "81678d3d626b23d7d6ca14e30c9c55cd8d8f0614b118b9ec7c673a7c7502f5c0"
+    ],
+    [
+     "mytimeline:frontend/src/services/ApiErrorTranslatorBridge.tsx",
+     26,
+     26,
+     "cb529d355251b607704f0fba4582d132625c218e02deada26a17813c4d7bed6b"
+    ]
+   ],
+   "code_sha256": "212057c29247fbb9aba12f8273d7edcaccc5f2d01943a7669e608736722f032e",
+   "verdict": "annex",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": null,
+      "values": 1.0,
+      "terms": 0.286,
+      "n": {
+       "identifiers": 0,
+       "values": 1,
+       "terms": 7
+      }
+     },
+     "restatement": "Le composant `ApiErrorTranslatorBridge` ne rend rien (retourne `null`). Dans un `useEffect` dépendant de `t` (issu de `useTranslations('errors')`), il enregistre via `setApiErrorTranslator` une fonction `(key) => t(key)`, et sa fonction de nettoyage réinitialise le traducteur à `null` au démontage ou au changement de `t`.",
+     "confidence": "high"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 15,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/frontend/src/services/ApiErrorTranslatorBridge.tsx",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": null,
+      "values": 1.0,
+      "terms": 0.571,
+      "n": {
+       "identifiers": 0,
+       "values": 1,
+       "terms": 7
+      }
+     },
+     "job": "frontend-socle:rediscover:mytimeline_frontend_app_locale_app_products_productId_loading.test.tsx:1",
+     "rank_in_lot": 7
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 33,
+    "annex_table": {
+     "part": "frontend-socle.details.md",
+     "row": 2
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-17T10:40:47Z"
+  },
+  {
+   "id": "frontend-socle:rules:5",
+   "section": "rules",
+   "rank": 5,
+   "text": "- La racine redirige vers `/fr` écrit en dur, sans lire la constante de locale par défaut. [#43b4bb8adb5cf7f6-1] [#2681e154ca18518c-1]",
+   "fact_text": "La racine redirige vers `/fr` écrit en dur, sans lire la constante de locale par défaut",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-socle/43b4bb8adb5cf7f6-1",
+    "frontend-socle/2681e154ca18518c-1"
+   ],
+   "files": [
+    "mytimeline:frontend/app/page.tsx",
+    "mytimeline:frontend/src/i18n/locales.ts"
+   ],
+   "ranges": [
+    [
+     "mytimeline:frontend/app/page.tsx",
+     7,
+     7,
+     "f6288a63fd451f3b946934351b52f5a4891d373d6b120feff15eaf22d345a98b"
+    ],
+    [
+     "mytimeline:frontend/src/i18n/locales.ts",
+     20,
+     20,
+     "b7c53772db5f29008a289dd167db74e83b8c28ca5222946177d6eb484ca4dedc"
+    ]
+   ],
+   "code_sha256": "025bd9a8ce18e263f69b26ff60a9953c6a95bfb918effc4322ae497f3ed5f842",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": null,
+      "values": 1.0,
+      "terms": 0.0,
+      "n": {
+       "identifiers": 0,
+       "values": 1,
+       "terms": 7
+      }
+     },
+     "restatement": "RootPage appelle redirect('/fr') avec une valeur littérale. L'extrait montre aussi DEFAULT_LOCALE = 'fr' dans locales.ts, mais le code de la redirection ne le référence pas, il est donc codé en dur.",
+     "confidence": "medium",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-17T10:40:47Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 7,
+     "within_budget": false,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/frontend/app/page.tsx",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": null,
+      "values": 1.0,
+      "terms": 0.714,
+      "n": {
+       "identifiers": 0,
+       "values": 1,
+       "terms": 7
+      }
+     },
+     "job": "frontend-socle:rediscover:mytimeline_frontend_app_locale_app_products_productId_loading.test.tsx:1",
+     "rank_in_lot": 1,
+     "reused": true,
+     "reused_from": "2026-11-17T10:40:47Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "page.tsx L7 fait redirect('/fr') en dur, sans importer DEFAULT_LOCALE (locales.ts L20).",
+      "page.tsx L7 fait redirect('/fr') en dur alors que DEFAULT_LOCALE existe (locales.ts L20).",
+      "page.tsx L7 fait redirect('/fr') en dur, alors que DEFAULT_LOCALE existe dans locales.ts L20 et n'est pas importé."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-17T10:40:47Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 35,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "frontend-socle:rules:6",
+   "section": "rules",
+   "rank": 6,
+   "text": "- Une page de route est async et attend `params` (Promise). [#2325b843f28a7d18-2]",
+   "fact_text": "Une page de route est async et attend `params` (Promise)",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-socle/2325b843f28a7d18-2"
+   ],
+   "files": [
+    "mytimeline:frontend/app/[locale]/page.tsx"
+   ],
+   "ranges": [
+    [
+     "mytimeline:frontend/app/[locale]/page.tsx",
+     15,
+     19,
+     "14036851c04eea81c51ed82d2f459b2874c6d1771e26db34bf1b4eab6bf580a8"
+    ]
+   ],
+   "code_sha256": "14036851c04eea81c51ed82d2f459b2874c6d1771e26db34bf1b4eab6bf580a8",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": null,
+      "values": 1.0,
+      "terms": 0.667,
+      "n": {
+       "identifiers": 0,
+       "values": 1,
+       "terms": 6
+      }
+     },
+     "restatement": "La page Page attend `params` (Promise) puis rend le composant HomePage en lui passant l'objet params résolu.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 36,
+    "annex_table": {
+     "part": "frontend-socle.details.md",
+     "row": 3
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-17T10:40:47Z"
+  },
+  {
+   "id": "frontend-socle:rules:7",
+   "section": "rules",
+   "rank": 7,
+   "text": "- La route legacy utilise `permanentRedirect` vers la racine de locale. [#cba7431c31861d84-1]",
+   "fact_text": "La route legacy utilise `permanentRedirect` vers la racine de locale",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-socle/cba7431c31861d84-1"
+   ],
+   "files": [
+    "mytimeline:frontend/app/[locale]/home/page.tsx"
+   ],
+   "ranges": [
+    [
+     "mytimeline:frontend/app/[locale]/home/page.tsx",
+     14,
+     17,
+     "127a33d4a41f285e1a6315f2fce771797e09e71677014e1a576879527ff1cb12"
+    ]
+   ],
+   "code_sha256": "127a33d4a41f285e1a6315f2fce771797e09e71677014e1a576879527ff1cb12",
+   "verdict": "annex",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.4,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 5
+      }
+     },
+     "restatement": "La page Home lit `params` (Promise) avec await, puis appelle permanentRedirect vers `/${locale}`, ce qui redirige de façon permanente vers la route localisée.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 7,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/frontend/app/[locale]/home/page.tsx",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 1.0,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 5
+      }
+     },
+     "job": "frontend-socle:rediscover:mytimeline_frontend_app_locale_app_products_productId_loading.test.tsx:1",
+     "rank_in_lot": 2
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 37,
+    "annex_table": {
+     "part": "frontend-socle.details.md",
+     "row": 4
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-17T10:40:47Z"
+  },
+  {
+   "id": "frontend-socle:rules:8",
+   "section": "rules",
+   "rank": 8,
+   "text": "- Un composant UI est un `forwardRef` avec `displayName`, qui fusionne `className` par `cn` après les classes de base. [#9ada093f42c5012f-1] [#60c29c7e21afaf68-1] [#602974f8c6e4d014-2]",
+   "fact_text": "Un composant UI est un `forwardRef` avec `displayName`, qui fusionne `className` par `cn` après les classes de base",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-socle/9ada093f42c5012f-1",
+    "frontend-socle/60c29c7e21afaf68-1",
+    "frontend-socle/602974f8c6e4d014-2"
+   ],
+   "files": [
+    "mytimeline:frontend/src/components/ui/avatar.tsx",
+    "mytimeline:frontend/src/components/ui/table.tsx"
+   ],
+   "ranges": [
+    [
+     "mytimeline:frontend/src/components/ui/avatar.tsx",
+     17,
+     17,
+     "8b3428db792f2c9eb5e3224ec4a20da59294fc35c5619573de7d582ee6343b3a"
+    ],
+    [
+     "mytimeline:frontend/src/components/ui/avatar.tsx",
+     41,
+     41,
+     "bea2c25b0222f8fcd75e7b2462eef99b77b6510592e82b33ab3931d22819a36d"
+    ],
+    [
+     "mytimeline:frontend/src/components/ui/table.tsx",
+     11,
+     13,
+     "99b949bddd41cf6816786ce562283e85ad3dbceacbdf1b6a8578f0fc94146064"
+    ]
+   ],
+   "code_sha256": "6bd6dce65ca659a57817f49f04ce0bb914a939097378d4744c1cd913b4244e2c",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 3,
+       "values": 1,
+       "terms": 4
+      }
+     },
+     "restatement": "Avatar est un composant forwardRef sur HTMLSpanElement, avec displayName 'Avatar', mais le corps n'est pas visible dans l'extrait. Table est un forwardRef sur HTMLTableElement qui applique la classe 'mt-table' fusionnée avec className via cn, puis transmet les autres props.",
+     "confidence": "medium",
+     "files_read_missing": true
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 39,
+    "annex_table": {
+     "part": "frontend-socle.details.md",
+     "row": 5
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-17T10:40:47Z"
+  },
+  {
+   "id": "frontend-socle:rules:9",
+   "section": "rules",
+   "rank": 9,
+   "text": "- `invalid` pilote `aria-invalid`, absent quand la valeur est fausse. [#541483e5d9dff22c-1]",
+   "fact_text": "`invalid` pilote `aria-invalid`, absent quand la valeur est fausse",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-socle/541483e5d9dff22c-1"
+   ],
+   "files": [
+    "mytimeline:frontend/src/components/ui/textarea.tsx"
+   ],
+   "ranges": [
+    [
+     "mytimeline:frontend/src/components/ui/textarea.tsx",
+     17,
+     18,
+     "ef38a60f2bdeece0744b55f4078bdec13e20d50ed979f9f6ead3c0f7e6ce2ee5"
+    ]
+   ],
+   "code_sha256": "ef38a60f2bdeece0744b55f4078bdec13e20d50ed979f9f6ead3c0f7e6ce2ee5",
+   "verdict": "annex",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": null,
+      "values": 1.0,
+      "terms": 0.333,
+      "n": {
+       "identifiers": 0,
+       "values": 2,
+       "terms": 6
+      }
+     },
+     "restatement": "Textarea pose aria-invalid à true quand invalid est vrai, sinon undefined, et ajoute la classe 'mt-textarea--invalid' uniquement dans ce cas, en plus de 'mt-textarea' et de className.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 8,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/frontend/src/components/ui/textarea.tsx",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": null,
+      "values": 1.0,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 0,
+       "values": 2,
+       "terms": 6
+      }
+     },
+     "job": "frontend-socle:rediscover:mytimeline_frontend_app_locale_app_products_productId_loading.test.tsx:1",
+     "rank_in_lot": 3
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 40,
+    "annex_table": {
+     "part": "frontend-socle.details.md",
+     "row": 6
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-17T10:40:47Z"
+  },
+  {
+   "id": "frontend-socle:rules:10",
+   "section": "rules",
+   "rank": 10,
+   "text": "- Le bouton icône a `type` à `button` par défaut. [#9eaf3991c4b071cb-2]",
+   "fact_text": "Le bouton icône a `type` à `button` par défaut",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-socle/9eaf3991c4b071cb-2"
+   ],
+   "files": [
+    "mytimeline:frontend/src/components/ui/icon-button.tsx"
+   ],
+   "ranges": [
+    [
+     "mytimeline:frontend/src/components/ui/icon-button.tsx",
+     16,
+     17,
+     "a1c7cee1e9ff0fffdda5805750ab1fdb9a5b80a87e6f1f634665f53a7b6b2907"
+    ]
+   ],
+   "code_sha256": "a1c7cee1e9ff0fffdda5805750ab1fdb9a5b80a87e6f1f634665f53a7b6b2907",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": null,
+      "values": 1.0,
+      "terms": 0.6,
+      "n": {
+       "identifiers": 0,
+       "values": 2,
+       "terms": 5
+      }
+     },
+     "restatement": "IconButton est un forwardRef sur HTMLButtonElement avec des valeurs par défaut size='md', variant='default' et type='button'. Le reste de son rendu n'est pas visible dans l'extrait.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 41,
+    "annex_table": {
+     "part": "frontend-socle.details.md",
+     "row": 7
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-17T10:40:47Z"
+  },
+  {
+   "id": "frontend-socle:rules:11",
+   "section": "rules",
+   "rank": 11,
+   "text": "- Un barrel réexporte le composant puis son type de props sur une ligne `export type` distincte. [#1ea1cef586e27163-1] [#4c4a6ad8222ac4ce-1]",
+   "fact_text": "Un barrel réexporte le composant puis son type de props sur une ligne `export type` distincte",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-socle/1ea1cef586e27163-1",
+    "frontend-socle/4c4a6ad8222ac4ce-1"
+   ],
+   "files": [
+    "mytimeline:frontend/src/components/dashboard/index.ts",
+    "mytimeline:frontend/src/components/layout/index.ts"
+   ],
+   "ranges": [
+    [
+     "mytimeline:frontend/src/components/dashboard/index.ts",
+     6,
+     7,
+     "9c83f2b877091217e4bf7ca768fcd81aa2777a3ad4fe1975d3deb933a09d2a99"
+    ],
+    [
+     "mytimeline:frontend/src/components/layout/index.ts",
+     4,
+     5,
+     "cdfc56393d1ce17e9624126bf1cca4684769218dfd1c70f8723deacf5af46d4d"
+    ]
+   ],
+   "code_sha256": "40b4b52e9c1e52ac13b66479be0f794c09723f535e12a75a8842806cb045d229",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": null,
+      "values": 0.0,
+      "terms": 0.25,
+      "n": {
+       "identifiers": 0,
+       "values": 1,
+       "terms": 8
+      }
+     },
+     "restatement": "Fichiers barrel qui réexportent GreetingHeader, timeOfDayKey et le type GreetingHeaderProps pour le dashboard, et AppShell avec le type AppShellProps pour le layout. Aucune logique n'est visible.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-17T10:40:47Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 17,
+     "within_budget": false,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/frontend/src/components/timeline/index.ts",
+     "file_ok": false,
+     "overlap": {
+      "identifiers": null,
+      "values": 1.0,
+      "terms": 0.625,
+      "n": {
+       "identifiers": 0,
+       "values": 1,
+       "terms": 8
+      }
+     },
+     "job": "frontend-socle:rediscover:mytimeline_frontend_app_locale_app_products_productId_loading.test.tsx:1",
+     "reused": true,
+     "reused_from": "2026-11-17T10:40:47Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Les barrels dashboard/index.ts L6-7 et layout/index.ts L4-5 réexportent le composant puis `export type` des props sur une ligne distincte.",
+      "Les barrels dashboard/index.ts L6-7 et layout/index.ts L4-5 réexportent le composant puis le type sur une ligne `export type` séparée.",
+      "Les deux index.ts (L6-7 et L4-5) réexportent le composant puis `export type` des props sur une ligne distincte."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-17T10:40:47Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 42,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "frontend-socle:rules:12",
+   "section": "rules",
+   "rank": 12,
+   "text": "- Un helper partagé vit dans `@/lib/` et est ré-exporté localement. [#f8c44bd458b850a9-1] [#e6752fdbca75023a-1]",
+   "fact_text": "Un helper partagé vit dans `@/lib/` et est ré-exporté localement",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-socle/f8c44bd458b850a9-1",
+    "frontend-socle/e6752fdbca75023a-1"
+   ],
+   "files": [
+    "mytimeline:frontend/src/components/dashboard/lib.ts",
+    "mytimeline:frontend/src/components/settings/touchTarget.ts"
+   ],
+   "ranges": [
+    [
+     "mytimeline:frontend/src/components/dashboard/lib.ts",
+     10,
+     10,
+     "392889b3625e773bfed4439f270175b8c3c0c39c4d58e84276221d89c80909c0"
+    ],
+    [
+     "mytimeline:frontend/src/components/settings/touchTarget.ts",
+     9,
+     12,
+     "09b139c3e39579258139ec77201d47b3e10b6e7e4272f7ea78d9e5a9c4d40f60"
+    ]
+   ],
+   "code_sha256": "17b8f5ef84422ef6b0386ca053d174ebbf19aac7f15493c44a7e429078c104cc",
+   "verdict": "annex",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": null,
+      "values": 1.0,
+      "terms": 0.0,
+      "n": {
+       "identifiers": 0,
+       "values": 1,
+       "terms": 4
+      }
+     },
+     "restatement": "Le module dashboard/lib réexporte nextEvent depuis '@/lib/next-occurrence'. Le module settings/touchTarget renomme TOUCH_TARGET_BUTTON en SETTINGS_TOUCH_BUTTON et TOUCH_TARGET_ICON_BUTTON en SETTINGS_TOUCH_ICON_BUTTON, en simple alias de réexport.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 11,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/frontend/src/components/dashboard/lib.ts",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": null,
+      "values": 1.0,
+      "terms": 1.0,
+      "n": {
+       "identifiers": 0,
+       "values": 1,
+       "terms": 4
+      }
+     },
+     "job": "frontend-socle:rediscover:mytimeline_frontend_app_locale_app_products_productId_loading.test.tsx:1",
+     "rank_in_lot": 4
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 43,
+    "annex_table": {
+     "part": "frontend-socle.details.md",
+     "row": 8
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-17T10:40:47Z"
+  },
+  {
+   "id": "frontend-socle:rules:13",
+   "section": "rules",
+   "rank": 13,
+   "text": "- Une story déclare `meta` avec `satisfies Meta`, et les dates y sont fixes. [#65c51a62d2eb1c32-1] [#4b86dd770a00ef4c-1]",
+   "fact_text": "Une story déclare `meta` avec `satisfies Meta`, et les dates y sont fixes",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-socle/65c51a62d2eb1c32-1",
+    "frontend-socle/4b86dd770a00ef4c-1"
+   ],
+   "files": [
+    "mytimeline:frontend/src/components/timeline/Cursor.stories.tsx",
+    "mytimeline:frontend/src/components/timeline/DateStamp.stories.tsx"
+   ],
+   "ranges": [
+    [
+     "mytimeline:frontend/src/components/timeline/Cursor.stories.tsx",
+     8,
+     25,
+     "e64b25d7c1f3f7d3a1d0e69f47211e849331289d48ca71ef6f89f9ced640b3b8"
+    ],
+    [
+     "mytimeline:frontend/src/components/timeline/DateStamp.stories.tsx",
+     9,
+     9,
+     "0865f8e6ab4a079551c93732a4b5013a8f5c2dfa4da04c1647c25b63d8fd61cc"
+    ]
+   ],
+   "code_sha256": "20b4ad7b1614400844102d6946e6e8dbed483c11a2dc58571973a2fcc395480a",
+   "verdict": "annex",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": null,
+      "values": 0.0,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 0,
+       "values": 2,
+       "terms": 6
+      }
+     },
+     "restatement": "Stories Storybook : Cursor a un titre 'Timeline/Cursor', le tag autodocs, un décorateur qui l'enveloppe dans un div de 32 de hauteur et min-w-[600px], et l'argument positionPercent à 40. DateStamp fixe la date du story à new Date(2026, 6, 3), soit 3 juillet 2026 (mois 0 indexé).",
+     "confidence": "medium",
+     "files_read_missing": true
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 12,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/frontend/src/components/timeline/DateStamp.stories.tsx",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": null,
+      "values": 1.0,
+      "terms": 0.667,
+      "n": {
+       "identifiers": 0,
+       "values": 2,
+       "terms": 6
+      }
+     },
+     "job": "frontend-socle:rediscover:mytimeline_frontend_app_locale_app_products_productId_loading.test.tsx:1",
+     "rank_in_lot": 6
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 45,
+    "annex_table": {
+     "part": "frontend-socle.details.md",
+     "row": 9
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-17T10:40:47Z"
+  },
+  {
+   "id": "frontend-socle:surface:1",
+   "section": "surface",
+   "rank": 1,
+   "text": "- Les services du front vivent dans `mytimeline:frontend/src/services/sessionService.ts:14-17` entre autres, et appellent `apiClient` avec un chemin relatif sans préfixe `/api`, par exemple `/sessions` [#c8e7542069dbe36c-1].",
+   "fact_text": "Les services du front vivent dans sessionService.ts entre autres, et appellent `apiClient` avec un chemin relatif sans préfixe `/api`, par exemple `/sessions`",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-socle/c8e7542069dbe36c-1"
+   ],
+   "files": [
+    "mytimeline:frontend/src/services/sessionService.ts"
+   ],
+   "ranges": [
+    [
+     "mytimeline:frontend/src/services/sessionService.ts",
+     14,
+     17,
+     "2a5ec76fcd1b95e9bc7f705fac80368e7eb3a79aa33a4735fd7b67dbdd0c785a"
+    ]
+   ],
+   "code_sha256": "2a5ec76fcd1b95e9bc7f705fac80368e7eb3a79aa33a4735fd7b67dbdd0c785a",
+   "verdict": "annex",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": 0.5,
+      "terms": 0.111,
+      "n": {
+       "identifiers": 2,
+       "values": 2,
+       "terms": 9
+      }
+     },
+     "restatement": "`getActiveSessions` fait un `GET /sessions` via `apiClient` et renvoie une `Promise<Session[]>` après validation par `SessionListSchema.parse`.",
+     "confidence": "high"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 11,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/frontend/src/services/sessionService.ts",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 1.0,
+      "n": {
+       "identifiers": 2,
+       "values": 2,
+       "terms": 9
+      }
+     },
+     "job": "frontend-socle:rediscover:mytimeline_frontend_app_locale_app_products_productId_loading.test.tsx:1",
+     "rank_in_lot": 5
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 53,
+    "annex_table": {
+     "part": "frontend-socle.details.md",
+     "row": 10
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-17T10:40:47Z"
+  },
+  {
+   "id": "frontend-socle:surface:2",
+   "section": "surface",
+   "rank": 2,
+   "text": "- Les services de suppression, comme `mytimeline:frontend/src/services/sessionService.ts:19-25`, renvoient `Promise<void>` et n'exploitent pas la réponse HTTP [#094f62dfc66d6733-1].",
+   "fact_text": "Les services de suppression, comme sessionService.ts, renvoient `Promise<void>` et n'exploitent pas la réponse HTTP",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-socle/094f62dfc66d6733-1"
+   ],
+   "files": [
+    "mytimeline:frontend/src/services/sessionService.ts"
+   ],
+   "ranges": [
+    [
+     "mytimeline:frontend/src/services/sessionService.ts",
+     19,
+     25,
+     "ad1eea57ac403383313f51266b7c15422a0c59ae287190bca4b820baeb9f9a2b"
+    ]
+   ],
+   "code_sha256": "ad1eea57ac403383313f51266b7c15422a0c59ae287190bca4b820baeb9f9a2b",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": 1.0,
+      "terms": 0.571,
+      "n": {
+       "identifiers": 2,
+       "values": 1,
+       "terms": 7
+      }
+     },
+     "restatement": "`revokeSession(id)` envoie un `DELETE /sessions/{id}` et `revokeOtherSessions()` envoie un `DELETE /sessions/others`. Les deux renvoient `Promise<void>` et ne lisent aucune réponse. La route `/sessions/others` est un chemin littéral, sans identifiant.",
+     "confidence": "high",
+     "reused": true,
+     "reused_from": "2026-11-17T10:40:47Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 3,
+     "within_budget": true,
+     "covered": false,
+     "file": "C:\\Users\\ldelaforcade\\Documents\\Personnel\\My Timeline\\MyTimeline\\.claude\\worktrees\\ai-stack-setup-fa6701\\frontend\\src\\services\\productService.ts",
+     "file_ok": false,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": 1.0,
+      "terms": 0.714,
+      "n": {
+       "identifiers": 2,
+       "values": 1,
+       "terms": 7
+      }
+     },
+     "job": "frontend-socle:rediscover:mytimeline_frontend_src_services_sessionService.ts:2",
+     "reused": true,
+     "reused_from": "2026-11-17T10:40:47Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "sessionService.ts L19-25 : revokeSession et revokeOtherSessions renvoient Promise<void> et n'utilisent pas la réponse du delete.",
+      "sessionService.ts L19-25, revokeSession et revokeOtherSessions renvoient Promise<void> et attendent apiClient.delete sans exploiter la réponse.",
+      "sessionService.ts L19-25 : revokeSession et revokeOtherSessions renvoient Promise<void> et ignorent la réponse du delete."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-17T10:40:47Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 54,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "frontend-socle:tests:1",
+   "section": "tests",
+   "rank": 1,
+   "text": "- Les tests de composant fixent que `next-intl` est mocké avec `vi.mock`, et que le mock renvoie la clé préfixée par son namespace (`namespace.key`), voir `mytimeline:frontend/app/[locale]/(app)/products/[productId]/loading.test.tsx:7-9` [#3215d3bea2e69c04-1].",
+   "fact_text": "Les tests de composant fixent que `next-intl` est mocké avec `vi.mock`, et que le mock renvoie la clé préfixée par son namespace (`namespace.key`), voir loading.test.tsx",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-socle/3215d3bea2e69c04-1"
+   ],
+   "files": [
+    "mytimeline:frontend/app/[locale]/(app)/products/[productId]/loading.test.tsx"
+   ],
+   "ranges": [
+    [
+     "mytimeline:frontend/app/[locale]/(app)/products/[productId]/loading.test.tsx",
+     7,
+     9,
+     "97c15b4a6ecc64e232a25668c4ef5a1a950b63b3a2c0ce8bf84aff61ab8b56bd"
+    ]
+   ],
+   "code_sha256": "97c15b4a6ecc64e232a25668c4ef5a1a950b63b3a2c0ce8bf84aff61ab8b56bd",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.333,
+      "values": 1.0,
+      "terms": 0.7,
+      "n": {
+       "identifiers": 3,
+       "values": 1,
+       "terms": 10
+      }
+     },
+     "restatement": "Le test mocke next-intl : useTranslations(namespace) renvoie une fonction qui rend la chaîne `namespace.key`, donc les textes traduits apparaissent sous forme de clés dans les tests.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-17T10:40:47Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 5,
+     "within_budget": true,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/frontend/app/[locale]/(app)/timeline/page.test.tsx",
+     "file_ok": false,
+     "overlap": {
+      "identifiers": 0.333,
+      "values": 1.0,
+      "terms": 0.7,
+      "n": {
+       "identifiers": 3,
+       "values": 1,
+       "terms": 10
+      }
+     },
+     "job": "frontend-socle:rediscover:mytimeline_frontend_app_locale_app_products_productId_loading.test.tsx:1",
+     "reused": true,
+     "reused_from": "2026-11-17T10:40:47Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "loading.test.tsx L7-9 mocke next-intl avec vi.mock et useTranslations renvoie `${namespace}.${key}`.",
+      "loading.test.tsx L7-9 mocke next-intl par vi.mock et useTranslations renvoie `${namespace}.${key}`.",
+      "loading.test.tsx L7-9 mocke next-intl par vi.mock et renvoie `${namespace}.${key}`."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-17T10:40:47Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 87,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "frontend-socle:tests:2",
+   "section": "tests",
+   "rank": 2,
+   "text": "- Les tests de rendu s'appuient sur `render` et `screen` de Testing Library, localisent par `data-testid` et vérifient le rôle `status`, voir `mytimeline:frontend/app/[locale]/(app)/products/[productId]/loading.test.tsx:13-19` [#3215d3bea2e69c04-2].",
+   "fact_text": "Les tests de rendu s'appuient sur `render` et `screen` de Testing Library, localisent par `data-testid` et vérifient le rôle `status`, voir loading.test.tsx",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-socle/3215d3bea2e69c04-2"
+   ],
+   "files": [
+    "mytimeline:frontend/app/[locale]/(app)/products/[productId]/loading.test.tsx"
+   ],
+   "ranges": [
+    [
+     "mytimeline:frontend/app/[locale]/(app)/products/[productId]/loading.test.tsx",
+     13,
+     19,
+     "b9153ebc877164dc7135b98a334ee4a55d50532cf2b0a7ff91df7902510e4f45"
+    ]
+   ],
+   "code_sha256": "b9153ebc877164dc7135b98a334ee4a55d50532cf2b0a7ff91df7902510e4f45",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": 0.25,
+      "terms": 0.231,
+      "n": {
+       "identifiers": 1,
+       "values": 4,
+       "terms": 13
+      }
+     },
+     "restatement": "Le test de ProductDetailLoading vérifie que le conteneur `product-detail-loading-skeleton` a role='status', qu'il affiche le texte `products.detail.loading`, et qu'il y a exactement 3 éléments `loading-skeleton-item`, chacun avec une hauteur style égale à `var(--lane-height)`.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-17T10:40:47Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 18,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/frontend/src/components/layout/AppShell.test.tsx",
+     "file_ok": false,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": 0.75,
+      "terms": 0.538,
+      "n": {
+       "identifiers": 1,
+       "values": 4,
+       "terms": 13
+      }
+     },
+     "job": "frontend-socle:rediscover:mytimeline_frontend_app_locale_app_products_productId_loading.test.tsx:1",
+     "reused": true,
+     "reused_from": "2026-11-17T10:40:47Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "loading.test.tsx L13-16 utilise render/screen, getByTestId et vérifie l'attribut role à 'status'.",
+      "L13-19 utilisent render et screen, getByTestId et vérifient l'attribut role 'status'.",
+      "loading.test.tsx L1, L13-16 utilise render, screen, getByTestId et vérifie role=status."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-17T10:40:47Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 88,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "frontend-socle:tests:3",
+   "section": "tests",
+   "rank": 3,
+   "text": "- Le test de smoke Vitest fixe que l'infra frontend rend un élément et le retrouve par rôle et nom accessible, voir `mytimeline:frontend/src/__tests__/smoke.test.tsx:8-12` [#a7d742cf53c50dd9-1].",
+   "fact_text": "Le test de smoke Vitest fixe que l'infra frontend rend un élément et le retrouve par rôle et nom accessible, voir smoke.test.tsx",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-socle/a7d742cf53c50dd9-1"
+   ],
+   "files": [
+    "mytimeline:frontend/src/__tests__/smoke.test.tsx"
+   ],
+   "ranges": [
+    [
+     "mytimeline:frontend/src/__tests__/smoke.test.tsx",
+     8,
+     12,
+     "884b6c7924428050e50f505244b1b2267d31c39819898ad11e36e513d2819d7e"
+    ]
+   ],
+   "code_sha256": "884b6c7924428050e50f505244b1b2267d31c39819898ad11e36e513d2819d7e",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
+      "terms": 0.455,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 11
+      }
+     },
+     "restatement": "Test de fumée : rend un bouton `ping` et vérifie qu'il est trouvé par son rôle et son nom accessibles, pour valider l'infrastructure de test frontend.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-17T10:40:47Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 13,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/frontend/src/__tests__/smoke.test.tsx",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
+      "terms": 0.455,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 11
+      }
+     },
+     "job": "frontend-socle:rediscover:mytimeline_frontend_app_locale_app_products_productId_loading.test.tsx:1",
+     "reused": true,
+     "reused_from": "2026-11-17T10:40:47Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "smoke.test.tsx L10-11 rend un bouton et le retrouve par getByRole avec name.",
+      "smoke.test.tsx L10-11 rend un bouton et le retrouve par getByRole avec name 'ping'.",
+      "smoke.test.tsx L10-11 rend un bouton et le retrouve par rôle et nom accessible."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-17T10:40:47Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 89,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "frontend-socle:tests:4",
+   "section": "tests",
+   "rank": 4,
+   "text": "- Les tests de locales ont un `describe` par export et vérifient l'acceptation ou le rejet de listes de valeurs avec `it.each`, voir `mytimeline:frontend/src/i18n/locales.test.ts:11-29` [#742de7bd9572fb14-1].",
+   "fact_text": "Les tests de locales ont un `describe` par export et vérifient l'acceptation ou le rejet de listes de valeurs avec `it.each`, voir locales.test.ts",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-socle/742de7bd9572fb14-1"
+   ],
+   "files": [
+    "mytimeline:frontend/src/i18n/locales.test.ts"
+   ],
+   "ranges": [
+    [
+     "mytimeline:frontend/src/i18n/locales.test.ts",
+     11,
+     29,
+     "799ab15717e5ca98e93c38fd9c2916a0f55cd481d075c96ae8f1dd4f3f4aa6cf"
+    ]
+   ],
+   "code_sha256": "799ab15717e5ca98e93c38fd9c2916a0f55cd481d075c96ae8f1dd4f3f4aa6cf",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": 0.0,
+      "terms": 0.333,
+      "n": {
+       "identifiers": 2,
+       "values": 1,
+       "terms": 9
+      }
+     },
+     "restatement": "Tests de locales : SUPPORTED_LOCALES doit valoir exactement ['fr','en','es','de'], DEFAULT_LOCALE doit être 'fr' et appartenir à la liste, et isSupportedLocale accepte les quatre codes mais rejette 'it', 'pt', 'EN' (majuscules), '', 'es-ES' et 'xx'.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-17T10:40:47Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 14,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/frontend/src/i18n/locales.test.ts",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": 1.0,
+      "terms": 0.333,
+      "n": {
+       "identifiers": 2,
+       "values": 1,
+       "terms": 9
+      }
+     },
+     "job": "frontend-socle:rediscover:mytimeline_frontend_app_locale_app_products_productId_loading.test.tsx:1",
+     "reused": true,
+     "reused_from": "2026-11-17T10:40:47Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "locales.test.ts a un describe par export testé (SUPPORTED_LOCALES, isSupportedLocale) et it.each pour accepter/rejeter des listes (L23, L27).",
+      "locales.test.ts a des describe SUPPORTED_LOCALES et isSupportedLocale, avec it.each d'acceptation (L23) et de rejet (L27). DEFAULT_LOCALE est couvert dans le premier describe, raccourci acceptable.",
+      "locales.test.ts a un describe pour SUPPORTED_LOCALES et un pour isSupportedLocale, avec it.each d'acceptation (L23) et de rejet (L27). DEFAULT_LOCALE est testé dans le premier describe, écart mineur."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-17T10:40:47Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 90,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "frontend-socle:tests:5",
+   "section": "tests",
+   "rank": 5,
+   "text": "- Les tests des erreurs d'état ont un `describe` par fonction, des titres de `it` en français et des assertions `toBe(true)` ou `toBe(false)`, voir `mytimeline:frontend/src/lib/state-errors.test.ts:6-8` [#6ade1bc0ef00f313-1].",
+   "fact_text": "Les tests des erreurs d'état ont un `describe` par fonction, des titres de `it` en français et des assertions `toBe(true)` ou `toBe(false)`, voir state-errors.test.ts",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-socle/6ade1bc0ef00f313-1"
+   ],
+   "files": [
+    "mytimeline:frontend/src/lib/state-errors.test.ts"
+   ],
+   "ranges": [
+    [
+     "mytimeline:frontend/src/lib/state-errors.test.ts",
+     6,
+     8,
+     "3ad7762ab7b6ed1a2d44379a0a3547147429e1fcaac14ee93473f63b3272f226"
+    ]
+   ],
+   "code_sha256": "3ad7762ab7b6ed1a2d44379a0a3547147429e1fcaac14ee93473f63b3272f226",
+   "verdict": "annex",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": 0.0,
+      "terms": 0.2,
+      "n": {
+       "identifiers": 2,
+       "values": 4,
+       "terms": 10
+      }
+     },
+     "restatement": "Le test de `isForbiddenError` vérifie que l'appel avec `null` renvoie `false`. L'extrait ne montre que ce premier cas (L7-8) : le cas `undefined` annoncé dans le libellé n'apparaît pas dans les lignes lues.",
+     "confidence": "medium"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 16,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/frontend/src/lib/state-errors.test.ts",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 0.7,
+      "n": {
+       "identifiers": 2,
+       "values": 4,
+       "terms": 10
+      }
+     },
+     "job": "frontend-socle:rediscover:mytimeline_frontend_app_locale_app_products_productId_loading.test.tsx:1",
+     "rank_in_lot": 8
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 91,
+    "annex_table": {
+     "part": "frontend-socle.details.md",
+     "row": 11
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-17T10:40:47Z"
+  }
+ ],
+ "comment_facts": [],
+ "facts_validated": [
+  "frontend-socle/b485fe301f167807-2",
+  "frontend-socle/434468f4e9a0a882-2",
+  "frontend-socle/43b4bb8adb5cf7f6-1",
+  "frontend-socle/2681e154ca18518c-1",
+  "frontend-socle/1ea1cef586e27163-1",
+  "frontend-socle/4c4a6ad8222ac4ce-1",
+  "frontend-socle/094f62dfc66d6733-1",
+  "frontend-socle/3215d3bea2e69c04-1",
+  "frontend-socle/3215d3bea2e69c04-2",
+  "frontend-socle/a7d742cf53c50dd9-1",
+  "frontend-socle/742de7bd9572fb14-1"
+ ],
+ "counts": {
+  "units": 20,
+  "admit": 9,
+  "annex": 11,
+  "drop": 0,
+  "hold": 0,
+  "pending": 0,
+  "consigne_before_unsupported": 0,
+  "consigne_after_dropped": 0,
+  "structure_rows_removed": 0,
+  "framework": 0
+ },
+ "structure_rows_removed": [],
+ "notes": [],
+ "base_sha256_after": "91e9615691b8ead0a29e7eab9fb9497a7874cdfcc57d4fd2fc8cb3fced34509a",
+ "bases_touched": {
+  "frontend-socle": {
+   "fingerprint": "126ede90106c356a0c4586ee2e9bef715e99fb1564a2aae646c04f6596172516",
+   "sha256_after": "91e9615691b8ead0a29e7eab9fb9497a7874cdfcc57d4fd2fc8cb3fced34509a"
+  }
+ },
+ "lint": {
+  "ok": true,
+  "errors": 0,
+  "warnings": 0
+ }
+}

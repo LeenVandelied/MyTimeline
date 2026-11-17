@@ -1,0 +1,1 @@
+C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/ExportJobEntity.java
