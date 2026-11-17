@@ -9,7 +9,7 @@ import { MAX_OCCURRENCES, occurrenceStart, seriesHorizon } from '@/lib/recurrenc
  * #640 (DEC-S82-007, arbitrage dev DEC-S108-004) — les 4 métriques de « En bref ».
  *
  * Remplacent `activeProducts` / `eventsThisMonth` / `currentStreak` (la « série »
- * n'existe pas dans le handoff). Source : `docs/memory/sprints/sprint-108/maquette-dashboard.md`
+ * n'existe pas dans le handoff). Source : `archive/ai-stack-2026-11/memory/sprints/sprint-108/maquette-dashboard.md`
  * § « En bref ». Fonctions PURES, dates civiles en heure LOCALE, `now` injecté.
  *
  * `events` = événements NON archivés (BR-EVE-011, filtrés en amont par `useDashboardData`).

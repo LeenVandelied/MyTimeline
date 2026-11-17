@@ -176,6 +176,6 @@ attendue est l'ajout d'une colonne de création, pas un ajustement de ce tri.
 ## Références
 
 - Issue #283 (Sprint 45) ; issue #145 (Sprint 37, canal DB d'origine) ; issue #284 (consommateur).
-- BR-AUT-005 / BR-AUT-012 (`.ai-env/context-packs/br-auth.md`).
+- BR-AUT-005 / BR-AUT-012 (`archive/ai-stack-2026-11/ai-env/context-packs/br-auth.md`).
 - `backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/`.
 - `frontend/e2e/support/reset-token.ts`, `frontend/e2e/forgot-password.spec.ts`.

@@ -368,7 +368,7 @@ describe('cascade @layer — line-height des titres ne cède PAS devant `text-*`
  * bien 14px relève de l'œil / de l'E2E. jsdom ne résout pas les `@layer`.
  * Ils ne disent rien non plus des ~770 lignes de `.mt-*` restées hors layer : elles
  * ne sont PAS en conflit aujourd'hui (aucune n'est posée à côté d'une utilitaire),
- * cf. `docs/memory/sprints/sprint-53/audit-css-layers-340.md`.
+ * cf. `archive/ai-stack-2026-11/memory/sprints/sprint-53/audit-css-layers-340.md`.
  */
 describe('cascade @layer — classes de composant (#340)', () => {
   it('encapsule `.mt-avatar` dans @layer components, sous les utilitaires', async () => {

@@ -10,7 +10,7 @@ import type { EventPaletteRole } from '@/lib/event-palette'
  * l'ancienne `HowItWorksSection` (4 étapes chiffrées). Cible : handoff
  * `docs/design/graphite-handoff.md` §1 Landing (« ligne horizontale + 4 jalons à
  * pastilles colorées, *remplace* des features 3 colonnes ») et l'extrait de maquette
- * `docs/memory/sprints/sprint-103/maquette-landing-frise-cas-usage.md` §1.
+ * `archive/ai-stack-2026-11/memory/sprints/sprint-103/maquette-landing-frise-cas-usage.md` §1.
  *
  * CONTENU DES 3 ANCIENNES FEATURES — rien n'est perdu :
  *   · rappels            → jalon `reminder` ;

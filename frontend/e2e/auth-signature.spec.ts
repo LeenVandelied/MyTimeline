@@ -58,7 +58,7 @@ import {
  * anti-dégradé ») : c'est LUI l'oracle du mode serveur, et le diagnostic doit être immédiat,
  * pas déduit de quatre cas rouges.
  *
- * ## Recette de lancement (mesurée, cf. `docs/memory/sprints/sprint-47/e2e-local-runbook.md`)
+ * ## Recette de lancement (mesurée, cf. `archive/ai-stack-2026-11/memory/sprints/sprint-47/e2e-local-runbook.md`)
  *
  * ```bash
  * # 1. Paire RS256 JETABLE, générée à l'exécution — RIEN n'est committé.

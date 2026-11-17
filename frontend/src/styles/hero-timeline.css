@@ -1,7 +1,7 @@
 /*
  * Frise animée du Hero de la landing (#56 → #611).
  *
- * Spec : `Landing.dc.html` §3 (extrait : `docs/memory/sprints/sprint-87/maquette-landing-hero.md`).
+ * Spec : `Landing.dc.html` §3 (extrait : `archive/ai-stack-2026-11/memory/sprints/sprint-87/maquette-landing-hero.md`).
  * Tous les sélecteurs sont préfixés `.hero-timeline` et les keyframes `hero-timeline-*` : un
  * nom générique (`pan`, `pulse`) entrerait en collision avec une autre feuille chargée sur la
  * même page (cf. le piège `pulse` documenté dans `landing.css`).

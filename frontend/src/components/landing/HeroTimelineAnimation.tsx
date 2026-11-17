@@ -5,7 +5,7 @@ import { paletteHex, type EventPaletteRole } from '@/lib/event-palette'
 /**
  * Frise animée du Hero de la landing (#56 → #611).
  *
- * SPEC — `Landing.dc.html` (extrait : `docs/memory/sprints/sprint-87/maquette-landing-hero.md`
+ * SPEC — `Landing.dc.html` (extrait : `archive/ai-stack-2026-11/memory/sprints/sprint-87/maquette-landing-hero.md`
  * §3) : règle de mois, 6 lanes, barres pleines, curseur TODAY FIXE, auto-scroll linéaire en
  * boucle de 52 s, masque de fondu sur les bords. Le mouvement vit dans
  * `src/styles/hero-timeline.css` (importée par la seule route landing, #343).

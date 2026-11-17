@@ -365,7 +365,7 @@
 .mt-tlv__evt-dot{width:6px; height:6px; border-radius:50%; flex:0 0 auto; background:var(--mt-evt-status, var(--color-upcoming));}
 
 /* #594 — ÉVÉNEMENT PONCTUEL = pin + libellé, PAS une barre (maquette « Vue Timeline »
-   §2, `docs/memory/sprints/sprint-91/maquette-frise-instant-serie.md`).
+   §2, `archive/ai-stack-2026-11/memory/sprints/sprint-91/maquette-frise-instant-serie.md`).
    Le bouton garde `.mt-tlv__evt` (gouttière `margin-left`, focus, archivé, sélecteurs
    E2E) et le modificateur neutralise la BARRE : ni fond, ni padding, ni ombre.
    - Pin (`.mt-evt-pin`) : 10 × 26 px, rayon 3, couleur de l'événement, ombre sm.
@@ -389,7 +389,7 @@
 .mt-evt-pin__label{min-width:0; max-width:var(--mt-label-max, 240px); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:12px; line-height:16px; font-weight:var(--weight-semibold); color:var(--color-ink);}
 
 /* #595 — RÉCURRENCE sur les trois frises (maquette §1, §3, §4, §5 de
-   `docs/memory/sprints/sprint-91/maquette-frise-instant-serie.md`). Pas de trame de
+   `archive/ai-stack-2026-11/memory/sprints/sprint-91/maquette-frise-instant-serie.md`). Pas de trame de
    stries (direction rejetée) : occurrence réelle pleine + glyphe `↻`, occurrences
    FANTÔMES et CONNECTEUR pointillé (`RecurrenceMarks.tsx`).
    - Glyphe de BARRE (`.mt-evt-recur`, maquette §4) : mono 11 px, opacity .85, préfixe

@@ -122,8 +122,8 @@ time, .mono, [data-mono] {
    puis les 31 sites applicatifs qui posaient un `outline-*` ont été nettoyés ;
    la layerisation n'est venue qu'en dernier, quand plus aucun indicateur ne
    pouvait disparaître. Le motif détaillé est écrit sur la règle elle-même.
-   Audit complet : `docs/memory/sprints/sprint-53/audit-css-layers-340.md`.
-   Arbitrage : `docs/memory/sprints/sprint-58/design-arbitrage-383-352.md`. */
+   Audit complet : `archive/ai-stack-2026-11/memory/sprints/sprint-53/audit-css-layers-340.md`.
+   Arbitrage : `archive/ai-stack-2026-11/memory/sprints/sprint-58/design-arbitrage-383-352.md`. */
 @layer base {
   a { color: var(--color-accent); text-decoration: none; }
   a:hover { color: var(--color-accent-hover); }

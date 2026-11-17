@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils'
 
 /**
  * #627 — Feuillet d'éphéméride de l'écran 404 (maquette `États système.dc.html`,
- * relevé `docs/memory/sprints/sprint-110/maquette-etats-systeme.md`) : jour de la
+ * relevé `archive/ai-stack-2026-11/memory/sprints/sprint-110/maquette-etats-systeme.md`) : jour de la
  * semaine, jour du mois en grand, mois + année en accent, « Semaine N ».
  *
  * DATE CALCULÉE APRÈS MONTAGE, JAMAIS PENDANT LE RENDU. `/_not-found` est

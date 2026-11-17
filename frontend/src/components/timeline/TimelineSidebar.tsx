@@ -6,7 +6,7 @@ import { useMediaQuery } from '@/hooks/useMediaQuery'
 
 /**
  * #592 — SIDEBAR de l'écran Vue Timeline (maquette `Vue Timeline.dc.html`, §A de
- * `docs/memory/sprints/sprint-85/maquette-vue-timeline.md`).
+ * `archive/ai-stack-2026-11/memory/sprints/sprint-85/maquette-vue-timeline.md`).
  *
  * Quatre blocs, dans l'ordre de la maquette :
  *  1. « Accordéons » — segmenté [Tout déplier | Tout plier] : pose `collapsed`

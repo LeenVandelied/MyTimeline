@@ -8,7 +8,7 @@ import { isUnboundedBand, segmentIntersectsBand, type Band } from './virtualizat
 /**
  * #595 — Marques de RÉCURRENCE des frises (desktop, mobile portrait, mobile paysage) :
  * occurrences FANTÔMES + CONNECTEUR pointillé, calculés côté client (l'API renvoie une
- * ligne par série). Maquette : `docs/memory/sprints/sprint-91/maquette-frise-instant-serie.md`
+ * ligne par série). Maquette : `archive/ai-stack-2026-11/memory/sprints/sprint-91/maquette-frise-instant-serie.md`
  * §1, §3, §5. Rendu : `RecurrenceMarks.tsx`. Aucun React ici.
  *
  * Même découpage que le positionnement des pastilles (#349) :

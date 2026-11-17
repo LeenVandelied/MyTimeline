@@ -4,7 +4,7 @@ import React from 'react'
  * #594 — Corps VISUEL d'un événement ponctuel sur la frise, partagé par les TROIS
  * frises (desktop `EventPill`, mobile portrait, mobile paysage).
  *
- * Maquette (`docs/memory/sprints/sprint-91/maquette-frise-instant-serie.md` §2) :
+ * Maquette (`archive/ai-stack-2026-11/memory/sprints/sprint-91/maquette-frise-instant-serie.md` §2) :
  *  - pin 10 px × hauteur de barre, rayon 3, ombre sm, couleur de l'événement
  *    (`--mt-evt`, posée par l'appelant sur le bouton) ;
  *  - libellé À DROITE, HORS du pin, en ENCRE DE LA PAGE (`--color-ink`) : il est posé

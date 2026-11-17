@@ -13,7 +13,7 @@ import { DUE_SOON_DAYS, type DashboardKpis } from './kpis'
  * marginalia dans le parent.
  *
  * #640 (DEC-S82-007, DEC-S108-004) — les 4 phrases de la maquette `Dashboard.dc.html`
- * (extrait : `docs/memory/sprints/sprint-108/maquette-dashboard.md` § « En bref »)
+ * (extrait : `archive/ai-stack-2026-11/memory/sprints/sprint-108/maquette-dashboard.md` § « En bref »)
  * REMPLACENT les 3 lignes « produits actifs / événements ce mois / jours de série ».
  * Chaque phrase est UN message ICU rendu par `t.rich` : les chiffres y sont enveloppés
  * par balise (`<weekNum>`…), jamais concaténés en fragments — l'ordre des mots reste

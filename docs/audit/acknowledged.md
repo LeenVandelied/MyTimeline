@@ -2,7 +2,7 @@
 
 > Findings d'audit couverts par une décision documentée : exclus du scoring
 > (classés ASSUME). Initialisé par l'audit du 2026-07-02 à partir de
-> `docs/memory/decisions.md`. À maintenir à la main : ajouter une entrée quand une
+> `archive/ai-stack-2026-11/memory/decisions.md`. À maintenir à la main : ajouter une entrée quand une
 > dette est acceptée, la retirer quand elle est soldée.
 
 | ID | Finding | Décision source | Condition de réexamen |

@@ -6,7 +6,7 @@ import { PROD } from './support/accounts'
 /**
  * Sprint 108 — #623 : ruban du tableau de bord = les 30 PROCHAINS jours, avec une
  * RÈGLE graduée et un VIEWPORT de 9 jours déplaçable (DEC-S108-003, maquette
- * `Dashboard.dc.html` § Hero, extrait `docs/memory/sprints/sprint-108/maquette-dashboard.md`).
+ * `Dashboard.dc.html` § Hero, extrait `archive/ai-stack-2026-11/memory/sprints/sprint-108/maquette-dashboard.md`).
  *
  * Ce que jsdom ne peut pas prouver et que cette spec mesure : le glisser RÉEL à la
  * souris (px → jours sur la vraie largeur de piste), le clamp aux bords, le

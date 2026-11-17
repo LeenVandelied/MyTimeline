@@ -837,7 +837,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
   // virtualisation reste la bonne optimisation. C'est l'HYPOTHÈSE SUR L'E2E qui
   // était fausse. La parade vit côté test — `frontend/e2e/support/timeline-lanes.ts`
   // (`revealSeededLane`), à appeler par toute spec qui asserte une lane semée.
-  // Diagnostic complet : `docs/memory/sprints/sprint-64/diagnostic-rouge-latent-timeline.md`.
+  // Diagnostic complet : `archive/ai-stack-2026-11/memory/sprints/sprint-64/diagnostic-rouge-latent-timeline.md`.
   // Ne pas relever `LANE_VIRTUALIZATION_MIN_ROWS` pour faire passer un test.
   const verticalBand =
     verticalModel.visibleLaneCount >= LANE_VIRTUALIZATION_MIN_ROWS

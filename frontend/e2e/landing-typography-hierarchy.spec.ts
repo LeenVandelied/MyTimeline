@@ -94,7 +94,7 @@ const DS_SCALE = [13, 15, 17, 21, 27, 35, 45, 57]
 
 /**
  * Cibles d'échelle par palier — c'est le verdict `ui-design` du Sprint 59
- * (`docs/memory/sprints/sprint-59/ui-design-arbitrage.md`), figé ici en chiffres
+ * (`archive/ai-stack-2026-11/memory/sprints/sprint-59/ui-design-arbitrage.md`), figé ici en chiffres
  * RENDUS et non en classes.
  */
 function expected(width: number) {

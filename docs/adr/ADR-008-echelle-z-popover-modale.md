@@ -187,7 +187,7 @@ conteneur `#_rht_toaster` consomme désormais `--z-toast`.
 - `< --z-netbanner` (80) → la bannière réseau (#76) reste au-dessus de **tout**, invariant de cet
   ADR préservé.
 
-Valeur approuvée par la revue Designer du S92 (`docs/memory/sprints/sprint-92/ui-design-review.md`).
+Valeur approuvée par la revue Designer du S92 (`archive/ai-stack-2026-11/memory/sprints/sprint-92/ui-design-review.md`).
 
 **Conséquence d'interaction, hors échelle `z`.** Pour la pause au survol et au focus (WCAG 2.2.1,
 `DEC-S92-002`), la carte visible capte le pointeur ; le conteneur reste `pointer-events: none`.

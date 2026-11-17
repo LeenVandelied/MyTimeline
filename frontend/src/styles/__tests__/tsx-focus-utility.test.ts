@@ -17,7 +17,7 @@ import { fileURLToPath } from 'node:url'
  *
  * Le présent fichier ferme la moitié `.tsx` de ce trou, et rien d'autre.
  *
- * L'INVARIANT VÉRIFIÉ est celui de [[DEC-S58-001]] (`docs/memory/decisions.md:413`),
+ * L'INVARIANT VÉRIFIÉ est celui de [[DEC-S58-001]] (`archive/ai-stack-2026-11/memory/decisions.md:413`),
  * cité mot pour mot : « Après #383, `:focus-visible` vit dans `@layer base` et aucun
  * composant ne pose d'utilitaire de focus — ni `outline-none`/`outline-hidden`, ni
  * `ring-*`. » Les deux alternatives y sont MESURÉES et rejetées : `--shadow-focus`
@@ -376,7 +376,7 @@ describe('utilitaire de focus en TSX — WCAG 1.4.11 / DEC-S58-001 (#457)', () =
     expect(
       offences.map((o) => `${o.file} : ${o.token}  (dans « ${o.literal} »)`),
       'Un `.tsx` pose un utilitaire de focus local, ce que DEC-S58-001 interdit ' +
-        "(docs/memory/decisions.md:413). L'indicateur de focus UNIQUE du dépôt est le " +
+        "(archive/ai-stack-2026-11/memory/decisions.md:413). L'indicateur de focus UNIQUE du dépôt est le " +
         'contour `:focus-visible` du DS, layerisé dans `@layer base` ' +
         "(`ds/tokens/base.css`) : il s'applique tout seul, aucune classe n'est à poser. " +
         '`outline-none` le SUPPRIME sans rien mettre en place ; `ring-*` est un ' +

@@ -6,7 +6,7 @@ import { PROD } from './support/accounts'
 /**
  * #594 (Sprint 91) — Frise : un événement PONCTUEL est un PIN, pas une barre.
  *
- * Maquette (`docs/memory/sprints/sprint-91/maquette-frise-instant-serie.md` §2) :
+ * Maquette (`archive/ai-stack-2026-11/memory/sprints/sprint-91/maquette-frise-instant-serie.md` §2) :
  * pin 10 px centré sur la date + libellé À DROITE, en encre de page ; une durée reste
  * une barre pleine proportionnelle à sa durée. Distinction instant/durée, sur les
  * TROIS frises (desktop, mobile portrait, mobile paysage — arbitrage dev 2026-09-14).

@@ -101,7 +101,7 @@ export default defineConfig({
   // HISTORIQUE EN DEUX TEMPS, à ne pas relire à l'envers.
   //
   // 1) #465 (S64) a borné les workers à 1 en LOCAL pour un motif de CHARGE.
-  //    `docs/memory/audits/sprint-63-test-coverage.md` documente un run local complet
+  //    `archive/ai-stack-2026-11/memory/audits/sprint-63-test-coverage.md` documente un run local complet
   //    à 168 passed / 62 failed dont la TOTALITÉ des échecs porte
   //    `NS_ERROR_CONNECTION_REFUSED` / `ECONNREFUSED ::1:3000` — le `next dev` local
   //    était mort en cours de run. Un SEUL serveur sert TOUS les workers, et

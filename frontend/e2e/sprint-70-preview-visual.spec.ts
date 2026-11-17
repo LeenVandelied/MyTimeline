@@ -47,7 +47,7 @@ import { getUserId, seedCategory, seedProduct, unique } from './support/products
  * Les deux thèmes sont parcourus pour chacune.
  *
  * PRÉREQUIS RUNTIME : backend + front avec proxy `/api`
- * (`docs/memory/sprints/sprint-47/e2e-local-runbook.md`).
+ * (`archive/ai-stack-2026-11/memory/sprints/sprint-47/e2e-local-runbook.md`).
  */
 
 const SCHEMES = ['light', 'dark'] as const

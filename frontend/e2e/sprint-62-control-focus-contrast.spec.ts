@@ -43,7 +43,7 @@ import {
  *    donc là — et là seulement — que porte la preuve sur écran réel.
  *  · `<Radio>` n'a AUCUN consommateur applicatif : le seul hit hors DS est
  *    `ui/radio.stories.tsx`. Il est dans le statut décrit par `DEC-S58-003`
- *    pour `.mt-check__box`. L'issue #415 et `docs/memory/decisions.md:437`
+ *    pour `.mt-check__box`. L'issue #415 et `archive/ai-stack-2026-11/memory/decisions.md:437`
  *    affirment tous deux à tort qu'il est « en production ».
  *    Il n'existe donc AUCUN écran où le mesurer. On l'exerce par INJECTION DOM
  *    du markup exact de `ui/radio.tsx` dans une page réelle de l'application :
@@ -63,7 +63,7 @@ import {
  *
  * PRÉREQUIS RUNTIME : backend Spring + Postgres migré, front sur le port dont
  * l'origine est dans `app.cors.allowed-origins` (:3000 ou :3100).
- * Cf. `docs/memory/sprints/sprint-47/e2e-local-runbook.md`.
+ * Cf. `archive/ai-stack-2026-11/memory/sprints/sprint-47/e2e-local-runbook.md`.
  */
 
 test.use({ storageState: PROD.storageState })

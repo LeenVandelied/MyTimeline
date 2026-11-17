@@ -1,6 +1,6 @@
 # Runbook — Purge des anciens secrets de l'historique git
 
-> Issue #112 (Sprint 29). Suite de #34 (Sprint 3, `docs/memory/sprints/sprint-3/issue-34-done.md`).
+> Issue #112 (Sprint 29). Suite de #34 (Sprint 3, `archive/ai-stack-2026-11/memory/sprints/sprint-3/issue-34-done.md`).
 > Statut : **PROCÉDURE DOCUMENTÉE — NON EXÉCUTÉE.**
 
 ---
@@ -191,7 +191,7 @@ Checklist par secret :
       dashboard Brevo, en générer une nouvelle, mettre à jour l'env. (À confirmer via section 4.)
 
 **Procédure de rotation par service :** le référentiel global mentionne
-`docs/memory/devops/external-services-inventory.md` (§3quater) — **ce fichier est ABSENT du
+`archive/ai-stack-2026-11/memory/devops/external-services-inventory.md` (§3quater) — **ce fichier est ABSENT du
 dépôt à date.** À créer (inventaire des services externes + procédure de rotation) ou à pointer
 s'il est ajouté ultérieurement. En attendant, rotation manuelle par service ci-dessus.
 
@@ -225,6 +225,6 @@ Critères de succès :
 ---
 
 ## Références
-- `docs/memory/sprints/sprint-3/issue-34-done.md` — externalisation initiale (#34).
+- `archive/ai-stack-2026-11/memory/sprints/sprint-3/issue-34-done.md` — externalisation initiale (#34).
 - Règles globales : force-push / réécriture d'historique = confirmation explicite requise.
 - `git filter-repo` : https://github.com/newren/git-filter-repo

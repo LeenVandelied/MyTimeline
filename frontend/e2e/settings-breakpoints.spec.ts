@@ -243,7 +243,7 @@ for (const bp of BREAKPOINTS) {
       // `lg:hidden` ; entre 768 et 1023 les deux sorties coexistent donc.
       // Ce n'est PAS un contournement pour faire passer le test : la redondance est
       // réelle en production et n'a pas encore été tranchée par le Designer.
-      // Suivi : docs/memory/sprints/sprint-73/issue-298-done.md (RECOMMAND_FOLLOWUP
+      // Suivi : archive/ai-stack-2026-11/memory/sprints/sprint-73/issue-298-done.md (RECOMMAND_FOLLOWUP
       // « redondance de sortie sur /settings en 768-1023 »). Dès que la décision est
       // prise, remettre l'invariant à « exactement une sortie ».
       const exits = (bp.back ? 1 : 0) + (bp.sidebar !== null ? 1 : 0)

@@ -11,7 +11,7 @@ type Page = import('@playwright/test').Page
  * après recompilation à chaud (`InvariantError: Expected clientReferenceManifest to
  * be defined`) — bug du serveur de dev, sans aucun rapport avec le code testé.
  * Mesuré au Sprint 47 : 2 runs entièrement rouges (cf.
- * `docs/memory/sprints/sprint-47/e2e-local-runbook.md` §Instabilités du serveur de dev).
+ * `archive/ai-stack-2026-11/memory/sprints/sprint-47/e2e-local-runbook.md` §Instabilités du serveur de dev).
  *
  * Le retry déjà présent dans `auth.setup.ts` ne couvre QUE la SOUMISSION (429
  * rate-limit) ; le rendu initial n'était pas protégé. On rattrape donc le rendu par
@@ -104,12 +104,12 @@ export async function ensureRegisterForm(
       `Piste — serveur INJOIGNABLE ou baseURL faux : \`page.goto\`/\`reload\` a jeté ` +
       `(ex. ECONNREFUSED), aucune réponse HTTP reçue. Vérifier que le next dev tourne sur ` +
       `le port attendu et que PLAYWRIGHT_BASE_URL pointe dessus ` +
-      `(cf. docs/memory/sprints/sprint-47/e2e-local-runbook.md).`
+      `(cf. archive/ai-stack-2026-11/memory/sprints/sprint-47/e2e-local-runbook.md).`
   } else if (lastStatus >= 500) {
     lead =
       `Piste — 500 du serveur de dev Next (InvariantError: Expected clientReferenceManifest ` +
       `to be defined) : vérifier \`curl -o /dev/null -w "%{http_code}" <baseURL>/fr/register\` ` +
-      `puis REDÉMARRER le next dev (cf. docs/memory/sprints/sprint-47/e2e-local-runbook.md).`
+      `puis REDÉMARRER le next dev (cf. archive/ai-stack-2026-11/memory/sprints/sprint-47/e2e-local-runbook.md).`
   } else {
     lead =
       `Piste — page servie (HTTP ${lastStatus}) mais \`register-form\` jamais monté : ` +

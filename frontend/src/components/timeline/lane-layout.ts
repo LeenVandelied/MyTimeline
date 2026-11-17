@@ -6,7 +6,7 @@ import type { PositionedEvent } from './zoom'
  * Avant #709, une lane avait une hauteur fixe et deux occurrences réelles qui se
  * chevauchaient se peignaient l'une sur l'autre (la seconde, plus loin dans le DOM,
  * masquait et captait les clics de la première). Règle de la maquette
- * (`docs/memory/sprints/sprint-91/maquette-frise-instant-serie.md`, `layoutLane`) :
+ * (`archive/ai-stack-2026-11/memory/sprints/sprint-91/maquette-frise-instant-serie.md`, `layoutLane`) :
  *
  *  - tri par date de début ; chaque événement prend la PREMIÈRE rangée dont la fin
  *    précédente + `gap` est ≤ son début ;

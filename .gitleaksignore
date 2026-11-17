@@ -5,7 +5,7 @@
 # produira une empreinte DIFFÉRENTE (nouveau commit) et fera rougir la CI.
 #
 # POURQUOI CES LIGNES EXISTENT. Le dépôt est PUBLIC. L'audit #249 (sprint 50,
-# `docs/memory/audits/secret-exposure-audit.md` §3.1/§3.2) a établi que ces valeurs ont été
+# `archive/ai-stack-2026-11/memory/audits/secret-exposure-audit.md` §3.1/§3.2) a établi que ces valeurs ont été
 # lisibles ~16 mois : elles sont COMPROMISES SANS RÉSERVE et le resteront après toute purge
 # d'historique (#112, cf. §6 « les forks et clones tiers »). Les baseliner ne les protège pas
 # — c'est déjà perdu. Sans ce fichier, le scan d'historique rougirait à CHAQUE run sur des

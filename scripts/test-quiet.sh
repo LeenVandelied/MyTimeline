@@ -300,7 +300,7 @@ run_frontend_npm_step() {
 # briefings de sprint le décrivaient comme « tests + build + typecheck + lint ».
 # Ce malentendu a produit un rapport de vérification entièrement faux (PIT-S60-009).
 # Arbitrage : étendre le scope plutôt que le renommer, pour que son nom redevienne
-# vrai (détail et coût : docs/memory/sprints/sprint-78/issue-434-done.md).
+# vrai (détail et coût : archive/ai-stack-2026-11/memory/sprints/sprint-78/issue-434-done.md).
 #
 # ORDRE = celui du job CI `frontend` (build → tests → typecheck → lint), et pas
 # l'ordre « le moins cher d'abord » : tsconfig.json inclut `.next/types/**`, donc

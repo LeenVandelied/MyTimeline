@@ -29,7 +29,7 @@ export const LANE_GUTTER_PX: number = (() => {
  * #467 — PARADE à la VIRTUALISATION VERTICALE pour les specs qui asservissent une
  * lane SEMÉE de la frise complète (`/fr/timeline`).
  *
- * LE MÉCANISME (mesuré, cf. `docs/memory/sprints/sprint-64/diagnostic-rouge-latent-timeline.md`).
+ * LE MÉCANISME (mesuré, cf. `archive/ai-stack-2026-11/memory/sprints/sprint-64/diagnostic-rouge-latent-timeline.md`).
  * La suite E2E sème une catégorie + un produit par spec sur le compte fixe PROD et
  * ne nettoie JAMAIS : le nombre de lanes du compte croît au fil du run (76 mesurées
  * sur le run CI 33563972215, 77 en local #465, 99 sur le run CI 33602246512). Au

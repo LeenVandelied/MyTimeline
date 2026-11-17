@@ -6,7 +6,7 @@ import { PROD } from './support/accounts'
 /**
  * #709 (Sprint 97) — Frise : deux occurrences RÉELLES qui se chevauchent dans une même
  * lane sont EMPILÉES en rangées (maquette `layoutLane`,
- * `docs/memory/sprints/sprint-91/maquette-frise-instant-serie.md`), sur les TROIS frises.
+ * `archive/ai-stack-2026-11/memory/sprints/sprint-91/maquette-frise-instant-serie.md`), sur les TROIS frises.
  *
  * Avant #709 : hauteur de lane fixe, toutes les occurrences à `top` fixe. La seconde,
  * plus loin dans le DOM, se peignait SUR la première et captait ses clics dans toute la

@@ -126,7 +126,7 @@
      `EventEditForm.tsx:624`. `<Radio>` has NO application consumer — its sole
      hit outside the DS is `ui/radio.stories.tsx` — so `.mt-radio__dot` is a DS
      specimen too, exactly like this rule. The wording "two production twins"
-     was wrong when written; `docs/memory/decisions.md:437` (`DEC-S58-003`)
+     was wrong when written; `archive/ai-stack-2026-11/memory/decisions.md:437` (`DEC-S58-003`)
      propagates the same error. The checkbox
      the application actually renders is `ui/checkbox.tsx`, a Radix root styled
      with the `border-rule-emphasis` utility — same tier, different mechanism.
@@ -234,7 +234,7 @@
    ⚠ Le RESTE de ce fichier (et de `timeline.css` / `i18n.css`) est TOUJOURS hors
    layer — ~770 lignes de classes `.mt-*` qui battraient une utilitaire posée sur le
    même élément. AUCUN autre conflit réel n'existe au dépôt aujourd'hui : ces classes
-   y sont posées SEULES (audit #340, `docs/memory/sprints/sprint-53/audit-css-layers-340.md`).
+   y sont posées SEULES (audit #340, `archive/ai-stack-2026-11/memory/sprints/sprint-53/audit-css-layers-340.md`).
    Ne pas layeriser en masse sans re-mesurer : c'est un basculement de précédence
    composant→utilitaire sur toute la Vue Timeline. */
 @layer components {

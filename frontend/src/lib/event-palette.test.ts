@@ -49,7 +49,7 @@ describe('#577 — EVENT_PALETTE est le miroir exact des tokens --evt-*', () => 
     // Exception NOMMÉE : orchidée est le seul rôle qui s'écarte délibérément du
     // handoff. `#B056A8` (valeur handoff) plafonnait à 4.43:1 en texte avec les
     // encres du dépôt (`INK_LIGHT`/`INK_DARK`), sous AA 4.5:1 — DEC-S84-003
-    // (`docs/memory/decisions.md`) arbitre l'AA au-dessus de l'égalité exacte à la
+    // (`archive/ai-stack-2026-11/memory/decisions.md`) arbitre l'AA au-dessus de l'égalité exacte à la
     // charte, et ajuste le token à `#AE55A6` (4.52:1). Les 11 autres rôles restent
     // strictement égaux au handoff.
     const handoff = readFileSync(join(SRC_ROOT, '../../docs/design/graphite-handoff.md'), 'utf-8')

@@ -93,7 +93,7 @@ import type { Locator, Page } from '@playwright/test'
  * sujet. Toucher un seuil, un comparateur ou une tolérance ici sans faire rougir
  * ce fichier de test signifie que la garde correspondante a été perdue.
  *
- * @see docs/memory/sprints/sprint-58 — origine des pièges cités.
+ * @see archive/ai-stack-2026-11/memory/sprints/sprint-58 — origine des pièges cités.
  */
 
 /** Composantes sRGB 0-255 d'un pixel peint (l'alpha est déjà aplati par le compositing). */

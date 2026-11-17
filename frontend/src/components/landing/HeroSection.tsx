@@ -97,7 +97,7 @@ interface HeroSectionProps {
  * La hiérarchie était inversée. `text-xl md:text-2xl lg:text-3xl` (35 / 45 / 57)
  * la rétablit et rend l'invariant « never Tailwind-default » vrai à l'échelle du
  * dépôt : c'était le seul site `4xl`/`5xl` du code. Arbitrage :
- * `docs/memory/sprints/sprint-59/ui-design-arbitrage.md` (aucun token ajouté).
+ * `archive/ai-stack-2026-11/memory/sprints/sprint-59/ui-design-arbitrage.md` (aucun token ajouté).
  *
  * ⚠ `leading-normal` sur le sous-titre n'est PAS décoratif. En Tailwind 4 une
  * utilitaire `text-*` pose aussi `line-height: var(--tw-leading, var(--text-md--line-height))`.

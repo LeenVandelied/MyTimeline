@@ -4,7 +4,7 @@
 - Date : 2026-09-24
 - Contexte : Sprint 111, issue #653 — follow-up de #642 (Sprint 83, PR #650)
 - Domaine impacté : `auth` (profil de l'utilisateur courant, projection `/me`, export RGPD)
-- Décisions amont : DEC-S82-009 (`docs/memory/decisions.md`, section DEC-S82-009 — bascule de thème globale,
+- Décisions amont : DEC-S82-009 (`archive/ai-stack-2026-11/memory/decisions.md`, section DEC-S82-009 — bascule de thème globale,
   exposée hors connexion, persistance en 3 temps) ; DEC-S83-003 (seul le temps 1, local, livré)
 
 ## Contexte

@@ -32,7 +32,7 @@ import { LANDING_NAV_ANCHORS, landingMenuLinkTestId } from '../src/components/la
  * deux lectures (le curseur reste où Playwright l'a laissé, un élément mesuré
  * « au repos » peut être sous le pointeur).
  *
- * Lancement local : cf. `docs/memory/sprints/sprint-47/e2e-local-runbook.md`.
+ * Lancement local : cf. `archive/ai-stack-2026-11/memory/sprints/sprint-47/e2e-local-runbook.md`.
  */
 
 const MOBILE = { width: 375, height: 812 } as const

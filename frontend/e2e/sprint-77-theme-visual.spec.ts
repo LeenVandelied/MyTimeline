@@ -115,7 +115,7 @@ import { expect, test, type Locator, type Page, type TestInfo } from '@playwrigh
  * sur `ubuntu-latest`. Un rejeu sur macOS demanderait des références `-darwin` que le
  * dépôt ne porte pas — Playwright les ÉCRIRAIT au premier run (et échouerait), il ne
  * faut donc pas committer ce qu'un run macOS produit. Régénérer passe par le conteneur ;
- * la recette exacte est dans `docs/memory/sprints/sprint-77/issue-294-done.md`.
+ * la recette exacte est dans `archive/ai-stack-2026-11/memory/sprints/sprint-77/issue-294-done.md`.
  */
 
 const SCHEMES = ['light', 'dark'] as const
@@ -320,7 +320,7 @@ const NEGATIVE_CONTROL_CSS = 'section.section-animation h1 { letter-spacing: 0.0
  * de couleur PAR PIXEL, défaut 0.2), pas le ratio. Donc : si la CI rougit sur ces
  * références, la réponse n'est PAS de monter ce ratio, c'est de RÉGÉNÉRER les références
  * sur l'image qui correspond au runner. Recette :
- * `docs/memory/sprints/sprint-77/issue-294-done.md`.
+ * `archive/ai-stack-2026-11/memory/sprints/sprint-77/issue-294-done.md`.
  */
 const VISUAL_TOLERANCE = {
   maxDiffPixelRatio: 0.002,
@@ -641,7 +641,7 @@ test.describe('#294 — armement de la comparaison', () => {
       existsSync(referencePath),
       `Référence absente (${referencePath}). Ce test COMPARE, il ne génère pas : le laisser ` +
         `écrire la référence y graverait la mutation. Générer d'abord les références ` +
-        `(voir \`docs/memory/sprints/sprint-77/issue-294-done.md\`), puis rejouer.`,
+        `(voir \`archive/ai-stack-2026-11/memory/sprints/sprint-77/issue-294-done.md\`), puis rejouer.`,
     ).toBe(true)
 
     let comparisonFailed = false

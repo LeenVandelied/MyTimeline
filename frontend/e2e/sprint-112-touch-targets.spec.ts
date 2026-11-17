@@ -22,7 +22,7 @@ import { expectAllTouchable, expectClickableBox, expectHitbox } from './support/
  * MESURER D'ABORD (PAT-S99-001, PAT-S101-001) : cette spec est l'oracle ; une zone
  * n'est corrigée (via `src/lib/touchTarget.ts`, DEC-S101-003) que si elle mesure
  * moins de 44 px ici. Les chiffres relevés avant correction sont dans
- * `docs/memory/sprints/sprint-112/issue-767-830-done.md`.
+ * `archive/ai-stack-2026-11/memory/sprints/sprint-112/issue-767-830-done.md`.
  *
  * SURFACES (4) :
  *  1. `products-empty-cta` — état vide de la liste produits (`ProductsListView`) ;

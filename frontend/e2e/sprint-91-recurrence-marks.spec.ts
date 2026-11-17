@@ -7,7 +7,7 @@ import { LANE_GUTTER_PX } from './support/timeline-lanes'
 /**
  * #595 (Sprint 91) — Frise : une série récurrente est identifiable SANS lecteur d'écran.
  *
- * Maquette (`docs/memory/sprints/sprint-91/maquette-frise-instant-serie.md` §1-§5) : occurrence
+ * Maquette (`archive/ai-stack-2026-11/memory/sprints/sprint-91/maquette-frise-instant-serie.md` §1-§5) : occurrence
  * réelle pleine + glyphe `↻`, occurrences FANTÔMES (barre en pointillé / petit carré) reliées
  * par un CONNECTEUR pointillé. Trois frises : desktop, mobile portrait, mobile paysage.
  *

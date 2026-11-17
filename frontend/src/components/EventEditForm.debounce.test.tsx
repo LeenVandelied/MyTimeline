@@ -20,7 +20,7 @@ import { EventEditForm, type EventEditFormValues } from './EventEditForm'
  * à `t + 149 ms` l'aperçu doit encore afficher l'ANCIENNE valeur, la nouvelle
  * n'arrivant qu'à `t + 150 ms`. Rebrancher une prop d'aperçu sur `form.watch(…)`
  * brut rend la nouvelle valeur IMMÉDIATEMENT → l'assertion « ancienne valeur »
- * échoue. Vérifié manuellement avant merge (cf. `docs/memory/sprints/sprint-82/`).
+ * échoue. Vérifié manuellement avant merge (cf. `archive/ai-stack-2026-11/memory/sprints/sprint-82/`).
  *
  * Chaque test vérifie AUSSI que le champ de saisie porte bien la nouvelle valeur
  * dès la frappe : sans ce garde-fou, un test où RIEN ne se propage (champ inerte,
