@@ -69,28 +69,19 @@
 | `mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/export/RenderedExport.java` | 1 | convention 1 |
 | `mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/ports/services/EventService.java` | 1 | convention 1 |
 
-## Lignes hors budget {#t-cut_lines}
-
-| Section | Ligne |
-|---|---|
-| tests | - Les tests de contrat de DTO et de build n'utilisent aucun contexte Spring, avec un ObjectMapper instancié directement pour les DTO [#4fccbc79cc5b6869-1] [#f5d2085dc3f5fdb3-2]. |
-| tests | - Le test du stockage local reçoit un répertoire temporaire par @TempDir et recrée l'adaptateur avant chaque test [#42ca0c171861ac7e-1]. |
-
 ## Lignes rétrogradées {#t-demoted_lines}
 
 | Section | Ligne | Motif |
 |---|---|---|
-| rules | - Les jetons sont signés en RS256 et toute lecture de claims passe par parseClaims, qui vérifie la signature et refuse un autre algorithme [#2009e8befcdfb90e-1] [#4aa88cfacaa0e8d4-1]. | deducible |
-| rules | - Un jeton vide lève MalformedJwtException, et validateToken renvoie false pour toute exception levée [#2009e8befcdfb90e-2] [#e7e48dce92f507bc-1]. | deducible |
-| rules | - L'utilisateur courant est résolu par CallerResolver, qui court-circuite si l'authentification est absente ou anonyme [#33b11eb6b0aa82ac-2]. | deducible |
-| rules | - Les règles ArchUnit interdisent au domaine Spring et Jakarta, et toute HttpSession en production [#0841acefee4fcf8b-4] [#5a27d2f742342c4e-1]. | deducible |
-| tests | - Les tests fixent que l'anonymisation d'IP met à zéro le dernier octet d'une IPv4 et renvoie null pour une entrée invalide [#904428da9b653810-1] [#55610e4f5ae3174e-1]. | deducible |
-| tests | - Les tests fixent que le stockage local rejette par IllegalArgumentException les références invalides (extension, chemin relatif) [#76d453920ca7bf3e-1]. Selon le commentaire du test, un second delete est sans effet et ne lève aucune exception [#d3de47ed0eeffbf8-1]. | deducible |
-| tests | - Les tests fixent qu'une unité de durée inconnue lève l'exception attendue [#998e745ee408fff7-1]. Selon un commentaire, une unité null donnait avant #54 une NullPointerException (500) et donne désormais 422 [#6b45ece8d5589a12-1]. | rediscovered (7 appels) |
-| tests | - Les tests fixent que ThemePreference accepte exactement les valeurs en minuscules, avec aller-retour, et rejette toute autre valeur [#e966087c821ce577-1] [#7ac79595659d2d9d-1]. | rediscovered (11 appels) |
-| alerts | - La surcharge generateToken(String) émet un jeton sans claim jti, alors que la javadoc de generateToken(Authentication) dit que chaque jeton en porte un [#99cdc3c6ad8d23f3-1]. Un code qui lit le jti d'un jeton émis par cette voie n'en trouve pas, donc appeler la surcharge Authentication ou ajouter le claim. | rediscovered (14 appels) |
-| alerts | - La règle ArchUnit sur HttpSession est la seule vérifiée sans FreezingArchRule.freeze [#367437a993c52dd8-1]. Toute nouvelle violation fait échouer le test, il faut la corriger au lieu de la geler. | rediscovered (5 appels) |
-| alerts | - Product.addEvent appelle add sans contrôle de null, alors que le constructeur accepte une liste null [#e4027da2250fba89-1]. Un produit construit avec une liste null échoue à l'ajout d'un event, donc initialiser la liste avant l'appel. | rediscovered (12 appels) |
+| rules | - Selon la javadoc de ArchitectureTest, chaque règle est gelée par FreezingArchRule, la baseline est versionnée dans src/test/resources/archunit_store/ et le build ne casse que sur une nouvelle violation. [#73adaeb71b1a53fc-1] [#6ca27b5c7d94be9d-1] [#0841acefee4fcf8b-5] | deducible |
+| rules | - Les règles d'architecture interdisent au domaine de dépendre de Spring ou Jakarta (hors validation) et au domaine et à l'application de dépendre de l'infrastructure. [#0841acefee4fcf8b-4] [#7a3c5b9b3eea0074-1] | deducible |
+| rules | - Les controllers ne dépendent pas de application.services, les adaptateurs JpaImpl ne dépendent pas d'autres JpaImpl, et aucune classe de production n'utilise HttpSession (application stateless). [#4ec9483dc56adadf-1] [#d8514cf70497a38d-2] [#5a27d2f742342c4e-1] [#5a27d2f742342c4e-2] | deducible |
+| rules | - Un jeton vide ou blanc lève MalformedJwtException, et validateToken renvoie false pour toute exception. [#2009e8befcdfb90e-2] [#e7e48dce92f507bc-1] | deducible |
+| rules | - Les entités déclarent le listener d'audit, un verrou @Version et des champs d'audit sans setter, et equals compare l'id seulement s'il est non nul avec un hashCode constant par classe. [#8d705e8aea055bbf-2] [#353d4149bc66a185-1] [#aefb4a0a2a939e49-1] [#322992155a7f5945-1] | deducible |
+| rules | - fromString tolère casse et pluriel, fromValue est strict, fromParam lève ExportFormatNotSupportedException pour une valeur null, vide ou inconnue. [#38f89bbedf94c3f6-1] [#af9f81b7c350186b-1] [#4d79a2634dabdb27-1] | deducible |
+| tests | - Les tests fixent qu'aucune valeur du détail de Health de Brevo ne contient la clé transmise, le bean étant instancié directement. [#379fa4542b4614bf-1] [#d1edfd65ccf2e57f-2] | deducible |
+| tests | - Les tests fixent que ClientIpAnonymizer renvoie null pour une entrée invalide. [#55610e4f5ae3174e-1] | deducible |
+| tests | - Les tests fixent que fromValue de ThemePreference fait l'aller-retour sur toutes les constantes et rejette toute autre valeur par IllegalArgumentException. [#e966087c821ce577-1] [#7ac79595659d2d9d-1] | deducible |
 
 ## Faits suspects {#t-suspicious}
 

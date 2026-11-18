@@ -39,22 +39,20 @@
 
 | Section | Ligne | Motif |
 |---|---|---|
-| rules | - Seul RS256 est accepté, un autre algorithme lève UnsupportedJwtException et un jeton blanc MalformedJwtException [#b4abadd3d950429f-1] [#c9ffe973525260e3-2] [#c9ffe973525260e3-1]. | deducible |
-| rules | - Le refresh exige un jeton valide et une session active (401 sinon), puis révoque l'ancien jti et enregistre celui du nouveau jeton [#71768ef1221dd0c4-1] [#71768ef1221dd0c4-2] [#10efe7ec9942ce01-1]. | deducible |
-| rules | - Le login répond 401 sans distinguer username inconnu et mot de passe faux [#edc7dcbdf92af882-1], et l'inscription fixe toujours ROLE_USER [#451be34991dcd0e9-1]. | rediscovered (11 appels) |
-| rules | - Le logout révoque le jti courant puis efface le cookie jwt avec une valeur vide et maxAge 0 [#ed68a63fc2b66b67-1] [#1fb3c624845adfd4-1]. | deducible |
-| rules | - Le JwtFilter ignore /api/auth et lit le cookie jwt avant l'en-tête Bearer [#46ef396b46b51aa9-1] [#f6e75e0a5e5133b6-1]. | rediscovered (4 appels) |
-| rules | - Le seau de débit par IP est indexé par IP, méthode et chemin, et X-Forwarded-For n'est lu que si trust-forwarded-header vaut true [#ef1ceb9ef6e0e2d9-2] [#454cce6a9210f047-2]. | rediscovered (6 appels) |
-| rules | - Un seau vide renvoie 429 [#c110fb621d545244-1], et app.rate-limit.enabled à false coupe tout contrôle (true par défaut) [#d3225cdbefff589a-1] [#e19475c1bbc12f34-1]. | rediscovered (7 appels) |
-| rules | - POST /api/auth/reset-password ajoute un plafond par token de 5 par minute, sauté si Content-Length dépasse la taille maximale [#4984030ad4075ec2-1] [#6c4a9b97036ab115-1] [#fea6a7ed68a4df50-1]. | rediscovered (6 appels) |
-| rules | - PUT /api/me/preferences est limité à 30 par minute et par utilisateur, les anonymes passent sans comptage et un principal sans identifiant reçoit 401 [#485955adb2298a8b-1] [#0833c211a9b3191d-1] [#ef91d216c638ddd0-1]. | rediscovered (5 appels) |
-| rules | - La chaîne est STATELESS, et toute route non listée exige une authentification [#20c936dfaa725a62-1] [#20c936dfaa725a62-2]. | rediscovered (3 appels) |
-| surface | - La chaîne de sécurité est dans `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/SecurityConfig.java:159-171`, et la route de réinitialisation est dans `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java:354-360` [#8bc3a1ce71fe4ba9-1] [#ebe5ee4325e1c2af-1]. | rediscovered (11 appels) |
-| surface | - Tout le préfixe /api/auth/** est ouvert sans authentification, donc toute nouvelle route ajoutée sous ce préfixe est publique par défaut (`mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/SecurityConfig.java:171`) [#8bc3a1ce71fe4ba9-3]. | rediscovered (3 appels) |
-| surface | - Sont aussi ouverts sans authentification /actuator/health, /error et le chemin JWKS, la javadoc précisant que la clé publique n'est pas un secret (`mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/SecurityConfig.java:159-170`) [#8bc3a1ce71fe4ba9-1] [#8bc3a1ce71fe4ba9-2]. | deducible |
-| tests | - Les tests fixent qu'une propriété ou variable d'environnement vide retombe sur le défaut [#3c3ee02e4eae24a0-1] [#079e56229b15e285-1]. | deducible |
-| tests | - Les tests fixent que la clé de limitation est l'IP socket, un X-Forwarded-For forgé n'ajoute aucun quota [#bb4775b4fb472a5b-1]. | rediscovered (3 appels) |
-| tests | - Les tests fixent que le JWT reste hors du corps et que Secure et Domain du cookie sont identiques au login, au refresh et au logout [#947ec0951545e427-1] [#5fd40af78c2a4f52-1]. | deducible |
+| rules | - Le refresh révoque le jti de l'ancien jeton puis enregistre celui du nouveau, et toute JwtException donne un 401. [#10efe7ec9942ce01-1] [#71768ef1221dd0c4-3] | deducible |
+| rules | - Le logout révoque le jti courant puis efface le cookie par buildJwtCookie avec maxAge 0. [#ed68a63fc2b66b67-1] [#1fb3c624845adfd4-1] | deducible |
+| rules | - Le cookie est HttpOnly, SameSite Lax, avec Secure et Domain issus de app.cookie.*. [#0b02e0ffe1c36b2e-1] [#14d0f1bd964c4c7d-1] | deducible |
+| rules | - X-Forwarded-For n'est lu que si app.rate-limit.trust-forwarded-header vaut true (défaut false), sinon l'IP socket sert de clé. [#454cce6a9210f047-2] [#e19475c1bbc12f34-1] | deducible |
+| rules | - app.rate-limit.enabled à false (défaut true) laisse tout passer. [#d3225cdbefff589a-1] [#ce501683220be0d6-1] | deducible |
+| rules | - Un plafond inférieur à 1 est refusé par IllegalArgumentException et une valeur non numérique fait échouer le binding. [#426f7fd182552932-1] [#c616bd2d8e37f561-1] [#4df99d11b2cc773d-1] | deducible |
+| rules | - Les requêtes anonymes ne sont pas comptées, le 401 venant de AuthorizationFilter. [#0833c211a9b3191d-1] | deducible |
+| tests | - Les tests fixent les plafonds par IP par défaut (register 5, login 10, reset-password 5) et ceux du profil e2e (30, 30, 15). [#242ff8ee7e19268d-1] [#327a2ee0311cbedd-1] [#44730e41227a605b-1] [#e85209018fc3ba02-1] | deducible |
+| tests | - Une propriété ou une variable d'environnement vide se lie à null et le défaut s'applique. [#3c3ee02e4eae24a0-1] [#079e56229b15e285-1] | deducible |
+| tests | - La clé de limitation est l'IP socket, un X-Forwarded-For forgé n'ajoute aucun quota. [#bb4775b4fb472a5b-1] | deducible |
+| tests | - Le reset de mot de passe est limité par token, quelle que soit l'IP. [#3a1d4eba463adcd8-1] [#516b7267da36b73e-1] | deducible |
+| tests | - Les variantes de chemin, dont celle avec jsessionid, n'écrivent jamais sans consommer le seau. [#8a9bfe9750dd1934-1] [#8a9bfe9750dd1934-2] | deducible |
+| tests | - Le JWT est RS256, et les jetons HS256 forgés ou alg none sont rejetés. [#1d6343583ff4cb9a-1] [#35c98d343af70d16-1] [#59230c81582d34b3-1] | deducible |
+| tests | - Le cookie jwt est HttpOnly, absent du corps, avec Secure et Domain identiques au login, au refresh et au logout. [#947ec0951545e427-1] [#5fd40af78c2a4f52-1] | deducible |
 
 ## Règles métier {#t-business_rule}
 

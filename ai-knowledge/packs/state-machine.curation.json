@@ -1,20 +1,20 @@
 {
  "pack": "state-machine",
  "schema": 1,
- "curated_at": "2026-11-17T10:45:42Z",
+ "curated_at": "2026-11-18T14:30:00Z",
  "curator": "curate/1",
  "base_sha256": "7071902a64278984febe1c288edaaa9c73ea7692ceb653fe57d717b67a2c5883",
- "pack_sha256_before": "506e3cd9315ced3e04fe1673928ed7ec9fd6819aecf98203ced025ac4ae241bb",
- "pack_sha256_after": "1e9d0190b202cfe4eff07e8975f485d8ad6952db66453f745da8ab7ca92c3382",
- "criteria_sha256": "75e38f096df69288e5ef9ef740a5a812f65b1bb381255f75045d285103cef042",
+ "pack_sha256_before": "3ca0802ecc8af7321a250ad2dcdf0598852743924700ba74eaa25308d9644148",
+ "pack_sha256_after": "a4020a42207991bac6844aef679b206c78c07dadb95c4d925e9d0a047d35b965",
+ "criteria_sha256": "48e0e20f086c5b11deecfecdc547ba1d6115faee1597a5aaf682f6c699e92423",
  "models": {
   "measure": "haiku",
   "refute": "sonnet"
  },
  "base_fingerprint": "cf61a964db7f282ca6e54eaf78245832d6bbbccc492705b14a167a26b8068b48",
  "bytes": {
-  "before": 5555,
-  "after": 5555,
+  "before": 6049,
+  "after": 5179,
   "by_section": {
    "activate": {
     "before": 217,
@@ -25,8 +25,8 @@
     "after": 78
    },
    "rules": {
-    "before": 1440,
-    "after": 1440
+    "before": 1818,
+    "after": 877
    },
    "structure": {
     "before": 390,
@@ -37,28 +37,28 @@
     "after": 97
    },
    "files": {
-    "before": 1045,
-    "after": 1045
+    "before": 903,
+    "after": 903
    },
    "relations": {
     "before": 310,
     "after": 310
    },
    "tests": {
-    "before": 353,
-    "after": 353
+    "before": 347,
+    "after": 347
    },
    "questions": {
-    "before": 392,
-    "after": 392
+    "before": 358,
+    "after": 358
    },
    "alerts": {
-    "before": 236,
-    "after": 236
+    "before": 555,
+    "after": 555
    },
    "coverage": {
-    "before": 578,
-    "after": 578
+    "before": 628,
+    "after": 628
    }
   }
  },
@@ -67,8 +67,8 @@
    "id": "state-machine:rules:1",
    "section": "rules",
    "rank": 1,
-   "text": "- Un job d'export est téléchargeable seulement s'il est COMPLETED, avec storageRef et expiresAt renseignés et now avant expiresAt, voir `mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/export/ExportJob.java:65-70` [#39e016af7a8585d6-1].",
-   "fact_text": "Un job d'export est téléchargeable seulement s'il est COMPLETED, avec storageRef et expiresAt renseignés et now avant expiresAt, voir ExportJob.java",
+   "text": "- Un job d'export est téléchargeable seulement si son statut est COMPLETED, si storageRef et expiresAt sont renseignés et si now précède expiresAt, voir `mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/export/ExportJob.java:65-70` [#39e016af7a8585d6-1]",
+   "fact_text": "Un job d'export est téléchargeable seulement si son statut est COMPLETED, si storageRef et expiresAt sont renseignés et si now précède expiresAt, voir ExportJob.java",
    "consigne": null,
    "consigne_dropped": false,
    "cites": [
@@ -96,39 +96,35 @@
      "overlap": {
       "identifiers": 1.0,
       "values": null,
-      "terms": 0.333,
+      "terms": 0.4,
       "n": {
        "identifiers": 4,
        "values": 0,
-       "terms": 3
+       "terms": 5
       }
      },
-     "restatement": "ExportJob.isDownloadable(now) est vrai seulement si le statut est COMPLETED, que storageRef et expiresAt sont non null, et que now est strictement avant expiresAt. Un job expiré ou sans stockage n'est donc pas téléchargeable.",
+     "restatement": "`ExportJob.isDownloadable(now)` vaut vrai seulement si le statut est COMPLETED, que `storageRef` et `expiresAt` ne sont pas nuls, et que `now` est strictement antérieur à `expiresAt`. Un job expiré ou non terminé n'est donc pas téléchargeable.",
      "confidence": "high",
-     "files_read_missing": true,
-     "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "files_read_missing": true
     },
     "rediscover": {
      "found": true,
-     "cost": 4,
+     "cost": 2,
      "within_budget": true,
      "covered": false,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/backend/src/main/java/com/matimeline/eventmanager/domain/models/export/ExportJob.java",
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/packs-0-10-bfb23b/backend/src/main/java/com/matimeline/eventmanager/domain/models/export/ExportJob.java",
      "file_ok": true,
      "overlap": {
       "identifiers": 1.0,
       "values": null,
-      "terms": 0.333,
+      "terms": 0.4,
       "n": {
        "identifiers": 4,
        "values": 0,
-       "terms": 3
+       "terms": 5
       }
      },
-     "job": "state-machine:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_domain_models_RecurrenceUnit.java:1",
-     "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "job": "state-machine:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_domain_models_export_ExportJob.java:1"
     },
     "comment": [],
     "refute": {
@@ -136,9 +132,9 @@
      "refuted": 0,
      "refute_unproven": 0,
      "reasons": [
-      "ExportJob.isDownloadable (L65-70) exige status COMPLETED, storageRef et expiresAt non nuls et now.isBefore(expiresAt), conforme à la ligne.",
-      "ExportJob.isDownloadable (L65-70) requires status COMPLETED, storageRef non-null, expiresAt non-null and now.isBefore(expiresAt), exactly as stated.",
-      "ExportJob.isDownloadable (L65-70) exige COMPLETED, storageRef non null, expiresAt non null et now.isBefore(expiresAt), conforme à la ligne."
+      "ExportJob.isDownloadable L65-70 teste le statut COMPLETED, storageRef, expiresAt et now.isBefore(expiresAt), comme la ligne.",
+      "ExportJob.isDownloadable (L65-70) teste exactement COMPLETED, storageRef non null, expiresAt non null et now.isBefore(expiresAt).",
+      "ExportJob.isDownloadable (L65-70) exige status COMPLETED, storageRef et expiresAt non nuls et now avant expiresAt, ce que dit la ligne."
      ],
      "evidence": [
       "",
@@ -147,11 +143,45 @@
      ],
      "consigne_verdict": "n/a",
      "question_verdict": "n/a",
-     "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "searched": true,
+     "search": {
+      "check": "scope",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Read",
+         "target": "ExportJob.java",
+         "found": "Les quatre conditions sont présentes."
+        }
+       ],
+       [
+        {
+         "tool": "Read",
+         "target": "ExportJob.java",
+         "found": "Les quatre conditions de isDownloadable correspondent à la ligne."
+        }
+       ],
+       [
+        {
+         "tool": "Read",
+         "target": "ExportJob.java",
+         "found": "isDownloadable contient exactement les quatre conditions citées."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     }
     }
    },
    "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
    "placed": {
     "pack_line": 30,
     "annex_table": null
@@ -162,8 +192,250 @@
    "id": "state-machine:rules:2",
    "section": "rules",
    "rank": 2,
-   "text": "- Côté frontend, COMPLETED et FAILED sont les statuts terminaux, et l'arrêt du polling repose sur ce test, voir `mytimeline:frontend/src/lib/schemas/export.ts:33-35` [#b41ecf1b43916e73-1].",
-   "fact_text": "Côté frontend, COMPLETED et FAILED sont les statuts terminaux, et l'arrêt du polling repose sur ce test, voir export.ts",
+   "text": "- Un job est créé en PENDING, sans storageRef, errorCode, completedAt ni expiresAt [#7766b9e71e04f41e-1]",
+   "fact_text": "Un job est créé en PENDING, sans storageRef, errorCode, completedAt ni expiresAt",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "state-machine/7766b9e71e04f41e-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/export/ExportJob.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/export/ExportJob.java",
+     43,
+     46,
+     "c961f0f5e2b5413b2595e9880fa46b636b42107c6471895de5d4626dbf2441be"
+    ]
+   ],
+   "code_sha256": "c961f0f5e2b5413b2595e9880fa46b636b42107c6471895de5d4626dbf2441be",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 0.6,
+      "values": null,
+      "terms": 1.0,
+      "n": {
+       "identifiers": 5,
+       "values": 0,
+       "terms": 1
+      }
+     },
+     "restatement": "`ExportJob.pending` crée un job au statut PENDING, avec `ownerId`, `format` et `createdAt` renseignés et l'id à null. L'extrait ne donne pas les noms des champs nuls, donc on ne sait pas lesquels sont `storageRef` et `expiresAt`, mais ils sont initialisés à null.",
+     "confidence": "medium",
+     "files_read_missing": true
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "state-machine.details.md",
+     "row": 1
+    }
+   },
+   "uses": 0
+  },
+  {
+   "id": "state-machine:rules:3",
+   "section": "rules",
+   "rank": 3,
+   "text": "- Selon la javadoc, les transitions sont pilotées par le use case et non par le domaine, et l'enum de statut n'a aucune méthode de transition [#8573c7ab10277f70-1] [#3b402fae6e28454a-2]",
+   "fact_text": "Selon la javadoc, les transitions sont pilotées par le use case et non par le domaine, et l'enum de statut n'a aucune méthode de transition",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "state-machine/8573c7ab10277f70-1",
+    "state-machine/3b402fae6e28454a-2"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/export/ExportJob.java",
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/export/ExportJobStatus.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/export/ExportJob.java",
+     10,
+     11,
+     "91bc4d37af814eaae0645ed91905c9a92c8a4717d78d12f719ba9c031db94638"
+    ],
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/export/ExportJobStatus.java",
+     8,
+     13,
+     "49e8cf22be38decde94c016a93f4aeb0ec147530e5dbb04a6cadef66c74a0df5"
+    ]
+   ],
+   "code_sha256": "ebfd2f2fac630f5bda0fa8883e1f17e436e5850ec583623f77ca144d90058a4c",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 0.625,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 8
+      }
+     },
+     "restatement": "Le Javadoc de la classe `ExportJob` indique que les transitions sont pilotées par le use case (`ExportServiceImpl` et `AsyncExportRunner`) via `markRunning()` et `markCompleted(String, LocalDateTime, LocalDateTime)`, mais la liste est coupée dans l'extrait. L'enum `ExportJobStatus` déclare quatre états : PENDING, RUNNING, COMPLETED et FAILED.",
+     "confidence": "low",
+     "files_read_missing": true
+    },
+    "rediscover": null,
+    "comment": [
+     {
+      "id": "state-machine/8573c7ab10277f70-1",
+      "verdict": "unverifiable"
+     }
+    ],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "words:aucune",
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "state-machine.details.md",
+     "row": 2
+    }
+   },
+   "uses": 0
+  },
+  {
+   "id": "state-machine:rules:4",
+   "section": "rules",
+   "rank": 4,
+   "text": "- Selon la javadoc, le cycle va de PENDING à RUNNING, puis à COMPLETED ou FAILED, et completedAt et expiresAt ne sont renseignés qu'à la complétion [#3b402fae6e28454a-1] [#8573c7ab10277f70-2]",
+   "fact_text": "Selon la javadoc, le cycle va de PENDING à RUNNING, puis à COMPLETED ou FAILED, et completedAt et expiresAt ne sont renseignés qu'à la complétion",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "state-machine/3b402fae6e28454a-1",
+    "state-machine/8573c7ab10277f70-2"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/export/ExportJobStatus.java",
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/export/ExportJob.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/export/ExportJobStatus.java",
+     3,
+     7,
+     "f1d5843e8fb25917790160ee1b38bc485e504a4664c85c24d0b9a24639300c89"
+    ],
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/export/ExportJob.java",
+     12,
+     13,
+     "464578cb3a0edf5aa1fa2a6132a51be317cc342eb4040c9a1451f748765547d3"
+    ]
+   ],
+   "code_sha256": "ce662910e6b79ed56951955c8fd59f886f7951256f3e1e5ba4dec068f488c319",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [
+     {
+      "id": "state-machine/3b402fae6e28454a-1",
+      "verdict": "unverifiable"
+     },
+     {
+      "id": "state-machine/8573c7ab10277f70-2",
+      "verdict": "confirmed"
+     }
+    ],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "ExportJobStatus L4-6 décrit PENDING, RUNNING puis COMPLETED ou FAILED. ExportJob L12-13 dit que completedAt et expiresAt ne sont renseignés qu'à la complétion. markCompleted est la seule méthode qui les affecte.",
+      "La javadoc d'ExportJobStatus (L3-7) donne le cycle PENDING, RUNNING, puis COMPLETED ou FAILED. La javadoc d'ExportJob (L12-13) dit que storageRef, completedAt et expiresAt ne sont renseignés qu'à la complétion. markCompleted est le seul à les renseigner.",
+      "ExportJobStatus (L4-6) et ExportJob (L12-13) décrivent ce cycle. markCompleted est la seule méthode qui renseigne completedAt et expiresAt, et pending() les met à null."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "scope",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Read",
+         "target": "ExportJob.java",
+         "found": "Seul markCompleted modifie completedAt et expiresAt."
+        }
+       ],
+       [
+        {
+         "tool": "Read",
+         "target": "ExportJob.java",
+         "found": "Seul markCompleted affecte storageRef, completedAt et expiresAt."
+        }
+       ],
+       [
+        {
+         "tool": "Read",
+         "target": "ExportJob.java",
+         "found": "Seul markCompleted affecte completedAt et expiresAt. Le constructeur public accepte des valeurs quelconques pour la réhydratation."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     }
+    }
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "placed": {
+    "pack_line": 31,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "state-machine:rules:5",
+   "section": "rules",
+   "rank": 5,
+   "text": "- Côté frontend, COMPLETED et FAILED sont les deux statuts terminaux et l'arrêt du polling repose sur ce test, voir `mytimeline:frontend/src/lib/schemas/export.ts:33-35` [#b41ecf1b43916e73-1]",
+   "fact_text": "Côté frontend, COMPLETED et FAILED sont les deux statuts terminaux et l'arrêt du polling repose sur ce test, voir export.ts",
    "consigne": null,
    "consigne_dropped": false,
    "cites": [
@@ -191,14 +463,14 @@
      "overlap": {
       "identifiers": 0.667,
       "values": null,
-      "terms": 0.5,
+      "terms": 0.556,
       "n": {
        "identifiers": 3,
        "values": 0,
-       "terms": 8
+       "terms": 9
       }
      },
-     "restatement": "Côté frontend, isTerminalStatus renvoie true pour COMPLETED ou FAILED. Le commentaire indique que ce prédicat sert à arrêter le polling du statut d'export.",
+     "restatement": "`isTerminalStatus` côté frontend ne renvoie vrai que pour COMPLETED et FAILED, ce qui arrête le polling. PENDING et RUNNING ne sont pas terminaux.",
      "confidence": "high",
      "files_read_missing": true
     },
@@ -207,26 +479,27 @@
     "refute": null
    },
    "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
    "placed": {
-    "pack_line": 31,
+    "pack_line": null,
     "annex_table": {
      "part": "state-machine.details.md",
-     "row": 1
+     "row": 3
     }
    },
-   "uses": 0,
-   "carried_from": "2026-11-17T10:40:47Z"
+   "uses": 0
   },
   {
-   "id": "state-machine:rules:2#2",
+   "id": "state-machine:rules:6",
    "section": "rules",
-   "rank": 2,
-   "text": "- JSON et MARKDOWN sont des formats synchrones (réponse inline), les autres sont asynchrones, voir `mytimeline:frontend/src/lib/schemas/export.ts:25-27` [#10f6e5f3c0f2637e-1].",
-   "fact_text": "JSON et MARKDOWN sont des formats synchrones (réponse inline), les autres sont asynchrones, voir export.ts",
+   "rank": 6,
+   "text": "- Dans la réponse d'export, downloadUrl et expiresAt sont nullables, alors que status ne l'est pas [#5c623b5364809082-2]",
+   "fact_text": "Dans la réponse d'export, downloadUrl et expiresAt sont nullables, alors que status ne l'est pas",
    "consigne": null,
    "consigne_dropped": false,
    "cites": [
-    "state-machine/10f6e5f3c0f2637e-1"
+    "state-machine/5c623b5364809082-2"
    ],
    "files": [
     "mytimeline:frontend/src/lib/schemas/export.ts"
@@ -234,71 +507,12 @@
    "ranges": [
     [
      "mytimeline:frontend/src/lib/schemas/export.ts",
-     25,
-     27,
-     "de7e4ce4f752e8b96987fe11bcf5372724ff71c9a28b91653a9e12d3d5219ba3"
+     42,
+     48,
+     "23146cba65e8cc24f72eada6bfc61f2568d058c5a3c519fc57a899d5fc201b34"
     ]
    ],
-   "code_sha256": "de7e4ce4f752e8b96987fe11bcf5372724ff71c9a28b91653a9e12d3d5219ba3",
-   "verdict": "annex",
-   "reason": "deducible",
-   "final": true,
-   "measures": {
-    "fidelity": null,
-    "deduce": {
-     "covered": true,
-     "overlap": {
-      "identifiers": 0.667,
-      "values": null,
-      "terms": 0.6,
-      "n": {
-       "identifiers": 3,
-       "values": 0,
-       "terms": 5
-      }
-     },
-     "restatement": "isSyncFormat renvoie true si le format figure dans SYNC_FORMATS, soit JSON ou MARKDOWN, formats générés en ligne avec une réponse HTTP immédiate. Tout autre format est donc traité comme asynchrone.",
-     "confidence": "high",
-     "files_read_missing": true
-    },
-    "rediscover": null,
-    "comment": [],
-    "refute": null
-   },
-   "contrary": null,
-   "placed": {
-    "pack_line": 31,
-    "annex_table": {
-     "part": "state-machine.details.md",
-     "row": 2
-    }
-   },
-   "uses": 0,
-   "carried_from": "2026-11-17T10:40:47Z"
-  },
-  {
-   "id": "state-machine:rules:3",
-   "section": "rules",
-   "rank": 3,
-   "text": "- La fabrique ExportJob.pending crée un job au statut PENDING sans storageRef, errorCode, completedAt ni expiresAt [#7766b9e71e04f41e-1].",
-   "fact_text": "La fabrique ExportJob.pending crée un job au statut PENDING sans storageRef, errorCode, completedAt ni expiresAt",
-   "consigne": null,
-   "consigne_dropped": false,
-   "cites": [
-    "state-machine/7766b9e71e04f41e-1"
-   ],
-   "files": [
-    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/export/ExportJob.java"
-   ],
-   "ranges": [
-    [
-     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/export/ExportJob.java",
-     43,
-     46,
-     "c961f0f5e2b5413b2595e9880fa46b636b42107c6471895de5d4626dbf2441be"
-    ]
-   ],
-   "code_sha256": "c961f0f5e2b5413b2595e9880fa46b636b42107c6471895de5d4626dbf2441be",
+   "code_sha256": "23146cba65e8cc24f72eada6bfc61f2568d058c5a3c519fc57a899d5fc201b34",
    "verdict": "annex",
    "reason": "deducible",
    "final": true,
@@ -309,14 +523,14 @@
      "overlap": {
       "identifiers": 1.0,
       "values": null,
-      "terms": 1.0,
+      "terms": 0.75,
       "n": {
-       "identifiers": 6,
+       "identifiers": 2,
        "values": 0,
-       "terms": 3
+       "terms": 4
       }
      },
-     "restatement": "La fabrique ExportJob.pending(ownerId, format, createdAt) crée un job au statut PENDING, avec storageRef, completedAt, expiresAt et errorCode à null. Seul createdAt est renseigné avec les autres données d'entrée.",
+     "restatement": "Le schéma Zod `exportJobResponseSchema` valide un objet avec `jobId` (chaîne UUID), `status` et `format` (schémas enum), `downloadUrl` et `expiresAt` (chaînes nullables). Il ne contient pas de logique de transition, seulement la forme de la réponse.",
      "confidence": "high",
      "files_read_missing": true
     },
@@ -325,159 +539,23 @@
     "refute": null
    },
    "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
    "placed": {
-    "pack_line": 32,
-    "annex_table": {
-     "part": "state-machine.details.md",
-     "row": 3
-    }
-   },
-   "uses": 0,
-   "carried_from": "2026-11-17T10:40:47Z"
-  },
-  {
-   "id": "state-machine:rules:4",
-   "section": "rules",
-   "rank": 4,
-   "text": "- L'enum ExportJobStatus ne porte aucune méthode de transition, aucune règle de passage n'y est codée [#3b402fae6e28454a-2].",
-   "fact_text": "L'enum ExportJobStatus ne porte aucune méthode de transition, aucune règle de passage n'y est codée",
-   "consigne": null,
-   "consigne_dropped": false,
-   "cites": [
-    "state-machine/3b402fae6e28454a-2"
-   ],
-   "files": [
-    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/export/ExportJobStatus.java"
-   ],
-   "ranges": [
-    [
-     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/export/ExportJobStatus.java",
-     8,
-     13,
-     "49e8cf22be38decde94c016a93f4aeb0ec147530e5dbb04a6cadef66c74a0df5"
-    ]
-   ],
-   "code_sha256": "49e8cf22be38decde94c016a93f4aeb0ec147530e5dbb04a6cadef66c74a0df5",
-   "verdict": "annex",
-   "reason": "rediscovered",
-   "final": true,
-   "measures": {
-    "fidelity": null,
-    "deduce": {
-     "covered": false,
-     "overlap": {
-      "identifiers": 1.0,
-      "values": null,
-      "terms": 0.286,
-      "n": {
-       "identifiers": 1,
-       "values": 0,
-       "terms": 7
-      }
-     },
-     "restatement": "L'enum ExportJobStatus ne définit que quatre constantes : PENDING, RUNNING, COMPLETED et FAILED. L'ordre de transition (PENDING puis RUNNING puis COMPLETED ou FAILED) n'apparaît que dans le commentaire de tête, hors de ce bloc.",
-     "confidence": "high",
-     "files_read_missing": true
-    },
-    "rediscover": {
-     "found": true,
-     "cost": 3,
-     "within_budget": true,
-     "covered": true,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/backend/src/main/java/com/matimeline/eventmanager/domain/models/export/ExportJobStatus.java",
-     "file_ok": true,
-     "overlap": {
-      "identifiers": 1.0,
-      "values": null,
-      "terms": 0.571,
-      "n": {
-       "identifiers": 1,
-       "values": 0,
-       "terms": 7
-      }
-     },
-     "job": "state-machine:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_domain_models_RecurrenceUnit.java:1",
-     "rank_in_lot": 1
-    },
-    "comment": [],
-    "refute": null
-   },
-   "contrary": null,
-   "placed": {
-    "pack_line": 33,
+    "pack_line": null,
     "annex_table": {
      "part": "state-machine.details.md",
      "row": 4
     }
    },
-   "uses": 0,
-   "carried_from": "2026-11-17T10:40:47Z"
+   "uses": 0
   },
   {
-   "id": "state-machine:rules:5",
+   "id": "state-machine:rules:7",
    "section": "rules",
-   "rank": 5,
-   "text": "- Un token de réinitialisation est utilisable seulement s'il n'est pas consommé et pas expiré à l'instant now, voir `mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/PasswordResetToken.java:63-66` [#6008cb44b64f55ce-1].",
-   "fact_text": "Un token de réinitialisation est utilisable seulement s'il n'est pas consommé et pas expiré à l'instant now, voir PasswordResetToken.java",
-   "consigne": null,
-   "consigne_dropped": false,
-   "cites": [
-    "state-machine/6008cb44b64f55ce-1"
-   ],
-   "files": [
-    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/PasswordResetToken.java"
-   ],
-   "ranges": [
-    [
-     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/PasswordResetToken.java",
-     63,
-     66,
-     "4b1d15d96099819636b57ddebe9756ff3fc74fed1af11dc3632916e87aaf4b24"
-    ]
-   ],
-   "code_sha256": "4b1d15d96099819636b57ddebe9756ff3fc74fed1af11dc3632916e87aaf4b24",
-   "verdict": "annex",
-   "reason": "deducible",
-   "final": true,
-   "measures": {
-    "fidelity": null,
-    "deduce": {
-     "covered": true,
-     "overlap": {
-      "identifiers": 1.0,
-      "values": null,
-      "terms": 0.667,
-      "n": {
-       "identifiers": 1,
-       "values": 0,
-       "terms": 6
-      }
-     },
-     "restatement": "La méthode PasswordResetToken.isUsable(now) renvoie true seulement si le token n'est pas consommé (!isConsumed()) et n'est pas expiré à l'instant now (!isExpired(now)).",
-     "confidence": "high",
-     "files_read_missing": true
-    },
-    "rediscover": null,
-    "comment": [],
-    "refute": null
-   },
-   "contrary": null,
-   "placed": {
-    "pack_line": 35,
-    "annex_table": {
-     "part": "state-machine.details.md",
-     "row": 5
-    }
-   },
-   "uses": 0,
-   "carried_from": "2026-11-17T10:40:47Z"
-  },
-  {
-   "id": "state-machine:rules:6",
-   "section": "rules",
-   "rank": 6,
-   "text": "- ThemePreference.fromValue compare sans trim ni changement de casse et lève IllegalArgumentException pour une valeur nulle ou inconnue, voir `mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/ThemePreference.java:40-49` [#52f9f4a8f8d8b618-1].",
-   "fact_text": "ThemePreference.fromValue compare sans trim ni changement de casse et lève IllegalArgumentException pour une valeur nulle ou inconnue, voir ThemePreference.java",
+   "rank": 7,
+   "text": "- ThemePreference.fromValue compare sans trim ni changement de casse et lève IllegalArgumentException si la valeur est nulle ou inconnue [#52f9f4a8f8d8b618-1]",
+   "fact_text": "ThemePreference.fromValue compare sans trim ni changement de casse et lève IllegalArgumentException si la valeur est nulle ou inconnue",
    "consigne": null,
    "consigne_dropped": false,
    "cites": [
@@ -512,7 +590,7 @@
        "terms": 8
       }
      },
-     "restatement": "ThemePreference.fromValue parcourt les constantes de l'enum et renvoie celle dont le champ value est égal à la chaîne donnée (comparaison exacte, sensible à la casse). Une valeur null ou inconnue lève IllegalArgumentException (« Préférence de thème invalide »).",
+     "restatement": "`ThemePreference.fromValue` parcourt les constantes de l'enum et retourne celle dont `value` est égal à la chaîne donnée, sans trim ni casse ignorée. Une valeur nulle ou absente lève `IllegalArgumentException` (« Préférence de thème invalide »).",
      "confidence": "high",
      "files_read_missing": true
     },
@@ -521,22 +599,120 @@
     "refute": null
    },
    "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
    "placed": {
-    "pack_line": 37,
+    "pack_line": null,
     "annex_table": {
      "part": "state-machine.details.md",
-     "row": 6
+     "row": 5
     }
    },
-   "uses": 0,
-   "carried_from": "2026-11-17T10:40:47Z"
+   "uses": 0
   },
   {
-   "id": "state-machine:rules:7",
+   "id": "state-machine:rules:8",
    "section": "rules",
-   "rank": 7,
-   "text": "- RecurrenceUnit.fromString diffère: null ou vide donne null, la casse est ignorée et les pluriels sont acceptés, voir `mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/RecurrenceUnit.java:30-51` [#3316e4f42e7d1b2e-1].",
-   "fact_text": "RecurrenceUnit.fromString diffère: null ou vide donne null, la casse est ignorée et les pluriels sont acceptés, voir RecurrenceUnit.java",
+   "rank": 8,
+   "text": "- Selon la javadoc, ThemePreference est persisté par un AttributeConverter et non par @Enumerated(STRING), car le CHECK refuse le nom de la constante [#950044d26baf5570-1]",
+   "fact_text": "Selon la javadoc, ThemePreference est persisté par un AttributeConverter et non par @Enumerated(STRING), car le CHECK refuse le nom de la constante",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "state-machine/950044d26baf5570-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/ThemePreference.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/ThemePreference.java",
+     10,
+     11,
+     "0dd37498c9f1d3ba98137530f2bca63ef26d742bb3faf90c13c597af17e27217"
+    ]
+   ],
+   "code_sha256": "0dd37498c9f1d3ba98137530f2bca63ef26d742bb3faf90c13c597af17e27217",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [
+     {
+      "id": "state-machine/950044d26baf5570-1",
+      "verdict": "unverifiable"
+     }
+    ],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "ThemePreference.java L10-11 dit exactement cela (AttributeConverter, jamais @Enumerated(STRING), CHECK V16). La ligne est fidèle.",
+      "UserEntity.java:42 utilise @Convert(converter = ThemePreferenceConverter.class) et la javadoc de ThemePreference (L10-11) dit la même chose. Aucun @Enumerated n'est utilisé pour ThemePreference.",
+      "UserEntity.java L42 utilise @Convert(converter = ThemePreferenceConverter.class) et non @Enumerated, conforme à la javadoc de ThemePreference (L10-11)."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "scope",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Read",
+         "target": "ThemePreference.java",
+         "found": "La javadoc confirme l'AttributeConverter et le refus du nom de constante par le CHECK."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "@Enumerated|AttributeConverter|@Convert",
+         "found": "ThemePreferenceConverter implémente AttributeConverter<ThemePreference,String>, utilisé dans UserEntity."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "RecurrenceUnit|ThemePreference dans infrastructure/*Entity*.java",
+         "found": "UserEntity porte @Convert(converter = ThemePreferenceConverter.class) sur theme_preference."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     }
+    }
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "placed": {
+    "pack_line": 33,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "state-machine:rules:9",
+   "section": "rules",
+   "rank": 9,
+   "text": "- RecurrenceUnit.fromString renvoie null pour une valeur nulle ou vide, ignore la casse et lève IllegalArgumentException pour une valeur inconnue [#3316e4f42e7d1b2e-1]",
+   "fact_text": "RecurrenceUnit.fromString renvoie null pour une valeur nulle ou vide, ignore la casse et lève IllegalArgumentException pour une valeur inconnue",
    "consigne": null,
    "consigne_dropped": false,
    "cites": [
@@ -554,59 +730,87 @@
     ]
    ],
    "code_sha256": "4fe80d3940b8c6b46a645d6b9a43cca14dcc54bad3d056b4d5f5774c95ba116b",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.667,
+      "n": {
+       "identifiers": 3,
+       "values": 0,
+       "terms": 9
+      }
+     },
+     "restatement": "`RecurrenceUnit.fromString` renvoie `null` si la valeur est nulle ou vide après `trim()`. Sinon, la comparaison se fait en majuscules sur WEEK/WEEKS, MONTH/MONTHS et YEAR/YEARS, et toute autre valeur lève `IllegalArgumentException` avec le message « Unité de récurrence invalide ».",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "state-machine.details.md",
+     "row": 6
+    }
+   },
+   "uses": 0
+  },
+  {
+   "id": "state-machine:rules:10",
+   "section": "rules",
+   "rank": 10,
+   "text": "- Selon la javadoc, RecurrenceUnit est persisté par son nom et la migration V7 réaligne les anciennes valeurs [#781bc749af77ddef-1]",
+   "fact_text": "Selon la javadoc, RecurrenceUnit est persisté par son nom et la migration V7 réaligne les anciennes valeurs",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "state-machine/781bc749af77ddef-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/RecurrenceUnit.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/RecurrenceUnit.java",
+     7,
+     9,
+     "ea8f4fafd50c0b4b08c12a017efef83b582b6fe2a29cfd668f16c06a68bb63b8"
+    ]
+   ],
+   "code_sha256": "ea8f4fafd50c0b4b08c12a017efef83b582b6fe2a29cfd668f16c06a68bb63b8",
    "verdict": "admit",
    "reason": "admitted",
    "final": true,
    "measures": {
     "fidelity": null,
-    "deduce": {
-     "covered": false,
-     "overlap": {
-      "identifiers": 1.0,
-      "values": null,
-      "terms": 0.25,
-      "n": {
-       "identifiers": 2,
-       "values": 0,
-       "terms": 8
-      }
-     },
-     "restatement": "RecurrenceUnit.fromString renvoie null pour une valeur null ou vide après trim. Sinon il compare la valeur en majuscules à WEEK/WEEKS, MONTH/MONTHS ou YEAR/YEARS, et lève IllegalArgumentException (« Unité de récurrence invalide ») pour toute autre valeur.",
-     "confidence": "high",
-     "files_read_missing": true,
-     "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
-    },
-    "rediscover": {
-     "found": true,
-     "cost": 5,
-     "within_budget": true,
-     "covered": false,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/backend/src/main/java/com/matimeline/eventmanager/domain/models/export/ExportFormat.java",
-     "file_ok": false,
-     "overlap": {
-      "identifiers": 0.0,
-      "values": null,
-      "terms": 0.875,
-      "n": {
-       "identifiers": 2,
-       "values": 0,
-       "terms": 8
-      }
-     },
-     "job": "state-machine:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_domain_models_RecurrenceUnit.java:1",
-     "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
-    },
-    "comment": [],
+    "deduce": null,
+    "rediscover": null,
+    "comment": [
+     {
+      "id": "state-machine/781bc749af77ddef-1",
+      "verdict": "unverifiable"
+     }
+    ],
     "refute": {
      "votes": 3,
      "refuted": 0,
      "refute_unproven": 0,
      "reasons": [
-      "RecurrenceUnit.fromString (L30-51) renvoie null pour null ou vide après trim, applique toUpperCase et accepte WEEK/WEEKS, MONTH/MONTHS, YEAR/YEARS, ce que dit la ligne.",
-      "RecurrenceUnit.fromString (L30-51) returns null for null or blank, uppercases input, and accepts WEEK/WEEKS, MONTH/MONTHS, YEAR/YEARS. The line matches this. The line omits the IllegalArgumentException on unknown values, but that is not a contradiction.",
-      "RecurrenceUnit.fromString (L30-51) renvoie null pour null ou vide, applique toUpperCase et accepte WEEK/WEEKS, MONTH/MONTHS, YEAR/YEARS, ce qui correspond à la ligne."
+      "La ligne dit 'selon la javadoc' et RecurrenceUnit.java L7-9 l'affirme. Aucun contre-exemple n'apparaît dans la portée pour cette règle propre à RecurrenceUnit.",
+      "La javadoc de RecurrenceUnit (L7-9) dit bien cela et EventEntity.java:43 porte @Enumerated(EnumType.STRING). La ligne est formulée « selon la javadoc ».",
+      "EventEntity.java L43-45 utilise bien @Enumerated(EnumType.STRING) pour RecurrenceUnit, conforme à la javadoc (L7-9). Le seul autre enum du périmètre, ThemePreference, est distinct et la ligne ne le concerne pas."
      ],
      "evidence": [
       "",
@@ -615,13 +819,47 @@
      ],
      "consigne_verdict": "n/a",
      "question_verdict": "n/a",
-     "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "searched": true,
+     "search": {
+      "check": "scope",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Read",
+         "target": "RecurrenceUnit.java",
+         "found": "La javadoc affirme @Enumerated(STRING) et la migration V7, comme la ligne."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "@Enumerated|AttributeConverter|@Convert",
+         "found": "EventEntity L43 utilise @Enumerated(STRING), UserEntity L42 utilise @Convert(ThemePreferenceConverter)."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "RecurrenceUnit|ThemePreference dans infrastructure/*Entity*.java",
+         "found": "EventEntity persiste RecurrenceUnit avec @Enumerated(STRING). UserEntity persiste ThemePreference via un convertisseur."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     }
     }
    },
    "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
    "placed": {
-    "pack_line": 38,
+    "pack_line": 34,
     "annex_table": null
    },
    "uses": 0
@@ -630,8 +868,8 @@
    "id": "state-machine:tests:1",
    "section": "tests",
    "rank": 1,
-   "text": "- Les tests fixent que le passage d'un export à terminé enregistre la date de complétion fournie par l'appelant, sans la dériver du TTL, et laisse la date d'expiration inchangée, voir `mytimeline:backend/src/test/java/com/matimeline/eventmanager/domain/models/export/ExportJobTest.java:18-31` [#195292fcf3c5228b-1].",
-   "fact_text": "Les tests fixent que le passage d'un export à terminé enregistre la date de complétion fournie par l'appelant, sans la dériver du TTL, et laisse la date d'expiration inchangée, voir ExportJobTest.java",
+   "text": "- Les tests fixent que markCompleted d'un job d'export passe le statut à COMPLETED, conserve le storageRef, pose completedAt à la valeur fournie et laisse expiresAt inchangé [#195292fcf3c5228b-1], voir `mytimeline:backend/src/test/java/com/matimeline/eventmanager/domain/models/export/ExportJobTest.java:18-31`.",
+   "fact_text": "Les tests fixent que markCompleted d'un job d'export passe le statut à COMPLETED, conserve le storageRef, pose completedAt à la valeur fournie et laisse expiresAt inchangé, voir ExportJobTest.java",
    "consigne": null,
    "consigne_dropped": false,
    "cites": [
@@ -650,73 +888,53 @@
    ],
    "code_sha256": "37b483652705c36cd2203649ad19d86dc05f508823256dd9571e976cd72c6b12",
    "verdict": "admit",
-   "reason": "admitted",
+   "reason": "rediscovered",
    "final": true,
    "measures": {
     "fidelity": null,
     "deduce": {
      "covered": false,
      "overlap": {
-      "identifiers": 0.0,
+      "identifiers": 0.833,
       "values": null,
-      "terms": 0.071,
+      "terms": 0.455,
       "n": {
-       "identifiers": 2,
+       "identifiers": 6,
        "values": 0,
-       "terms": 14
+       "terms": 11
       }
      },
-     "restatement": "Le test markCompleted_setsCompletedAtToProvidedValue_notDerivedFromTtl crée un job en attente, appelle markCompleted avec un expiresAt volontairement différent de completedAt plus 24 heures, puis vérifie que le statut vaut COMPLETED et que completedAt et expiresAt reprennent exactement les valeurs passées.",
+     "restatement": "Le test `markCompleted_setsCompletedAtToProvidedValue_notDerivedFromTtl` vérifie qu'après `markCompleted` le statut passe à COMPLETED, que `storageRef` et `expiresAt` sont ceux passés, et que `completedAt` reprend la valeur fournie et n'est pas calculée comme `expiresAt` moins 24 h (expiresAt volontairement différent).",
      "confidence": "high",
-     "files_read_missing": true,
-     "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "files_read_missing": true
     },
     "rediscover": {
      "found": true,
-     "cost": 6,
+     "cost": 3,
      "within_budget": true,
-     "covered": false,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/backend/src/test/java/com/matimeline/eventmanager/domain/models/export/ExportJobTest.java",
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/packs-0-10-bfb23b/backend/src/test/java/com/matimeline/eventmanager/domain/models/export/ExportJobTest.java",
      "file_ok": true,
      "overlap": {
-      "identifiers": 0.0,
+      "identifiers": 1.0,
       "values": null,
-      "terms": 0.286,
+      "terms": 0.727,
       "n": {
-       "identifiers": 2,
+       "identifiers": 6,
        "values": 0,
-       "terms": 14
+       "terms": 11
       }
      },
-     "job": "state-machine:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_domain_models_RecurrenceUnit.java:1",
-     "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "job": "state-machine:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_domain_models_export_ExportJob.java:1",
+     "rank_in_lot": 1
     },
     "comment": [],
-    "refute": {
-     "votes": 3,
-     "refuted": 0,
-     "refute_unproven": 0,
-     "reasons": [
-      "Le test (L18-31) vérifie que completedAt vaut la valeur passée et non expiresAt moins 24h. 'Laisse l'expiration inchangée' est un raccourci : markCompleted (ExportJob L52-57) affecte expiresAt à la valeur fournie, que le test retrouve (L31). Formulation un peu ambiguë mais pas fausse, donc pas de réfutation.",
-      "ExportJobTest (L18-31) asserts that completedAt equals the value passed in, with expiresAt deliberately not completedAt+24h, and that expiresAt is unchanged. markCompleted (L52-57) simply assigns both values.",
-      "ExportJobTest (L18-31) vérifie que getCompletedAt vaut la valeur passée (non dérivée du TTL) et que getExpiresAt reste égal à celui fourni. Le test passe expiresAt à markCompleted, donc \"laisse inchangée\" est une reformulation acceptable."
-     ],
-     "evidence": [
-      "",
-      "",
-      ""
-     ],
-     "consigne_verdict": "n/a",
-     "question_verdict": "n/a",
-     "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
-    }
+    "refute": null
    },
    "contrary": null,
+   "kept_for": "rediscovered",
    "placed": {
-    "pack_line": 76,
+    "pack_line": 71,
     "annex_table": null
    },
    "uses": 0
@@ -725,17 +943,17 @@
    "id": "state-machine:questions:1",
    "section": "questions",
    "rank": 1,
-   "text": "- Qui pilote le cycle PENDING, RUNNING, COMPLETED ou FAILED côté frontend ? La documentation du schéma le décrit, mais le code ne montre que l'enum et le test de statut terminal (COMPLETED, FAILED) qui arrête le polling, voir `mytimeline:frontend/src/lib/schemas/export.ts:29-35` [#fe61f927fe31008f-1] [#43216ccd0ca58163-1] [#b41ecf1b43916e73-1].",
-   "fact_text": "Qui pilote le cycle PENDING, RUNNING, COMPLETED ou FAILED côté frontend ? La documentation du schéma le décrit, mais le code ne montre que l'enum et le test de statut terminal (COMPLETED, FAILED) qui arrête le polling, voir export.ts",
+   "text": "- Qui impose l'ordre PENDING, RUNNING, puis COMPLETED ou FAILED, annoncé par la documentation du schéma `mytimeline:frontend/src/lib/schemas/export.ts:29` [#fe61f927fe31008f-1]. La base ne montre aucun code frontend qui pilote cette transition, et le modèle backend n'en vérifie pas l'ordre [#8096253e175ca857-1].",
+   "fact_text": "Qui impose l'ordre PENDING, RUNNING, puis COMPLETED ou FAILED, annoncé par la documentation du schéma export.ts. La base ne montre aucun code frontend qui pilote cette transition, et le modèle backend n'en vérifie pas l'ordre",
    "consigne": null,
    "consigne_dropped": false,
    "cites": [
     "state-machine/fe61f927fe31008f-1",
-    "state-machine/43216ccd0ca58163-1",
-    "state-machine/b41ecf1b43916e73-1"
+    "state-machine/8096253e175ca857-1"
    ],
    "files": [
-    "mytimeline:frontend/src/lib/schemas/export.ts"
+    "mytimeline:frontend/src/lib/schemas/export.ts",
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/export/ExportJob.java"
    ],
    "ranges": [
     [
@@ -745,19 +963,13 @@
      "43f2f7c8f0f608d612aa5758a97b6cb7936221cd4d2613c7ba44ee95b767114d"
     ],
     [
-     "mytimeline:frontend/src/lib/schemas/export.ts",
-     29,
-     31,
-     "23697b124d0cc50002807128c96b5b3c07840be42dd2d7e94fbe19c953fd8d06"
-    ],
-    [
-     "mytimeline:frontend/src/lib/schemas/export.ts",
-     33,
-     35,
-     "bcb561bdcc2d5c0307e430d5f2d7036a85a874a3a2f6e2add5330a086827e3b7"
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/export/ExportJob.java",
+     48,
+     62,
+     "911a3864a9ad5a34dde5856b2b874f3e89d5556cc69508558df7de3dcd968877"
     ]
    ],
-   "code_sha256": "3183e621aacfdf41c7cbf15beeac248e9f26687d0b76b1a64b7670d38de0fb11",
+   "code_sha256": "461012b898712f041639a8572cc2ae8260decdcc95528eccb285512a40655f64",
    "verdict": "admit",
    "reason": "admitted",
    "final": true,
@@ -776,9 +988,9 @@
      "refuted": 0,
      "refute_unproven": 0,
      "reasons": [
-      "export.ts L29-35 ne montre que l'enum, le commentaire de cycle de vie et isTerminalStatus. Le code lu ne dit pas qui fait avancer les statuts côté frontend, donc la question reste ouverte.",
-      "Frontend export.ts (L29-35) only has the enum, a doc comment on the lifecycle and isTerminalStatus. It does not show who drives the transitions on the frontend. ExportJob.java names the use case as the driver on the backend, but that is a Javadoc comment and not the frontend, so the question stays open.",
-      "export.ts (L29-35) ne contient que l'enum et isTerminalStatus, sans code qui pilote le cycle côté frontend. Seul un commentaire de ExportJob.java (L10) évoque ExportServiceImpl/AsyncExportRunner côté backend, ce qui ne tranche pas la question côté frontend."
+      "Le constat est fidèle : ExportJob.markRunning, markCompleted et markFailed (l.48-62) affectent le statut sans vérifier le statut précédent, et le frontend n'a que le schéma. L'ordre vient de la séquence d'appels dans AsyncExportRunner.run (l.67-82).",
+      "La ligne affirme que le frontend ne pilote rien et que ExportJob ne vérifie pas l'ordre : exact (markRunning/markCompleted/markFailed affectent le statut sans garde, lignes 48-62). Mais le code répond à la question : AsyncExportRunner.run enchaîne l'ordre (lignes 67, 77, 82).",
+      "Le code répond à la question : AsyncExportRunner.run (l.61-85) impose l'ordre : job créé PENDING par ExportJob.pending, markRunning (l.67), puis markCompleted (l.77) ou, en cas de RuntimeException, markFailed (l.82). ExportJob.markX (l.48-62) ne vérifie rien, donc le constat de la ligne reste exact."
      ],
      "evidence": [
       "",
@@ -786,14 +998,63 @@
       ""
      ],
      "consigne_verdict": "n/a",
-     "question_verdict": "open",
-     "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "question_verdict": "resolved",
+     "searched": true,
+     "search": {
+      "check": "answer",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 3,
+      "budget": 6,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "ExportJobStatus|markRunning|markCompleted|markFailed (java, ts, tsx)",
+         "found": "8 fichiers, dont AsyncExportRunner, ExportController, ExportJobMapper et le schéma frontend export.ts."
+        },
+        {
+         "tool": "Read",
+         "target": "AsyncExportRunner.java",
+         "found": "run(jobId) appelle markRunning, puis markCompleted, ou markFailed dans le catch RuntimeException."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "ExportJobStatus|ExportStatus|markRunning|markCompleted|markFailed (backend/src/main)",
+         "found": "Les appels aux transitions ne sont que dans AsyncExportRunner (lignes 67, 77, 82)."
+        },
+        {
+         "tool": "Read",
+         "target": "AsyncExportRunner.java L50-100",
+         "found": "run() fait markRunning, puis markCompleted dans le try, markFailed(GENERATION_ERROR) dans le catch."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "ExportJobStatus|markRunning|markCompleted|markFailed|setStatus( dans backend/src/main",
+         "found": "Les appels markRunning, markCompleted et markFailed n'apparaissent que dans AsyncExportRunner.java (l.67, 77, 82). Aucun autre code ne modifie le statut du domaine."
+        },
+        {
+         "tool": "Read",
+         "target": "AsyncExportRunner.java l.50-100",
+         "found": "run(jobId) est @Async/@Transactional, met en RUNNING, puis COMPLETED dans le try, FAILED dans le catch."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0,
+      "contradicted": 3
+     }
     }
    },
    "contrary": null,
+   "check": "answer",
    "placed": {
-    "pack_line": 80,
+    "pack_line": 75,
     "annex_table": null
    },
    "uses": 0
@@ -802,18 +1063,17 @@
    "id": "state-machine:alerts:1",
    "section": "alerts",
    "rank": 1,
-   "text": "- Les méthodes markRunning, markCompleted et markFailed de ExportJob ne lisent pas le statut courant, donc le modèle accepte une transition depuis COMPLETED ou FAILED. Selon la javadoc le cycle va de PENDING à RUNNING puis COMPLETED ou FAILED, mais l'enum n'a aucune méthode de transition et rien ne l'impose. Garder la garde de statut dans l'appelant ou l'ajouter au modèle, voir `mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/export/ExportJob.java:48-62` [#8096253e175ca857-1] [#3b402fae6e28454a-1] [#3b402fae6e28454a-2].",
-   "fact_text": "Les méthodes markRunning, markCompleted et markFailed de ExportJob ne lisent pas le statut courant, donc le modèle accepte une transition depuis COMPLETED ou FAILED. Selon la javadoc le cycle va de PENDING à RUNNING puis COMPLETED ou FAILED, mais l'enum n'a aucune méthode de transition et rien ne l'impose. Garder la garde de statut dans l'appelant ou l'ajouter au modèle, voir ExportJob.java",
+   "text": "- Les méthodes de transition du job d'export (`mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/export/ExportJob.java:48-62`) ne lisent pas le statut courant, donc le modèle accepte un passage à RUNNING, COMPLETED ou FAILED depuis un job déjà terminé [#8096253e175ca857-1]. Le frontend traite COMPLETED et FAILED comme terminaux et arrête le polling dessus [#b41ecf1b43916e73-1]. Si vous ajoutez un appel à ces méthodes, vérifiez le statut avant l'appel, ou ajoutez la garde dans le modèle.",
+   "fact_text": "Les méthodes de transition du job d'export (ExportJob.java) ne lisent pas le statut courant, donc le modèle accepte un passage à RUNNING, COMPLETED ou FAILED depuis un job déjà terminé. Le frontend traite COMPLETED et FAILED comme terminaux et arrête le polling dessus. Si vous ajoutez un appel à ces méthodes, vérifiez le statut avant l'appel, ou ajoutez la garde dans le modèle",
    "consigne": null,
    "consigne_dropped": false,
    "cites": [
     "state-machine/8096253e175ca857-1",
-    "state-machine/3b402fae6e28454a-1",
-    "state-machine/3b402fae6e28454a-2"
+    "state-machine/b41ecf1b43916e73-1"
    ],
    "files": [
     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/export/ExportJob.java",
-    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/export/ExportJobStatus.java"
+    "mytimeline:frontend/src/lib/schemas/export.ts"
    ],
    "ranges": [
     [
@@ -823,81 +1083,178 @@
      "911a3864a9ad5a34dde5856b2b874f3e89d5556cc69508558df7de3dcd968877"
     ],
     [
-     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/export/ExportJobStatus.java",
-     3,
-     7,
-     "f1d5843e8fb25917790160ee1b38bc485e504a4664c85c24d0b9a24639300c89"
-    ],
-    [
-     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/export/ExportJobStatus.java",
-     8,
-     13,
-     "49e8cf22be38decde94c016a93f4aeb0ec147530e5dbb04a6cadef66c74a0df5"
+     "mytimeline:frontend/src/lib/schemas/export.ts",
+     33,
+     35,
+     "bcb561bdcc2d5c0307e430d5f2d7036a85a874a3a2f6e2add5330a086827e3b7"
     ]
    ],
-   "code_sha256": "b56a041942606cfa21a87fd5ede3ed8b1a7ff98984bf09c0b42f5a229bb6a9aa",
-   "verdict": "annex",
-   "reason": "rediscovered",
+   "code_sha256": "37ade8c90864301619a4ae454c3965769b934019fcf8f0938b276143030b09ff",
+   "verdict": "admit",
+   "reason": "admitted",
    "final": true,
    "measures": {
     "fidelity": null,
-    "deduce": {
-     "covered": false,
-     "overlap": {
-      "identifiers": 0.75,
-      "values": null,
-      "terms": 0.438,
-      "n": {
-       "identifiers": 8,
-       "values": 0,
-       "terms": 16
-      }
-     },
-     "restatement": "Les trois méthodes de transition posent le statut sans garde : markRunning met RUNNING, markCompleted met COMPLETED avec storageRef, completedAt et expiresAt fournis, et markFailed met FAILED avec errorCode. L'extrait ne contient aucune vérification de l'état courant, donc un appel dans un ordre quelconque est accepté.",
-     "confidence": "high",
-     "files_read_missing": true
-    },
-    "rediscover": {
-     "found": true,
-     "cost": 4,
-     "within_budget": true,
-     "covered": true,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/backend/src/main/java/com/matimeline/eventmanager/domain/models/export/ExportJob.java",
-     "file_ok": true,
-     "overlap": {
-      "identifiers": 1.0,
-      "values": null,
-      "terms": 0.5,
-      "n": {
-       "identifiers": 8,
-       "values": 0,
-       "terms": 16
-      }
-     },
-     "job": "state-machine:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_domain_models_RecurrenceUnit.java:1",
-     "rank_in_lot": 2
-    },
-    "comment": [
-     {
-      "id": "state-machine/3b402fae6e28454a-1",
-      "verdict": "unverifiable"
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "markRunning, markCompleted et markFailed (L48-62) n'ont aucune garde sur le statut. Le seul appelant, AsyncExportRunner.run (L67-82), ne vérifie pas le statut après findDomainById. isTerminalStatus côté frontend couvre COMPLETED et FAILED.",
+      "markRunning, markCompleted et markFailed (ExportJob L48-62) n'ont aucune garde de statut. Le seul appelant, AsyncExportRunner.run (L67, 77, 82), ne vérifie pas le statut avant markRunning. Le frontend traite COMPLETED et FAILED comme terminaux (isTerminalStatus).",
+      "markRunning, markCompleted et markFailed (ExportJob L48-62) n'ont aucune garde sur le statut. Le seul appelant, AsyncExportRunner.run (L61-83), ne contrôle pas le statut après findDomainById. isTerminalStatus côté frontend est confirmé. Aucun garde-fou trouvé."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "guards",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "markRunning|markCompleted|markFailed dans backend/src/main",
+         "found": "Le seul appelant est AsyncExportRunner, aux lignes 67, 77 et 82."
+        },
+        {
+         "tool": "Read",
+         "target": "AsyncExportRunner.java L45-95",
+         "found": "Le job est chargé puis markRunning est appelé sans contrôle du statut courant."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "markRunning|markCompleted|markFailed|.complete(|.fail(|.start(",
+         "found": "Seul appelant : AsyncExportRunner L67, 77, 82, sans test du statut."
+        },
+        {
+         "tool": "Read",
+         "target": "AsyncExportRunner.java L50-100",
+         "found": "run() charge le job puis appelle markRunning directement, sans contrôle de statut."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "markRunning|markCompleted|markFailed dans backend/src/main",
+         "found": "Appels uniquement dans AsyncExportRunner L67, L77 et L82."
+        },
+        {
+         "tool": "Read",
+         "target": "AsyncExportRunner.java L40-88",
+         "found": "run() charge le job puis appelle markRunning sans vérifier le statut."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
      }
-    ],
-    "refute": null
-   },
-   "contrary": null,
-   "placed": {
-    "pack_line": 84,
-    "annex_table": {
-     "part": "state-machine.details.md",
-     "row": 7
     }
    },
-   "uses": 0,
-   "carried_from": "2026-11-17T10:40:47Z"
+   "contrary": null,
+   "check": "guards",
+   "placed": {
+    "pack_line": 79,
+    "annex_table": null
+   },
+   "uses": 0
   }
  ],
  "comment_facts": [
+  {
+   "id": "state-machine/8573c7ab10277f70-1",
+   "verdict": "unverifiable",
+   "code_says": "",
+   "code_line_start": 0,
+   "code_line_end": 0,
+   "code_evidence": "",
+   "evidence_check": null,
+   "code_file": "",
+   "invalid": false,
+   "cache_digest": "79929b7e87ccd2712e263108dcae0d0d97ada243655f6338f737d8a5d95ea2f0",
+   "cited_by": [
+    "state-machine:rules:3"
+   ],
+   "structure_rows_removed": []
+  },
+  {
+   "id": "state-machine/3b402fae6e28454a-1",
+   "verdict": "unverifiable",
+   "code_says": "Le fichier déclare l'énumération ExportJobStatus avec quatre valeurs (PENDING, RUNNING, COMPLETED, FAILED) et ne contient aucune transition entre elles. L'ordre PENDING vers RUNNING vers COMPLETED ou FAILED n'est donc pas encodé dans ce fichier.",
+   "code_line_start": 0,
+   "code_line_end": 0,
+   "code_evidence": "",
+   "evidence_check": null,
+   "code_file": "",
+   "invalid": false,
+   "cache_digest": "24fc6c93b83bd9e57bee82e434e59af18b3134fc7ed29c084870478a60895b93",
+   "cited_by": [
+    "state-machine:rules:4"
+   ],
+   "structure_rows_removed": []
+  },
+  {
+   "id": "state-machine/8573c7ab10277f70-2",
+   "verdict": "confirmed",
+   "code_says": "Dans ExportJob, completedAt et expiresAt ne sont affectés que par markCompleted (et par le constructeur de reconstitution). pending() les laisse à null et markFailed ne les touche pas.",
+   "code_line_start": 52,
+   "code_line_end": 57,
+   "code_evidence": "this.completedAt = completedAt;",
+   "evidence_check": null,
+   "code_file": "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/export/ExportJob.java",
+   "invalid": false,
+   "cache_digest": "9a56eeba7935cd2168fa47647594862f2060354b60ff82191232b9c02cf3c12f",
+   "cited_by": [
+    "state-machine:rules:4"
+   ],
+   "structure_rows_removed": []
+  },
+  {
+   "id": "state-machine/950044d26baf5570-1",
+   "verdict": "unverifiable",
+   "code_says": "",
+   "code_line_start": 0,
+   "code_line_end": 0,
+   "code_evidence": "",
+   "evidence_check": null,
+   "code_file": "",
+   "invalid": false,
+   "cache_digest": "579aab14e10830f67b3de932be9afc45b3e8ce0b3b95cb33739ac3b26eabe75f",
+   "cited_by": [
+    "state-machine:rules:8"
+   ],
+   "structure_rows_removed": []
+  },
+  {
+   "id": "state-machine/781bc749af77ddef-1",
+   "verdict": "unverifiable",
+   "code_says": "",
+   "code_line_start": 0,
+   "code_line_end": 0,
+   "code_evidence": "",
+   "evidence_check": null,
+   "code_file": "",
+   "invalid": false,
+   "cache_digest": "6c80ad7b4f691d00b6d073852b82540d456531fef7711bd10cbeef309e91ca8d",
+   "cited_by": [
+    "state-machine:rules:10"
+   ],
+   "structure_rows_removed": []
+  },
   {
    "id": "state-machine/fe61f927fe31008f-1",
    "verdict": "confirmed",
@@ -908,9 +1265,9 @@
    "evidence_check": null,
    "code_file": "mytimeline:frontend/src/lib/schemas/export.ts",
    "invalid": false,
-   "key_sha256": "43c2004345bdf855a8965bd43db2ac43033a6a543690f5c522bb2cc9a002bb60",
+   "cache_digest": "43c2004345bdf855a8965bd43db2ac43033a6a543690f5c522bb2cc9a002bb60",
    "reused": true,
-   "reused_from": "2026-11-17T10:40:47Z",
+   "reused_from": "2026-11-17T10:45:42Z",
    "cited_by": [
     "state-machine:questions:1"
    ],
@@ -919,36 +1276,59 @@
  ],
  "facts_validated": [
   "state-machine/39e016af7a8585d6-1",
-  "state-machine/3316e4f42e7d1b2e-1",
-  "state-machine/195292fcf3c5228b-1",
+  "state-machine/3b402fae6e28454a-1",
+  "state-machine/8573c7ab10277f70-2",
+  "state-machine/950044d26baf5570-1",
+  "state-machine/781bc749af77ddef-1",
   "state-machine/fe61f927fe31008f-1",
-  "state-machine/43216ccd0ca58163-1",
+  "state-machine/8096253e175ca857-1",
   "state-machine/b41ecf1b43916e73-1"
  ],
  "counts": {
-  "units": 11,
-  "admit": 4,
-  "annex": 7,
+  "units": 13,
+  "admit": 7,
+  "annex": 6,
   "drop": 0,
   "hold": 0,
   "pending": 0,
   "consigne_before_unsupported": 0,
   "consigne_after_dropped": 0,
   "structure_rows_removed": 0,
-  "framework": 0
+  "framework": 0,
+  "guarded_elsewhere": 0,
+  "resolved": 0,
+  "restricted": 0,
+  "counterexample": 0,
+  "promoted": 0,
+  "kept_for": {
+   "rediscovered": 1
+  },
+  "pointers_removed": 0,
+  "restored_alerts": 0,
+  "budget_cut": 0
  },
+ "answers": [],
+ "budget_cut": [],
  "structure_rows_removed": [],
- "notes": [],
- "base_sha256_after": "7071902a64278984febe1c288edaaa9c73ea7692ceb653fe57d717b67a2c5883",
+ "notes": [
+  "state-machine:rules:2 : unité annex dont la ligne n'est plus dans l'annexe, non reportée",
+  "state-machine:rules:2#2 : unité annex dont la ligne n'est plus dans l'annexe, non reportée",
+  "state-machine:rules:3 : unité annex dont la ligne n'est plus dans l'annexe, non reportée",
+  "state-machine:rules:4 : unité annex dont la ligne n'est plus dans l'annexe, non reportée",
+  "state-machine:rules:5 : unité annex dont la ligne n'est plus dans l'annexe, non reportée",
+  "state-machine:rules:6 : unité annex dont la ligne n'est plus dans l'annexe, non reportée",
+  "state-machine:alerts:1 : unité annex dont la ligne n'est plus dans l'annexe, non reportée"
+ ],
+ "base_sha256_after": "bd807930352e8da0fdfd88d80759c41aa620b39a22eeb57f00f0722c28dd997f",
  "bases_touched": {
   "state-machine": {
    "fingerprint": "cf61a964db7f282ca6e54eaf78245832d6bbbccc492705b14a167a26b8068b48",
-   "sha256_after": "7071902a64278984febe1c288edaaa9c73ea7692ceb653fe57d717b67a2c5883"
+   "sha256_after": "bd807930352e8da0fdfd88d80759c41aa620b39a22eeb57f00f0722c28dd997f"
   }
  },
  "lint": {
   "ok": true,
   "errors": 0,
-  "warnings": 0
+  "warnings": 1
  }
 }

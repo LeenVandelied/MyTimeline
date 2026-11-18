@@ -7,11 +7,11 @@ generator: synth/1
 base_sha256: b34b44aece11fa7158147f9364a0ee24a25166ca6893a552261df3cde8576db3
 facts_in_base: 3432
 facts_in_pool: 3811
-facts_cited: 349
+facts_cited: 272
 sections: timeline.sections.json
 details: [timeline.details.md, timeline.details-2.md, timeline.details-3.md, timeline.details-4.md, timeline.details-5.md]
 lang: fr
-curated_at: 2026-11-17T10:45:42Z
+curated_at: 2026-11-18T14:30:00Z
 curation: timeline.curation.json
 ---
 ## 1. Quand activer {#activate}
@@ -30,54 +30,43 @@ Ce pack s'active quand la demande ou le code touche l'un de ces éléments.
 | Statut d'export | Chaîne de 16 caractères au plus, sans énumération JPA. L'interface retient PENDING quand le statut est absent. | [#85b1d006e979a352-1] [#06a05b879421e6bc-1] |
 | JWKS | Liste de clés publiques RSA au format JWK, publiée selon la javadoc sur le chemin well-known. | [#042056a3f37230ce-1] [#bd483e8a6418f21f-1] |
 
-- Voir `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/EventEntity.java:55-56` (pointeur, détail en annexe) [#98649e0e86a3b1c6-1] [#b62ab4cab5efb183-1] [#fa9f2b701712790f-1] [#36fc688ef5e2133f-1] [#f0ce3e251b3700b9-1].
-- Voir `mytimeline:frontend/src/components/products/ProductDetailView.tsx:570-572` (pointeur, détail en annexe) [#2a60bb80bfb20392-1] [#57fb0984d8b98466-1].
-- Voir `mytimeline:frontend/src/components/timeline/recurrence-marks.ts:62-78` (pointeur, détail en annexe) [#aec4e5243ef86c5b-1].
-- Voir `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/CategoryResponse.java:37-45` (pointeur, détail en annexe) [#81eb3873b1840ac0-1] [#af0e1ed35e61b126-1] [#8cf91ca53ecd3c48-1].
-- Voir `mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/User.java:5-18` (pointeur, détail en annexe) [#2e6626a3bbbec6a0-1].
-
 ## 3. Règles {#rules}
 
 ### Événements et récurrence
 - Au PATCH, les contrôles portent sur l'état fusionné. Un récurrent sans recurrenceUnit est refusé (400, sauf unité déjà en base) et une recurrenceEndDate avant startDate donne 422, l'égalité étant tolérée [#aacec85a42631428-1] [#b6235b8320b518a9-1] [#0b3cf5d7d914c2f1-1] [#d01e46587544f0ca-1] [#a7e9024c920debf4-7] [#a607aeea0e1b1902-3] [#a7e9024c920debf4-8].
-- Voir `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/EventServiceImpl.java:193-197` (pointeur, détail en annexe) [#b6235b8320b518a9-2] [#db68aae9040aa635-1] [#a607aeea0e1b1902-1] [#912e0bd0543bc058-1] [#f69d0a1d79ba1dcc-1] [#a7e9024c920debf4-1] [#a7e9024c920debf4-2] [#3dcdc86e498ae065-1] [#bed9b4d56cf7dc21-1] [#cd108c99502b1cba-1] [#fda1a6018b32fdaf-1] [#b47e1a5bdaf28340-1] [#a607aeea0e1b1902-2].
-- Voir `mytimeline:backend/src/main/java/com/matimeline/eventmanager/utils/Utils.java:60-62` (pointeur, détail en annexe) [#8cd20c75d6215999-1] [#8cd20c75d6215999-2] [#c879b210d34f3958-1].
-- Voir `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/EventServiceImpl.java:174-179` (pointeur, détail en annexe) [#aacec85a42631428-2] [#a7e9024c920debf4-3] [#a7e9024c920debf4-5] [#aacec85a42631428-3] [#35513b08008b2dce-1] [#a7e9024c920debf4-4] [#a7e9024c920debf4-6].
+- Une endDate fusionnée avant startDate lève EndDateBeforeStartException (422) après dérivation de endDate, sans écriture [#b6235b8320b518a9-2] [#db68aae9040aa635-1] [#a607aeea0e1b1902-1] [#912e0bd0543bc058-1].
+- Pour duration, un durationUnit nul ou hors days, weeks, months, years lève InvalidDurationUnitException [#8cd20c75d6215999-1] [#8cd20c75d6215999-2] [#c879b210d34f3958-1].
 - Une date de début absente vaut aujourd'hui (création d'événement, mapper, création de produit) [#cfa788ce2a539c7c-1] [#7c67ebb440f30dce-1] [#f2de85ebfc81aa4b-2].
 - Une série sans recurrenceEndDate est développée jusqu'à un horizon fixe, et MAX_OCCURRENCES tronque et marque capped sans bloquer la soumission côté front [#41062bd03b16beee-1] [#41062bd03b16beee-2] [#e3b3229ba3d5f32d-1] [#f8ee0906616caa32-2].
-- Voir `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/RecurrenceExpansionServiceImpl.java:39-42` (pointeur, détail en annexe) [#0cef617a5b3df27d-3] [#0ece7cd5a68913f4-2] [#9ca46c37957a94d9-1] [#9ca46c37957a94d9-2] [#9ca46c37957a94d9-3] [#0b8263bb9b6f5091-1] [#2b19edc8b1db9a8c-1] [#cf8e84542238dc51-1].
-- Voir `mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/RecurrenceExpansionServiceImplTest.java:45-54` (pointeur, détail en annexe) [#136e8d07c0d833fa-1].
+- expand lève IllegalArgumentException si début ou unité nul ou fin avant début. Le preview renvoie 422 pour fin avant début, 400 si startDate ou recurrenceUnit manque [#0cef617a5b3df27d-3] [#0ece7cd5a68913f4-2] [#9ca46c37957a94d9-1] [#9ca46c37957a94d9-2] [#9ca46c37957a94d9-3] [#0b8263bb9b6f5091-1] [#2b19edc8b1db9a8c-1] [#cf8e84542238dc51-1].
 - La migration V4 s'interrompt sur un type nul, trop long ou hors énumération. V9 réécrit les alias de recurrence_unit puis met NULL le reste [#7280a5ee3a5128bd-1] [#c53bd5a742d3c763-1] [#c53bd5a742d3c763-2].
 ### Comptes et mots de passe
 - StrongPassword impose 8 à 100 caractères, une majuscule et un chiffre, null accepté. Elle s'applique à l'inscription et au nouveau mot de passe (changement, reset), pas à oldPassword ni au login [#7ad92ccf1be8253c-1] [#35a76cbef6d96d4d-1] [#e723430070a8a989-3] [#e723430070a8a989-1] [#c93a584635359762-1] [#7a229a904081eb5b-1] [#aef117845e4cb334-1] [#8a0b4636eca3fe14-1] [#fdd11ccacbd697fd-1] [#f02759cf558b524d-1] [#9a8b62738cb2437a-1].
-- Voir `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/UserServiceImpl.java:71-73` (pointeur, détail en annexe) [#e09a1ad08d8565bf-1] [#e09a1ad08d8565bf-2] [#9e06c8e6319c2d3d-1] [#dd6f2e27460b0e1b-1] [#5966facc013f0ca1-1].
 - Un token de reset non UUID (refusé sans accès base), expiré, consommé, d'un compte disparu ou en conflit optimiste lève la même InvalidPasswordResetTokenException, 400 générique [#a6fac6d9ffbda813-1] [#5754f049d8a57cbb-1] [#ff29dec7a1ac5a76-1] [#5754f049d8a57cbb-2] [#e3a38c640b4e23ac-1] [#a68b3c10ac841c62-1].
-- Voir `mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/PasswordResetServiceImplTest.java:98-99` (pointeur, détail en annexe) [#7383058e6a3d254d-1] [#e01e27520cea7b7f-1] [#54e98a25f70f8d60-1] [#aad7d72cf42e1372-1] [#e703cb1fc1f6d1d6-1] [#f61b67c303628b68-1] [#f61b67c303628b68-2].
 - La demande de reset est asynchrone, sans signal pour un email inconnu, toute RuntimeException étant avalée et journalisée par nom de classe [#a0a4c1649f1ff5c1-1] [#a0a4c1649f1ff5c1-2] [#a0a4c1649f1ff5c1-3].
 - Sans clé API Brevo l'envoi est sauté avec un warning, et une erreur HTTP n'est pas propagée. Une locale inconnue donne le template FR [#a2e5716b0136e600-1] [#a2e5716b0136e600-2] [#802bc13c62eddc54-1] [#7383058e6a3d254d-2].
-- Voir `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java:214-217` (pointeur, détail en annexe) [#4f75632d5a5d2a55-1] [#17e3bf9f223b2e13-1] [#f2687ee00902e873-1] [#936b70beb75a6b4e-1] [#47c33f906b9a4454-1].
-- Voir `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/UpdatePreferencesRequest.java:19-21` (pointeur, détail en annexe) [#092b51caa7587310-1] [#fdd2b53a6f98dc15-1] [#c2b6dada4b60b4e4-1] [#9e28bcaa631902f1-1] [#e79a9bf179544d41-1] [#8877a1ae55915227-1] [#fe0f5fd74a265fe4-1] [#6b9213683e3c927f-1].
-- Voir `mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthControllerLegacyPasswordLoginTest.java:157` (pointeur, détail en annexe) [#f7931df4df123c16-1].
+- Un username déjà pris donne 409 à l'inscription et au PATCH /api/me, l'inchangé restant permis. Le login renvoie un 401 générique [#4f75632d5a5d2a55-1] [#17e3bf9f223b2e13-1] [#f2687ee00902e873-1] [#936b70beb75a6b4e-1] [#47c33f906b9a4454-1].
+- La préférence de thème n'accepte que light, dark ou system en minuscules (400 validation_failed). PUT /api/me/preferences est limité à 30 par minute, 429 au-delà, 401 sans principal [#092b51caa7587310-1] [#fdd2b53a6f98dc15-1] [#c2b6dada4b60b4e4-1] [#9e28bcaa631902f1-1] [#e79a9bf179544d41-1] [#8877a1ae55915227-1] [#fe0f5fd74a265fe4-1] [#6b9213683e3c927f-1] [authorization/90d187d27a2f51aa-1].
 ### Exports
 - Un format synchrone en asynchrone, ou l'inverse, ou un format inconnu, lève ExportFormatNotSupportedException (400) [#a9ab1ef6682c3f62-1] [#ea414ed4631f90d5-1] [#e9d2b09a65a4cd09-1] [integrations/4804c85a3711897e-1] [integrations/9eae9bf0b2626984-1] [integrations/14ae53180e3f4bf4-1].
-- Voir `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/UserDataExportAssembler.java:59-61` (pointeur, détail en annexe) [#6bfd5d226040cba5-1] [#848669c7bbe95876-2] [#6f4b9e534bcd294d-1] [#4be8fc494a0630fe-1] [#30f63f14a6b1f578-3] [#30f63f14a6b1f578-1].
-- Voir `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/CsvExportRenderer.java:118-126` (pointeur, détail en annexe) [#334492b0ec109649-1] [#0dd681c74a1aa052-1].
-- Voir `mytimeline:frontend/src/lib/schemas/export.ts:26-27` (pointeur, détail en annexe) [#772dc94bf8ca6667-1] [#27212c52d14b6e76-1] [#4bbcb9082b51e911-1] [#4025e56523b42a45-1] [#ef050ccbf09a1f86-1] [#bc9aacfb871ca055-1] [#885c1f26f101ef0f-1] [#885c1f26f101ef0f-2] [#4025e56523b42a45-2] [#ef050ccbf09a1f86-2] [#885c1f26f101ef0f-3].
-- Voir `mytimeline:frontend/src/hooks/useExportFlow.ts:147-151` (pointeur, détail en annexe) [#86636ae7e17b6f77-1] [#55bc983a210b02d6-1] [#e8c03ac292500a24-1].
+- Côté front, JSON et MARKDOWN sont synchrones (téléchargement direct), les autres passent par un job pollé toutes les 4000 ms jusqu'à COMPLETED ou FAILED. Toute erreur de requête donne network [#772dc94bf8ca6667-1] [state-machine/b41ecf1b43916e73-1] [#27212c52d14b6e76-1] [#4bbcb9082b51e911-1] [#4025e56523b42a45-1] [#ef050ccbf09a1f86-1] [#bc9aacfb871ca055-1] [#885c1f26f101ef0f-1] [#885c1f26f101ef0f-2] [#4025e56523b42a45-2] [#ef050ccbf09a1f86-2] [#885c1f26f101ef0f-3].
+- Le téléchargement exige une downloadUrl, et un lien est expiré quand expiresAt est lisible et atteint (recalcul toutes les 60 s) [#86636ae7e17b6f77-1] [#55bc983a210b02d6-1] [#e8c03ac292500a24-1].
 ### Catégories et produits
 - Un nom de catégorie est unique par propriétaire, conflit 409 (CategoryNameConflictException, inline côté front), un renommage au même nom passe [#ba31f6a5db61ec28-1] [#d123364ba318b9da-1] [#19c33a17e3cf9919-1] [#9f799e2d9d2d861f-1] [#fba96d460f2450be-1] [#5304bb991a666436-1].
-- Voir `mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/CategoryProductCounts.java:29-31` (pointeur, détail en annexe) [#1638778c4a46dea3-1] [#b7d1911e28ca76b4-1] [#c402da788964f3bc-1] [#cbf5b74a7e242967-2] [#f0513e2d42b16d79-1] [#5e04d2cfcb66f7e0-1] [#cd16ad1c9e9fa785-1] [#76f94b32e0200775-1].
+- Supprimer une catégorie avec produits actifs ou archivés sans cible lève CategoryInUseException (409). Une cible égale à elle-même donne 409 [#1638778c4a46dea3-1] [#b7d1911e28ca76b4-1] [#c402da788964f3bc-1] [#cbf5b74a7e242967-2] [#f0513e2d42b16d79-1] [#5e04d2cfcb66f7e0-1] [#cd16ad1c9e9fa785-1] [#76f94b32e0200775-1].
 - Avec cible, la réassignation précède la suppression dans la même transaction. Une catégorie sans ownerId est système, sans édition de nom ni suppression en interface [#efea43ee0f941cb7-1] [#314b5fde9e395a92-1] [#b7d1911e28ca76b4-2] [#86db74ab152ae17f-1] [#2463d1e77e28b1c9-1] [#33da7df0027e0494-3].
-- Voir `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java:138-144` (pointeur, détail en annexe) [#a3eb16026b46748b-1] [#899f1de20e93ed30-1] [#a302776ec2389479-1] [#cceb6584ad89abec-1].
+- Sur un produit, clearColor prime et une couleur null laisse inchangé. La couleur suit produit, catégorie, repli [#a3eb16026b46748b-1] [#899f1de20e93ed30-1] [#a302776ec2389479-1] [#cceb6584ad89abec-1].
 - Front : nom de catégorie 1 à 255, nom de produit 1 à 100 avec catégorie UUID, mise à jour exigeant au moins un champ, clearColor seulement true [#afddec28fb0c6ae0-1] [#979d6aa61abcbf9d-1] [#9be1ff27da67daed-1] [#3365823e14a410eb-1] [#85d4d2f1bc91cd90-1].
 ### Sessions et sécurité
-- Voir `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtFilter.java:46-60` (pointeur, détail en annexe) [#815b663297c90786-1] [#815b663297c90786-2] [#e98d53ccea1b37d6-1].
-- Voir `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/SecurityConfig.java:155-181` (pointeur, détail en annexe) [#d83ca8a3cae269f8-1] [#11277b4419cd6d3a-2] [#11277b4419cd6d3a-3] [#11277b4419cd6d3a-4].
-- Voir `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/ClientIpAnonymizer.java:25-28` (pointeur, détail en annexe) [#3a99e9f47d116ead-1] [#3a99e9f47d116ead-2] [#3a99e9f47d116ead-3].
-- Voir `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/AvatarServiceImpl.java:68-70` (pointeur, détail en annexe) [#b07280d7f022e8c8-1] [#b07280d7f022e8c8-2] [#b07280d7f022e8c8-3] [#5dbfe014d6dfd839-1] [#a310b28e04e37268-1] [#bc1da3233312d2b0-1].
+- Avatar vide, au-delà de 5 Mo ou non JPEG, PNG, WebP (magic bytes) lève InvalidAvatarException (400). L'ancien fichier n'est supprimé qu'après sauvegarde si la référence change [#b07280d7f022e8c8-1] [#b07280d7f022e8c8-2] [#b07280d7f022e8c8-3] [#5dbfe014d6dfd839-1] [#a310b28e04e37268-1] [#bc1da3233312d2b0-1].
 - Le stockage local génère une référence UUID, rejette slash, antislash et deux points, extension de 1 à 5 caractères [a-z0-9] [#3de2a9f6b683e136-1] [#9efe1fa6a41d42f9-1] [#9efe1fa6a41d42f9-2] [#b2873e4d4f5e3f4d-1].
-### Frontend : jetons et routes
-- Voir `mytimeline:frontend/src/lib/auth-token-verify.ts:134-139` (pointeur, détail en annexe) [#575c5c457a10eb76-1] [#575c5c457a10eb76-2] [#c8db3763ee8f83dd-1] [#2bab6b9f4ce83e9c-1] [#2bab6b9f4ce83e9c-2] [#1207897698e5adea-1] [#1207897698e5adea-2].
+### Vérifié dans le code
+- PasswordResetTokenPurgeScheduler.purgeConsumedAndExpired supprime via deleteConsumedOrExpiredBefore tout token consommé immédiatement, et les expirés seulement après la rétention (24h par défaut) [#integrations/757e913cb9162988-1] [#85c2925ef276badb-1] `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/PasswordResetTokenRepositoryJpaImpl.java:93-94`.
+- Le restore d'un produit renvoie 404 uniforme (ProductNotFoundException) pour inconnu, non archivé ou d'autrui, et 403 seulement si le userId du path diffère du caller [#7ffbb5f0b0666075-1] [#23aead80049aa52e-1] `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java:108-132`.
+- durationUnit null donne un 422 uniquement pour type='duration' avec durationValue non nul (InvalidDurationUnitException, handleInvalidDurationUnit) [#35513b08008b2dce-1] [#backend-socle/2faddb776ec7b9ad-2] [#8cd20c75d6215999-1] `mytimeline:backend/src/main/java/com/matimeline/eventmanager/utils/Utils.java:57-62`.
+- Après un 409 au désarchivage, useSetEventArchived invalide products.all dans son onError. handleUnarchive n'a pas à le faire [#cc800a010618b0e6-1] [#9160ee03da7f807b-1] `mytimeline:frontend/src/hooks/useSetEventArchived.ts:38-46`.
+- CategoryController.deleteCategory requires isOwnedBy for the target and the reassign target, and ProductServiceImpl.resolveAssignableCategory blocks cross-user assignment, so the unscoped productRepository.updateCategoryForProducts only touches the owner's products [#fee4a3fe030b8963-1] [#7066eb160400bf67-1] `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryController.java:135-137`.
+- Le contrôleur E2eResetTokenController (GET /api/test-support/password-reset-token) est protégé par @Profile("e2e") et ne doit jamais être activé hors test [#integrations/4c61ca6e2f106b0b-1] `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenController.java:43-45`.
 
 ## 4. Structure {#structure}
 
@@ -274,23 +263,18 @@ Ce pack s'active quand la demande ou le code touche l'un de ces éléments.
 ## 5. Endpoints et écrans {#surface}
 
 ### Refus et accès
-- Voir `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java:134-154` (pointeur, détail en annexe) [#3ed6a3b197a70d6e-1] [#8aad666de4a63c22-1].
-- Voir `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryController.java:93-95` (pointeur, détail en annexe) [#dc3c3b0c63eeafe8-1] [#841220fccd00d9ee-1].
-- Voir `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/SessionServiceImpl.java:86-95` (pointeur, détail en annexe) [#d1735de25cd0161d-1] [#de509e2411ca1e4d-1].
+- Les routes produit portent le userId dans le chemin et renvoient 403 si le produit n'appartient pas à ce userId, 404 s'il est absent [#3ed6a3b197a70d6e-1][#8aad666de4a63c22-1].
+- Une catégorie d'autrui ou inexistante donne 404 en lecture, mais le PATCH renvoie 403 pour une catégorie système ou d'autrui [#dc3c3b0c63eeafe8-1][#841220fccd00d9ee-1].
+- Révoquer la session d'un autre utilisateur lève SessionNotFoundException, sans révéler son existence [#d1735de25cd0161d-1][#de509e2411ca1e4d-1].
 - /me renvoie 401 si le jti de la session est révoqué ou inconnu, et le refresh exige un token valide et une session active [#11cece36cefdf4b1-1][#08a39f689d7f03a2-1].
-- Voir `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java:111-143` (pointeur, détail en annexe) [#a95aa345e1f0eeae-1] [#84a2033cf7918249-1].
-- Voir `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenController.java:71-80` (pointeur, détail en annexe) [#e6ed8fcdf57787e3-1].
 - Le JWKS est public, avec un cache de 300 secondes [#a7f30b129e6af9f9-1][authorization/8bc3a1ce71fe4ba9-2].
 ### Export et produits
-- Voir `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ExportController.java:65-74` (pointeur, détail en annexe) [#0aa6060fb83fdf19-1] [#53de777e6e7fe836-1].
-- Voir `mytimeline:frontend/src/services/sessionService.ts:14-17` (pointeur, détail en annexe) [#frontend-socle/c8e7542069dbe36c-1] [#136df6d9fe823927-1].
-- Voir `mytimeline:frontend/src/services/productService.ts:90-97` (pointeur, détail en annexe) [#fecb9d17e61afceb-1] [#ad598a2371cf6d94-1] [#1c6a2baf2a5fb067-1].
+- downloadAsyncExport retire le préfixe /api de l'URL du job, alors que les autres services appellent apiClient par chemin relatif sans préfixe [#frontend-socle/c8e7542069dbe36c-1][#136df6d9fe823927-1].
+- deleteProduct envoie un DELETE mais archive le produit (soft delete). La restauration passe par POST sur /restore et les archivés par GET sur /products/archived [#fecb9d17e61afceb-1][#ad598a2371cf6d94-1][#1c6a2baf2a5fb067-1].
 - Un événement archivé se désarchive avec sa version, ajoutée au corps seulement si c'est un nombre [#623da4d8d722ca9c-1][#9d00cfec1fb46818-1].
 ### Écrans
-- Voir `mytimeline:frontend/src/components/events/NewEventDrawer.tsx:189-195` (pointeur, détail en annexe) [#25cf54fd76daf337-1].
-- Voir `mytimeline:frontend/src/components/products/ProductDrawer.tsx:383-400` (pointeur, détail en annexe) [#3736e3a2725416ec-1] [#c46479f96c8316f7-1].
+- Dans le drawer produit, la date du premier événement n'existe qu'en création et le bouton Archiver qu'en édition [#3736e3a2725416ec-1][#c46479f96c8316f7-1].
 - La fiche produit lit le cache de useProductsWithEvents sans requête dédiée et affiche une alerte notFound si l'id y manque [#f1600dfbba1bba53-1][#e5ef256423509da4-3].
-- Voir `mytimeline:frontend/src/components/products/ProductsListView.tsx:213-215` (pointeur, détail en annexe) [#3a95d25f1a1bcb63-1] [#90e03205f1c89230-1].
 
 ## 6. Fichiers critiques {#files}
 
@@ -327,38 +311,28 @@ Packs liés par des faits repris, des faits équivalents écartés à la dédupl
 
 ## 8. Tests attendus {#tests}
 
-- Voir `mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/RecurrenceExpansionServiceImplTest.java:65-82` (pointeur, détail en annexe) [#17dc4dce7f212d84-1] [#54b59f13aba95000-1] [#b640be06f88195e9-1].
-- Voir `mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/SessionRevocationIntegrationTest.java:244-263` (pointeur, détail en annexe) [#e6d1632a53f68b9b-1] [#2e3501dea5107043-1] [#integrations/9eb6cde81f1c0949-1].
-- Voir `mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/validation/PasswordPolicyTest.java:67-72` (pointeur, détail en annexe) [#f773aa0d731af8bc-1] [#4d0aa47965aec484-1] [#29edea2b4b988201-1] [#a63d1c82957aa567-1].
-- Voir `mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/EventOptimisticLockConflictIntegrationTest.java:134-169` (pointeur, détail en annexe) [#7b0c17246e7a9d53-1] [#d219690ca1c973d2-1].
-- Voir `mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/ProductServiceImplTest.java:86-97` (pointeur, détail en annexe) [#6f110b49df3bfed6-1] [#ba010bf015c7e790-1].
+- Les tests fixent qu'une session révoquée reçoit 401 et qu'une session d'un autre utilisateur donne 404 [#e6d1632a53f68b9b-1] [#2e3501dea5107043-1] [#integrations/9eb6cde81f1c0949-1].
+- Les tests fixent que register, reset et change rejettent les mêmes mots de passe hors politique [#f773aa0d731af8bc-1] [#4d0aa47965aec484-1] [#29edea2b4b988201-1] [#a63d1c82957aa567-1].
 - Une nouvelle route doit être déclarée dans PROTECTED_APP_SEGMENTS, car les tests la comparent aux dossiers sous (app) [#8649558ca2452cb8-2] [#df054f9afe4233dc-1].
-- Voir `mytimeline:frontend/src/hooks/useThemeChoice.test.tsx:183-220` (pointeur, détail en annexe) [#f2f926fadcfcfe6d-4] [#21cbc5bc4319581b-1].
 - Un nouveau test de frise doit stubber requestFullscreen et exitFullscreen [#082a96a4ff8c99e7-1] [#0fc55cdd9363d09d-2].
 
 ## 9. Questions ouvertes {#questions}
 
-- La purge des tokens ne vise-t-elle que les expirés, comme le dit la javadoc ? La même date de coupure est passée à une méthode qui couvre aussi les consommés [#89f607fc371f04ec-1].
-- Pourquoi restaurer l'archivé d'autrui renvoie-t-il 404 alors que PATCH et DELETE renvoient 403 ? La base cite l'anti-énumération [#b91f29c3d42f23e0-1] [#def4466b20cecf9a-1] [#8363bef1f7b3c86b-1].
 - Le 404 pour un produit existant sans événement est-il voulu ? Le code le traite comme un produit inconnu [#e7bf3b5c8af92396-1].
-- Un durationUnit null donne-t-il bien un 422 ? Le test ne vérifie que InvalidDurationUnitException [#c879b210d34f3958-2] [#3fbfa62ac8eb77b5-1].
 - Le commentaire de createProduct dit productId null et sans effet, mais le code passe product.getId() à Event [#7e3bc5890148b684-1].
 - L'écart de calcul des récurrences entre frontend et backend (dérive au 28 après février côté backend) est-il voulu ? [#4379776f0ee85c7b-1] [#fc88597e84160f54-1].
-- Qui rafraîchit les données après un 409 au désarchivage ? handleUnarchive ne déclenche aucun rafraîchissement [#f813274210774598-1] [#623da4d8d722ca9c-1].
 
 ## 10. Alertes {#alerts}
 
-- Supprimer une catégorie touche les produits de tous les utilisateurs : la réaffectation n'a pas de filtre user_id et le comptage est global. Scoper par propriétaire [#5c533492e8455f40-1] [#1ebc47d19b046d48-1].
-- Voir `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenController.java:71-72` (pointeur, détail en annexe) [#integrations/239ba25d7e70eb6d-1].
 - AsyncExportRunner ne capture que RuntimeException et ExportJob ne contrôle pas son statut avant ses transitions. Une Error laisse le job RUNNING, gérez FAILED vous-même [#batch/e9b8732b8a56d766-1] [#state-machine/8096253e175ca857-1].
 - PasswordResetToken.consume ne vérifie pas isUsable (garde dans resetPassword) et le catch du conflit optimiste suppose un saveAndFlush dans markConsumed ⇒ Garder la garde et le flush [#state-machine/c37611432b5807a9-1] [#5754f049d8a57cbb-1] [#e703cb1fc1f6d1d6-1] [#5754f049d8a57cbb-2]
-- Voir `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/EventServiceImpl.java:174-179` (pointeur, détail en annexe) [#aacec85a42631428-2].
+- Pour un type duration, changer le facteur de date recalcule endDate et écrase celle du payload ⇒ Ne pas compter sur une endDate explicite dans un PATCH [#aacec85a42631428-2]
 - UserMapper.toDomain et changePassword construisent un User sans themePreference, que UserResponse.fromDomain lit ⇒ Écrire la préférence par updateThemePreference [#backend-socle/d86713c491180960-1] [#dbcd8a010490bc1d-1] [#17f190f13ed535c6-1]
-- Voir `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/RecurrencePreviewController.java:71-72` (pointeur, détail en annexe) [#94d0aece4bf5a1de-1].
-- Voir `mytimeline:frontend/src/components/timeline/TimelineBottomSheet.tsx:77-83` (pointeur, détail en annexe) [#1145fb020b8bd40e-1] [#1145fb020b8bd40e-2].
+- previewRecurrence traduit toute IllegalArgumentException de expand en RecurrenceEndDateBeforeStartException. Distinguer les causes avant d'en ajouter [#94d0aece4bf5a1de-1].
+- Dans TimelineBottomSheet, onClose est appelé dans l'updater de setDragY et pointercancel réutilise le relâchement : un geste annulé au-delà de 80 px ferme le sheet [#1145fb020b8bd40e-1] [#1145fb020b8bd40e-2].
 - isEdit dans EventEditForm ne dépend que de onDelete ⇒ ne pas le passer en création [#871ea3a89de2f9c5-1]
 - Plusieurs tests de rejet n'assertent que la classe Exception, donc toute erreur SQL passe ⇒ Préciser le type avant de s'y fier [#87f01d1728f1c9ca-1] [#9ec9f44160c5574d-1] [#27ffb31a2a203822-1]
-- Voir `mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/ports/services/ProductService.java:7-8` (pointeur, détail en annexe) [#c9e29f7126480ec4-1] [#d2afa60d54aa4907-1].
+- Le port ProductService importe des DTO applicatifs et ProductRepository porte l'annotation Spring, contre la règle hexagonale ⇒ Ne pas reproduire [#c9e29f7126480ec4-1] [#d2afa60d54aa4907-1]
 
 ## 11. Couverture {#coverage}
 
