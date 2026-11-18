@@ -7,42 +7,27 @@
 | `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/AsyncExportRunner.java` | 9 | convention 3, state_transition 3, business_rule 1 |
 | `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/PasswordResetTokenPurgeScheduler.java` | 7 | business_rule 2, convention 2, batch_job 1 |
 | `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportPurgeScheduler.java` | 6 | convention 4, batch_job 1, persistence_query 1 |
-| `mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ForgotPasswordAsyncTest.java` | 6 | test_case 4, convention 2 |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportServiceImpl.java` | 5 | convention 2, validation 2, business_rule 1 |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/PasswordResetServiceImpl.java` | 4 | convention 2, other 2 |
 | `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/config/AsyncConfig.java` | 4 | config 3, suspicious 1 |
 | `mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/ExportPurgeSchedulerIntegrationTest.java` | 4 | test_case 4 |
+| `mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ForgotPasswordAsyncTest.java` | 3 | convention 2, test_case 1 |
+| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/PasswordResetServiceImpl.java` | 2 | convention 1, other 1 |
 | `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/config/SchedulingConfig.java` | 2 | config 2 |
 | `mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/PasswordResetTokenPurgeSchedulerIntegrationTest.java` | 2 | other 1, test_case 1 |
+| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportServiceImpl.java` | 1 | convention 1 |
 
 ## Lignes rétrogradées {#t-demoted_lines}
 
 | Section | Ligne | Motif |
 |---|---|---|
-| rules | - run s'exécute sur exportExecutor (2 à 4 threads, file de 50) et, à saturation, la tâche tourne sur le thread appelant [#8c0af7c8fb9efde8-1] [#027974c1249cea1d-1] [#027974c1249cea1d-2]. | deducible |
-| rules | - Les méthodes planifiées sont @Transactional et SchedulingConfig n'a aucun bean TaskScheduler [#cebb04ed84733eef-1] [#31adec434d6b04c0-1] [#1c6c381999d571b0-2]. | rediscovered (9 appels) |
-| rules | - requestReset est async sur passwordResetExecutor (2 à 4 threads, file de 100) et @Transactional, et toute RuntimeException y est journalisée par nom de classe seulement [#00500c928da212f7-1] [#dc6e00eaeabd737d-1] [#00500c928da212f7-2]. | deducible |
-| tests | - Les tests fixent que la purge des tokens de réinitialisation supprime les tokens consommés et ceux expirés depuis 48 heures, et conserve le token valide et celui expiré depuis 30 minutes [#2476578c8ac84af6-1]. | deducible |
-| tests | - Les tests fixent que requestReset rend la main en moins de 4000 ms via le proxy @Async alors que l'envoi d'email est bloqué sur un latch de 5 secondes [#5dd507c53997f001-1]. | deducible |
-| tests | - Le test async attend la tâche avec Mockito timeout(5000) sur l'envoi d'email et sur tokenRepository.create, et selon le commentaire un @AfterEach libère le latch pour ne laisser aucun thread worker bloqué [#5dd507c53997f001-2] [#4370cecfbb806173-1]. | deducible |
-| tests | - Pour un email inconnu, le test fixe un statut 200 sans exception, mais n'asserte pas l'absence d'envoi d'email [#70fee24738ff43ee-1]. | deducible |
-| alerts | - Seules les RuntimeException sont capturées dans `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/AsyncExportRunner.java:80-85`, donc une Error pendant la génération ne passe pas le job à FAILED et il reste RUNNING. Pour qui modifie ce bloc, il faut élargir la capture ou garantir un passage au statut final hors du catch [#e9b8732b8a56d766-1]. | consigne_unsupported |
+| rules | - exportExecutor a 2 threads de cœur, 4 au maximum et une file de 50, et à saturation la tâche s'exécute sur le thread appelant. [#027974c1249cea1d-1] [#027974c1249cea1d-2] | deducible |
 
 ## Règles métier {#t-business_rule}
 
 | Pointeur | Énoncé | Fait |
 |---|---|---|
 | `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/AsyncExportRunner.java:75-77` | L'expiration du job COMPLETED est fixée à la date de fin de génération plus DOWNLOAD_TTL_HOURS, soit 24 heures. | [#0b16217c50dbabb3-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportServiceImpl.java:101-105` | Le téléchargement renvoie un résultat vide lorsque le job n'est pas téléchargeable à l'instant courant, cas couverts par isDownloadable (non terminé, expiré ou sans fichier selon le commentaire). | [#b1943dd1c98a8a1b-1] |
 | `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/PasswordResetTokenPurgeScheduler.java:25-35` | Javadoc : Selon la javadoc, un token valide n'est jamais supprimé, quelle que soit la fenêtre de rétention. | [#c5605d596e3be48d-1] |
 | `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/PasswordResetTokenPurgeScheduler.java:74` | Le seuil de purge est l'instant courant moins la fenêtre de rétention. | [#10f3525a1962c7b1-1] |
-
-## Validations {#t-validation}
-
-| Pointeur | Énoncé | Fait |
-|---|---|---|
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportServiceImpl.java:66-68` | L'export inline refuse un format asynchrone en levant ExportFormatNotSupportedException. | [#da258a571801b5f1-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportServiceImpl.java:77-80` | La soumission async refuse un format synchrone en levant ExportFormatNotSupportedException. | [#b1f4915fcd1d3924-1] |
 
 ## Traitements batch {#t-batch_job}
 
@@ -93,10 +78,8 @@
 | `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportPurgeScheduler.java:61-62` | La méthode planifiée purgeExpired est annotée @Transactional. | [#cebb04ed84733eef-1] |
 | `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportPurgeScheduler.java:67-79` | Chaque job est traité dans son propre try, une RuntimeException est journalisée par nom de classe seulement et le job reste pour un passage ultérieur. | [#cebb04ed84733eef-2] |
 | `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportPurgeScheduler.java:68-73` | Pour chaque job ayant une référence de stockage, le fichier est supprimé via exportStorage.delete avant la suppression de la ligne par deleteById. | [#cebb04ed84733eef-3] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportServiceImpl.java:33-35` | Javadoc : Selon la javadoc, submitAsync n'est pas transactionnel et le save PENDING commit dans sa propre transaction avant le déclenchement async. | [#8a7db72a12a3e330-1] |
 | `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportServiceImpl.java:76-87` | submitAsync persiste le job PENDING puis appelle asyncRunner.run avec son identifiant, sans annotation @Transactional sur la méthode. | [#8a7db72a12a3e330-2] |
 | `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/PasswordResetServiceImpl.java:99-100` | La méthode requestReset est annotée @Async sur l'executor passwordResetExecutor et @Transactional. | [#00500c928da212f7-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/PasswordResetServiceImpl.java:127-131` | Toute RuntimeException de la tâche async est capturée et journalisée avec le seul nom de la classe d'exception. | [#00500c928da212f7-2] |
 | `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/PasswordResetTokenPurgeScheduler.java:72-73` | La méthode planifiée purgeConsumedAndExpired est annotée @Transactional. | [#31adec434d6b04c0-1] |
 | `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/PasswordResetTokenPurgeScheduler.java:77-78` | Commentaire : Le journal de purge n'émet que le nombre de tokens supprimés, sans token, user_id ni email. | [#31adec434d6b04c0-2] |
 | `mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ForgotPasswordAsyncTest.java:42` | Javadoc : Selon la javadoc, la méthode requestReset de PasswordResetServiceImpl est annotée @Async pour déporter l'envoi hors du thread de requête. | [#f2468d648cf81a9c-1] |

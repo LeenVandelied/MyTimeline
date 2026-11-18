@@ -59,17 +59,7 @@
 
 | Section | Ligne | Motif |
 |---|---|---|
-| rules | - Une réponse de service est validée par `parse` avec un schéma Zod, et le type est dérivé du schéma par `z.infer`. [#03037b579b39b673-1] [#b0cbae33933771ad-1] | deducible |
-| rules | - Le pont d'erreurs ne rend rien et remet le registre à `null` au cleanup. [#3d7ba2b79879606f-2] [#3d7ba2b79879606f-3] | rediscovered (15 appels) |
-| rules | - Une page de route est async et attend `params` (Promise). [#2325b843f28a7d18-2] | deducible |
-| rules | - La route legacy utilise `permanentRedirect` vers la racine de locale. [#cba7431c31861d84-1] | rediscovered (7 appels) |
-| rules | - Un composant UI est un `forwardRef` avec `displayName`, qui fusionne `className` par `cn` après les classes de base. [#9ada093f42c5012f-1] [#60c29c7e21afaf68-1] [#602974f8c6e4d014-2] | deducible |
-| rules | - `invalid` pilote `aria-invalid`, absent quand la valeur est fausse. [#541483e5d9dff22c-1] | rediscovered (8 appels) |
-| rules | - Le bouton icône a `type` à `button` par défaut. [#9eaf3991c4b071cb-2] | deducible |
-| rules | - Un helper partagé vit dans `@/lib/` et est ré-exporté localement. [#f8c44bd458b850a9-1] [#e6752fdbca75023a-1] | rediscovered (11 appels) |
-| rules | - Une story déclare `meta` avec `satisfies Meta`, et les dates y sont fixes. [#65c51a62d2eb1c32-1] [#4b86dd770a00ef4c-1] | rediscovered (12 appels) |
-| surface | - Les services du front vivent dans `mytimeline:frontend/src/services/sessionService.ts:14-17` entre autres, et appellent `apiClient` avec un chemin relatif sans préfixe `/api`, par exemple `/sessions` [#c8e7542069dbe36c-1]. | rediscovered (11 appels) |
-| tests | - Les tests des erreurs d'état ont un `describe` par fonction, des titres de `it` en français et des assertions `toBe(true)` ou `toBe(false)`, voir `mytimeline:frontend/src/lib/state-errors.test.ts:6-8` [#6ade1bc0ef00f313-1]. | rediscovered (16 appels) |
+| rules | - Les stories déclarent meta avec satisfies Meta, et les dates y sont fixes. [#65c51a62d2eb1c32-1] [#4b86dd770a00ef4c-1] | deducible |
 
 ## Faits suspects {#t-suspicious}
 

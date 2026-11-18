@@ -2,16 +2,16 @@
 pack: migrations
 kind: technical
 name: Migrations de base de données
-generated_at: 2026-11-17T10:36:11Z
+generated_at: 2026-11-18T12:00:00Z
 generator: synth/1
-base_sha256: 7f22e3334fbc8cf51ee7e29c7a2aca43393878bf4bb3f017b69f4be4ab865faa
+base_sha256: 5c6c233df9a7f74143ac7de6f61b8b98877ea0aeafd0900431ed5ca050f96de2
 facts_in_base: 34
 facts_in_pool: 34
 facts_cited: 18
 sections: migrations.sections.json
 details: [migrations.details.md]
 lang: fr
-curated_at: 2026-11-17T10:45:42Z
+curated_at: 2026-11-18T13:00:00Z
 curation: migrations.curation.json
 ---
 ## 1. Quand activer {#activate}
@@ -26,19 +26,21 @@ Aucun fait de la base ne relève de cette section.
 
 ## 3. Conventions {#rules}
 
-### Données existantes
-- Voir `mytimeline:backend/src/main/resources/db/migration/V4__reconcile_events_constraints.sql:54` (pointeur, détail en annexe) [#a3f563bc2f9587a4-1].
-- Voir `mytimeline:backend/src/main/resources/db/migration/V11__events_conditional_check_constraints.sql:55-64` (pointeur, détail en annexe) [#6d2386c8809cdfd6-1] [#1c7402a0f5b734f9-1] [#0049acf39aaa5953-1].
-- Voir `mytimeline:backend/src/main/resources/db/migration/V4__reconcile_events_constraints.sql:83-88` (pointeur, détail en annexe) [#333e76b9ff028bb8-1] [#b3fc78ae062be38b-1].
-- Une migration sur table peuplée pose set local lock_timeout à 5 secondes en tête pour échouer vite [#58bbdf47e30dcfc8-1].
-### Contraintes et index
-- Un CHECK conditionnel se nomme ck_<table>_<colonne>_required et utilise is not true pour traiter NULL comme absence de condition [#b835f993630cd219-1].
-- Un CHECK d'énumération sur colonne nullable place is null or devant le IN [#333e76b9ff028bb8-2], une énumération est un varchar borné et not null [#145dc0442b68f3c1-1].
-- Les clés étrangères se nomment fk_<table>_<reference> et déclarent on delete cascade quand les lignes dépendent du compte [#565bd4a0b8a73ce3-1] [#9a99540b375d30ed-1].
-- Voir `mytimeline:backend/src/main/resources/db/migration/V14__idx_export_jobs_expires_at.sql:18` (pointeur, détail en annexe) [#e7d8e73c2ca02741-1].
-### Colonnes
-- Voir `mytimeline:backend/src/main/resources/db/migration/V3__add_audit_columns.sql:16-19` (pointeur, détail en annexe) [#87c989e06096a13a-1] [#d3007a27b545f1b8-1].
-- Voir `mytimeline:backend/src/main/resources/db/migration/V16__user_theme_preference.sql:37-41` (pointeur, détail en annexe) [#61b42db9757c6a8e-2].
+### Invariants
+- Selon le commentaire de V10, le schéma doit refléter exactement l'entité JPA, car ddl-auto=validate sur dev, test et prod casse le démarrage au moindre écart [#3123c3d1981e2538-1].
+- Selon le commentaire de V4, une migration déjà appliquée n'est jamais éditée (checksum mismatch Flyway), tout changement passe par un nouveau fichier VN [#ad7b571da89bac44-1].
+- Selon le commentaire de V1, les UNIQUE générées par Hibernate ne sont pas posées au baseline mais dans V2 avec un nom stable, pour que Flyway reste la source des contraintes nommées [#211589e73053149d-1].
+### Nommage des objets
+- Les contraintes UNIQUE s'appellent uq_table_colonne, et la composite sur categories s'appelle uq_categories_owner_name [#c40a4f8b041c44a5-1] [#a8c81be131bb88ff-1] [#dabdaea8fe1fb4ca-1].
+- Les clés étrangères récentes vers users (V6, V13) s'appellent fk_table_reference avec on delete cascade, mais V1 et V8 ont des clés vers users sans cascade [#565bd4a0b8a73ce3-1] [#9a99540b375d30ed-1].
+- Les index de clés étrangères sont nommés idx_table_colonne et créés avec if not exists dans V5, mais les migrations ultérieures ne suivent pas toujours cette forme [#b3fc78ae062be38b-1] [#e7d8e73c2ca02741-1].
+### Contraintes et colonnes
+- Un CHECK d'énumération sur colonne nullable commence par is null or, et un CHECK conditionnel utilise is not true pour que NULL ne bloque pas [#333e76b9ff028bb8-2] [#b835f993630cd219-1].
+- Une colonne d'énumération est un varchar borné par un CHECK in, en majuscules pour les enums récents (V9, V13) mais en minuscules dans V4 et V16 [#145dc0442b68f3c1-1].
+### Durcissement des données existantes
+- Dans certaines migrations, les lignes incohérentes sont neutralisées par UPDATE avant le CHECK ou le not null. D'autres préfèrent échouer sur un contrôle préalable sans corriger les données [#6d2386c8809cdfd6-1] [#1c7402a0f5b734f9-1] [#0049acf39aaa5953-1].
+### Vérifié dans le code
+- Dans UserServiceImpl.deleteAccount, purger categoryRepository.deleteAllByOwnerId avant userRepository.deleteById, car fk_categories_owner (V8) n'a pas de on delete cascade [#timeline/7266d27459251abe-2] `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/UserServiceImpl.java:116-120`.
 
 ## 4. Structure {#structure}
 
@@ -71,7 +73,7 @@ Packs liés par des faits repris, des faits équivalents écartés à la dédupl
 
 | Pack | Faits repris | Faits équivalents | Catalogue |
 |---|---|---|---|
-| timeline | 0 | 18 |  |
+| timeline | 28 | 18 |  |
 
 - Faits du pool par pack d'origine : timeline 28, migrations 6
 
@@ -85,13 +87,13 @@ Aucun fait de la base ne relève de cette section.
 
 ## 10. Alertes {#alerts}
 
-- Voir `mytimeline:backend/src/main/resources/db/migration/V8__category_ownership.sql:37-39` (pointeur, détail en annexe) [#dbca7a316c0c1c8c-1].
-- Voir `mytimeline:backend/src/main/resources/db/migration/V9__neutralize_invalid_recurrence_unit.sql:28` (pointeur, détail en annexe) [#dbd260bc254e104d-1].
+- Le commentaire de `mytimeline:backend/src/main/resources/db/migration/V9__neutralize_invalid_recurrence_unit.sql:28` réserve le numéro V10 (#158), alors que V10__create_sessions.sql existe dans le lot, donc qui s'y fie risque de mal numéroter ou de croire un numéro bloqué ⇒ Se fier à la liste réelle des fichiers de migration et non à ce commentaire périmé [#dbd260bc254e104d-1]
 
 ## 11. Couverture {#coverage}
 
-- Fichiers du pack : 16 ; cités par au moins un fait : 15 ; non cités définitifs : 0.
-- Faits en base : 34 ; dans le pool après déduplication : 34 (dont 0 repris d'autres packs) ; cités dans ce pack : 18 ; en annexe : 32 ; ni cités ni en annexe : 0 ; écartés (sorte `other`) : 2.
-- Fichiers dont au moins un fait est cité ici : 12 sur 16.
-- Passe technique : scope 16 fichiers, lus 15 (94 %), non lus 1 : ce pack décrit le socle sur un échantillon, pas sur tout son scope.
-- Base : sha256 7f22e3334fbc…, générée le 2026-11-17.
+- Fichiers du pack : 16 ; avec au moins un fait en base : 15 ; sans fait après remise en file : 0.
+- Faits en base : 34, repris d'autres packs : +0, hors périmètre : -0, doublons écartés à la déduplication : -0, soit 34 dans le pool.
+- Faits du pool venus d'un autre pack : 28 (par pack : section Relations).
+- Destination des 34 faits du pool : Conventions 29 ; Alertes / Questions ouvertes 2 ; annexe seule 1 ; écartés (sorte `other` ou inconnue) 2.
+- Passe technique : scope 16 fichiers, lus 15 (93 %), non lus 1 : ce pack décrit le socle sur un échantillon, pas sur tout son scope.
+- Base : sha256 5c6c233df9a7…, générée le 2026-11-17.

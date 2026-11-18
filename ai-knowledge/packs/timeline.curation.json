@@ -1,20 +1,20 @@
 {
  "pack": "timeline",
  "schema": 1,
- "curated_at": "2026-11-17T10:45:42Z",
+ "curated_at": "2026-11-18T14:30:00Z",
  "curator": "curate/1",
- "base_sha256": "e7e60333519d353c6ed998bf51bc8f9a75fc472f5c85f12c5f28b0a2f807c70b",
- "pack_sha256_before": "7789a45783b79d43f175e6cd5c4f7bb954800cce3646bdc06a621610d609431b",
- "pack_sha256_after": "763a210fd95db5d6cd3c6c2de4930d460f1b5d0f84662132d7c983f29dbb2071",
- "criteria_sha256": "75e38f096df69288e5ef9ef740a5a812f65b1bb381255f75045d285103cef042",
+ "base_sha256": "e3d4ab000970cc1878f9a0dbdfa63cfc805d1dac780b8c4364511dea88d5f7b2",
+ "pack_sha256_before": "781744b536b572a535ea57cd2b2ed5739438d7c19cfedf28f5450916322e2b17",
+ "pack_sha256_after": "84f81cf887f1ee497eed15d62142d72c5db635de9b1482af7e09ac00b7572ea6",
+ "criteria_sha256": "48e0e20f086c5b11deecfecdc547ba1d6115faee1597a5aaf682f6c699e92423",
  "models": {
   "measure": "haiku",
   "refute": "sonnet"
  },
  "base_fingerprint": "6f76700d4deb262b930c33b20a5ed240c0e5699decc0f2eecaebaa1798e39f3c",
  "bytes": {
-  "before": 46174,
-  "after": 46174,
+  "before": 46542,
+  "after": 41735,
   "by_section": {
    "activate": {
     "before": 576,
@@ -22,11 +22,11 @@
    },
    "lexicon": {
     "before": 1447,
-    "after": 1447
+    "after": 534
    },
    "rules": {
     "before": 9378,
-    "after": 9378
+    "after": 8765
    },
    "structure": {
     "before": 23748,
@@ -34,7 +34,7 @@
    },
    "surface": {
     "before": 2687,
-    "after": 2687
+    "after": 1797
    },
    "files": {
     "before": 1866,
@@ -46,15 +46,15 @@
    },
    "tests": {
     "before": 1643,
-    "after": 1643
+    "after": 697
    },
    "questions": {
     "before": 1177,
-    "after": 1177
+    "after": 478
    },
    "alerts": {
     "before": 2257,
-    "after": 2257
+    "after": 1879
    },
    "coverage": {
     "before": 461,
@@ -63,6 +63,325 @@
   }
  },
  "units": [
+  {
+   "id": "timeline:rules:p1",
+   "section": "rules",
+   "rank": 0,
+   "text": "- PasswordResetTokenPurgeScheduler.purgeConsumedAndExpired supprime via deleteConsumedOrExpiredBefore tout token consommé immédiatement, et les expirés seulement après la rétention (24h par défaut) [#integrations/757e913cb9162988-1] [#85c2925ef276badb-1] `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/PasswordResetTokenRepositoryJpaImpl.java:93-94`.",
+   "fact_text": "PasswordResetTokenPurgeScheduler.purgeConsumedAndExpired supprime via deleteConsumedOrExpiredBefore tout token consommé immédiatement, et les expirés seulement après la rétention (24h par défaut) PasswordResetTokenRepositoryJpaImpl.java",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "integrations/757e913cb9162988-1",
+    "timeline/85c2925ef276badb-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/PasswordResetTokenRepositoryJpaImpl.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/PasswordResetTokenRepositoryJpaImpl.java",
+     93,
+     97,
+     "2c6a787953cd50388e7bb674fc8d80d9bdc12681bdbc560bf937f6e8f571b1a4"
+    ],
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/PasswordResetTokenRepositoryJpaImpl.java",
+     84,
+     98,
+     "f61c5bfa96f11da5b627705254c80ab34a875caf862f0aa206a9b10183ef58e0"
+    ]
+   ],
+   "code_sha256": "3ff6d5250a2db1e2296cb7bcdd5146aaae60a7706ea6e1ee5642cce71a85005b",
+   "verdict": "admit",
+   "reason": "promoted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "promoted_from": "timeline:questions:1",
+   "guard_range": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/PasswordResetTokenRepositoryJpaImpl.java",
+    93,
+    94
+   ],
+   "placed": {
+    "pack_line": 64,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "timeline:rules:p2",
+   "section": "rules",
+   "rank": 0,
+   "text": "- Le restore d'un produit renvoie 404 uniforme (ProductNotFoundException) pour inconnu, non archivé ou d'autrui, et 403 seulement si le userId du path diffère du caller [#7ffbb5f0b0666075-1] [#23aead80049aa52e-1] `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java:108-132`.",
+   "fact_text": "Le restore d'un produit renvoie 404 uniforme (ProductNotFoundException) pour inconnu, non archivé ou d'autrui, et 403 seulement si le userId du path diffère du caller ProductController.java",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "timeline/7ffbb5f0b0666075-1",
+    "timeline/23aead80049aa52e-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java",
+     112,
+     116,
+     "9ebb07761acaa80d65b80b9740122c7cde32d3f0552a1f16744d13b2d3feca50"
+    ],
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java",
+     118,
+     132,
+     "d63b806322305747f35ed34256174ee4766478dd96993b8f7c52152e28da386e"
+    ]
+   ],
+   "code_sha256": "81e214aa1682d81760cb8ceb97b434e349c5ac53da33aec6a2922d6287fa45f6",
+   "verdict": "admit",
+   "reason": "promoted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "promoted_from": "timeline:questions:2",
+   "guard_range": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java",
+    108,
+    132
+   ],
+   "placed": {
+    "pack_line": 65,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "timeline:rules:p3",
+   "section": "rules",
+   "rank": 0,
+   "text": "- durationUnit null donne un 422 uniquement pour type='duration' avec durationValue non nul (InvalidDurationUnitException, handleInvalidDurationUnit) [#35513b08008b2dce-1] [#backend-socle/2faddb776ec7b9ad-2] [#8cd20c75d6215999-1] `mytimeline:backend/src/main/java/com/matimeline/eventmanager/utils/Utils.java:57-62`.",
+   "fact_text": "durationUnit null donne un 422 uniquement pour type='duration' avec durationValue non nul (InvalidDurationUnitException, handleInvalidDurationUnit) Utils.java",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "timeline/35513b08008b2dce-1",
+    "backend-socle/2faddb776ec7b9ad-2",
+    "timeline/8cd20c75d6215999-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/utils/Utils.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/utils/Utils.java",
+     55,
+     59,
+     "3fe047d503edcf04c8727c82d4a2ad75ed3019a3c306c8afb55efb63bc54984d"
+    ],
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/utils/Utils.java",
+     60,
+     61,
+     "bdddf8cc331e855d8edc9eecfec89e9254476549ddad21f12efc88bc80faf462"
+    ],
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/utils/Utils.java",
+     60,
+     62,
+     "b17cdb77e81b05e1f370a362d6920e2b93b0263d98dfb3c7344fbb52dae2594d"
+    ]
+   ],
+   "code_sha256": "23cc34dac43a69c19544c6d08820bf41fc69a3efd257c0410b86e315fb741199",
+   "verdict": "admit",
+   "reason": "promoted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "promoted_from": "timeline:questions:4",
+   "guard_range": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/utils/Utils.java",
+    57,
+    62
+   ],
+   "placed": {
+    "pack_line": 66,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "timeline:rules:p4",
+   "section": "rules",
+   "rank": 0,
+   "text": "- Après un 409 au désarchivage, useSetEventArchived invalide products.all dans son onError. handleUnarchive n'a pas à le faire [#cc800a010618b0e6-1] [#9160ee03da7f807b-1] `mytimeline:frontend/src/hooks/useSetEventArchived.ts:38-46`.",
+   "fact_text": "Après un 409 au désarchivage, useSetEventArchived invalide products.all dans son onError. handleUnarchive n'a pas à le faire useSetEventArchived.ts",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "timeline/cc800a010618b0e6-1",
+    "timeline/9160ee03da7f807b-1"
+   ],
+   "files": [
+    "mytimeline:frontend/src/hooks/useSetEventArchived.ts"
+   ],
+   "ranges": [
+    [
+     "mytimeline:frontend/src/hooks/useSetEventArchived.ts",
+     38,
+     46,
+     "9b12b0c6fd7975b8e32fabce9389ccb3e7dba189df2bd2b68ccd5a1ae6f99c52"
+    ],
+    [
+     "mytimeline:frontend/src/hooks/useSetEventArchived.ts",
+     30,
+     48,
+     "fa1f967c6dea1ed3e3668ba08402897bae0f4ccb981069f4c6381beda278ef0a"
+    ]
+   ],
+   "code_sha256": "9f1a721233c5f89801594ad68adce0f334c9ba13dc323dbfeebb771629c76e09",
+   "verdict": "admit",
+   "reason": "promoted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "promoted_from": "timeline:questions:7",
+   "guard_range": [
+    "mytimeline:frontend/src/hooks/useSetEventArchived.ts",
+    38,
+    46
+   ],
+   "placed": {
+    "pack_line": 67,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "timeline:rules:p5",
+   "section": "rules",
+   "rank": 0,
+   "text": "- CategoryController.deleteCategory requires isOwnedBy for the target and the reassign target, and ProductServiceImpl.resolveAssignableCategory blocks cross-user assignment, so the unscoped productRepository.updateCategoryForProducts only touches the owner's products [#fee4a3fe030b8963-1] [#7066eb160400bf67-1] `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryController.java:135-137`.",
+   "fact_text": "CategoryController.deleteCategory requires isOwnedBy for the target and the reassign target, and ProductServiceImpl.resolveAssignableCategory blocks cross-user assignment, so the unscoped productRepository.updateCategoryForProducts only touches the owner's products CategoryController.java",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "timeline/fee4a3fe030b8963-1",
+    "timeline/7066eb160400bf67-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryController.java",
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryController.java",
+     121,
+     154,
+     "0e23859a23bfc7022ab53dc5b60defea57d3d01f12085917c9bb4f74ea205b86"
+    ],
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+     156,
+     164,
+     "c8ddc9280f702cea3b2a65450d6b1fb107c6597549d56193e769de040c4c35a7"
+    ]
+   ],
+   "code_sha256": "d21285fc3f37e71dc1104d165758851e4f9f24d4422131cfc02f2ae85e81d22d",
+   "verdict": "admit",
+   "reason": "promoted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "promoted_from": "timeline:alerts:1",
+   "guard_range": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryController.java",
+    135,
+    137
+   ],
+   "placed": {
+    "pack_line": 68,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "timeline:rules:p6",
+   "section": "rules",
+   "rank": 0,
+   "text": "- Le contrôleur E2eResetTokenController (GET /api/test-support/password-reset-token) est protégé par @Profile(\"e2e\") et ne doit jamais être activé hors test [#integrations/4c61ca6e2f106b0b-1] `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenController.java:43-45`.",
+   "fact_text": "Le contrôleur E2eResetTokenController (GET /api/test-support/password-reset-token) est protégé par @Profile(\"e2e\") et ne doit jamais être activé hors test E2eResetTokenController.java",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "integrations/4c61ca6e2f106b0b-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenController.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenController.java",
+     44,
+     46,
+     "8a66eb74806d0aade0575e54f779bf2eda4e151a69f53f3b855835deb03f2208"
+    ]
+   ],
+   "code_sha256": "8a66eb74806d0aade0575e54f779bf2eda4e151a69f53f3b855835deb03f2208",
+   "verdict": "admit",
+   "reason": "promoted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "promoted_from": "timeline:alerts:2",
+   "guard_range": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenController.java",
+    43,
+    45
+   ],
+   "placed": {
+    "pack_line": 69,
+    "annex_table": null
+   },
+   "uses": 0
+  },
   {
    "id": "timeline:lexicon:1",
    "section": "lexicon",
@@ -91,44 +410,8 @@
    "final": true,
    "measures": {
     "fidelity": null,
-    "deduce": {
-     "covered": false,
-     "overlap": {
-      "identifiers": null,
-      "values": null,
-      "terms": 0.0,
-      "n": {
-       "identifiers": 0,
-       "values": 0,
-       "terms": 8
-      }
-     },
-     "restatement": "Le JSX affiche la clé de traduction `t('recurrenceCappedHint')` comme texte à la ligne 819 de `EventEditForm.tsx`. L'extrait ne montre pas la condition d'affichage, donc on ne sait pas quand ce texte apparaît.",
-     "confidence": "medium",
-     "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
-    },
-    "rediscover": {
-     "found": true,
-     "cost": 14,
-     "within_budget": false,
-     "covered": false,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/frontend/src/lib/recurrence.ts",
-     "file_ok": false,
-     "overlap": {
-      "identifiers": null,
-      "values": null,
-      "terms": 0.375,
-      "n": {
-       "identifiers": 0,
-       "values": 0,
-       "terms": 8
-      }
-     },
-     "job": "timeline:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_infrastructure_adapters_testsupport_E2eResetTokenController.java:3",
-     "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
-    },
+    "deduce": null,
+    "rediscover": null,
     "comment": [],
     "refute": {
      "votes": 3,
@@ -147,7 +430,7 @@
      "consigne_verdict": "n/a",
      "question_verdict": "n/a",
      "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "reused_from": "2026-11-17T10:45:42Z"
     }
    },
    "contrary": null,
@@ -193,44 +476,8 @@
    "final": true,
    "measures": {
     "fidelity": null,
-    "deduce": {
-     "covered": false,
-     "overlap": {
-      "identifiers": 0.5,
-      "values": 1.0,
-      "terms": 0.375,
-      "n": {
-       "identifiers": 2,
-       "values": 1,
-       "terms": 8
-      }
-     },
-     "restatement": "ExportJobEntity.status est une String non nulle de 16 caractères au maximum. Côté frontend, le libellé de statut est calculé avec t(`status.${flow.jobStatus ?? 'PENDING'}`), donc un jobStatus absent ou null est remplacé par la valeur PENDING.",
-     "confidence": "high",
-     "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
-    },
-    "rediscover": {
-     "found": true,
-     "cost": 7,
-     "within_budget": false,
-     "covered": false,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/backend/src/main/resources/db/migration/V13__export_jobs.sql",
-     "file_ok": false,
-     "overlap": {
-      "identifiers": 0.5,
-      "values": 1.0,
-      "terms": 0.5,
-      "n": {
-       "identifiers": 2,
-       "values": 1,
-       "terms": 8
-      }
-     },
-     "job": "timeline:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_infrastructure_adapters_testsupport_E2eResetTokenController.java:3",
-     "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
-    },
+    "deduce": null,
+    "rediscover": null,
     "comment": [],
     "refute": {
      "votes": 3,
@@ -249,7 +496,7 @@
      "consigne_verdict": "n/a",
      "question_verdict": "n/a",
      "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "reused_from": "2026-11-17T10:45:42Z"
     }
    },
    "contrary": null,
@@ -295,45 +542,8 @@
    "final": true,
    "measures": {
     "fidelity": null,
-    "deduce": {
-     "covered": false,
-     "overlap": {
-      "identifiers": 0.667,
-      "values": null,
-      "terms": 0.333,
-      "n": {
-       "identifiers": 3,
-       "values": 0,
-       "terms": 9
-      }
-     },
-     "restatement": "L'extrait ne contient que des déclarations de records : JwksResponse encapsule une liste keys de JwkResponse, et JwkResponse porte six champs String (kty, use, alg, kid, n, e), soit le format d'une clé publique JWK, probablement RSA vu la présence de n et e. Aucune logique ni contrainte n'est visible.",
-     "confidence": "medium",
-     "files_read_missing": true,
-     "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
-    },
-    "rediscover": {
-     "found": true,
-     "cost": 1,
-     "within_budget": true,
-     "covered": false,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/backend/src/main/java/com/matimeline/eventmanager/application/dtos/JwksResponse.java",
-     "file_ok": true,
-     "overlap": {
-      "identifiers": 0.667,
-      "values": null,
-      "terms": 0.444,
-      "n": {
-       "identifiers": 3,
-       "values": 0,
-       "terms": 9
-      }
-     },
-     "job": "timeline:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_dtos_CategoryResponse.java:1",
-     "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
-    },
+    "deduce": null,
+    "rediscover": null,
     "comment": [],
     "refute": {
      "votes": 3,
@@ -352,7 +562,7 @@
      "consigne_verdict": "n/a",
      "question_verdict": "n/a",
      "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "reused_from": "2026-11-17T10:45:42Z"
     }
    },
    "contrary": null,
@@ -428,14 +638,15 @@
    },
    "contrary": null,
    "placed": {
-    "pack_line": 33,
+    "pack_line": null,
     "annex_table": {
      "part": "timeline.details-5.md",
      "row": 1
     }
    },
    "uses": 0,
-   "carried_from": "2026-11-17T10:40:47Z"
+   "carried_from": "2026-11-17T10:45:42Z",
+   "pointer_removed": true
   },
   {
    "id": "timeline:lexicon:4#2",
@@ -513,14 +724,15 @@
    },
    "contrary": null,
    "placed": {
-    "pack_line": 33,
+    "pack_line": null,
     "annex_table": {
      "part": "timeline.details-5.md",
      "row": 2
     }
    },
    "uses": 0,
-   "carried_from": "2026-11-17T10:40:47Z"
+   "carried_from": "2026-11-17T10:45:42Z",
+   "pointer_removed": true
   },
   {
    "id": "timeline:lexicon:5",
@@ -598,14 +810,15 @@
    },
    "contrary": null,
    "placed": {
-    "pack_line": 34,
+    "pack_line": null,
     "annex_table": {
      "part": "timeline.details-5.md",
      "row": 3
     }
    },
    "uses": 0,
-   "carried_from": "2026-11-17T10:40:47Z"
+   "carried_from": "2026-11-17T10:45:42Z",
+   "pointer_removed": true
   },
   {
    "id": "timeline:lexicon:6",
@@ -656,14 +869,15 @@
    },
    "contrary": null,
    "placed": {
-    "pack_line": 35,
+    "pack_line": null,
     "annex_table": {
      "part": "timeline.details-5.md",
      "row": 4
     }
    },
    "uses": 0,
-   "carried_from": "2026-11-17T10:40:47Z"
+   "carried_from": "2026-11-17T10:45:42Z",
+   "pointer_removed": true
   },
   {
    "id": "timeline:lexicon:7",
@@ -723,14 +937,15 @@
    },
    "contrary": null,
    "placed": {
-    "pack_line": 36,
+    "pack_line": null,
     "annex_table": {
      "part": "timeline.details-5.md",
      "row": 5
     }
    },
    "uses": 0,
-   "carried_from": "2026-11-17T10:40:47Z"
+   "carried_from": "2026-11-17T10:45:42Z",
+   "pointer_removed": true
   },
   {
    "id": "timeline:lexicon:7#2",
@@ -809,14 +1024,15 @@
    },
    "contrary": null,
    "placed": {
-    "pack_line": 36,
+    "pack_line": null,
     "annex_table": {
      "part": "timeline.details-5.md",
      "row": 6
     }
    },
    "uses": 0,
-   "carried_from": "2026-11-17T10:40:47Z"
+   "carried_from": "2026-11-17T10:45:42Z",
+   "pointer_removed": true
   },
   {
    "id": "timeline:lexicon:8",
@@ -868,14 +1084,15 @@
    },
    "contrary": null,
    "placed": {
-    "pack_line": 37,
+    "pack_line": null,
     "annex_table": {
      "part": "timeline.details-5.md",
      "row": 7
     }
    },
    "uses": 0,
-   "carried_from": "2026-11-17T10:40:47Z"
+   "carried_from": "2026-11-17T10:45:42Z",
+   "pointer_removed": true
   },
   {
    "id": "timeline:rules:1",
@@ -965,7 +1182,7 @@
      "confidence": "high",
      "files_read_missing": true,
      "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "rediscover": {
      "found": true,
@@ -986,7 +1203,7 @@
      },
      "job": "timeline:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_dtos_CategoryResponse.java:1",
      "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "comment": [],
     "refute": {
@@ -1006,12 +1223,12 @@
      "consigne_verdict": "n/a",
      "question_verdict": "n/a",
      "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "reused_from": "2026-11-17T10:45:42Z"
     }
    },
    "contrary": null,
    "placed": {
-    "pack_line": 42,
+    "pack_line": 36,
     "annex_table": null
    },
    "uses": 0
@@ -1063,7 +1280,7 @@
     ]
    ],
    "code_sha256": "3f0876cdb8ff00d1a8303c3559abfed11f9ac91b656fe700456fd2ca23ac748c",
-   "verdict": "annex",
+   "verdict": "admit",
    "reason": "rediscovered",
    "final": true,
    "measures": {
@@ -1082,7 +1299,9 @@
      },
      "restatement": "Dans updateEvent, si endDate est antérieure à startDate (valeurs fusionnées, donc y compris la startDate persistée), EndDateBeforeStartException est levée et mappée en 422. Le test d'intégration confirme qu'un PATCH ne fournissant que endDate, avant la startDate en base, est rejeté et qu'aucune modification n'est persistée. L'égalité des deux dates reste acceptée.",
      "confidence": "high",
-     "files_read_missing": true
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "rediscover": {
      "found": true,
@@ -1102,192 +1321,25 @@
       }
      },
      "job": "timeline:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_dtos_CategoryResponse.java:1",
-     "rank_in_lot": 4
+     "rank_in_lot": 4,
+     "reused": true,
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "comment": [],
     "refute": null
    },
    "contrary": null,
+   "restored_from_pointer": {
+    "record": "timeline:rules:2",
+    "pointer_line": 43,
+    "reason": "rediscovered"
+   },
+   "kept_for": "rediscovered",
    "placed": {
-    "pack_line": 43,
-    "annex_table": {
-     "part": "timeline.details-5.md",
-     "row": 8
-    }
+    "pack_line": 37,
+    "annex_table": null
    },
-   "uses": 0,
-   "carried_from": "2026-11-17T10:40:47Z"
-  },
-  {
-   "id": "timeline:rules:2#2",
-   "section": "rules",
-   "rank": 2,
-   "text": "- Une version client différente lève EventConflictException sans écriture, le contrôle n'étant armé que si les deux versions sont non null. La suppression filtre sur l'id seul [#f69d0a1d79ba1dcc-1] [#a7e9024c920debf4-1] [#a7e9024c920debf4-2] [#3dcdc86e498ae065-1].",
-   "fact_text": "Une version client différente lève EventConflictException sans écriture, le contrôle n'étant armé que si les deux versions sont non null. La suppression filtre sur l'id seul",
-   "consigne": null,
-   "consigne_dropped": false,
-   "cites": [
-    "timeline/f69d0a1d79ba1dcc-1",
-    "timeline/a7e9024c920debf4-1",
-    "timeline/a7e9024c920debf4-2",
-    "timeline/3dcdc86e498ae065-1"
-   ],
-   "files": [
-    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/EventServiceImpl.java",
-    "mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/EventServiceImplTest.java",
-    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/EventRepositoryJpaImpl.java"
-   ],
-   "ranges": [
-    [
-     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/EventServiceImpl.java",
-     217,
-     223,
-     "0e22785200f5a5760f6c6201e9f1ca43074a86ebb83e4ef3ad64d349aee93706"
-    ],
-    [
-     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/EventServiceImplTest.java",
-     178,
-     196,
-     "1766d27a6139ee17fab8ab0fcb3df7699ad281d6a1eaea46d9302563af917dcc"
-    ],
-    [
-     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/EventServiceImplTest.java",
-     215,
-     227,
-     "ef75123338b78e7609693455d3df79dbb5566127a0be236c2bb36c73963d08c1"
-    ],
-    [
-     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/EventRepositoryJpaImpl.java",
-     156,
-     162,
-     "b4b0a91d8a47cde7a4f8d35682b16cfb5cff8231b8457276497d5d3756a76ec1"
-    ]
-   ],
-   "code_sha256": "6a1ea793dc1af0f99dd9232c8fb7cd87c827e4ebc3cd85937ed031d834c1c876",
-   "verdict": "annex",
-   "reason": "deducible",
-   "final": true,
-   "measures": {
-    "fidelity": null,
-    "deduce": {
-     "covered": true,
-     "overlap": {
-      "identifiers": 1.0,
-      "values": null,
-      "terms": 0.636,
-      "n": {
-       "identifiers": 1,
-       "values": 0,
-       "terms": 11
-      }
-     },
-     "restatement": "checkOptimisticVersion lève EventConflictException si command.version et event.version sont tous deux non null et différents, et ne vérifie rien si la version du client est null. Le conflit est détecté avant toute écriture, donc aucun save n'est appelé. L'extrait contient aussi deleteByIdReturningRowCount, qui exécute une requête JPQL DELETE par id et renvoie le nombre de lignes supprimées.",
-     "confidence": "high",
-     "files_read_missing": true
-    },
-    "rediscover": null,
-    "comment": [],
-    "refute": null
-   },
-   "contrary": null,
-   "placed": {
-    "pack_line": 43,
-    "annex_table": {
-     "part": "timeline.details-5.md",
-     "row": 9
-    }
-   },
-   "uses": 0,
-   "carried_from": "2026-11-17T10:40:47Z"
-  },
-  {
-   "id": "timeline:rules:2#3",
-   "section": "rules",
-   "rank": 2,
-   "text": "- Le type doit valoir duration ou single, sinon InvalidEventTypeException avant tout save, à la création comme au PATCH [#bed9b4d56cf7dc21-1] [#cd108c99502b1cba-1] [#fda1a6018b32fdaf-1] [#b47e1a5bdaf28340-1] [#a607aeea0e1b1902-2].",
-   "fact_text": "Le type doit valoir duration ou single, sinon InvalidEventTypeException avant tout save, à la création comme au PATCH",
-   "consigne": null,
-   "consigne_dropped": false,
-   "cites": [
-    "timeline/bed9b4d56cf7dc21-1",
-    "timeline/cd108c99502b1cba-1",
-    "timeline/fda1a6018b32fdaf-1",
-    "timeline/b47e1a5bdaf28340-1",
-    "timeline/a607aeea0e1b1902-2"
-   ],
-   "files": [
-    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/EventServiceImpl.java",
-    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/utils/Utils.java",
-    "mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/EventServiceImplTest.java"
-   ],
-   "ranges": [
-    [
-     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/EventServiceImpl.java",
-     49,
-     49,
-     "fbc64d769b7a95dec91f8f8104343c584102b8a5be4e3735d35d134c276b830a"
-    ],
-    [
-     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/utils/Utils.java",
-     24,
-     28,
-     "68e3aabe4899b3c21f1466246008e60221cd30032b87b7dbb66f6a449cc31cf6"
-    ],
-    [
-     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/utils/Utils.java",
-     24,
-     28,
-     "68e3aabe4899b3c21f1466246008e60221cd30032b87b7dbb66f6a449cc31cf6"
-    ],
-    [
-     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/EventServiceImplTest.java",
-     547,
-     560,
-     "9953157befe4d0ccb83b06785e77866a9ae5903aa9f4737e9abd10d81ce5a95a"
-    ],
-    [
-     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/EventServiceImplTest.java",
-     563,
-     571,
-     "2eaba34ab6e022a79f0e70e8de4b9ce45a33925c8c5612f56da708089184ac63"
-    ]
-   ],
-   "code_sha256": "476057fde3c5f94d60848f1df23a27efb1c0a35af4f9d5fba132911e877d0ac9",
-   "verdict": "annex",
-   "reason": "deducible",
-   "final": true,
-   "measures": {
-    "fidelity": null,
-    "deduce": {
-     "covered": true,
-     "overlap": {
-      "identifiers": 1.0,
-      "values": null,
-      "terms": 0.667,
-      "n": {
-       "identifiers": 2,
-       "values": 0,
-       "terms": 6
-      }
-     },
-     "restatement": "createEvent appelle Utils.validateEventType avant toute persistance. Un type null ou absent de ALLOWED_EVENT_TYPES lève InvalidEventTypeException, et le test confirme que save n'est jamais atteint. Le commentaire du test indique que les types autorisés sont duration et single. Le même garde-fou s'applique au PATCH via updateEvent.",
-     "confidence": "high",
-     "files_read_missing": true
-    },
-    "rediscover": null,
-    "comment": [],
-    "refute": null
-   },
-   "contrary": null,
-   "placed": {
-    "pack_line": 43,
-    "annex_table": {
-     "part": "timeline.details-5.md",
-     "row": 10
-    }
-   },
-   "uses": 0,
-   "carried_from": "2026-11-17T10:40:47Z"
+   "uses": 0
   },
   {
    "id": "timeline:rules:3",
@@ -1327,7 +1379,7 @@
     ]
    ],
    "code_sha256": "230f2af7690dda04be99c4b1e8976d6417ced8e40fa53246e1d456c5ce0733c7",
-   "verdict": "annex",
+   "verdict": "admit",
    "reason": "rediscovered",
    "final": true,
    "measures": {
@@ -1345,7 +1397,9 @@
       }
      },
      "restatement": "Utils.calculateEndDate lève InvalidDurationUnitException avec null si durationUnit est null, et la même exception avec la valeur reçue dans le default du switch pour toute unité inconnue. Le test UtilsTest vérifie qu'une unité \"fortnights\" déclenche bien cette exception.",
-     "confidence": "high"
+     "confidence": "high",
+     "reused": true,
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "rediscover": {
      "found": true,
@@ -1365,21 +1419,25 @@
       }
      },
      "job": "timeline:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_infrastructure_adapters_testsupport_E2eResetTokenController.java:3",
-     "rank_in_lot": 1
+     "rank_in_lot": 1,
+     "reused": true,
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "comment": [],
     "refute": null
    },
    "contrary": null,
-   "placed": {
-    "pack_line": 44,
-    "annex_table": {
-     "part": "timeline.details-5.md",
-     "row": 11
-    }
+   "restored_from_pointer": {
+    "record": "timeline:rules:3",
+    "pointer_line": 44,
+    "reason": "rediscovered"
    },
-   "uses": 0,
-   "carried_from": "2026-11-17T10:40:47Z"
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 38,
+    "annex_table": null
+   },
+   "uses": 0
   },
   {
    "id": "timeline:rules:4",
@@ -1446,14 +1504,15 @@
    },
    "contrary": null,
    "placed": {
-    "pack_line": 45,
+    "pack_line": null,
     "annex_table": {
      "part": "timeline.details-5.md",
      "row": 12
     }
    },
    "uses": 0,
-   "carried_from": "2026-11-17T10:40:47Z"
+   "carried_from": "2026-11-17T10:45:42Z",
+   "pointer_removed": true
   },
   {
    "id": "timeline:rules:4#2",
@@ -1528,14 +1587,15 @@
    },
    "contrary": null,
    "placed": {
-    "pack_line": 45,
+    "pack_line": null,
     "annex_table": {
      "part": "timeline.details-5.md",
      "row": 13
     }
    },
    "uses": 0,
-   "carried_from": "2026-11-17T10:40:47Z"
+   "carried_from": "2026-11-17T10:45:42Z",
+   "pointer_removed": true
   },
   {
    "id": "timeline:rules:5",
@@ -1597,7 +1657,7 @@
      "confidence": "high",
      "files_read_missing": true,
      "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "rediscover": {
      "found": true,
@@ -1618,7 +1678,7 @@
      },
      "job": "timeline:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_dtos_CategoryResponse.java:1",
      "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "comment": [],
     "refute": {
@@ -1638,12 +1698,12 @@
      "consigne_verdict": "n/a",
      "question_verdict": "n/a",
      "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "reused_from": "2026-11-17T10:45:42Z"
     }
    },
    "contrary": null,
    "placed": {
-    "pack_line": 46,
+    "pack_line": 39,
     "annex_table": null
    },
    "uses": 0
@@ -1715,7 +1775,7 @@
      "confidence": "high",
      "files_read_missing": true,
      "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "rediscover": {
      "found": true,
@@ -1736,7 +1796,7 @@
      },
      "job": "timeline:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_services_RecurrenceExpansionServiceImpl.java:2",
      "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "comment": [],
     "refute": {
@@ -1756,12 +1816,12 @@
      "consigne_verdict": "n/a",
      "question_verdict": "n/a",
      "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "reused_from": "2026-11-17T10:45:42Z"
     }
    },
    "contrary": null,
    "placed": {
-    "pack_line": 47,
+    "pack_line": 40,
     "annex_table": null
    },
    "uses": 0
@@ -1841,7 +1901,7 @@
     ]
    ],
    "code_sha256": "8d43cef74067903ef9e5df0aa1f413c8dadae72bed8cbafbd770b11f0fff1044",
-   "verdict": "annex",
+   "verdict": "admit",
    "reason": "rediscovered",
    "final": true,
    "measures": {
@@ -1860,7 +1920,9 @@
      },
      "restatement": "expand lève IllegalArgumentException si recurrenceEndDate est antérieure à startDate, ou si startDate ou la récurrence sont null (tests). RecurrencePreviewController traduit cette IllegalArgumentException en RecurrenceEndDateBeforeStartException, dont le test attend un HTTP 422 avec error unprocessable_entity. Une requête sans startDate ou sans recurrenceUnit reçoit un 400 et n'appelle pas le service.",
      "confidence": "high",
-     "files_read_missing": true
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "rediscover": {
      "found": true,
@@ -1880,21 +1942,25 @@
       }
      },
      "job": "timeline:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_services_RecurrenceExpansionServiceImpl.java:2",
-     "rank_in_lot": 1
+     "rank_in_lot": 1,
+     "reused": true,
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "comment": [],
     "refute": null
    },
    "contrary": null,
-   "placed": {
-    "pack_line": 48,
-    "annex_table": {
-     "part": "timeline.details-5.md",
-     "row": 14
-    }
+   "restored_from_pointer": {
+    "record": "timeline:rules:7",
+    "pointer_line": 48,
+    "reason": "rediscovered"
    },
-   "uses": 0,
-   "carried_from": "2026-11-17T10:40:47Z"
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 41,
+    "annex_table": null
+   },
+   "uses": 0
   },
   {
    "id": "timeline:rules:8",
@@ -1945,14 +2011,15 @@
    },
    "contrary": null,
    "placed": {
-    "pack_line": 49,
+    "pack_line": null,
     "annex_table": {
      "part": "timeline.details-5.md",
      "row": 15
     }
    },
    "uses": 0,
-   "carried_from": "2026-11-17T10:40:47Z"
+   "carried_from": "2026-11-17T10:45:42Z",
+   "pointer_removed": true
   },
   {
    "id": "timeline:rules:9",
@@ -2012,7 +2079,7 @@
      "restatement": "La migration Flyway V4 interrompt le script avec une exception si la table events contient un type NULL, un type de plus de 20 caractères, un type hors enum, ou un duration_unit ou recurrence_unit hors enum. La migration V9 normalise les synonymes de recurrence_unit (week, weekly, hebdo, month, yearly, annuel, etc.) vers WEEK, MONTH ou YEAR, puis met à null toute valeur restante qui n'appartient pas à ces trois valeurs.",
      "confidence": "high",
      "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "rediscover": {
      "found": true,
@@ -2033,7 +2100,7 @@
      },
      "job": "timeline:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_infrastructure_adapters_testsupport_E2eResetTokenController.java:3",
      "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "comment": [],
     "refute": {
@@ -2053,12 +2120,12 @@
      "consigne_verdict": "n/a",
      "question_verdict": "n/a",
      "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "reused_from": "2026-11-17T10:45:42Z"
     }
    },
    "contrary": null,
    "placed": {
-    "pack_line": 50,
+    "pack_line": 42,
     "annex_table": null
    },
    "uses": 0
@@ -2181,7 +2248,7 @@
      "confidence": "medium",
      "files_read_missing": true,
      "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "rediscover": {
      "found": true,
@@ -2202,7 +2269,7 @@
      },
      "job": "timeline:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_services_RecurrenceExpansionServiceImpl.java:2",
      "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "comment": [],
     "refute": {
@@ -2222,12 +2289,12 @@
      "consigne_verdict": "n/a",
      "question_verdict": "n/a",
      "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "reused_from": "2026-11-17T10:45:42Z"
     }
    },
    "contrary": null,
    "placed": {
-    "pack_line": 52,
+    "pack_line": 44,
     "annex_table": null
    },
    "uses": 0
@@ -2312,14 +2379,15 @@
    },
    "contrary": null,
    "placed": {
-    "pack_line": 53,
+    "pack_line": null,
     "annex_table": {
      "part": "timeline.details-5.md",
      "row": 16
     }
    },
    "uses": 0,
-   "carried_from": "2026-11-17T10:40:47Z"
+   "carried_from": "2026-11-17T10:45:42Z",
+   "pointer_removed": true
   },
   {
    "id": "timeline:rules:12",
@@ -2402,7 +2470,7 @@
      "confidence": "high",
      "files_read_missing": true,
      "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "rediscover": {
      "found": true,
@@ -2423,7 +2491,7 @@
      },
      "job": "timeline:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_dtos_CategoryResponse.java:1",
      "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "comment": [],
     "refute": {
@@ -2443,12 +2511,12 @@
      "consigne_verdict": "n/a",
      "question_verdict": "n/a",
      "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "reused_from": "2026-11-17T10:45:42Z"
     }
    },
    "contrary": null,
    "placed": {
-    "pack_line": 54,
+    "pack_line": 45,
     "annex_table": null
    },
    "uses": 0
@@ -2547,14 +2615,15 @@
    },
    "contrary": null,
    "placed": {
-    "pack_line": 55,
+    "pack_line": null,
     "annex_table": {
      "part": "timeline.details-5.md",
      "row": 17
     }
    },
    "uses": 0,
-   "carried_from": "2026-11-17T10:40:47Z"
+   "carried_from": "2026-11-17T10:45:42Z",
+   "pointer_removed": true
   },
   {
    "id": "timeline:rules:14",
@@ -2614,7 +2683,7 @@
      "confidence": "high",
      "files_read_missing": true,
      "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "rediscover": {
      "found": true,
@@ -2635,7 +2704,7 @@
      },
      "job": "timeline:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_dtos_CategoryResponse.java:1",
      "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "comment": [],
     "refute": {
@@ -2643,9 +2712,9 @@
      "refuted": 0,
      "refute_unproven": 0,
      "reasons": [
-      "requestReset est @Async (L99), retourne sans signal pour un email inconnu (L104-107) et avale RuntimeException en journalisant getClass().getSimpleName() (L127-130).",
-      "requestReset est annoté @Async (L99). Un email inconnu provoque un return silencieux (L104-107). Le catch RuntimeException (L127-131) journalise uniquement ex.getClass().getSimpleName().",
-      "requestReset est annotée @Async (L99). Un email inconnu fait un return silencieux (L104-107) et le catch RuntimeException journalise uniquement le nom de classe (L127-130)."
+      "requestReset (L127-130) attrape RuntimeException et ne journalise que ex.getClass().getSimpleName() ; email inconnu retourne sans signal (L104-107) ; @Async L99. Aucun contre-exemple de la règle, qui ne porte que sur cette méthode.",
+      "PasswordResetServiceImpl.requestReset (L101-131) : email inconnu fait un return silencieux, le catch (RuntimeException ex) journalise seulement ex.getClass().getSimpleName(), et la méthode est @Async. Aucun contre-exemple dans ce corps.",
+      "PasswordResetServiceImpl.requestReset is @Async, returns silently on unknown email (L104-107) and catches RuntimeException logging only getClass().getSimpleName() (L127-130). The only implementation, so the rule holds."
      ],
      "evidence": [
       "",
@@ -2654,13 +2723,47 @@
      ],
      "consigne_verdict": "n/a",
      "question_verdict": "n/a",
-     "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "searched": true,
+     "search": {
+      "check": "scope",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "catch \\(RuntimeException dans application/services",
+         "found": "3 occurrences (ExportPurgeScheduler, PasswordResetServiceImpl, AsyncExportRunner), seule PasswordResetServiceImpl concerne le reset."
+        }
+       ],
+       [
+        {
+         "tool": "Read",
+         "target": "PasswordResetServiceImpl.java",
+         "found": "Le catch RuntimeException L127-131 avale tout et logue le nom de classe. Email inconnu : return sans signal L104-107."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "requestReset\\( in backend/src/main",
+         "found": "Single implementation (PasswordResetServiceImpl), one caller (AuthController), one port; no counter-example."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     }
     }
    },
    "contrary": null,
+   "check": "scope",
+   "general": "words:toute",
    "placed": {
-    "pack_line": 56,
+    "pack_line": 46,
     "annex_table": null
    },
    "uses": 0
@@ -2732,7 +2835,7 @@
      "confidence": "high",
      "files_read_missing": true,
      "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "rediscover": {
      "found": true,
@@ -2753,7 +2856,7 @@
      },
      "job": "timeline:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_services_RecurrenceExpansionServiceImpl.java:2",
      "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "comment": [],
     "refute": {
@@ -2773,12 +2876,12 @@
      "consigne_verdict": "n/a",
      "question_verdict": "n/a",
      "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "reused_from": "2026-11-17T10:45:42Z"
     }
    },
    "contrary": null,
    "placed": {
-    "pack_line": 57,
+    "pack_line": 47,
     "annex_table": null
    },
    "uses": 0
@@ -2837,7 +2940,7 @@
     ]
    ],
    "code_sha256": "b8d6868d4f6a8c6a1048e158c34c8c28e6ec4a8ae45d7302d421e286af1cadc4",
-   "verdict": "annex",
+   "verdict": "admit",
    "reason": "rediscovered",
    "final": true,
    "measures": {
@@ -2856,7 +2959,9 @@
      },
      "restatement": "AuthController.register renvoie HTTP 409 avec le corps {\"error\": ErrorCode.CONFLICT} si l'utilisateur existe déjà. UserController.updateCurrentUser renvoie le même 409 neutre si le nouveau username appartient à un autre utilisateur, et le commentaire interdit un libellé qui révèle l'existence du compte. Les tests vérifient le code « conflict » et l'absence d'appel à updateUser.",
      "confidence": "high",
-     "files_read_missing": true
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "rediscover": {
      "found": true,
@@ -2876,21 +2981,25 @@
       }
      },
      "job": "timeline:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_services_RecurrenceExpansionServiceImpl.java:2",
-     "rank_in_lot": 6
+     "rank_in_lot": 6,
+     "reused": true,
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "comment": [],
     "refute": null
    },
    "contrary": null,
-   "placed": {
-    "pack_line": 58,
-    "annex_table": {
-     "part": "timeline.details-5.md",
-     "row": 18
-    }
+   "restored_from_pointer": {
+    "record": "timeline:rules:16",
+    "pointer_line": 58,
+    "reason": "rediscovered"
    },
-   "uses": 0,
-   "carried_from": "2026-11-17T10:40:47Z"
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 48,
+    "annex_table": null
+   },
+   "uses": 0
   },
   {
    "id": "timeline:rules:17",
@@ -2971,7 +3080,7 @@
     ]
    ],
    "code_sha256": "37f5755561460220aea3d60a29a1f56a5badd250fee813fc98a9ca24ec4ed358",
-   "verdict": "annex",
+   "verdict": "admit",
    "reason": "rediscovered",
    "final": true,
    "measures": {
@@ -2990,7 +3099,9 @@
      },
      "restatement": "La préférence de thème n'accepte que les valeurs exactes light, dark ou system, sensibles à la casse et sans espace (@Pattern dans UpdatePreferencesRequest). ThemePreference.fromValue lève IllegalArgumentException pour toute autre valeur, null compris, et les tests attendent un 400 validation_failed sans écriture pour PUT /api/me/preferences. Ce endpoint est limité à 30 requêtes par minute et par utilisateur (DEFAULT_PREFERENCES_PER_MINUTE).",
      "confidence": "high",
-     "files_read_missing": true
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "rediscover": {
      "found": true,
@@ -3010,21 +3121,25 @@
       }
      },
      "job": "timeline:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_dtos_CategoryResponse.java:1",
-     "rank_in_lot": 3
+     "rank_in_lot": 3,
+     "reused": true,
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "comment": [],
     "refute": null
    },
    "contrary": null,
-   "placed": {
-    "pack_line": 59,
-    "annex_table": {
-     "part": "timeline.details-5.md",
-     "row": 19
-    }
+   "restored_from_pointer": {
+    "record": "timeline:rules:17",
+    "pointer_line": 59,
+    "reason": "rediscovered"
    },
-   "uses": 0,
-   "carried_from": "2026-11-17T10:40:47Z"
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 49,
+    "annex_table": null
+   },
+   "uses": 0
   },
   {
    "id": "timeline:rules:18",
@@ -3075,14 +3190,15 @@
    },
    "contrary": null,
    "placed": {
-    "pack_line": 60,
+    "pack_line": null,
     "annex_table": {
      "part": "timeline.details-5.md",
      "row": 20
     }
    },
    "uses": 0,
-   "carried_from": "2026-11-17T10:40:47Z"
+   "carried_from": "2026-11-17T10:45:42Z",
+   "pointer_removed": true
   },
   {
    "id": "timeline:rules:19",
@@ -3143,7 +3259,7 @@
      "confidence": "high",
      "files_read_missing": true,
      "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "rediscover": {
      "found": true,
@@ -3164,7 +3280,7 @@
      },
      "job": "timeline:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_dtos_CategoryResponse.java:1",
      "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "comment": [],
     "refute": {
@@ -3184,12 +3300,12 @@
      "consigne_verdict": "n/a",
      "question_verdict": "n/a",
      "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "reused_from": "2026-11-17T10:45:42Z"
     }
    },
    "contrary": null,
    "placed": {
-    "pack_line": 62,
+    "pack_line": 51,
     "annex_table": null
    },
    "uses": 0
@@ -3281,14 +3397,15 @@
    },
    "contrary": null,
    "placed": {
-    "pack_line": 63,
+    "pack_line": null,
     "annex_table": {
      "part": "timeline.details-5.md",
      "row": 21
     }
    },
    "uses": 0,
-   "carried_from": "2026-11-17T10:40:47Z"
+   "carried_from": "2026-11-17T10:45:42Z",
+   "pointer_removed": true
   },
   {
    "id": "timeline:rules:21",
@@ -3348,14 +3465,15 @@
    },
    "contrary": null,
    "placed": {
-    "pack_line": 64,
+    "pack_line": null,
     "annex_table": {
      "part": "timeline.details-5.md",
      "row": 22
     }
    },
    "uses": 0,
-   "carried_from": "2026-11-17T10:40:47Z"
+   "carried_from": "2026-11-17T10:45:42Z",
+   "pointer_removed": true
   },
   {
    "id": "timeline:rules:22",
@@ -3451,7 +3569,7 @@
     ]
    ],
    "code_sha256": "64b92fbb8eff69c66eec7f0fda545782e3adb1ea40a89f1ec966fbebe832edf5",
-   "verdict": "annex",
+   "verdict": "admit",
    "reason": "rediscovered",
    "final": true,
    "measures": {
@@ -3469,7 +3587,9 @@
       }
      },
      "restatement": "`isSyncFormat` ne considère synchrones que `JSON` et `MARKDOWN`, qui passent par `inlineMutation` et déclenchent le téléchargement immédiat puis la phase `ready`. Les autres formats passent par `submitMutation` puis un polling de `jobQuery` qui s'arrête sur `COMPLETED` ou `FAILED`. Un job `FAILED` met la clé d'erreur `jobFailed` et la phase `error`, tandis qu'une erreur réseau met la clé `network`.",
-     "confidence": "high"
+     "confidence": "high",
+     "reused": true,
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "rediscover": {
      "found": true,
@@ -3489,21 +3609,27 @@
       }
      },
      "job": "timeline:rediscover:mytimeline_frontend_src_components_timeline_TimelineBottomSheet.tsx:4",
-     "rank_in_lot": 1
+     "rank_in_lot": 1,
+     "reused": true,
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "comment": [],
     "refute": null
    },
    "contrary": null,
-   "placed": {
-    "pack_line": 65,
-    "annex_table": {
-     "part": "timeline.details-5.md",
-     "row": 23
-    }
+   "check": "scope",
+   "general": "words:toute,toutes",
+   "restored_from_pointer": {
+    "record": "timeline:rules:22",
+    "pointer_line": 65,
+    "reason": "rediscovered"
    },
-   "uses": 0,
-   "carried_from": "2026-11-17T10:40:47Z"
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 52,
+    "annex_table": null
+   },
+   "uses": 0
   },
   {
    "id": "timeline:rules:23",
@@ -3543,7 +3669,7 @@
     ]
    ],
    "code_sha256": "5d027c0520dfa3c57b09f9275ae4e0109787a33fb75a8265431de4150e723c3c",
-   "verdict": "annex",
+   "verdict": "admit",
    "reason": "rediscovered",
    "final": true,
    "measures": {
@@ -3561,7 +3687,9 @@
       }
      },
      "restatement": "`downloadCompleted` ne lance `downloadMutation.mutate` avec `completedJob.downloadUrl` que si cette URL existe, sinon il ne fait rien. Dans `ExportDataFlow`, `isExpired` renvoie false si la date est absente ou invalide, et true si elle est antérieure ou égale à maintenant. Un intervalle de 60 secondes force un rendu tant que `asyncExpiresAt` est défini.",
-     "confidence": "high"
+     "confidence": "high",
+     "reused": true,
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "rediscover": {
      "found": true,
@@ -3581,21 +3709,27 @@
       }
      },
      "job": "timeline:rediscover:mytimeline_frontend_src_components_timeline_TimelineBottomSheet.tsx:4",
-     "rank_in_lot": 4
+     "rank_in_lot": 4,
+     "reused": true,
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "comment": [],
     "refute": null
    },
    "contrary": null,
-   "placed": {
-    "pack_line": 66,
-    "annex_table": {
-     "part": "timeline.details-5.md",
-     "row": 24
-    }
+   "check": "scope",
+   "general": "words:toutes",
+   "restored_from_pointer": {
+    "record": "timeline:rules:23",
+    "pointer_line": 66,
+    "reason": "rediscovered"
    },
-   "uses": 0,
-   "carried_from": "2026-11-17T10:40:47Z"
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 53,
+    "annex_table": null
+   },
+   "uses": 0
   },
   {
    "id": "timeline:rules:24",
@@ -3679,7 +3813,7 @@
      "confidence": "high",
      "files_read_missing": true,
      "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "rediscover": {
      "found": true,
@@ -3700,7 +3834,7 @@
      },
      "job": "timeline:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_dtos_CategoryResponse.java:1",
      "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "comment": [],
     "refute": {
@@ -3720,12 +3854,12 @@
      "consigne_verdict": "n/a",
      "question_verdict": "n/a",
      "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "reused_from": "2026-11-17T10:45:42Z"
     }
    },
    "contrary": null,
    "placed": {
-    "pack_line": 68,
+    "pack_line": 55,
     "annex_table": null
    },
    "uses": 0
@@ -3807,7 +3941,7 @@
     ]
    ],
    "code_sha256": "987ceceb11d35ec0ff21d2d9bbea02201501125b567f7775a58033144d290755",
-   "verdict": "annex",
+   "verdict": "admit",
    "reason": "rediscovered",
    "final": true,
    "measures": {
@@ -3826,7 +3960,9 @@
      },
      "restatement": "CategoryProductCounts.total renvoie active plus archived. Dans CategoryServiceImpl.deleteCategory, si des produits référencent la catégorie et que reassignToCategoryId est null, CategoryInUseException est levée, ce qui produit un 409 avec le message métier. Si la cible de réassignation est la catégorie elle-même, CategoryReassignTargetInvalidException est levée, avec un 409 et un message dédié.",
      "confidence": "high",
-     "files_read_missing": true
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "rediscover": {
      "found": true,
@@ -3846,21 +3982,25 @@
       }
      },
      "job": "timeline:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_services_RecurrenceExpansionServiceImpl.java:2",
-     "rank_in_lot": 4
+     "rank_in_lot": 4,
+     "reused": true,
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "comment": [],
     "refute": null
    },
    "contrary": null,
-   "placed": {
-    "pack_line": 69,
-    "annex_table": {
-     "part": "timeline.details-5.md",
-     "row": 25
-    }
+   "restored_from_pointer": {
+    "record": "timeline:rules:25",
+    "pointer_line": 69,
+    "reason": "rediscovered"
    },
-   "uses": 0,
-   "carried_from": "2026-11-17T10:40:47Z"
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 56,
+    "annex_table": null
+   },
+   "uses": 0
   },
   {
    "id": "timeline:rules:26",
@@ -3945,7 +4085,7 @@
      "restatement": "Dans CategoryServiceImpl.deleteCategory avec réassignation, productRepository.updateCategoryForProducts(id, reassignToCategoryId) est appelé avant la suppression de la catégorie source. Le test unitaire vérifie cet ordre avec InOrder, et le test d'intégration vérifie que les produits actifs comme archivés migrent vers la cible avant la suppression de la source.",
      "confidence": "high",
      "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "rediscover": {
      "found": true,
@@ -3966,7 +4106,7 @@
      },
      "job": "timeline:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_infrastructure_adapters_testsupport_E2eResetTokenController.java:3",
      "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "comment": [],
     "refute": {
@@ -3986,12 +4126,12 @@
      "consigne_verdict": "n/a",
      "question_verdict": "n/a",
      "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "reused_from": "2026-11-17T10:45:42Z"
     }
    },
    "contrary": null,
    "placed": {
-    "pack_line": 70,
+    "pack_line": 57,
     "annex_table": null
    },
    "uses": 0
@@ -4043,7 +4183,7 @@
     ]
    ],
    "code_sha256": "9453e922491d4810cc7eee30397490b72e1704fee2e87fa1fcbed1442ded93b7",
-   "verdict": "annex",
+   "verdict": "admit",
    "reason": "rediscovered",
    "final": true,
    "measures": {
@@ -4062,7 +4202,9 @@
      },
      "restatement": "Dans updateProduct, si request.isClearColor() est vrai, product.setColor(null) réinitialise la surcharge (la couleur catégorie est alors héritée). Sinon, une couleur non nulle pose la surcharge, et une couleur nulle laisse la valeur inchangée. Côté frontend, la couleur effective vaut product.color ?? product.category.color, avec un repli sur 'var(--color-rule-strong)' dans ProductCarousel.",
      "confidence": "high",
-     "files_read_missing": true
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "rediscover": {
      "found": true,
@@ -4082,21 +4224,25 @@
       }
      },
      "job": "timeline:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_dtos_CategoryResponse.java:1",
-     "rank_in_lot": 1
+     "rank_in_lot": 1,
+     "reused": true,
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "comment": [],
     "refute": null
    },
    "contrary": null,
-   "placed": {
-    "pack_line": 71,
-    "annex_table": {
-     "part": "timeline.details-5.md",
-     "row": 26
-    }
+   "restored_from_pointer": {
+    "record": "timeline:rules:27",
+    "pointer_line": 71,
+    "reason": "rediscovered"
    },
-   "uses": 0,
-   "carried_from": "2026-11-17T10:40:47Z"
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 58,
+    "annex_table": null
+   },
+   "uses": 0
   },
   {
    "id": "timeline:rules:28",
@@ -4170,7 +4316,7 @@
      "restatement": "`categoryCreateSchema` et `categoryUpdateSchema` exigent un `name` de 1 à 255 caractères. `productCreateSchema` exige un `name` de 1 à 100 caractères et un `category` au format UUID, avec `color` et `events` optionnels. `productUpdateSchema` accepte les champs optionnels `name`, `categoryId`, `color` et `clearColor` (littéral `true`), mais le `refine` rejette un corps où aucun de ces champs n'est fourni.",
      "confidence": "high",
      "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "rediscover": {
      "found": true,
@@ -4191,7 +4337,7 @@
      },
      "job": "timeline:rediscover:mytimeline_frontend_src_components_timeline_TimelineBottomSheet.tsx:4",
      "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "comment": [],
     "refute": {
@@ -4211,12 +4357,12 @@
      "consigne_verdict": "n/a",
      "question_verdict": "n/a",
      "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "reused_from": "2026-11-17T10:45:42Z"
     }
    },
    "contrary": null,
    "placed": {
-    "pack_line": 72,
+    "pack_line": 59,
     "annex_table": null
    },
    "uses": 0
@@ -4285,14 +4431,15 @@
    },
    "contrary": null,
    "placed": {
-    "pack_line": 74,
+    "pack_line": null,
     "annex_table": {
      "part": "timeline.details-5.md",
      "row": 27
     }
    },
    "uses": 0,
-   "carried_from": "2026-11-17T10:40:47Z"
+   "carried_from": "2026-11-17T10:45:42Z",
+   "pointer_removed": true
   },
   {
    "id": "timeline:rules:30",
@@ -4365,14 +4512,15 @@
    },
    "contrary": null,
    "placed": {
-    "pack_line": 75,
+    "pack_line": null,
     "annex_table": {
      "part": "timeline.details-5.md",
      "row": 28
     }
    },
    "uses": 0,
-   "carried_from": "2026-11-17T10:40:47Z"
+   "carried_from": "2026-11-17T10:45:42Z",
+   "pointer_removed": true
   },
   {
    "id": "timeline:rules:31",
@@ -4437,14 +4585,15 @@
    },
    "contrary": null,
    "placed": {
-    "pack_line": 76,
+    "pack_line": null,
     "annex_table": {
      "part": "timeline.details-5.md",
      "row": 29
     }
    },
    "uses": 0,
-   "carried_from": "2026-11-17T10:40:47Z"
+   "carried_from": "2026-11-17T10:45:42Z",
+   "pointer_removed": true
   },
   {
    "id": "timeline:rules:32",
@@ -4505,7 +4654,7 @@
     ]
    ],
    "code_sha256": "fee205981aa99e1785bd651ce9674399ca60b75797c2c02fa6217689219a6f3d",
-   "verdict": "annex",
+   "verdict": "admit",
    "reason": "rediscovered",
    "final": true,
    "measures": {
@@ -4524,7 +4673,9 @@
      },
      "restatement": "AvatarServiceImpl.uploadAvatar rejette dans cet ordre : contenu null ou vide (« fichier vide »), taille supérieure à maxBytes (message « max 5 Mo »), puis type non détecté par magic bytes (JPEG, PNG ou WebP attendu). GlobalExceptionHandler convertit InvalidAvatarException en 400 avec le message métier. Après un upload, l'ancienne référence est supprimée si elle diffère de la nouvelle. deleteAvatar ne fait rien si la référence est null ou vide (idempotence). La valeur 5 Mo vient du message, pas de la constante maxBytes elle-même, qui est injectée.",
      "confidence": "medium",
-     "files_read_missing": true
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "rediscover": {
      "found": true,
@@ -4544,21 +4695,25 @@
       }
      },
      "job": "timeline:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_dtos_CategoryResponse.java:1",
-     "rank_in_lot": 2
+     "rank_in_lot": 2,
+     "reused": true,
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "comment": [],
     "refute": null
    },
    "contrary": null,
-   "placed": {
-    "pack_line": 77,
-    "annex_table": {
-     "part": "timeline.details-5.md",
-     "row": 30
-    }
+   "restored_from_pointer": {
+    "record": "timeline:rules:32",
+    "pointer_line": 77,
+    "reason": "rediscovered"
    },
-   "uses": 0,
-   "carried_from": "2026-11-17T10:40:47Z"
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 61,
+    "annex_table": null
+   },
+   "uses": 0
   },
   {
    "id": "timeline:rules:33",
@@ -4625,7 +4780,7 @@
      "confidence": "high",
      "files_read_missing": true,
      "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "rediscover": {
      "found": true,
@@ -4646,7 +4801,7 @@
      },
      "job": "timeline:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_services_RecurrenceExpansionServiceImpl.java:2",
      "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "comment": [],
     "refute": {
@@ -4666,12 +4821,12 @@
      "consigne_verdict": "n/a",
      "question_verdict": "n/a",
      "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "reused_from": "2026-11-17T10:45:42Z"
     }
    },
    "contrary": null,
    "placed": {
-    "pack_line": 78,
+    "pack_line": 62,
     "annex_table": null
    },
    "uses": 0
@@ -4767,14 +4922,15 @@
    },
    "contrary": null,
    "placed": {
-    "pack_line": 80,
+    "pack_line": null,
     "annex_table": {
      "part": "timeline.details-5.md",
      "row": 31
     }
    },
    "uses": 0,
-   "carried_from": "2026-11-17T10:40:47Z"
+   "carried_from": "2026-11-17T10:45:42Z",
+   "pointer_removed": true
   },
   {
    "id": "timeline:surface:1",
@@ -4806,7 +4962,7 @@
     ]
    ],
    "code_sha256": "100c0e09e5edfa688019a6a20582dfced075f3a36899433e9ec0083ac9e51ef2",
-   "verdict": "annex",
+   "verdict": "admit",
    "reason": "rediscovered",
    "final": true,
    "measures": {
@@ -4825,7 +4981,9 @@
      },
      "restatement": "ProductController.getProductById applique quatre contrôles dans l'ordre : 401 si pas d'appelant, 403 si userId du chemin diffère de l'appelant, 404 si le produit est introuvable, 403 si productBelongsToUser est faux. Sinon 200 avec ProductResponse.",
      "confidence": "high",
-     "files_read_missing": true
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "rediscover": {
      "found": true,
@@ -4845,21 +5003,25 @@
       }
      },
      "job": "timeline:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_services_RecurrenceExpansionServiceImpl.java:2",
-     "rank_in_lot": 7
+     "rank_in_lot": 7,
+     "reused": true,
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "comment": [],
     "refute": null
    },
    "contrary": null,
-   "placed": {
-    "pack_line": 277,
-    "annex_table": {
-     "part": "timeline.details-5.md",
-     "row": 32
-    }
+   "restored_from_pointer": {
+    "record": "timeline:surface:1",
+    "pointer_line": 277,
+    "reason": "rediscovered"
    },
-   "uses": 0,
-   "carried_from": "2026-11-17T10:40:47Z"
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 266,
+    "annex_table": null
+   },
+   "uses": 0
   },
   {
    "id": "timeline:surface:2",
@@ -4891,7 +5053,7 @@
     ]
    ],
    "code_sha256": "365831714ef61e44ffee5171a95df57c4d1cd68ebb2cb28ff9f105ffabbf50da",
-   "verdict": "annex",
+   "verdict": "admit",
    "reason": "rediscovered",
    "final": true,
    "measures": {
@@ -4910,7 +5072,9 @@
      },
      "restatement": "CategoryController.getCategoryById ne renvoie la catégorie que si isVisibleTo(c, caller.getId()) est vrai, sinon 404. updateCategory renvoie 403 si isOwnedBy est faux, c'est-à-dire si le propriétaire est null (catégorie système) ou différent de l'appelant.",
      "confidence": "high",
-     "files_read_missing": true
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "rediscover": {
      "found": true,
@@ -4930,21 +5094,25 @@
       }
      },
      "job": "timeline:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_services_RecurrenceExpansionServiceImpl.java:2",
-     "rank_in_lot": 5
+     "rank_in_lot": 5,
+     "reused": true,
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "comment": [],
     "refute": null
    },
    "contrary": null,
-   "placed": {
-    "pack_line": 278,
-    "annex_table": {
-     "part": "timeline.details-5.md",
-     "row": 33
-    }
+   "restored_from_pointer": {
+    "record": "timeline:surface:2",
+    "pointer_line": 278,
+    "reason": "rediscovered"
    },
-   "uses": 0,
-   "carried_from": "2026-11-17T10:40:47Z"
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 267,
+    "annex_table": null
+   },
+   "uses": 0
   },
   {
    "id": "timeline:surface:3",
@@ -4977,7 +5145,7 @@
     ]
    ],
    "code_sha256": "e7a83b32430dd64010ed8f67d4a438fae9470148da4c9da0feec4903fe8e7591",
-   "verdict": "annex",
+   "verdict": "admit",
    "reason": "rediscovered",
    "final": true,
    "measures": {
@@ -4996,7 +5164,9 @@
      },
      "restatement": "SessionServiceImpl.revokeSession ne révoque une session que si son userId correspond à l'appelant. Sinon, le filtre ne laisse rien passer et SessionNotFoundException est levée, sans appel à revokeById, ce qui évite de distinguer une session inexistante d'une session appartenant à autrui.",
      "confidence": "high",
-     "files_read_missing": true
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "rediscover": {
      "found": true,
@@ -5016,21 +5186,25 @@
       }
      },
      "job": "timeline:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_services_RecurrenceExpansionServiceImpl.java:2",
-     "rank_in_lot": 3
+     "rank_in_lot": 3,
+     "reused": true,
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "comment": [],
     "refute": null
    },
    "contrary": null,
-   "placed": {
-    "pack_line": 279,
-    "annex_table": {
-     "part": "timeline.details-5.md",
-     "row": 34
-    }
+   "restored_from_pointer": {
+    "record": "timeline:surface:3",
+    "pointer_line": 279,
+    "reason": "rediscovered"
    },
-   "uses": 0,
-   "carried_from": "2026-11-17T10:40:47Z"
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 268,
+    "annex_table": null
+   },
+   "uses": 0
   },
   {
    "id": "timeline:surface:4",
@@ -5083,7 +5257,7 @@
      "confidence": "high",
      "files_read_missing": true,
      "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "rediscover": {
      "found": true,
@@ -5104,7 +5278,7 @@
      },
      "job": "timeline:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_services_RecurrenceExpansionServiceImpl.java:2",
      "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "comment": [],
     "refute": {
@@ -5124,12 +5298,12 @@
      "consigne_verdict": "n/a",
      "question_verdict": "n/a",
      "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "reused_from": "2026-11-17T10:45:42Z"
     }
    },
    "contrary": null,
    "placed": {
-    "pack_line": 280,
+    "pack_line": 269,
     "annex_table": null
    },
    "uses": 0
@@ -5191,14 +5365,15 @@
    },
    "contrary": null,
    "placed": {
-    "pack_line": 281,
+    "pack_line": null,
     "annex_table": {
      "part": "timeline.details-5.md",
      "row": 35
     }
    },
    "uses": 0,
-   "carried_from": "2026-11-17T10:40:47Z"
+   "carried_from": "2026-11-17T10:45:42Z",
+   "pointer_removed": true
   },
   {
    "id": "timeline:surface:6",
@@ -5250,14 +5425,15 @@
    },
    "contrary": null,
    "placed": {
-    "pack_line": 282,
+    "pack_line": null,
     "annex_table": {
      "part": "timeline.details-5.md",
      "row": 36
     }
    },
    "uses": 0,
-   "carried_from": "2026-11-17T10:40:47Z"
+   "carried_from": "2026-11-17T10:45:42Z",
+   "pointer_removed": true
   },
   {
    "id": "timeline:surface:7",
@@ -5303,7 +5479,7 @@
      "confidence": "high",
      "files_read_missing": true,
      "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "rediscover": {
      "found": true,
@@ -5324,7 +5500,7 @@
      },
      "job": "timeline:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_services_RecurrenceExpansionServiceImpl.java:2",
      "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "comment": [],
     "refute": {
@@ -5344,12 +5520,12 @@
      "consigne_verdict": "n/a",
      "question_verdict": "n/a",
      "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "reused_from": "2026-11-17T10:45:42Z"
     }
    },
    "contrary": null,
    "placed": {
-    "pack_line": 283,
+    "pack_line": 270,
     "annex_table": null
    },
    "uses": 0
@@ -5411,14 +5587,15 @@
    },
    "contrary": null,
    "placed": {
-    "pack_line": 285,
+    "pack_line": null,
     "annex_table": {
      "part": "timeline.details-5.md",
      "row": 37
     }
    },
    "uses": 0,
-   "carried_from": "2026-11-17T10:40:47Z"
+   "carried_from": "2026-11-17T10:45:42Z",
+   "pointer_removed": true
   },
   {
    "id": "timeline:surface:9",
@@ -5451,7 +5628,7 @@
     ]
    ],
    "code_sha256": "16ed11b57658a7ac965c9b4ee6c496a8698f963d05c8f1c8d36cc50019f53ab7",
-   "verdict": "annex",
+   "verdict": "admit",
    "reason": "rediscovered",
    "final": true,
    "measures": {
@@ -5469,7 +5646,9 @@
       }
      },
      "restatement": "`getActiveSessions` valide la réponse de `/sessions` avec `SessionListSchema.parse`, donc une réponse non conforme lève une exception. `downloadAsyncExport` retire le préfixe `/api` de l'URL, récupère le fichier en `responseType: 'blob'`, lit le nom via `filenameFromDisposition` avec repli sur `'mytimeline-export'`, puis journalise et relance les erreurs.",
-     "confidence": "high"
+     "confidence": "high",
+     "reused": true,
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "rediscover": {
      "found": true,
@@ -5489,21 +5668,25 @@
       }
      },
      "job": "timeline:rediscover:mytimeline_frontend_src_components_timeline_TimelineBottomSheet.tsx:4",
-     "rank_in_lot": 2
+     "rank_in_lot": 2,
+     "reused": true,
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "comment": [],
     "refute": null
    },
    "contrary": null,
-   "placed": {
-    "pack_line": 286,
-    "annex_table": {
-     "part": "timeline.details-5.md",
-     "row": 38
-    }
+   "restored_from_pointer": {
+    "record": "timeline:surface:9",
+    "pointer_line": 286,
+    "reason": "rediscovered"
    },
-   "uses": 0,
-   "carried_from": "2026-11-17T10:40:47Z"
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 272,
+    "annex_table": null
+   },
+   "uses": 0
   },
   {
    "id": "timeline:surface:10",
@@ -5542,7 +5725,7 @@
     ]
    ],
    "code_sha256": "836fd4e49d1307ded43dd74f7dd0fa343e1dbc1cdbf5cf679b9c8f855ece3e81",
-   "verdict": "annex",
+   "verdict": "admit",
    "reason": "rediscovered",
    "final": true,
    "measures": {
@@ -5560,7 +5743,9 @@
       }
      },
      "restatement": "Les fonctions `deleteProduct`, `restoreProduct` et `getArchivedProducts` appellent l'API sur `/users/{userId}/products/...` (DELETE, POST `/restore`, GET `/archived`). En cas d'erreur, elles journalisent le message via `console.error` avec `safeErrorMessage` puis relancent l'erreur telle quelle.",
-     "confidence": "high"
+     "confidence": "high",
+     "reused": true,
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "rediscover": {
      "found": true,
@@ -5580,21 +5765,25 @@
       }
      },
      "job": "timeline:rediscover:mytimeline_frontend_src_components_timeline_TimelineBottomSheet.tsx:4",
-     "rank_in_lot": 3
+     "rank_in_lot": 3,
+     "reused": true,
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "comment": [],
     "refute": null
    },
    "contrary": null,
-   "placed": {
-    "pack_line": 287,
-    "annex_table": {
-     "part": "timeline.details-5.md",
-     "row": 39
-    }
+   "restored_from_pointer": {
+    "record": "timeline:surface:10",
+    "pointer_line": 287,
+    "reason": "rediscovered"
    },
-   "uses": 0,
-   "carried_from": "2026-11-17T10:40:47Z"
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 273,
+    "annex_table": null
+   },
+   "uses": 0
   },
   {
    "id": "timeline:surface:11",
@@ -5647,7 +5836,7 @@
      "restatement": "`handleUnarchive` remet l'erreur à null, passe `setEventArchived` avec `archived: false` et `version: event.version ?? null`, puis fixe `kind` à `'conflict'` si le statut HTTP est 409 et à `'generic'` sinon. Le `finally` remet `unarchivingId` à null. `setEventArchived` envoie un PATCH `/events/{id}` et n'ajoute `version` que si c'est un nombre, puis journalise l'erreur et la relance.",
      "confidence": "high",
      "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "rediscover": {
      "found": true,
@@ -5668,7 +5857,7 @@
      },
      "job": "timeline:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_infrastructure_adapters_testsupport_E2eResetTokenController.java:3",
      "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "comment": [],
     "refute": {
@@ -5688,12 +5877,12 @@
      "consigne_verdict": "n/a",
      "question_verdict": "n/a",
      "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "reused_from": "2026-11-17T10:45:42Z"
     }
    },
    "contrary": null,
    "placed": {
-    "pack_line": 288,
+    "pack_line": 274,
     "annex_table": null
    },
    "uses": 0
@@ -5747,14 +5936,15 @@
    },
    "contrary": null,
    "placed": {
-    "pack_line": 290,
+    "pack_line": null,
     "annex_table": {
      "part": "timeline.details-5.md",
      "row": 40
     }
    },
    "uses": 0,
-   "carried_from": "2026-11-17T10:40:47Z"
+   "carried_from": "2026-11-17T10:45:42Z",
+   "pointer_removed": true
   },
   {
    "id": "timeline:surface:13",
@@ -5786,7 +5976,7 @@
     ]
    ],
    "code_sha256": "cb26e563e23bfae350ca34ac0384c090f16b14cc6268aa0391ec26bc22da43e3",
-   "verdict": "annex",
+   "verdict": "admit",
    "reason": "rediscovered",
    "final": true,
    "measures": {
@@ -5804,7 +5994,9 @@
       }
      },
      "restatement": "Dans `ProductDrawer`, le champ `firstEventDate` (input type date) n'est rendu qu'en création (`!isEdit`). Le bouton d'archivage n'apparaît qu'en édition, est désactivé pendant la soumission, et ouvre la boîte de suppression via `setDeleteOpen(true)`.",
-     "confidence": "high"
+     "confidence": "high",
+     "reused": true,
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "rediscover": {
      "found": true,
@@ -5824,21 +6016,25 @@
       }
      },
      "job": "timeline:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_infrastructure_adapters_testsupport_E2eResetTokenController.java:3",
-     "rank_in_lot": 7
+     "rank_in_lot": 7,
+     "reused": true,
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "comment": [],
     "refute": null
    },
    "contrary": null,
-   "placed": {
-    "pack_line": 291,
-    "annex_table": {
-     "part": "timeline.details-5.md",
-     "row": 41
-    }
+   "restored_from_pointer": {
+    "record": "timeline:surface:13",
+    "pointer_line": 291,
+    "reason": "rediscovered"
    },
-   "uses": 0,
-   "carried_from": "2026-11-17T10:40:47Z"
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 276,
+    "annex_table": null
+   },
+   "uses": 0
   },
   {
    "id": "timeline:surface:14",
@@ -5890,7 +6086,7 @@
      "restatement": "`liveProduct` cherche le produit par `productId` dans `query.data` et vaut null s'il est absent. Si `product` est null, `ProductDetailView` affiche un `role=\"alert\"` avec `product-detail-not-found` et le texte `t('notFound')`.",
      "confidence": "high",
      "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "rediscover": {
      "found": true,
@@ -5911,7 +6107,7 @@
      },
      "job": "timeline:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_infrastructure_adapters_testsupport_E2eResetTokenController.java:3",
      "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "comment": [],
     "refute": {
@@ -5931,12 +6127,12 @@
      "consigne_verdict": "n/a",
      "question_verdict": "n/a",
      "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "reused_from": "2026-11-17T10:45:42Z"
     }
    },
    "contrary": null,
    "placed": {
-    "pack_line": 292,
+    "pack_line": 277,
     "annex_table": null
    },
    "uses": 0
@@ -5998,14 +6194,15 @@
    },
    "contrary": null,
    "placed": {
-    "pack_line": 293,
+    "pack_line": null,
     "annex_table": {
      "part": "timeline.details-5.md",
      "row": 42
     }
    },
    "uses": 0,
-   "carried_from": "2026-11-17T10:40:47Z"
+   "carried_from": "2026-11-17T10:45:42Z",
+   "pointer_removed": true
   },
   {
    "id": "timeline:tests:1",
@@ -6070,14 +6267,15 @@
    },
    "contrary": null,
    "placed": {
-    "pack_line": 330,
+    "pack_line": null,
     "annex_table": {
      "part": "timeline.details-5.md",
      "row": 43
     }
    },
    "uses": 0,
-   "carried_from": "2026-11-17T10:40:47Z"
+   "carried_from": "2026-11-17T10:45:42Z",
+   "pointer_removed": true
   },
   {
    "id": "timeline:tests:2",
@@ -6116,7 +6314,7 @@
     ]
    ],
    "code_sha256": "9c171736d3b5b069a3c2d5a61cfbbd99bff59989adba7b324272d2a3d3d9d0f8",
-   "verdict": "annex",
+   "verdict": "admit",
    "reason": "rediscovered",
    "final": true,
    "measures": {
@@ -6134,7 +6332,9 @@
       }
      },
      "restatement": "Dans SessionRevocationIntegrationTest, après révocation de la session courante par DELETE, GET /api/auth/me renvoie 401 pour le même token. Après logout, POST /api/auth/refresh renvoie 401 avec le champ error égal à \"unauthorized\". Supprimer la session d'un autre utilisateur renvoie 404 et non 403, par anti-énumération.",
-     "confidence": "high"
+     "confidence": "high",
+     "reused": true,
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "rediscover": {
      "found": true,
@@ -6154,21 +6354,25 @@
       }
      },
      "job": "timeline:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_infrastructure_adapters_testsupport_E2eResetTokenController.java:3",
-     "rank_in_lot": 5
+     "rank_in_lot": 5,
+     "reused": true,
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "comment": [],
     "refute": null
    },
    "contrary": null,
-   "placed": {
-    "pack_line": 331,
-    "annex_table": {
-     "part": "timeline.details-5.md",
-     "row": 44
-    }
+   "restored_from_pointer": {
+    "record": "timeline:tests:2",
+    "pointer_line": 331,
+    "reason": "rediscovered"
    },
-   "uses": 0,
-   "carried_from": "2026-11-17T10:40:47Z"
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 314,
+    "annex_table": null
+   },
+   "uses": 0
   },
   {
    "id": "timeline:tests:3",
@@ -6214,7 +6418,7 @@
     ]
    ],
    "code_sha256": "0cba127b5e9c342047ba03053480bc24787d9c46769f052d618b1207f6dfb861",
-   "verdict": "annex",
+   "verdict": "admit",
    "reason": "rediscovered",
    "final": true,
    "measures": {
@@ -6232,7 +6436,9 @@
       }
      },
      "restatement": "PasswordPolicyTest vérifie que les mots de passe Ab1, Secret1, secret60, SecretAbc et abcdef sont rejetés sur le champ password pour l'inscription, sur newPassword pour la réinitialisation et pour le changement de mot de passe. Un dernier test paramétré exige que les trois endpoints tranchent de la même façon pour chaque mot de passe testé, y compris Secret60 et MotDePasse2026.",
-     "confidence": "high"
+     "confidence": "high",
+     "reused": true,
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "rediscover": {
      "found": true,
@@ -6252,21 +6458,25 @@
       }
      },
      "job": "timeline:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_infrastructure_adapters_testsupport_E2eResetTokenController.java:3",
-     "rank_in_lot": 4
+     "rank_in_lot": 4,
+     "reused": true,
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "comment": [],
     "refute": null
    },
    "contrary": null,
-   "placed": {
-    "pack_line": 332,
-    "annex_table": {
-     "part": "timeline.details-5.md",
-     "row": 45
-    }
+   "restored_from_pointer": {
+    "record": "timeline:tests:3",
+    "pointer_line": 332,
+    "reason": "rediscovered"
    },
-   "uses": 0,
-   "carried_from": "2026-11-17T10:40:47Z"
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 315,
+    "annex_table": null
+   },
+   "uses": 0
   },
   {
    "id": "timeline:tests:4",
@@ -6324,14 +6534,15 @@
    },
    "contrary": null,
    "placed": {
-    "pack_line": 333,
+    "pack_line": null,
     "annex_table": {
      "part": "timeline.details-5.md",
      "row": 46
     }
    },
    "uses": 0,
-   "carried_from": "2026-11-17T10:40:47Z"
+   "carried_from": "2026-11-17T10:45:42Z",
+   "pointer_removed": true
   },
   {
    "id": "timeline:tests:5",
@@ -6389,14 +6600,15 @@
    },
    "contrary": null,
    "placed": {
-    "pack_line": 334,
+    "pack_line": null,
     "annex_table": {
      "part": "timeline.details-5.md",
      "row": 47
     }
    },
    "uses": 0,
-   "carried_from": "2026-11-17T10:40:47Z"
+   "carried_from": "2026-11-17T10:45:42Z",
+   "pointer_removed": true
   },
   {
    "id": "timeline:tests:6",
@@ -6448,7 +6660,7 @@
      "restatement": "Deux tests de contrat sur les segments de route. Le premier compare les segments du groupe `(app)` lus sur le disque à `PROTECTED_APP_SEGMENTS` via `expectGuardInSync`. Le second exige que `extraSegments` (issu de `PROTECTED_EXTRA_SEGMENTS`) soit un tableau vide, sinon le test échoue.",
      "confidence": "high",
      "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "rediscover": {
      "found": true,
@@ -6469,7 +6681,7 @@
      },
      "job": "timeline:rediscover:mytimeline_frontend_src_components_timeline_TimelineBottomSheet.tsx:4",
      "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "comment": [],
     "refute": {
@@ -6489,12 +6701,12 @@
      "consigne_verdict": "n/a",
      "question_verdict": "n/a",
      "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "reused_from": "2026-11-17T10:45:42Z"
     }
    },
    "contrary": null,
    "placed": {
-    "pack_line": 335,
+    "pack_line": 316,
     "annex_table": null
    },
    "uses": 0
@@ -6556,14 +6768,15 @@
    },
    "contrary": null,
    "placed": {
-    "pack_line": 336,
+    "pack_line": null,
     "annex_table": {
      "part": "timeline.details-5.md",
      "row": 48
     }
    },
    "uses": 0,
-   "carried_from": "2026-11-17T10:40:47Z"
+   "carried_from": "2026-11-17T10:45:42Z",
+   "pointer_removed": true
   },
   {
    "id": "timeline:tests:8",
@@ -6616,7 +6829,7 @@
      "restatement": "Les `beforeEach` de `TimelineView.zoom-cache.test.tsx` et `TimelineGroupHead.test.tsx` remplacent `Element.prototype.requestFullscreen` et `document.exitFullscreen` par des `vi.fn()` qui résolvent à undefined, pour que les tests ne dépendent pas de l'API plein écran du navigateur.",
      "confidence": "high",
      "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "rediscover": {
      "found": true,
@@ -6637,7 +6850,7 @@
      },
      "job": "timeline:rediscover:mytimeline_frontend_src_components_timeline_TimelineBottomSheet.tsx:4",
      "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "reused_from": "2026-11-17T10:45:42Z"
     },
     "comment": [],
     "refute": {
@@ -6657,12 +6870,12 @@
      "consigne_verdict": "n/a",
      "question_verdict": "n/a",
      "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "reused_from": "2026-11-17T10:45:42Z"
     }
    },
    "contrary": null,
    "placed": {
-    "pack_line": 337,
+    "pack_line": 317,
     "annex_table": null
    },
    "uses": 0
@@ -6690,8 +6903,8 @@
     ]
    ],
    "code_sha256": "42b4ef8cfe489589f64265376dbfe191b839241f968ac9011e7e2c7d2d4240c6",
-   "verdict": "admit",
-   "reason": "admitted",
+   "verdict": "drop",
+   "reason": "resolved",
    "final": true,
    "measures": {
     "fidelity": null,
@@ -6703,9 +6916,9 @@
      "refuted": 0,
      "refute_unproven": 0,
      "reasons": [
-      "Le scheduler appelle deleteConsumedOrExpiredBefore(expiredBefore) (L75), dont le nom indique les consommés aussi, mais l'implémentation du dépôt n'est pas lue et la javadoc n'est pas tranchée.",
-      "Le scheduler passe la même date de coupure à tokenRepository.deleteConsumedOrExpiredBefore (L75), dont le nom indique qu'elle couvre aussi les consommés. La requête et la javadoc de la méthode ne sont pas visibles, donc le code ne tranche pas sans ambiguïté.",
-      "Le scheduler passe la date de coupure à tokenRepository.deleteConsumedOrExpiredBefore (L74-75), dont le nom indique qu'il couvre aussi les consommés. L'implémentation de la requête n'est pas lue et la javadoc n'est pas dans l'extrait, donc la question reste ouverte."
+      "Le code répond : la requête JPQL supprime les tokens consommés (used_at non nul) quelle que soit la date, OU expirés avant le cutoff.",
+      "Le code répond : la purge supprime aussi les tokens consommés quelle que soit la date de coupure.",
+      "The code answers it: the purge also deletes consumed tokens regardless of the cutoff, and the cutoff only applies to expiry."
      ],
      "evidence": [
       "",
@@ -6713,14 +6926,93 @@
       ""
      ],
      "consigne_verdict": "n/a",
-     "question_verdict": "open",
-     "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "question_verdict": "resolved",
+     "searched": true,
+     "search": {
+      "check": "answer",
+      "outcome": "resolved",
+      "votes": 3,
+      "supporters": 2,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "deleteConsumedOrExpiredBefore",
+         "found": "Port, scheduler et impl JPA ; la requête JPQL est used_at IS NOT NULL OR expires_at < cutoff."
+        },
+        {
+         "tool": "Read",
+         "target": "PasswordResetTokenRepositoryJpaImpl.java L84-102",
+         "found": "JPQL lue, la date de coupure ne s'applique qu'à expires_at."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "deleteConsumedOrExpiredBefore (backend/src/main)",
+         "found": "Port, scheduler et impl JPA. Le commentaire de l'impl donne la requête : used_at IS NOT NULL OR expires_at < :cutoff."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "deleteConsumedOrExpiredBefore in backend/src/main",
+         "found": "Port javadoc says consumed or expired before the cutoff; JPA impl comment shows the OR query."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0,
+      "contradicted": 2,
+      "evidence": [
+       {
+        "file": "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/PasswordResetTokenRepositoryJpaImpl.java",
+        "line_start": 93,
+        "line_end": 94,
+        "evidence": "WHERE t.usedAt IS NOT NULL OR t.expiresAt < :cutoff",
+        "evidence_check": "exact"
+       }
+      ],
+      "promote": {
+       "text": "PasswordResetTokenPurgeScheduler.purgeConsumedAndExpired supprime via deleteConsumedOrExpiredBefore tout token consommé immédiatement, et les expirés seulement après la rétention (24h par défaut).",
+       "file": "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/PasswordResetTokenRepositoryJpaImpl.java",
+       "line_start": 93,
+       "line_end": 94,
+       "evidence": "WHERE t.usedAt IS NOT NULL OR t.expiresAt < :cutoff",
+       "cites": [
+        "integrations/757e913cb9162988-1",
+        "timeline/85c2925ef276badb-1"
+       ]
+      }
+     }
     }
    },
    "contrary": null,
+   "check": "answer",
+   "answer": [
+    {
+     "file": "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/PasswordResetTokenRepositoryJpaImpl.java",
+     "line_start": 93,
+     "line_end": 94,
+     "evidence": "WHERE t.usedAt IS NOT NULL OR t.expiresAt < :cutoff",
+     "evidence_check": "exact"
+    }
+   ],
+   "promote": {
+    "text": "PasswordResetTokenPurgeScheduler.purgeConsumedAndExpired supprime via deleteConsumedOrExpiredBefore tout token consommé immédiatement, et les expirés seulement après la rétention (24h par défaut).",
+    "file": "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/PasswordResetTokenRepositoryJpaImpl.java",
+    "line_start": 93,
+    "line_end": 94,
+    "evidence": "WHERE t.usedAt IS NOT NULL OR t.expiresAt < :cutoff",
+    "cites": [
+     "integrations/757e913cb9162988-1",
+     "timeline/85c2925ef276badb-1"
+    ]
+   },
    "placed": {
-    "pack_line": 341,
+    "pack_line": null,
     "annex_table": null
    },
    "uses": 0
@@ -6763,8 +7055,8 @@
     ]
    ],
    "code_sha256": "d25ae5377a02d241619668ee34471ccc173c7c746af9dccf82e1098848840628",
-   "verdict": "admit",
-   "reason": "admitted",
+   "verdict": "drop",
+   "reason": "resolved",
    "final": true,
    "measures": {
     "fidelity": null,
@@ -6785,9 +7077,9 @@
      "refuted": 0,
      "refute_unproven": 0,
      "reasons": [
-      "Le test d'intégration (L208-211) documente le 404 par anti-énumération et les tests PATCH/DELETE attendent 403. La question du pourquoi reste ouverte.",
-      "Les tests montrent 403 pour PATCH et DELETE (ProductControllerOwnershipTest L265, L98) et 404 pour la restauration, justifié par un commentaire d'anti-énumération (ProductRestoreIntegrationTest L210). La raison n'est établie que par ce commentaire, donc la question reste ouverte.",
-      "Les tests ProductControllerOwnershipTest L265 et L98 donnent 403 pour PATCH et DELETE, et ProductRestoreIntegrationTest L210 cite l'anti-énumération pour le 404. L'asymétrie reste à confirmer par un choix de conception."
+      "Seul le commentaire du test (l.208-211) donne l'anti-énumération. Je n'ai pas lu le service qui renvoie le 404, donc la question reste ouverte.",
+      "Seuls un commentaire de test (ProductRestoreIntegrationTest 208-211) et la base citent l'anti-énumération. Je n'ai pas lu le contrôleur qui tranche le choix 404 contre 403, donc la question reste ouverte.",
+      "ProductController.restoreProduct (L112-117) l'explique : l'ownership est dans l'UPDATE natif, donc un produit inconnu, non archivé ou d'autrui lève ProductNotFoundException (404 uniforme). Le 403 ne sert que si le userId du path diffère du caller. L'anti-énumération est citée par le test."
      ],
      "evidence": [
       "",
@@ -6796,13 +7088,85 @@
      ],
      "consigne_verdict": "n/a",
      "question_verdict": "open",
-     "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "searched": true,
+     "search": {
+      "check": "answer",
+      "outcome": "resolved",
+      "votes": 3,
+      "supporters": 1,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "restore dans ProductController.java",
+         "found": "POST .../restore l.118-130 délègue à productService.restoreProduct(productId, userId). Service non lu."
+        }
+       ],
+       [],
+       [
+        {
+         "tool": "Grep",
+         "target": "restore|NOT_FOUND dans controllers",
+         "found": "ProductController.restoreProduct L118-132"
+        },
+        {
+         "tool": "Read",
+         "target": "ProductController.java L80-135",
+         "found": "Javadoc expliquant l'absence de lecture préalable et le 404 uniforme"
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0,
+      "evidence": [
+       {
+        "file": "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java",
+        "line_start": 108,
+        "line_end": 132,
+        "evidence": "produit inconnu / non archivé / d'autrui ->",
+        "evidence_check": "exact"
+       }
+      ],
+      "promote": {
+       "text": "Le restore d'un produit renvoie 404 uniforme (ProductNotFoundException) pour inconnu, non archivé ou d'autrui, et 403 seulement si le userId du path diffère du caller.",
+       "file": "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java",
+       "line_start": 108,
+       "line_end": 132,
+       "evidence": "produit inconnu / non archivé / d'autrui ->",
+       "cites": [
+        "timeline/7ffbb5f0b0666075-1",
+        "timeline/23aead80049aa52e-1"
+       ]
+      }
+     }
     }
    },
    "contrary": null,
+   "check": "answer",
+   "answer": [
+    {
+     "file": "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java",
+     "line_start": 108,
+     "line_end": 132,
+     "evidence": "produit inconnu / non archivé / d'autrui ->",
+     "evidence_check": "exact"
+    }
+   ],
+   "promote": {
+    "text": "Le restore d'un produit renvoie 404 uniforme (ProductNotFoundException) pour inconnu, non archivé ou d'autrui, et 403 seulement si le userId du path diffère du caller.",
+    "file": "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java",
+    "line_start": 108,
+    "line_end": 132,
+    "evidence": "produit inconnu / non archivé / d'autrui ->",
+    "cites": [
+     "timeline/7ffbb5f0b0666075-1",
+     "timeline/23aead80049aa52e-1"
+    ]
+   },
    "placed": {
-    "pack_line": 342,
+    "pack_line": null,
     "annex_table": null
    },
    "uses": 0
@@ -6843,9 +7207,9 @@
      "refuted": 0,
      "refute_unproven": 0,
      "reasons": [
-      "ProductController L229-230 renvoie 404 si la liste d'événements est vide, mais l'extrait ne dit pas si c'est voulu.",
-      "ProductController L228-231 renvoie 404 quand la liste d'événements est vide, sans distinguer un produit inconnu. L'intention n'est pas tranchée par le code.",
-      "ProductController.getEventsByProductId L229-230 renvoie 404 quand la liste d'événements est vide, ce qui ne distingue pas le produit inconnu du produit sans événement. L'intention reste ouverte."
+      "Le contrôleur renvoie 404 si le produit est absent (L221-222) puis encore 404 si la liste d'événements est vide (L229-230). Le code traite donc les deux cas pareil, mais rien n'indique que ce soit voulu.",
+      "Le code montre le comportement (ProductController L220-231 : 404 si produit absent, 404 aussi si liste d'événements vide) mais rien ne dit si c'est voulu.",
+      "The controller checks product existence and ownership first (L220-226), then returns 404 for an empty event list (L229). Nothing says whether this is intended, so it stays open."
      ],
      "evidence": [
       "",
@@ -6854,13 +7218,46 @@
      ],
      "consigne_verdict": "n/a",
      "question_verdict": "open",
-     "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "searched": true,
+     "search": {
+      "check": "answer",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Read",
+         "target": "ProductController.java L205-245",
+         "found": "Produit inconnu : 404 ; produit existant du bon propriétaire sans événement : 404 aussi ; aucun commentaire sur l'intention."
+        }
+       ],
+       [
+        {
+         "tool": "Read",
+         "target": "ProductController.java L205-245",
+         "found": "Produit inexistant : 404. Produit existant sans événement : 404 aussi (events.isEmpty()). Aucun commentaire d'intention."
+        }
+       ],
+       [
+        {
+         "tool": "Read",
+         "target": "ProductController.java L205-245",
+         "found": "Unknown product gives 404, wrong owner gives 403, existing product with no events also gives 404, with no comment on intent."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     }
     }
    },
    "contrary": null,
+   "check": "answer",
    "placed": {
-    "pack_line": 343,
+    "pack_line": 321,
     "annex_table": null
    },
    "uses": 0
@@ -6895,8 +7292,8 @@
     ]
    ],
    "code_sha256": "8a59b6e8782d99a462a01cb7ab408edcf4f846494d723b5c38325641c554c608",
-   "verdict": "admit",
-   "reason": "admitted",
+   "verdict": "drop",
+   "reason": "resolved",
    "final": true,
    "measures": {
     "fidelity": null,
@@ -6913,9 +7310,9 @@
      "refuted": 0,
      "refute_unproven": 0,
      "reasons": [
-      "UtilsTest L50-53 vérifie seulement InvalidDurationUnitException. Le mapping en 422 n'est visible que dans un commentaire, donc la question reste ouverte.",
-      "UtilsTest L52-53 n'asserte que InvalidDurationUnitException et le commentaire L51 affirme 422. Le mapping HTTP n'est pas visible dans le code lu, donc la question reste ouverte.",
-      "UtilsTest L52-53 ne vérifie que InvalidDurationUnitException. Le 422 n'est affirmé que par le commentaire L51, et le mapping HTTP n'est pas visible."
+      "Utils.calculateEndDate lève InvalidDurationUnitException(null) si durationUnit est null, à condition que type='duration' et durationValue soit non nul. GlobalExceptionHandler.handleInvalidDurationUnit le mappe en 422 (commentaire l.167). Le 422 n'est pas garanti pour les autres types.",
+      "Utils.calculateEndDate lève InvalidDurationUnitException si durationUnit est null (l.60-61), et GlobalExceptionHandler.handleInvalidDurationUnit (l.165-169) la mappe en 422.",
+      "Utils.calculateEndDate L60-61 lève InvalidDurationUnitException(null) quand le type est duration avec une durationValue non nulle. GlobalExceptionHandler.handleInvalidDurationUnit L165-174 la mappe en 422. Pas de 422 si type n'est pas duration ou si durationValue est null."
      ],
      "evidence": [
       "",
@@ -6923,14 +7320,110 @@
       ""
      ],
      "consigne_verdict": "n/a",
-     "question_verdict": "open",
-     "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "question_verdict": "resolved",
+     "searched": true,
+     "search": {
+      "check": "answer",
+      "outcome": "resolved",
+      "votes": 3,
+      "supporters": 2,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "durationUnit dans backend/src/main",
+         "found": "Garde null l.60 de Utils.java, usages dans EventServiceImpl."
+        },
+        {
+         "tool": "Grep",
+         "target": "InvalidDurationUnitException dans backend/src/main",
+         "found": "Handler dans GlobalExceptionHandler l.165."
+        },
+        {
+         "tool": "Read",
+         "target": "GlobalExceptionHandler.java l.163-170",
+         "found": "Le commentaire indique 422."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "InvalidDurationUnitException|durationUnit dans backend main",
+         "found": "Utils.java l.60 null-guard lève l'exception"
+        },
+        {
+         "tool": "Grep",
+         "target": "InvalidDurationUnitException dans infrastructure",
+         "found": "GlobalExceptionHandler l.165 handler, commentaire 422"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "durationUnit dans backend/src",
+         "found": "Utils.calculateEndDate, EventServiceImpl et GlobalExceptionHandler"
+        },
+        {
+         "tool": "Read",
+         "target": "GlobalExceptionHandler L162-175 et Utils L55-75",
+         "found": "Le handler renvoie UNPROCESSABLE_ENTITY. Le null-guard est sous la condition duration."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0,
+      "contradicted": 2,
+      "evidence": [
+       {
+        "file": "mytimeline:backend/src/main/java/com/matimeline/eventmanager/utils/Utils.java",
+        "line_start": 57,
+        "line_end": 62,
+        "evidence": "if (durationUnit == null) { throw new InvalidDurationUnitException(null);",
+        "evidence_check": "exact"
+       }
+      ],
+      "promote": {
+       "text": "durationUnit null donne un 422 uniquement pour type='duration' avec durationValue non nul (InvalidDurationUnitException, handleInvalidDurationUnit).",
+       "file": "mytimeline:backend/src/main/java/com/matimeline/eventmanager/utils/Utils.java",
+       "line_start": 57,
+       "line_end": 62,
+       "evidence": "if (durationUnit == null) { throw new InvalidDurationUnitException(null);",
+       "cites": [
+        "timeline/35513b08008b2dce-1",
+        "backend-socle/2faddb776ec7b9ad-2",
+        "timeline/8cd20c75d6215999-1"
+       ]
+      }
+     }
     }
    },
    "contrary": null,
+   "check": "answer",
+   "answer": [
+    {
+     "file": "mytimeline:backend/src/main/java/com/matimeline/eventmanager/utils/Utils.java",
+     "line_start": 57,
+     "line_end": 62,
+     "evidence": "if (durationUnit == null) { throw new InvalidDurationUnitException(null);",
+     "evidence_check": "exact"
+    }
+   ],
+   "promote": {
+    "text": "durationUnit null donne un 422 uniquement pour type='duration' avec durationValue non nul (InvalidDurationUnitException, handleInvalidDurationUnit).",
+    "file": "mytimeline:backend/src/main/java/com/matimeline/eventmanager/utils/Utils.java",
+    "line_start": 57,
+    "line_end": 62,
+    "evidence": "if (durationUnit == null) { throw new InvalidDurationUnitException(null);",
+    "cites": [
+     "timeline/35513b08008b2dce-1",
+     "backend-socle/2faddb776ec7b9ad-2",
+     "timeline/8cd20c75d6215999-1"
+    ]
+   },
    "placed": {
-    "pack_line": 344,
+    "pack_line": null,
     "annex_table": null
    },
    "uses": 0
@@ -6976,9 +7469,9 @@
      "refuted": 0,
      "refute_unproven": 0,
      "reasons": [
-      "Le commentaire L76 dit productId null, tandis que L87 passe product.getId() à la position productId ; la valeur réelle de product.getId() à ce stade n'est pas tranchée.",
-      "ProductServiceImpl.createProduct passe product.getId() en dernier argvisible (L87), alors que le commentaire (L75-76) parle d'un productId null. La valeur effective dépend de la persistance préalable du produit, que l'extrait ne montre pas. Question laissée ouverte.",
-      "Le commentaire (L76) dit productId null, et le code passe product.getId() en L87. Le produit n'est peut-être pas encore persisté, donc l'id pourrait être null à ce moment. Le code lu ne tranche pas."
+      "Le commentaire est exact en effet : Product est construit avec id null (L62), donc product.getId() passé à Event est null à ce moment.",
+      "Le code répond : product vient de new Product(null, ...) et n'est pas encore sauvé, donc product.getId() vaut null au moment de new Event. Le commentaire est exact en pratique.",
+      "The comment is accurate in practice: product is built with a null id at L62, so product.getId() at L87 is null."
      ],
      "evidence": [
       "",
@@ -6986,14 +7479,48 @@
       ""
      ],
      "consigne_verdict": "n/a",
-     "question_verdict": "open",
-     "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "question_verdict": "resolved",
+     "searched": true,
+     "search": {
+      "check": "answer",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 3,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Read",
+         "target": "ProductServiceImpl.java",
+         "found": "Product créé avec id null L62, Event reçoit product.getId() L87, donc null."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "Product.java constructeur et getId",
+         "found": "Le constructeur assigne l'id reçu tel quel, sans en générer un. Avec null, getId() renvoie null."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "Product( constructor in domain/models/Product.java",
+         "found": "The constructor assigns this.id = id with no generation, so null stays null."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0,
+      "contradicted": 3
+     }
     }
    },
    "contrary": null,
+   "check": "answer",
    "placed": {
-    "pack_line": 345,
+    "pack_line": 322,
     "annex_table": null
    },
    "uses": 0
@@ -7046,9 +7573,9 @@
      "refuted": 0,
      "refute_unproven": 0,
      "reasons": [
-      "Le commentaire de occurrenceStart (recurrence.ts L41-44) parle d'un écart assumé, mais c'est un commentaire seul. Le code backend n'est pas lu, donc rien ne tranche sans ambiguïté.",
-      "Le commentaire de recurrence.ts L41-44 dit l'écart assumé (addMonths(origin,k) L51 contre itération côté backend). Le code backend n'est pas lu et seul un commentaire affirme l'intention, donc la question reste ouverte.",
-      "Seul un commentaire (recurrence.ts L41-44) qualifie l'écart d'assumé ; le code backend n'est pas lu, donc le code ne tranche pas."
+      "Le code montre l'écart (RecurrenceExpansionServiceImpl.advance itère avec plusMonths(1), occurrenceStart utilise addMonths(origin, k)). Seul un commentaire dit qu'il est assumé, ce qui ne tranche pas.",
+      "Seuls un commentaire (recurrence.ts 41-44, écart assumé) et le code des deux implémentations existent. Le code ne tranche pas l'intention, donc la question reste ouverte.",
+      "Le commentaire de recurrence.ts L41-44 appelle l'écart assumé, et RecurrenceExpansionServiceImpl.advance itère bien par plusMonths(1). Mais aucun code ne tranche l'intention, un commentaire seul ne suffit pas."
      ],
      "evidence": [
       "",
@@ -7057,13 +7584,46 @@
      ],
      "consigne_verdict": "n/a",
      "question_verdict": "open",
-     "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "searched": true,
+     "search": {
+      "check": "answer",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "plusMonths|advance dans backend/src/main",
+         "found": "RecurrenceExpansionServiceImpl.advance l.78-83 utilise date.plusMonths(1) de proche en proche."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "plusMonths|advance( dans backend main",
+         "found": "RecurrenceExpansionServiceImpl.advance utilise date.plusMonths(1) de proche en proche"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "plusMonths|advance( dans backend/src/main",
+         "found": "RecurrenceExpansionServiceImpl.advance L78-83 utilise date.plusMonths(1) de proche en proche"
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     }
     }
    },
    "contrary": null,
+   "check": "answer",
    "placed": {
-    "pack_line": 346,
+    "pack_line": 323,
     "annex_table": null
    },
    "uses": 0
@@ -7098,8 +7658,8 @@
     ]
    ],
    "code_sha256": "c373c327f9da56f7c4f93fd88e9780780e2ed5a40804dfbabdbb283f1f385244",
-   "verdict": "admit",
-   "reason": "admitted",
+   "verdict": "drop",
+   "reason": "resolved",
    "final": true,
    "measures": {
     "fidelity": null,
@@ -7116,9 +7676,9 @@
      "refuted": 0,
      "refute_unproven": 0,
      "reasons": [
-      "handleUnarchive (L206-223) ne fait que gérer l'erreur et l'état local, sans rafraîchissement. Le commentaire L201-202 attribue ce rafraîchissement au hook, mais le hook n'est pas lu, donc la question reste ouverte.",
-      "handleUnarchive (L206-223) ne fait que setUnarchiveError/setUnarchivingId, sans refetch explicite. Seul le commentaire L202 attribue le rafraîchissement au hook, que l'extrait ne montre pas, donc la question reste ouverte.",
-      "handleUnarchive (L206-223) ne déclenche aucun rafraîchissement lui-même, mais le commentaire L201-202 l'attribue au hook, que l'extrait ne montre pas : le code lu ne tranche pas."
+      "Le hook useSetEventArchived.onError invalide queryKeys.products.all quand le statut est 409. C'est lui qui rafraîchit les données, pas handleUnarchive.",
+      "Le hook useSetEventArchived rafraîchit : son onError invalide queryKeys.products.all sur 409. La ligne a raison que handleUnarchive ne le fait pas lui-même, mais la question est résolue.",
+      "Le hook useSetEventArchived rafraîchit : onError invalide queryKeys.products.all quand le statut est 409 (L38-46). Le rafraîchissement est donc fait par le hook, pas par handleUnarchive."
      ],
      "evidence": [
       "",
@@ -7126,14 +7686,118 @@
       ""
      ],
      "consigne_verdict": "n/a",
-     "question_verdict": "open",
-     "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "question_verdict": "resolved",
+     "searched": true,
+     "search": {
+      "check": "answer",
+      "outcome": "resolved",
+      "votes": 3,
+      "supporters": 2,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "handleUnarchive dans frontend",
+         "found": "Défini l.206 de ProductDetailView.tsx, utilisé l.549."
+        },
+        {
+         "tool": "Grep",
+         "target": "invalidateQueries dans les fichiers *rchiv*",
+         "found": "useSetEventArchived.ts l.36 et l.44."
+        },
+        {
+         "tool": "Read",
+         "target": "useSetEventArchived.ts",
+         "found": "onError invalide sur 409."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "handleUnarchive dans frontend",
+         "found": "ProductDetailView.tsx l.206"
+        },
+        {
+         "tool": "Grep",
+         "target": "useSetEventArchived",
+         "found": "hook utilisé par ProductDetailView"
+        },
+        {
+         "tool": "Read",
+         "target": "useSetEventArchived.ts",
+         "found": "onError invalide sur 409"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "handleUnarchive dans frontend",
+         "found": "ProductDetailView.tsx L206 et L549, aucun refetch explicite"
+        },
+        {
+         "tool": "Grep",
+         "target": "useSetEventArchived",
+         "found": "hook dans frontend/src/hooks/useSetEventArchived.ts"
+        },
+        {
+         "tool": "Read",
+         "target": "useSetEventArchived.ts",
+         "found": "onError invalide products.all sur 409"
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0,
+      "contradicted": 2,
+      "evidence": [
+       {
+        "file": "mytimeline:frontend/src/hooks/useSetEventArchived.ts",
+        "line_start": 38,
+        "line_end": 46,
+        "evidence": "queryClient.invalidateQueries({ queryKey: queryKeys.products.all })",
+        "evidence_check": "exact"
+       }
+      ],
+      "promote": {
+       "text": "Après un 409 au désarchivage, useSetEventArchived invalide products.all dans son onError. handleUnarchive n'a pas à le faire.",
+       "file": "mytimeline:frontend/src/hooks/useSetEventArchived.ts",
+       "line_start": 38,
+       "line_end": 46,
+       "evidence": "queryClient.invalidateQueries({ queryKey: queryKeys.products.all })",
+       "cites": [
+        "timeline/cc800a010618b0e6-1",
+        "timeline/9160ee03da7f807b-1"
+       ]
+      }
+     }
     }
    },
    "contrary": null,
+   "check": "answer",
+   "answer": [
+    {
+     "file": "mytimeline:frontend/src/hooks/useSetEventArchived.ts",
+     "line_start": 38,
+     "line_end": 46,
+     "evidence": "queryClient.invalidateQueries({ queryKey: queryKeys.products.all })",
+     "evidence_check": "exact"
+    }
+   ],
+   "promote": {
+    "text": "Après un 409 au désarchivage, useSetEventArchived invalide products.all dans son onError. handleUnarchive n'a pas à le faire.",
+    "file": "mytimeline:frontend/src/hooks/useSetEventArchived.ts",
+    "line_start": 38,
+    "line_end": 46,
+    "evidence": "queryClient.invalidateQueries({ queryKey: queryKeys.products.all })",
+    "cites": [
+     "timeline/cc800a010618b0e6-1",
+     "timeline/9160ee03da7f807b-1"
+    ]
+   },
    "placed": {
-    "pack_line": 347,
+    "pack_line": null,
     "annex_table": null
    },
    "uses": 0
@@ -7169,74 +7833,154 @@
     ]
    ],
    "code_sha256": "0d7c167f9d00754e7738de9a36d4decdabd474e9d00a095832c3e2599a185c75",
-   "verdict": "admit",
-   "reason": "admitted",
+   "verdict": "drop",
+   "reason": "guarded_elsewhere",
    "final": true,
    "measures": {
     "fidelity": null,
-    "deduce": {
-     "covered": false,
-     "overlap": {
-      "identifiers": 0.0,
-      "values": null,
-      "terms": 0.182,
-      "n": {
-       "identifiers": 1,
-       "values": 0,
-       "terms": 11
-      }
-     },
-     "restatement": "ProductRepositoryJpaImpl.updateCategoryForProducts exécute une requête native UPDATE products SET category_id = :to WHERE category_id = :from via executeUpdate, et renvoie le nombre de lignes modifiées. Elle réaffecte donc en masse les produits d'une catégorie vers une autre.",
-     "confidence": "high",
-     "files_read_missing": true,
-     "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
-    },
-    "rediscover": {
-     "found": true,
-     "cost": 14,
-     "within_budget": false,
-     "covered": false,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/backend/src/main/java/com/matimeline/eventmanager/application/services/CategoryServiceImpl.java",
-     "file_ok": true,
-     "overlap": {
-      "identifiers": 0.0,
-      "values": null,
-      "terms": 0.455,
-      "n": {
-       "identifiers": 1,
-       "values": 0,
-       "terms": 11
-      }
-     },
-     "job": "timeline:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_services_RecurrenceExpansionServiceImpl.java:2",
-     "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
-    },
+    "deduce": null,
+    "rediscover": null,
     "comment": [],
     "refute": {
      "votes": 3,
      "refuted": 0,
      "refute_unproven": 0,
      "reasons": [
-      "updateCategoryForProducts L191 n'a pas de filtre user_id et CategoryServiceImpl L123 compte via countByCategoryId, donc globalement.",
-      "updateCategoryForProducts fait UPDATE products SET category_id = :to WHERE category_id = :from, sans user_id (L191). countByCategoryId(id) est appelé sans filtre propriétaire (CategoryServiceImpl L123). La ligne est exacte.",
-      "ProductRepositoryJpaImpl.updateCategoryForProducts L191 met à jour sans filtre user_id, et CategoryServiceImpl L123 appelle countByCategoryId (global). Le constat est fidèle."
+      "Le contrôleur n'autorise la suppression que d'une catégorie possédée par l'appelant, ainsi que de la cible de réassignation ; createProduct et updateProduct n'assignent que des catégories propres ou système. Un produit d'un autre utilisateur ne référence donc pas une catégorie supprimable. La requête native reste sans filtre user_id.",
+      "CategoryController.deleteCategory (L131-148) n'autorise que les catégories possédées par l'appelant, cible de réassignation comprise. Les produits qui référencent une catégorie propriétaire sont ceux de son propriétaire, car ProductServiceImpl.resolveAssignableCategory refuse les catégories d'autrui.",
+      "The risk is guarded: only the owner can delete a non-system category, and products can only reference the caller's own categories or system ones, so a deletable category cannot hold other users' products."
      ],
      "evidence": [
       "",
       "",
       ""
      ],
-     "consigne_verdict": "n/a",
+     "consigne_verdict": "unsupported",
      "question_verdict": "n/a",
-     "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "searched": true,
+     "search": {
+      "check": "guards",
+      "outcome": "guarded",
+      "votes": 3,
+      "supporters": 3,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Read",
+         "target": "CategoryServiceImpl.java L90-156",
+         "found": "countByCategoryId global et updateCategoryForProducts sans user_id, avec commentaire que l'ownership de la cible est vérifié par le contrôleur."
+        },
+        {
+         "tool": "Grep",
+         "target": "deleteCategory|reassignTo dans controllers",
+         "found": "CategoryController L122-153."
+        },
+        {
+         "tool": "Read",
+         "target": "CategoryController.java L105-160",
+         "found": "isOwnedBy (owner non nul et égal au caller) exigé pour la source et la cible avant deleteCategory."
+        }
+       ],
+       [
+        {
+         "tool": "Read",
+         "target": "CategoryServiceImpl.java L90-156",
+         "found": "deleteCategory utilise countByCategoryId (global) et updateCategoryForProducts. Le contrôleur verrouille l'ownership en amont."
+        },
+        {
+         "tool": "Read",
+         "target": "CategoryController.java L105-165",
+         "found": "isOwnedBy exige un owner non nul égal à l'appelant, pour la catégorie et la cible. Les catégories système répondent 403."
+        },
+        {
+         "tool": "Grep",
+         "target": "deleteCategory|updateCategoryForProducts|countByCategoryId (backend/src/main)",
+         "found": "Seul appelant de deleteCategory : CategoryController L153. Seul appelant de updateCategoryForProducts : CategoryServiceImpl L145."
+        }
+       ],
+       [
+        {
+         "tool": "Read",
+         "target": "CategoryServiceImpl.java L95-155",
+         "found": "Unscoped countByCategoryId and updateCategoryForProducts, called after the controller's ownership check."
+        },
+        {
+         "tool": "Grep",
+         "target": "deleteCategory in CategoryController.java",
+         "found": "isOwnedBy check on target (403) and on reassignToCategoryId before the service call."
+        },
+        {
+         "tool": "Read",
+         "target": "ProductServiceImpl.java L52-54, L134, L156-164",
+         "found": "resolveAssignableCategory used in create and update."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0,
+      "evidence": [
+       {
+        "file": "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryController.java",
+        "line_start": 135,
+        "line_end": 147,
+        "evidence": "if (!isOwnedBy(target.get(), caller.getId())) {",
+        "evidence_check": "exact"
+       },
+       {
+        "file": "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+        "line_start": 156,
+        "line_end": 163,
+        "evidence": "if (owner != null && !owner.equals(callerId)) {",
+        "evidence_check": "exact"
+       }
+      ],
+      "promote": {
+       "text": "CategoryController.deleteCategory requires isOwnedBy for the target and the reassign target, and ProductServiceImpl.resolveAssignableCategory blocks cross-user assignment, so the unscoped productRepository.updateCategoryForProducts only touches the owner's products.",
+       "file": "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryController.java",
+       "line_start": 135,
+       "line_end": 137,
+       "evidence": "if (!isOwnedBy(target.get(), caller.getId())) {",
+       "cites": [
+        "timeline/fee4a3fe030b8963-1",
+        "timeline/7066eb160400bf67-1"
+       ]
+      }
+     }
     }
    },
    "contrary": null,
+   "check": "guards",
+   "guard": [
+    {
+     "file": "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryController.java",
+     "line_start": 135,
+     "line_end": 147,
+     "evidence": "if (!isOwnedBy(target.get(), caller.getId())) {",
+     "evidence_check": "exact"
+    },
+    {
+     "file": "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+     "line_start": 156,
+     "line_end": 163,
+     "evidence": "if (owner != null && !owner.equals(callerId)) {",
+     "evidence_check": "exact"
+    }
+   ],
+   "promote": {
+    "text": "CategoryController.deleteCategory requires isOwnedBy for the target and the reassign target, and ProductServiceImpl.resolveAssignableCategory blocks cross-user assignment, so the unscoped productRepository.updateCategoryForProducts only touches the owner's products.",
+    "file": "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryController.java",
+    "line_start": 135,
+    "line_end": 137,
+    "evidence": "if (!isOwnedBy(target.get(), caller.getId())) {",
+    "cites": [
+     "timeline/fee4a3fe030b8963-1",
+     "timeline/7066eb160400bf67-1"
+    ]
+   },
    "placed": {
-    "pack_line": 351,
+    "pack_line": null,
     "annex_table": null
    },
    "uses": 0
@@ -7264,64 +8008,137 @@
     ]
    ],
    "code_sha256": "ec786b52c980a09ad7d9046e100d39c2363ac9c56f94ce549a162654ba697c84",
-   "verdict": "annex",
-   "reason": "rediscovered",
+   "verdict": "drop",
+   "reason": "guarded_elsewhere",
    "final": true,
    "measures": {
     "fidelity": {
      "fact_supported": true,
      "consigne_supported": true,
-     "reason": "Le fait décrit un endpoint qui expose un token sans authentification si le profil e2e est actif, sans garde hors profil, ce qui motive la consigne de ne jamais l'activer hors test."
+     "reason": "Le fait décrit un endpoint qui expose un token sans authentification si le profil e2e est actif, sans garde hors profil, ce qui motive la consigne de ne jamais l'activer hors test.",
+     "reused": true,
+     "reused_from": "2026-11-17T10:45:42Z"
     },
-    "deduce": {
-     "covered": false,
-     "overlap": {
-      "identifiers": 0.0,
-      "values": null,
-      "terms": 0.2,
-      "n": {
-       "identifiers": 1,
-       "values": 0,
-       "terms": 10
-      }
-     },
-     "restatement": "L'extrait ne montre que la signature de E2eResetTokenController.latestUsableResetToken (mapping GET /password-reset-token, paramètre email). Aucun comportement n'est visible dans ce bloc.",
-     "confidence": "low",
-     "files_read_missing": true
-    },
-    "rediscover": {
-     "found": true,
-     "cost": 5,
-     "within_budget": true,
-     "covered": true,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenController.java",
-     "file_ok": true,
-     "overlap": {
-      "identifiers": 1.0,
-      "values": null,
-      "terms": 0.7,
-      "n": {
-       "identifiers": 1,
-       "values": 0,
-       "terms": 10
-      }
-     },
-     "job": "timeline:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_infrastructure_adapters_testsupport_E2eResetTokenController.java:3",
-     "rank_in_lot": 2
-    },
+    "deduce": null,
+    "rediscover": null,
     "comment": [],
-    "refute": null
-   },
-   "contrary": null,
-   "placed": {
-    "pack_line": 352,
-    "annex_table": {
-     "part": "timeline.details-5.md",
-     "row": 49
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Le constat est exact (GET sans authentification, email en paramètre, dans E2eResetTokenController l.71-80) et conditionné au profil e2e. @Profile(\"e2e\") l.44 limite le bean à ce profil.",
+      "L'endpoint E2eResetTokenController.latestUsableResetToken est anonyme sous @Profile(\"e2e\") (E2eTestSupportSecurityConfig permitAll). ProfileSafetyGuard refuse prod+e2e mais pas e2e seul hors prod, donc le risque reste réel.",
+      "E2eResetTokenController L71-72 est bien un GET anonyme par email, sous @Profile(\"e2e\"). ProfileSafetyGuard.checkE2eProfileInProduction refuse de booter en prod effective, mais le risque reste réel si e2e est actif sans marqueur prod."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "supported",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "guards",
+      "outcome": "guarded",
+      "votes": 3,
+      "supporters": 1,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Read",
+         "target": "E2eResetTokenController.java",
+         "found": "@Profile(\"e2e\") seul, javadoc cite E2eTestSupportProfileTest et PackageGuardTest."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "test-support dans backend/src",
+         "found": "ProfileSafetyGuard, E2eTestSupportSecurityConfig (permitAll), tests de profil"
+        },
+        {
+         "tool": "Read",
+         "target": "E2eTestSupportSecurityConfig.java",
+         "found": "chaîne @Order(1) anyRequest().permitAll() sur /api/test-support/**"
+        },
+        {
+         "tool": "Read",
+         "target": "ProfileSafetyGuard.java 195-218",
+         "found": "fail-fast seulement si prod effectif et e2e actif ; dev,e2e autorisé"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "test-support|\"e2e\" dans backend/src/main",
+         "found": "@Profile(\"e2e\") sur le controller, le finder et E2eTestSupportSecurityConfig, plus ProfileSafetyGuard"
+        },
+        {
+         "tool": "Read",
+         "target": "ProfileSafetyGuard.java L195-230",
+         "found": "Fail-fast seulement si prod effective et e2e actif. Le risque reste hors prod marquée."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0,
+      "evidence": [
+       {
+        "file": "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenController.java",
+        "line_start": 43,
+        "line_end": 45,
+        "evidence": "@Profile(\"e2e\") @RequestMapping(\"/api/test-support\")",
+        "evidence_check": "exact"
+       }
+      ],
+      "promote": {
+       "text": "Le contrôleur E2eResetTokenController (GET /api/test-support/password-reset-token) est protégé par @Profile(\"e2e\") et ne doit jamais être activé hors test.",
+       "file": "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenController.java",
+       "line_start": 43,
+       "line_end": 45,
+       "evidence": "@Profile(\"e2e\") @RequestMapping(\"/api/test-support\")",
+       "cites": [
+        "integrations/4c61ca6e2f106b0b-1"
+       ]
+      }
+     }
     }
    },
-   "uses": 0,
-   "carried_from": "2026-11-17T10:40:47Z"
+   "contrary": null,
+   "check": "guards",
+   "restored_from_pointer": {
+    "record": "timeline:alerts:2",
+    "pointer_line": 352,
+    "reason": "rediscovered"
+   },
+   "guard": [
+    {
+     "file": "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenController.java",
+     "line_start": 43,
+     "line_end": 45,
+     "evidence": "@Profile(\"e2e\") @RequestMapping(\"/api/test-support\")",
+     "evidence_check": "exact"
+    }
+   ],
+   "promote": {
+    "text": "Le contrôleur E2eResetTokenController (GET /api/test-support/password-reset-token) est protégé par @Profile(\"e2e\") et ne doit jamais être activé hors test.",
+    "file": "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenController.java",
+    "line_start": 43,
+    "line_end": 45,
+    "evidence": "@Profile(\"e2e\") @RequestMapping(\"/api/test-support\")",
+    "cites": [
+     "integrations/4c61ca6e2f106b0b-1"
+    ]
+   },
+   "placed": {
+    "pack_line": null,
+    "annex_table": null
+   },
+   "uses": 0
   },
   {
    "id": "timeline:alerts:3",
@@ -7359,54 +8176,17 @@
    "final": true,
    "measures": {
     "fidelity": null,
-    "deduce": {
-     "covered": false,
-     "overlap": {
-      "identifiers": 1.0,
-      "values": null,
-      "terms": 0.143,
-      "n": {
-       "identifiers": 5,
-       "values": 0,
-       "terms": 7
-      }
-     },
-     "restatement": "En cas de RuntimeException pendant la génération, AsyncExportRunner.run passe le job en FAILED avec le code borné GENERATION_ERROR, le sauvegarde et ne journalise que le nom de la classe d'exception, sans message ni stack. ExportJob.markRunning passe le statut à RUNNING, et markCompleted le passe à COMPLETED en renseignant storageRef, completedAt et expiresAt.",
-     "confidence": "high",
-     "files_read_missing": true,
-     "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
-    },
-    "rediscover": {
-     "found": true,
-     "cost": 17,
-     "within_budget": false,
-     "covered": false,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/backend/src/main/java/com/matimeline/eventmanager/application/services/AsyncExportRunner.java",
-     "file_ok": true,
-     "overlap": {
-      "identifiers": 0.8,
-      "values": null,
-      "terms": 0.286,
-      "n": {
-       "identifiers": 5,
-       "values": 0,
-       "terms": 7
-      }
-     },
-     "job": "timeline:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_dtos_CategoryResponse.java:1",
-     "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
-    },
+    "deduce": null,
+    "rediscover": null,
     "comment": [],
     "refute": {
      "votes": 3,
      "refuted": 0,
      "refute_unproven": 0,
      "reasons": [
-      "AsyncExportRunner.run ne capture que RuntimeException (L80) et ExportJob.markRunning/markFailed (L48-62) affectent le statut sans contrôle.",
-      "AsyncExportRunner.run (L80) ne capture que RuntimeException. ExportJob.markRunning, markCompleted et markFailed (L48-62) affectent le statut sans contrôle préalable.",
-      "AsyncExportRunner.run ne capture que RuntimeException (L80). ExportJob.markFailed et markRunning (L48-62) affectent le statut sans contrôle."
+      "AsyncExportRunner.run n'a qu'un catch (RuntimeException) (L80). ExportJob.markRunning, markCompleted et markFailed (L48-62) affectent le statut sans le vérifier. Une Error laisse donc le job RUNNING.",
+      "AsyncExportRunner.run n'attrape que RuntimeException (L80). markRunning, markCompleted et markFailed (ExportJob L48-62) affectent le statut sans contrôle préalable. Aucun autre catch ni Throwable dans le runner.",
+      "AsyncExportRunner.run n'a qu'un catch (RuntimeException) (L80). ExportJob.markRunning/markCompleted/markFailed (L48-62) n'ont aucun contrôle de statut. Aucun catch Throwable ni reaper de jobs RUNNING dans le backend."
      ],
      "evidence": [
       "",
@@ -7415,13 +8195,51 @@
      ],
      "consigne_verdict": "n/a",
      "question_verdict": "n/a",
-     "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "searched": true,
+     "search": {
+      "check": "guards",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "catch (|Throwable|Error dans AsyncExportRunner.java",
+         "found": "Un seul catch (RuntimeException), à la ligne 80, sans Throwable ni Error."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "catch (|Throwable|Error dans AsyncExportRunner.java",
+         "found": "un seul catch, RuntimeException, ligne 80"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "catch \\(|Throwable|Error dans AsyncExportRunner.java",
+         "found": "Un seul catch, RuntimeException, à la ligne 80."
+        },
+        {
+         "tool": "Grep",
+         "target": "ExportJobStatus.RUNNING|StaleExport|reap|Throwable (backend/src/main)",
+         "found": "Seule occurrence : markRunning dans ExportJob. Aucun nettoyage des jobs bloqués."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     }
     }
    },
    "contrary": null,
+   "check": "guards",
    "placed": {
-    "pack_line": 353,
+    "pack_line": 327,
     "annex_table": null
    },
    "uses": 0
@@ -7481,56 +8299,19 @@
      "consigne_supported": true,
      "reason": "Les quatre faits cités confirment l'absence d'isUsable dans consume, la garde dans resetPassword, le saveAndFlush dans markConsumed et la conversion du conflit optimiste, ce qui soutient la consigne de garder la garde et le flush.",
      "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "reused_from": "2026-11-17T10:45:42Z"
     },
-    "deduce": {
-     "covered": false,
-     "overlap": {
-      "identifiers": 0.8,
-      "values": null,
-      "terms": 0.286,
-      "n": {
-       "identifiers": 5,
-       "values": 0,
-       "terms": 7
-      }
-     },
-     "restatement": "PasswordResetToken.consume renvoie une nouvelle instance avec usedAt renseigné. Dans resetPassword, un token non utilisable à l'instant courant lève InvalidPasswordResetTokenException. markConsumed recharge l'entité gérée par findById, met à jour usedAt puis appelle saveAndFlush pour que le verrou optimiste remonte de façon synchrone. Un ObjectOptimisticLockingFailureException ou OptimisticLockException est converti en InvalidPasswordResetTokenException, tandis qu'une entité absente déclenche IllegalStateException (500).",
-     "confidence": "high",
-     "files_read_missing": true,
-     "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
-    },
-    "rediscover": {
-     "found": true,
-     "cost": 19,
-     "within_budget": false,
-     "covered": false,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/backend/src/main/java/com/matimeline/eventmanager/application/services/PasswordResetServiceImpl.java",
-     "file_ok": true,
-     "overlap": {
-      "identifiers": 0.4,
-      "values": null,
-      "terms": 0.571,
-      "n": {
-       "identifiers": 5,
-       "values": 0,
-       "terms": 7
-      }
-     },
-     "job": "timeline:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_services_RecurrenceExpansionServiceImpl.java:2",
-     "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
-    },
+    "deduce": null,
+    "rediscover": null,
     "comment": [],
     "refute": {
      "votes": 3,
      "refuted": 0,
      "refute_unproven": 0,
      "reasons": [
-      "consume (L72-74) ne contrôle rien, la garde est dans resetPassword (L143), et markConsumed utilise saveAndFlush (L66) pour que le catch L184 capte le conflit.",
-      "PasswordResetToken.consume (L72-74) crée simplement un nouveau token sans vérification. La garde isUsable est dans resetPassword (L143). markConsumed utilise saveAndFlush (L66), et le commentaire explique que le flush sert au catch du conflit optimiste.",
-      "PasswordResetToken.consume (L72-74) ne vérifie rien. La garde isUsable est dans resetPassword (L143). Le commentaire de markConsumed (L62-66) justifie le saveAndFlush pour que le catch des L184-186 voie l'exception. La consigne est donc motivée."
+      "PasswordResetToken.consume (L72-74) ne contrôle pas isUsable, ce contrôle est dans resetPassword (L143-145). Le catch du conflit optimiste (L184-186) dépend du saveAndFlush de markConsumed (L66), dont le commentaire L62-65 l'explique.",
+      "PasswordResetToken.consume (L72-74) ne vérifie rien. La garde isUsable est dans resetPassword (L143). markConsumed utilise saveAndFlush (L66) pour que le catch L184 attrape le conflit optimiste.",
+      "PasswordResetToken.consume (L72-74) ne vérifie pas isUsable. La garde est dans PasswordResetServiceImpl L143. markConsumed utilise saveAndFlush (L66), dont dépend le catch L184. Constat exact et consigne cohérente."
      ],
      "evidence": [
       "",
@@ -7539,13 +8320,39 @@
      ],
      "consigne_verdict": "supported",
      "question_verdict": "n/a",
-     "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "searched": true,
+     "search": {
+      "check": "guards",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [],
+       [],
+       [
+        {
+         "tool": "Grep",
+         "target": "markConsumed|.consume\\( (backend/src/main)",
+         "found": "Un seul appelant, PasswordResetServiceImpl L183, sous le try/catch optimiste."
+        },
+        {
+         "tool": "Read",
+         "target": "PasswordResetToken.java L55-75",
+         "found": "consume copie le token sans contrôle, isUsable existe à part."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     }
     }
    },
    "contrary": null,
+   "check": "guards",
    "placed": {
-    "pack_line": 354,
+    "pack_line": 328,
     "annex_table": null
    },
    "uses": 0
@@ -7573,64 +8380,89 @@
     ]
    ],
    "code_sha256": "5853e40e07f4a3a6eb61d851ad7cf574704ebb612091af9e51afef01ff3b1172",
-   "verdict": "annex",
-   "reason": "rediscovered",
+   "verdict": "admit",
+   "reason": "admitted",
    "final": true,
    "measures": {
     "fidelity": {
      "fact_supported": true,
      "consigne_supported": true,
-     "reason": "Le fait indique qu'avec un type duration et un facteur de date modifié, endDate est recalculée et écrase celle du payload, d'où la consigne de ne pas compter sur une endDate explicite dans un PATCH."
+     "reason": "Le fait indique qu'avec un type duration et un facteur de date modifié, endDate est recalculée et écrase celle du payload, d'où la consigne de ne pas compter sur une endDate explicite dans un PATCH.",
+     "reused": true,
+     "reused_from": "2026-11-17T10:45:42Z"
     },
-    "deduce": {
-     "covered": false,
-     "overlap": {
-      "identifiers": 0.0,
-      "values": null,
-      "terms": 0.375,
-      "n": {
-       "identifiers": 1,
-       "values": 0,
-       "terms": 8
-      }
-     },
-     "restatement": "Dans EventServiceImpl.updateEvent, si le type vaut \"duration\", la date de fin est recalculée via Utils.calculateEndDate à partir du type, de durationValue, de durationUnit et de startDate. L'extrait ne montre pas le cas où le type n'est pas \"duration\".",
-     "confidence": "high",
-     "files_read_missing": true
-    },
-    "rediscover": {
-     "found": true,
-     "cost": 16,
-     "within_budget": true,
-     "covered": true,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/backend/src/main/java/com/matimeline/eventmanager/application/services/EventServiceImpl.java",
-     "file_ok": true,
-     "overlap": {
-      "identifiers": 1.0,
-      "values": null,
-      "terms": 0.75,
-      "n": {
-       "identifiers": 1,
-       "values": 0,
-       "terms": 8
-      }
-     },
-     "job": "timeline:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_dtos_CategoryResponse.java:1",
-     "rank_in_lot": 5
-    },
+    "deduce": null,
+    "rediscover": null,
     "comment": [],
-    "refute": null
-   },
-   "contrary": null,
-   "placed": {
-    "pack_line": 355,
-    "annex_table": {
-     "part": "timeline.details-5.md",
-     "row": 50
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "EventServiceImpl.updateEvent L173-179 recalcule endDate via Utils.calculateEndDate dès que dateFactorsChanged est vrai pour un type duration. Le commentaire L163-165 dit que l'endDate explicite du payload est volontairement écrasée.",
+      "EventServiceImpl.updateEvent L173-179 recalcule endDate si type duration dès qu'un facteur de date change. Le commentaire L163-165 confirme que l'endDate explicite du payload est écrasée.",
+      "EventServiceImpl.updateEvent L173-179 recalcule endDate via Utils.calculateEndDate pour type duration dès qu'un facteur change. Le commentaire L161-165 confirme que l'endDate du payload (L125-127) est écrasée."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "supported",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "guards",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Read",
+         "target": "EventServiceImpl.java L140-190",
+         "found": "Pour le type duration, l'endDate est toujours recalculée quand un facteur de date change, et celle du payload est écrasée."
+        }
+       ],
+       [
+        {
+         "tool": "Read",
+         "target": "EventServiceImpl.java L140-200",
+         "found": "dérivation de endDate pour type duration, endDate du payload volontairement écrasée"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "Utils.calculateEndDate|setEndDate (backend/src/main)",
+         "found": "EventServiceImpl L126 applique l'endDate du payload, puis L175 la recalcule pour duration."
+        },
+        {
+         "tool": "Read",
+         "target": "EventServiceImpl.java L115-190",
+         "found": "dateFactorsChanged inclut type, durationValue, durationUnit et startDate. Pour duration, endDate est toujours recalculée."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     }
     }
    },
-   "uses": 0,
-   "carried_from": "2026-11-17T10:40:47Z"
+   "contrary": null,
+   "check": "guards",
+   "restored_from_pointer": {
+    "record": "timeline:alerts:5",
+    "pointer_line": 355,
+    "reason": "rediscovered"
+   },
+   "placed": {
+    "pack_line": 329,
+    "annex_table": null
+   },
+   "uses": 0
   },
   {
    "id": "timeline:alerts:6",
@@ -7679,56 +8511,19 @@
      "consigne_supported": true,
      "reason": "Les faits montrent que toDomain et changePassword construisent User sans themePreference alors que UserResponse.fromDomain la lit, et que updateThemePreference évite la reconstruction complète, ce qui soutient la consigne d'écrire la préférence par updateThemePreference.",
      "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "reused_from": "2026-11-17T10:45:42Z"
     },
-    "deduce": {
-     "covered": false,
-     "overlap": {
-      "identifiers": 0.5,
-      "values": null,
-      "terms": 0.5,
-      "n": {
-       "identifiers": 6,
-       "values": 0,
-       "terms": 2
-      }
-     },
-     "restatement": "UserMapper.toDomain recopie tous les champs de UserEntity (id, name, username, password, role, email, avatar) vers le modèle domaine User. UserServiceImpl.changePassword construit un nouveau User avec le hash newHash et les autres champs du caller, puis le sauvegarde : le mot de passe est donc remplacé uniquement par le hash fourni.",
-     "confidence": "high",
-     "files_read_missing": true,
-     "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
-    },
-    "rediscover": {
-     "found": false,
-     "cost": 20,
-     "within_budget": false,
-     "covered": false,
-     "file": "",
-     "file_ok": false,
-     "overlap": {
-      "identifiers": 0.0,
-      "values": null,
-      "terms": 0.0,
-      "n": {
-       "identifiers": 6,
-       "values": 0,
-       "terms": 2
-      }
-     },
-     "job": "timeline:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_dtos_CategoryResponse.java:1",
-     "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
-    },
+    "deduce": null,
+    "rediscover": null,
     "comment": [],
     "refute": {
      "votes": 3,
      "refuted": 0,
      "refute_unproven": 0,
      "reasons": [
-      "UserMapper.toDomain (L11-19) et UserServiceImpl.changePassword (L80-87) appellent le constructeur User à 7 arguments sans préférence de thème.",
-      "UserMapper.toDomain (L11-19) et UserServiceImpl.changePassword (L80-87) appellent un constructeur User à 7 arguments, sans themePreference. La lecture par UserResponse.fromDomain n'est pas visible, mais rien ne contredit le constat.",
-      "UserMapper.toDomain (L11-19) et UserServiceImpl.changePassword (L80-87) appellent le constructeur User avec 7 arguments, sans themePreference. La consigne nomme updateThemePreference, qu'aucun extrait lu ne montre ni ne motive."
+      "UserMapper.toDomain (L10-20) et UserServiceImpl.changePassword (L80-87) utilisent bien le constructeur à 7 arguments sans themePreference. UserRepositoryJpaImpl.copyMutableFields (L117-124) ne recopie volontairement pas la préférence, et seul updateThemePreference l'écrit. Cela évite l'effacement en base mais ne garantit pas que l'objet User construit porte la préférence.",
+      "UserMapper.toDomain (L11-19) et UserServiceImpl.changePassword (L80-87) construisent bien un User à 7 arguments sans themePreference. UserRepositoryJpaImpl re-hydrate à la lecture (withThemePreference, L110) et save ne recopie pas la préférence (L113-116), mais le constat sur le mapper et changePassword reste exact.",
+      "UserMapper.toDomain (L10-20) et UserServiceImpl.changePassword (L80-87) construisent bien un User sans themePreference. UserRepositoryJpaImpl.save n'écrit pas la préférence (copyMutableFields L117-124) et seul updateThemePreference l'écrit. L'hydratation à la lecture (toDomain L109-111) réduit le risque sans l'annuler."
      ],
      "evidence": [
       "",
@@ -7737,13 +8532,56 @@
      ],
      "consigne_verdict": "supported",
      "question_verdict": "n/a",
-     "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "searched": true,
+     "search": {
+      "check": "guards",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "themePreference|updateThemePreference dans backend/src/main",
+         "found": "UserRepositoryJpaImpl.toDomain hydrate la préférence via withThemePreference, copyMutableFields l'ignore, et updateThemePreference est le seul chemin d'écriture."
+        },
+        {
+         "tool": "Read",
+         "target": "UserRepositoryJpaImpl.java L60-150",
+         "found": "Le commentaire L113-116 confirme que les cinq chemins de reconstruction d'un User ne portent pas la préférence, et que ce choix est volontaire."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "themePreference|ThemePreference dans backend/src/main",
+         "found": "UserRepositoryJpaImpl hydrate via withThemePreference à la lecture, save n'écrit pas la préférence, seul updateThemePreference l'écrit (L131-135). Le chemin changePassword reste sans préférence sur le"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "themePreference|updateThemePreference (backend/src/main)",
+         "found": "UserRepositoryJpaImpl hydrate via withThemePreference et ne la recopie pas au save. Seul updateThemePreference l'écrit."
+        },
+        {
+         "tool": "Read",
+         "target": "UserRepositoryJpaImpl.java L60-150",
+         "found": "copyMutableFields omet themePreference volontairement. Le mapper reste sans préférence hors du repository."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     }
     }
    },
    "contrary": null,
+   "check": "guards",
    "placed": {
-    "pack_line": 356,
+    "pack_line": 330,
     "annex_table": null
    },
    "uses": 0
@@ -7771,60 +8609,78 @@
     ]
    ],
    "code_sha256": "fed22b9b54d3d78d35c9d2b7c5de035b72829ac197b288350cd4c6f39549edde",
-   "verdict": "annex",
-   "reason": "rediscovered",
+   "verdict": "admit",
+   "reason": "admitted",
    "final": true,
    "measures": {
     "fidelity": null,
-    "deduce": {
-     "covered": false,
-     "overlap": {
-      "identifiers": 1.0,
-      "values": null,
-      "terms": 0.0,
-      "n": {
-       "identifiers": 3,
-       "values": 0,
-       "terms": 5
-      }
-     },
-     "restatement": "RecurrencePreviewController.previewRecurrence intercepte une IllegalArgumentException et la remplace par RecurrenceEndDateBeforeStartException. Le nom de l'exception suggère une date de fin antérieure à la date de début, mais l'extrait est tronqué et la condition exacte n'est pas visible.",
-     "confidence": "medium",
-     "files_read_missing": true
-    },
-    "rediscover": {
-     "found": true,
-     "cost": 4,
-     "within_budget": true,
-     "covered": true,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/RecurrencePreviewController.java",
-     "file_ok": true,
-     "overlap": {
-      "identifiers": 1.0,
-      "values": null,
-      "terms": 0.6,
-      "n": {
-       "identifiers": 3,
-       "values": 0,
-       "terms": 5
-      }
-     },
-     "job": "timeline:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_services_RecurrenceExpansionServiceImpl.java:2",
-     "rank_in_lot": 2
-    },
+    "deduce": null,
+    "rediscover": null,
     "comment": [],
-    "refute": null
-   },
-   "contrary": null,
-   "placed": {
-    "pack_line": 357,
-    "annex_table": {
-     "part": "timeline.details-5.md",
-     "row": 51
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "RecurrencePreviewController l.71-73 attrape toute IllegalArgumentException et lève RecurrenceEndDateBeforeStartException sans distinguer la cause. Le commentaire l.59-64 s'appuie sur @Valid, mais aucun code ne prouve que expand ne lève que ce cas.",
+      "RecurrencePreviewController.java L71-74 attrape toute IllegalArgumentException et la traduit en RecurrenceEndDateBeforeStartException. Seul un commentaire affirme que c'est la seule cause possible, aucun code ne le garantit.",
+      "RecurrencePreviewController l.71-74 attrape toute IllegalArgumentException et lève RecurrenceEndDateBeforeStartException sans distinguer la cause. Le commentaire l.59-64 dit que @Valid écarte les autres causes, ce qui réduit le risque sans le garantir si expand évolue."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "guards",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 24,
+      "searches": [
+       [
+        {
+         "tool": "Read",
+         "target": "RecurrencePreviewController.java l.40-90",
+         "found": "catch (IllegalArgumentException ex) traduit toujours en RecurrenceEndDateBeforeStartException, sans test de la cause"
+        }
+       ],
+       [
+        {
+         "tool": "Read",
+         "target": "RecurrencePreviewController.java L40-78",
+         "found": "Le catch est générique. Le commentaire invoque @Valid, mais rien dans le code ne distingue les causes."
+        }
+       ],
+       [
+        {
+         "tool": "Read",
+         "target": "RecurrencePreviewController.java l.40-90",
+         "found": "Le catch IllegalArgumentException traduit tout vers RecurrenceEndDateBeforeStartException, sans test de cause."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     }
     }
    },
-   "uses": 0,
-   "carried_from": "2026-11-17T10:40:47Z"
+   "contrary": null,
+   "check": "guards",
+   "restored_from_pointer": {
+    "record": "timeline:alerts:7",
+    "pointer_line": 357,
+    "reason": "rediscovered"
+   },
+   "placed": {
+    "pack_line": 331,
+    "annex_table": null
+   },
+   "uses": 0
   },
   {
    "id": "timeline:alerts:8",
@@ -7856,59 +8712,78 @@
     ]
    ],
    "code_sha256": "a0e4d7a3b2a66e9294e94e11a7883fa955b79bf5c078b9b9e785b544a8ad14f7",
-   "verdict": "annex",
-   "reason": "rediscovered",
+   "verdict": "admit",
+   "reason": "admitted",
    "final": true,
    "measures": {
     "fidelity": null,
-    "deduce": {
-     "covered": false,
-     "overlap": {
-      "identifiers": 1.0,
-      "values": 0.0,
-      "terms": 0.2,
-      "n": {
-       "identifiers": 3,
-       "values": 1,
-       "terms": 10
-      }
-     },
-     "restatement": "Dans `TimelineBottomSheet`, `onGrabberPointerUp` appelle `onClose()` si `dragY` dépasse `DISMISS_THRESHOLD_PX`, puis remet `dragY` à 0 dans les deux cas. Le piège est que `onClose` est appelé à l'intérieur de la fonction updater de `setDragY`, donc un effet de bord dans un updater d'état. Le même handler est lié à `onPointerUp` et `onPointerCancel`.",
-     "confidence": "high"
-    },
-    "rediscover": {
-     "found": true,
-     "cost": 15,
-     "within_budget": true,
-     "covered": true,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/frontend/src/components/timeline/TimelineBottomSheet.tsx",
-     "file_ok": true,
-     "overlap": {
-      "identifiers": 1.0,
-      "values": 1.0,
-      "terms": 0.6,
-      "n": {
-       "identifiers": 3,
-       "values": 1,
-       "terms": 10
-      }
-     },
-     "job": "timeline:rediscover:mytimeline_frontend_src_components_timeline_TimelineBottomSheet.tsx:4",
-     "rank_in_lot": 5
-    },
+    "deduce": null,
+    "rediscover": null,
     "comment": [],
-    "refute": null
-   },
-   "contrary": null,
-   "placed": {
-    "pack_line": 358,
-    "annex_table": {
-     "part": "timeline.details-5.md",
-     "row": 52
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "TimelineBottomSheet l.77-83 appelle onClose() dans l'updater de setDragY si current > DISMISS_THRESHOLD_PX. L.145 branche onPointerCancel sur onGrabberPointerUp, donc un geste annulé ferme aussi le sheet.",
+      "TimelineBottomSheet.tsx L77-83 appelle onClose dans l'updater de setDragY quand current > DISMISS_THRESHOLD_PX, et L145 branche onPointerCancel sur onGrabberPointerUp. Un geste annulé au-delà du seuil ferme donc le sheet.",
+      "TimelineBottomSheet.tsx l.77-83 appelle onClose dans l'updater de setDragY si current > DISMISS_THRESHOLD_PX. L.145 branche onPointerCancel sur onGrabberPointerUp, donc un geste annulé au-delà du seuil ferme le sheet. Je n'ai pas lu la valeur de 80 px."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "guards",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 24,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "setDragY|pointercancel dans TimelineBottomSheet",
+         "found": "onPointerCancel={onGrabberPointerUp} l.145, setDragY updater l.77"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "pointercancel|onPointerCancel dans TimelineBottomSheet*",
+         "found": "Ligne 145 : onPointerCancel={onGrabberPointerUp}, aucun autre garde-fou."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "onClose|pointercancel|setDragY dans TimelineBottomSheet.tsx",
+         "found": "onClose est appelé l.79 dans l'updater, et onPointerCancel réutilise le même handler."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     }
     }
    },
-   "uses": 0,
-   "carried_from": "2026-11-17T10:40:47Z"
+   "contrary": null,
+   "check": "guards",
+   "restored_from_pointer": {
+    "record": "timeline:alerts:8",
+    "pointer_line": 358,
+    "reason": "rediscovered"
+   },
+   "placed": {
+    "pack_line": 332,
+    "annex_table": null
+   },
+   "uses": 0
   },
   {
    "id": "timeline:alerts:9",
@@ -7942,70 +8817,82 @@
      "consigne_supported": true,
      "reason": "Le fait établit que isEdit dépend uniquement de onDelete, donc un formulaire de création recevant onDelete afficherait la suppression, ce qui motive la consigne de ne pas le faire en création (formulation un peu ambiguë sur le référent de « le »).",
      "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "reused_from": "2026-11-17T10:45:42Z"
     },
-    "deduce": {
-     "covered": false,
-     "overlap": {
-      "identifiers": 1.0,
-      "values": null,
-      "terms": 0.0,
-      "n": {
-       "identifiers": 3,
-       "values": 0,
-       "terms": 1
-      }
-     },
-     "restatement": "`EventEditForm.isEdit` vaut `Boolean(onDelete)` : le formulaire est considéré en mode édition uniquement si la prop `onDelete` est fournie.",
-     "confidence": "high",
-     "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
-    },
-    "rediscover": {
-     "found": false,
-     "cost": 23,
-     "within_budget": false,
-     "covered": false,
-     "file": "",
-     "file_ok": false,
-     "overlap": {
-      "identifiers": 0.0,
-      "values": null,
-      "terms": 0.0,
-      "n": {
-       "identifiers": 3,
-       "values": 0,
-       "terms": 1
-      }
-     },
-     "job": "timeline:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_infrastructure_adapters_testsupport_E2eResetTokenController.java:3",
-     "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
-    },
+    "deduce": null,
+    "rediscover": null,
     "comment": [],
     "refute": {
      "votes": 3,
      "refuted": 0,
      "refute_unproven": 0,
      "reasons": [
-      "EventEditForm L256 : const isEdit = Boolean(onDelete). La consigne de ne pas passer onDelete en création en découle.",
-      "EventEditForm L256 définit const isEdit = Boolean(onDelete), et les usages L441 et L969 le confirment. La consigne revient à dire de ne pas passer onDelete en création, ce qui découle du constat.",
-      "EventEditForm L256 définit isEdit = Boolean(onDelete), donc il ne dépend que de onDelete. La consigne de ne pas passer onDelete en création en découle."
+      "EventEditForm.tsx l.256 définit isEdit = Boolean(onDelete), indépendant de mode. NewEventDrawer l.252-253 passe mode=\"create\" sans onDelete, donc isEdit y est faux. Le risque est réel si on passait onDelete en création.",
+      "EventEditForm.tsx L256 définit isEdit = Boolean(onDelete) sans lire mode. NewEventDrawer passe mode=\"create\" sans onDelete, et TimelineEditHost passe onDelete, donc le couplage est réel et aucun garde-fou ne le protège.",
+      "EventEditForm.tsx l.256 définit isEdit = Boolean(onDelete). Les tests de EventEditForm.test.tsx montrent que la création omet onDelete et que l'édition le passe, donc la consigne est cohérente."
      ],
      "evidence": [
       "",
       "",
-      "const isEdit = Boolean(onDelete)"
+      ""
      ],
      "consigne_verdict": "supported",
      "question_verdict": "n/a",
-     "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "searched": true,
+     "search": {
+      "check": "guards",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 24,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "isEdit dans frontend/**/*.tsx",
+         "found": "EventEditForm l.256 Boolean(onDelete), utilisé l.441 et l.969"
+        },
+        {
+         "tool": "Grep",
+         "target": "<EventEditForm",
+         "found": "NewEventDrawer en mode create sans onDelete, TimelineEditHost en édition"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "isEdit dans frontend/**/*.tsx",
+         "found": "EventEditForm.tsx:256 définit isEdit à partir de onDelete seul. Les autres occurrences sont dans des composants distincts."
+        },
+        {
+         "tool": "Grep",
+         "target": "<EventEditForm",
+         "found": "NewEventDrawer utilise mode=\"create\" sans onDelete. TimelineEditHost passe onDelete."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "isEdit dans EventEditForm.tsx",
+         "found": "l.256 définition, l.441 et l.969 usages. Aucune autre source que onDelete."
+        },
+        {
+         "tool": "Grep",
+         "target": "<EventEditForm dans frontend/src",
+         "found": "Les tests passent onDelete seulement pour l'édition."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     }
     }
    },
    "contrary": null,
+   "check": "guards",
    "placed": {
-    "pack_line": 359,
+    "pack_line": 333,
     "annex_table": null
    },
    "uses": 0
@@ -8058,70 +8945,67 @@
      "consigne_supported": true,
      "reason": "Les trois tests cités n'assertent que Exception.class, sans vérifier une violation de contrainte CHECK, ce qui soutient la consigne de préciser le type d'exception avant de s'y fier.",
      "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "reused_from": "2026-11-17T10:45:42Z"
     },
-    "deduce": {
-     "covered": false,
-     "overlap": {
-      "identifiers": 0.0,
-      "values": null,
-      "terms": 0.429,
-      "n": {
-       "identifiers": 1,
-       "values": 0,
-       "terms": 7
-      }
-     },
-     "restatement": "Le test `recurringWithoutRecurrenceUnit_rejectedByCheckConstraint` insère un événement avec `is_recurring=true` et `recurrence_unit` à NULL, et attend une exception, rejetée par le CHECK `ck_events_recurrence_unit_required` côté base. Le même extrait contient aussi un test de rejet d'une unité de récurrence invalide au `em.flush()` et un test où `UPDATE users SET theme_preference = 'LIGHT'` doit être rejeté par la base.",
-     "confidence": "high",
-     "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
-    },
-    "rediscover": {
-     "found": true,
-     "cost": 17,
-     "within_budget": false,
-     "covered": false,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductControllerOwnershipTest.java",
-     "file_ok": false,
-     "overlap": {
-      "identifiers": 0.0,
-      "values": null,
-      "terms": 0.286,
-      "n": {
-       "identifiers": 1,
-       "values": 0,
-       "terms": 7
-      }
-     },
-     "job": "timeline:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_infrastructure_adapters_testsupport_E2eResetTokenController.java:3",
-     "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
-    },
+    "deduce": null,
+    "rediscover": null,
     "comment": [],
     "refute": {
      "votes": 3,
      "refuted": 0,
      "refute_unproven": 0,
      "reasons": [
-      "Les tests aux L95-108 et L300 assertent isInstanceOf(Exception.class), et ThemePreference L235 assertThrows(Exception.class). N'importe quelle erreur SQL passe, et la consigne est justifiée.",
-      "Les tests lisent isInstanceOf(Exception.class) (EventConditionalCheckConstraintIntegrationTest L97 et L108, EventPatchAndRecurrenceIntegrationTest L300) et assertThrows(Exception.class) (ThemePreferenceIntegrationTest L235). Toute erreur passe donc.",
-      "EventConditionalCheckConstraintIntegrationTest L97 et L108, EventPatchAndRecurrenceIntegrationTest L300 et ThemePreferenceIntegrationTest L235 n'assertent que Exception.class. Une erreur SQL quelconque passerait."
+      "Les extraits montrent isInstanceOf(Exception.class) (CheckConstraintIntegrationTest l.97 et l.108, PatchAndRecurrence l.300) et assertThrows(Exception.class) (ThemePreferenceIntegrationTest l.235). Une erreur SQL quelconque suffit donc.",
+      "Les tests citent isInstanceOf(Exception.class) (L97, L108) et assertThrows(Exception.class) pour le rejet de contrainte, donc toute exception passe.",
+      "EventConditionalCheckConstraintIntegrationTest l.97 et l.108, et EventPatchAndRecurrenceIntegrationTest l.300, n'assertent que isInstanceOf(Exception.class). Aucun test du dossier ne vise une exception plus précise."
      ],
      "evidence": [
       "",
       "",
-      "isInstanceOf(Exception.class)"
+      ""
      ],
      "consigne_verdict": "supported",
      "question_verdict": "n/a",
-     "reused": true,
-     "reused_from": "2026-11-17T10:40:47Z"
+     "searched": true,
+     "search": {
+      "check": "guards",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 24,
+      "searches": [
+       [
+        {
+         "tool": "Read",
+         "target": "excerpt.txt",
+         "found": "quatre assertions sur Exception.class, sans type précis ni message"
+        }
+       ],
+       [
+        {
+         "tool": "Read",
+         "target": "extrait refute-665b306a315f.excerpt.txt",
+         "found": "Quatre assertions de rejet sur Exception.class, sans type plus précis."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "isInstanceOf((DataIntegrityViolationException|PersistenceException|ConstraintViolationException)) dans backend/src/test",
+         "found": "Aucun résultat, donc pas de type précis asserté."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     }
     }
    },
    "contrary": null,
+   "check": "guards",
    "placed": {
-    "pack_line": 360,
+    "pack_line": 334,
     "annex_table": null
    },
    "uses": 0
@@ -8157,29 +9041,155 @@
     ]
    ],
    "code_sha256": "4f00a64c024e906b6e0449c6ed9e8bd93c28949b52481543933f002832a903a1",
-   "verdict": "annex",
-   "reason": "deducible",
+   "verdict": "admit",
+   "reason": "admitted",
    "final": true,
    "measures": {
     "fidelity": {
      "fact_supported": true,
      "consigne_supported": true,
-     "reason": "Les faits confirment que le port ProductService importe des DTO applicatifs et que le fichier du domaine importe et porte l'annotation Spring Repository, ce qui fonde la consigne de ne pas reproduire ce schéma."
+     "reason": "Les faits confirment que le port ProductService importe des DTO applicatifs et que le fichier du domaine importe et porte l'annotation Spring Repository, ce qui fonde la consigne de ne pas reproduire ce schéma.",
+     "reused": true,
+     "reused_from": "2026-11-17T10:45:42Z"
     },
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "ProductService (domain/ports) importe ProductCreationRequest et ProductUpdateRequest du package application.dtos (L7-8). ProductRepository (domain/ports) importe org.springframework.stereotype.Repository (L8). Les deux contredisent la règle hexagonale.",
+      "ProductService (domain/ports) importe application.dtos.ProductCreationRequest et ProductUpdateRequest (L7-8). ProductRepository (domain/ports) importe org.springframework.stereotype.Repository et porte @Repository (L8, L13). Les deux contredisent la règle hexagonale.",
+      "ProductService (L7-8) importe application.dtos.ProductCreationRequest et ProductUpdateRequest. ProductRepository (L8-13) importe et porte @Repository de Spring, dans le domaine. Le constat est exact, la consigne est cohérente avec la règle hexagonale."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "supported",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "guards",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "import org.springframework|import ...application dans domain/ports",
+         "found": "Seuls ProductService (deux imports de DTO) et ProductRepository (@Repository Spring) violent la règle dans domain/ports."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "ProductService dans backend/src/test",
+         "found": "des tests utilisent ProductService, aucun ne valide l'import des DTO par le port ni ne l'autorise"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "ProductService|ProductRepository dans les tests *Arch*.java",
+         "found": "Aucun test d'architecture n'est nommé ainsi. Seuls des tests d'intégration ont été trouvés. Le commentaire de UserRepositoryJpaImpl parle d'une dette gelée dans ArchitectureTest."
+        },
+        {
+         "tool": "Read",
+         "target": "extrait ProductService/ProductRepository",
+         "found": "Imports applicatifs et Spring confirmés dans le domaine."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     }
+    }
+   },
+   "contrary": null,
+   "check": "guards",
+   "restored_from_pointer": {
+    "record": "timeline:alerts:11",
+    "pointer_line": 361,
+    "reason": "deducible"
+   },
+   "placed": {
+    "pack_line": 335,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "timeline:rules:annex:8dab6c9c",
+   "section": "rules",
+   "rank": 2,
+   "text": "- Une version client différente lève EventConflictException sans écriture, le contrôle n'étant armé que si les deux versions sont non null. La suppression filtre sur l'id seul [#f69d0a1d79ba1dcc-1] [#a7e9024c920debf4-1] [#a7e9024c920debf4-2] [#3dcdc86e498ae065-1].",
+   "fact_text": "Une version client différente lève EventConflictException sans écriture, le contrôle n'étant armé que si les deux versions sont non null. La suppression filtre sur l'id seul",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "timeline/f69d0a1d79ba1dcc-1",
+    "timeline/a7e9024c920debf4-1",
+    "timeline/a7e9024c920debf4-2",
+    "timeline/3dcdc86e498ae065-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/EventServiceImpl.java",
+    "mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/EventServiceImplTest.java",
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/EventRepositoryJpaImpl.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/EventServiceImpl.java",
+     217,
+     223,
+     "0e22785200f5a5760f6c6201e9f1ca43074a86ebb83e4ef3ad64d349aee93706"
+    ],
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/EventServiceImplTest.java",
+     178,
+     196,
+     "1766d27a6139ee17fab8ab0fcb3df7699ad281d6a1eaea46d9302563af917dcc"
+    ],
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/EventServiceImplTest.java",
+     215,
+     227,
+     "ef75123338b78e7609693455d3df79dbb5566127a0be236c2bb36c73963d08c1"
+    ],
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/EventRepositoryJpaImpl.java",
+     156,
+     162,
+     "b4b0a91d8a47cde7a4f8d35682b16cfb5cff8231b8457276497d5d3756a76ec1"
+    ]
+   ],
+   "code_sha256": "6a1ea793dc1af0f99dd9232c8fb7cd87c827e4ebc3cd85937ed031d834c1c876",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
     "deduce": {
      "covered": true,
      "overlap": {
-      "identifiers": 0.667,
+      "identifiers": 1.0,
       "values": null,
-      "terms": 0.875,
+      "terms": 0.636,
       "n": {
-       "identifiers": 3,
+       "identifiers": 1,
        "values": 0,
-       "terms": 8
+       "terms": 11
       }
      },
-     "restatement": "L'extrait ne montre que des imports et une annotation : ProductService importe ProductCreationRequest et ProductUpdateRequest, et ProductRepository (dans domain/ports) importe Spring org.springframework.stereotype.Repository, avec CategoryProductCounts et Product. Aucun comportement n'est visible. Le import Spring dans le package domain/ports est à noter au regard de la règle hexagonale du dépôt.",
-     "confidence": "low",
+     "restatement": "checkOptimisticVersion lève EventConflictException si command.version et event.version sont tous deux non null et différents, et ne vérifie rien si la version du client est null. Le conflit est détecté avant toute écriture, donc aucun save n'est appelé. L'extrait contient aussi deleteByIdReturningRowCount, qui exécute une requête JPQL DELETE par id et renvoie le nombre de lignes supprimées.",
+     "confidence": "high",
      "files_read_missing": true
     },
     "rediscover": null,
@@ -8188,14 +9198,103 @@
    },
    "contrary": null,
    "placed": {
-    "pack_line": 361,
+    "pack_line": null,
     "annex_table": {
      "part": "timeline.details-5.md",
-     "row": 53
+     "row": 9
     }
    },
    "uses": 0,
-   "carried_from": "2026-11-17T10:40:47Z"
+   "carried_from": "2026-11-17T10:45:42Z"
+  },
+  {
+   "id": "timeline:rules:annex:179f901f",
+   "section": "rules",
+   "rank": 2,
+   "text": "- Le type doit valoir duration ou single, sinon InvalidEventTypeException avant tout save, à la création comme au PATCH [#bed9b4d56cf7dc21-1] [#cd108c99502b1cba-1] [#fda1a6018b32fdaf-1] [#b47e1a5bdaf28340-1] [#a607aeea0e1b1902-2].",
+   "fact_text": "Le type doit valoir duration ou single, sinon InvalidEventTypeException avant tout save, à la création comme au PATCH",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "timeline/bed9b4d56cf7dc21-1",
+    "timeline/cd108c99502b1cba-1",
+    "timeline/fda1a6018b32fdaf-1",
+    "timeline/b47e1a5bdaf28340-1",
+    "timeline/a607aeea0e1b1902-2"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/EventServiceImpl.java",
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/utils/Utils.java",
+    "mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/EventServiceImplTest.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/EventServiceImpl.java",
+     49,
+     49,
+     "fbc64d769b7a95dec91f8f8104343c584102b8a5be4e3735d35d134c276b830a"
+    ],
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/utils/Utils.java",
+     24,
+     28,
+     "68e3aabe4899b3c21f1466246008e60221cd30032b87b7dbb66f6a449cc31cf6"
+    ],
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/utils/Utils.java",
+     24,
+     28,
+     "68e3aabe4899b3c21f1466246008e60221cd30032b87b7dbb66f6a449cc31cf6"
+    ],
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/EventServiceImplTest.java",
+     547,
+     560,
+     "9953157befe4d0ccb83b06785e77866a9ae5903aa9f4737e9abd10d81ce5a95a"
+    ],
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/EventServiceImplTest.java",
+     563,
+     571,
+     "2eaba34ab6e022a79f0e70e8de4b9ce45a33925c8c5612f56da708089184ac63"
+    ]
+   ],
+   "code_sha256": "476057fde3c5f94d60848f1df23a27efb1c0a35af4f9d5fba132911e877d0ac9",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.667,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 6
+      }
+     },
+     "restatement": "createEvent appelle Utils.validateEventType avant toute persistance. Un type null ou absent de ALLOWED_EVENT_TYPES lève InvalidEventTypeException, et le test confirme que save n'est jamais atteint. Le commentaire du test indique que les types autorisés sont duration et single. Le même garde-fou s'applique au PATCH via updateEvent.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "timeline.details-5.md",
+     "row": 10
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-17T10:45:42Z"
   }
  ],
  "comment_facts": [
@@ -8209,9 +9308,9 @@
    "evidence_check": null,
    "code_file": "",
    "invalid": false,
-   "key_sha256": "e51b5529d2ed155b1206a4839150492df0385544965810177f2e1b932f5c7ade",
+   "cache_digest": "e51b5529d2ed155b1206a4839150492df0385544965810177f2e1b932f5c7ade",
    "reused": true,
-   "reused_from": "2026-11-17T10:40:47Z",
+   "reused_from": "2026-11-17T10:45:42Z",
    "cited_by": [
     "timeline:questions:2"
    ],
@@ -8227,9 +9326,9 @@
    "evidence_check": null,
    "code_file": "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductRestoreIntegrationTest.java",
    "invalid": false,
-   "key_sha256": "442b4da6b21d68c7ef347579e04857f29aab2b18b914f9b958dc7d6877ea93ce",
+   "cache_digest": "442b4da6b21d68c7ef347579e04857f29aab2b18b914f9b958dc7d6877ea93ce",
    "reused": true,
-   "reused_from": "2026-11-17T10:40:47Z",
+   "reused_from": "2026-11-17T10:45:42Z",
    "cited_by": [
     "timeline:questions:2"
    ],
@@ -8245,9 +9344,9 @@
    "evidence_check": null,
    "code_file": "",
    "invalid": false,
-   "key_sha256": "26b1730d446ad6ed342aa2d05e1b8412e2c1328730a5cab59487a92ae4186ba9",
+   "cache_digest": "26b1730d446ad6ed342aa2d05e1b8412e2c1328730a5cab59487a92ae4186ba9",
    "reused": true,
-   "reused_from": "2026-11-17T10:40:47Z",
+   "reused_from": "2026-11-17T10:45:42Z",
    "cited_by": [
     "timeline:questions:4"
    ],
@@ -8263,9 +9362,9 @@
    "evidence_check": null,
    "code_file": "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
    "invalid": false,
-   "key_sha256": "2e910e46cfb4c3c6e54172468da61940bedb59fc8dbe877873ff511d7d9eac0e",
+   "cache_digest": "2e910e46cfb4c3c6e54172468da61940bedb59fc8dbe877873ff511d7d9eac0e",
    "reused": true,
-   "reused_from": "2026-11-17T10:40:47Z",
+   "reused_from": "2026-11-17T10:45:42Z",
    "cited_by": [
     "timeline:questions:5"
    ],
@@ -8281,9 +9380,9 @@
    "evidence_check": null,
    "code_file": "",
    "invalid": false,
-   "key_sha256": "9e9d3bc06674aa882ef40c4af182ba1f2b9d1d026e980e76230c693dccdf46d8",
+   "cache_digest": "9e9d3bc06674aa882ef40c4af182ba1f2b9d1d026e980e76230c693dccdf46d8",
    "reused": true,
-   "reused_from": "2026-11-17T10:40:47Z",
+   "reused_from": "2026-11-17T10:45:42Z",
    "cited_by": [
     "timeline:questions:6"
    ],
@@ -8299,9 +9398,9 @@
    "evidence_check": null,
    "code_file": "",
    "invalid": false,
-   "key_sha256": "38af9b47997f21158f2b080671f103866469dca8c032cf028eac84ebe4fd3605",
+   "cache_digest": "38af9b47997f21158f2b080671f103866469dca8c032cf028eac84ebe4fd3605",
    "reused": true,
-   "reused_from": "2026-11-17T10:40:47Z",
+   "reused_from": "2026-11-17T10:45:42Z",
    "cited_by": [
     "timeline:questions:7"
    ],
@@ -8390,62 +9489,150 @@
   "timeline/df054f9afe4233dc-1",
   "timeline/082a96a4ff8c99e7-1",
   "timeline/0fc55cdd9363d09d-2",
-  "timeline/89f607fc371f04ec-1",
-  "timeline/b91f29c3d42f23e0-1",
-  "timeline/def4466b20cecf9a-1",
-  "timeline/8363bef1f7b3c86b-1",
   "timeline/e7bf3b5c8af92396-1",
-  "timeline/c879b210d34f3958-2",
-  "timeline/3fbfa62ac8eb77b5-1",
   "timeline/7e3bc5890148b684-1",
   "timeline/4379776f0ee85c7b-1",
   "timeline/fc88597e84160f54-1",
-  "timeline/f813274210774598-1",
-  "timeline/5c533492e8455f40-1",
-  "timeline/1ebc47d19b046d48-1",
   "batch/e9b8732b8a56d766-1",
   "state-machine/8096253e175ca857-1",
   "state-machine/c37611432b5807a9-1",
   "timeline/e703cb1fc1f6d1d6-1",
+  "timeline/aacec85a42631428-2",
   "backend-socle/d86713c491180960-1",
   "timeline/dbcd8a010490bc1d-1",
   "timeline/17f190f13ed535c6-1",
+  "timeline/94d0aece4bf5a1de-1",
+  "timeline/1145fb020b8bd40e-1",
+  "timeline/1145fb020b8bd40e-2",
   "timeline/871ea3a89de2f9c5-1",
   "timeline/87f01d1728f1c9ca-1",
   "timeline/9ec9f44160c5574d-1",
-  "timeline/27ffb31a2a203822-1"
+  "timeline/27ffb31a2a203822-1",
+  "timeline/c9e29f7126480ec4-1",
+  "timeline/d2afa60d54aa4907-1",
+  "integrations/757e913cb9162988-1",
+  "timeline/85c2925ef276badb-1",
+  "timeline/7ffbb5f0b0666075-1",
+  "timeline/23aead80049aa52e-1",
+  "timeline/35513b08008b2dce-1",
+  "backend-socle/2faddb776ec7b9ad-2",
+  "timeline/8cd20c75d6215999-1",
+  "timeline/cc800a010618b0e6-1",
+  "timeline/9160ee03da7f807b-1",
+  "timeline/fee4a3fe030b8963-1",
+  "timeline/7066eb160400bf67-1",
+  "integrations/4c61ca6e2f106b0b-1"
  ],
  "counts": {
-  "units": 88,
-  "admit": 35,
-  "annex": 53,
-  "drop": 0,
+  "units": 94,
+  "admit": 58,
+  "annex": 30,
+  "drop": 6,
   "hold": 0,
   "pending": 0,
   "consigne_before_unsupported": 0,
   "consigne_after_dropped": 0,
   "structure_rows_removed": 0,
-  "framework": 0
+  "framework": 0,
+  "guarded_elsewhere": 2,
+  "resolved": 4,
+  "restricted": 0,
+  "counterexample": 0,
+  "promoted": 6,
+  "kept_for": {
+   "rediscovered": 18
+  },
+  "pointers_removed": 28,
+  "restored_alerts": 23,
+  "budget_cut": 0
  },
+ "answers": [
+  {
+   "unit": "timeline:questions:1",
+   "question": "La purge des tokens ne vise-t-elle que les expirés, comme le dit la javadoc ? La même date de coupure est passée à une méthode qui couvre aussi les consommés",
+   "answer": [
+    {
+     "file": "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/PasswordResetTokenRepositoryJpaImpl.java",
+     "line_start": 93,
+     "line_end": 94,
+     "evidence": "WHERE t.usedAt IS NOT NULL OR t.expiresAt < :cutoff",
+     "evidence_check": "exact"
+    }
+   ]
+  },
+  {
+   "unit": "timeline:questions:2",
+   "question": "Pourquoi restaurer l'archivé d'autrui renvoie-t-il 404 alors que PATCH et DELETE renvoient 403 ? La base cite l'anti-énumération",
+   "answer": [
+    {
+     "file": "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java",
+     "line_start": 108,
+     "line_end": 132,
+     "evidence": "produit inconnu / non archivé / d'autrui ->",
+     "evidence_check": "exact"
+    }
+   ]
+  },
+  {
+   "unit": "timeline:questions:4",
+   "question": "Un durationUnit null donne-t-il bien un 422 ? Le test ne vérifie que InvalidDurationUnitException",
+   "answer": [
+    {
+     "file": "mytimeline:backend/src/main/java/com/matimeline/eventmanager/utils/Utils.java",
+     "line_start": 57,
+     "line_end": 62,
+     "evidence": "if (durationUnit == null) { throw new InvalidDurationUnitException(null);",
+     "evidence_check": "exact"
+    }
+   ]
+  },
+  {
+   "unit": "timeline:questions:7",
+   "question": "Qui rafraîchit les données après un 409 au désarchivage ? handleUnarchive ne déclenche aucun rafraîchissement",
+   "answer": [
+    {
+     "file": "mytimeline:frontend/src/hooks/useSetEventArchived.ts",
+     "line_start": 38,
+     "line_end": 46,
+     "evidence": "queryClient.invalidateQueries({ queryKey: queryKeys.products.all })",
+     "evidence_check": "exact"
+    }
+   ]
+  }
+ ],
+ "budget_cut": [],
  "structure_rows_removed": [],
- "notes": [],
- "base_sha256_after": "e7e60333519d353c6ed998bf51bc8f9a75fc472f5c85f12c5f28b0a2f807c70b",
+ "notes": [
+  "25 pointeur(s) hérité(s) de la 0.9 retiré(s) du pack (leur ligne reste dans l'annexe)",
+  "23 alerte(s) rétablie(s) depuis curation.json (une alerte n'est jamais rétrogradée)",
+  "règle promue depuis timeline:questions:1 : - PasswordResetTokenPurgeScheduler.purgeConsumedAndExpired supprime via deleteConsumedOrExpiredBefore tout token consommé immédiatement, et les expirés seulement après la rétention (24h par défaut) [#integrations/757e913cb9162988-1] [#85c2925ef276badb-1] `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/PasswordResetTokenRepositoryJpaImpl.java:93-94`.",
+  "règle promue depuis timeline:questions:2 : - Le restore d'un produit renvoie 404 uniforme (ProductNotFoundException) pour inconnu, non archivé ou d'autrui, et 403 seulement si le userId du path diffère du caller [#7ffbb5f0b0666075-1] [#23aead80049aa52e-1] `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java:108-132`.",
+  "règle promue depuis timeline:questions:4 : - durationUnit null donne un 422 uniquement pour type='duration' avec durationValue non nul (InvalidDurationUnitException, handleInvalidDurationUnit) [#35513b08008b2dce-1] [#backend-socle/2faddb776ec7b9ad-2] [#8cd20c75d6215999-1] `mytimeline:backend/src/main/java/com/matimeline/eventmanager/utils/Utils.java:57-62`.",
+  "règle promue depuis timeline:questions:7 : - Après un 409 au désarchivage, useSetEventArchived invalide products.all dans son onError. handleUnarchive n'a pas à le faire [#cc800a010618b0e6-1] [#9160ee03da7f807b-1] `mytimeline:frontend/src/hooks/useSetEventArchived.ts:38-46`.",
+  "règle promue depuis timeline:alerts:1 : - CategoryController.deleteCategory requires isOwnedBy for the target and the reassign target, and ProductServiceImpl.resolveAssignableCategory blocks cross-user assignment, so the unscoped productRepository.updateCategoryForProducts only touches the owner's products [#fee4a3fe030b8963-1] [#7066eb160400bf67-1] `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryController.java:135-137`.",
+  "règle promue depuis timeline:alerts:2 : - Le contrôleur E2eResetTokenController (GET /api/test-support/password-reset-token) est protégé par @Profile(\"e2e\") et ne doit jamais être activé hors test [#integrations/4c61ca6e2f106b0b-1] `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenController.java:43-45`."
+ ],
+ "base_sha256_after": "812ee2748516e2197155b17d7dbf2a4b7e06e68f15f24497923a7b5dc4f14d84",
  "bases_touched": {
   "backend-socle": {
    "fingerprint": "1deff139bf4d1c0ff48235e4b291630d39c342836f4a91484e8ac27ce3842bb1",
-   "sha256_after": "4be979f6ea5168923dfd048e41abcc924e556b27d10995ba60fbf025491e6cf3"
+   "sha256_after": "9be85d27152f7bee621cfc02ed814f4c61e25a5ace5451d519b82cb330345dc8"
   },
   "batch": {
    "fingerprint": "e334cb782a0fe7c5780af8df51a701b921ad71aa61181c3bbf1ca4b113f8ab74",
-   "sha256_after": "fdcbb25631235367ccad8623d570ec570aba54c591f72818c3aed9649d49bf66"
+   "sha256_after": "0911ea017ccb74ad55d67ca4228340f2655178ee6c4801f241cd78244bf52e4a"
+  },
+  "integrations": {
+   "fingerprint": "c28b6f62b55a081005ee4d53633c742ec5528560fdb6f45346d6ceee9e75c4ab",
+   "sha256_after": "7959adc84316585dc5ff293ced6924b885e9b58d68a368b5e61d9c18090b82b4"
   },
   "state-machine": {
    "fingerprint": "cf61a964db7f282ca6e54eaf78245832d6bbbccc492705b14a167a26b8068b48",
-   "sha256_after": "7071902a64278984febe1c288edaaa9c73ea7692ceb653fe57d717b67a2c5883"
+   "sha256_after": "bd807930352e8da0fdfd88d80759c41aa620b39a22eeb57f00f0722c28dd997f"
   },
   "timeline": {
    "fingerprint": "6f76700d4deb262b930c33b20a5ed240c0e5699decc0f2eecaebaa1798e39f3c",
-   "sha256_after": "e7e60333519d353c6ed998bf51bc8f9a75fc472f5c85f12c5f28b0a2f807c70b"
+   "sha256_after": "812ee2748516e2197155b17d7dbf2a4b7e06e68f15f24497923a7b5dc4f14d84"
   }
  },
  "lint": {
