@@ -3,14 +3,14 @@
  "schema": 1,
  "kind": "transversal",
  "lang": "fr",
- "generated_at": "2026-11-18T12:00:00Z",
- "base_sha256": "fdcbb25631235367ccad8623d570ec570aba54c591f72818c3aed9649d49bf66",
- "pack_bytes": 7674,
+ "generated_at": "2026-11-18T16:18:53Z",
+ "base_sha256": "52ae3fc06bf2f35892836c58c0ce264b69a39ffbbbbcd940a938ed75065acbfd",
+ "pack_bytes": 7739,
  "pack_budget_bytes": 26000,
  "details": [
   {
    "file": "batch.details.md",
-   "bytes": 10500
+   "bytes": 10775
   }
  ],
  "sections": [
@@ -66,8 +66,8 @@
    "title": "Règles du motif",
    "heading": "## 3. Règles du motif {#rules}",
    "line_start": 27,
-   "line_end": 42,
-   "bytes": 1499,
+   "line_end": 41,
+   "bytes": 1833,
    "budget_bytes": 2500,
    "cut_lines": 0,
    "writer": "agent",
@@ -81,32 +81,31 @@
     "convention",
     "config"
    ],
-   "facts_available": 26,
+   "facts_available": 25,
    "facts_cited": [
-    "cebb04ed84733eef-1",
-    "31adec434d6b04c0-1",
-    "8c0af7c8fb9efde8-2",
-    "8c0af7c8fb9efde8-1",
-    "12b6799eaf5bd99b-1",
+    "27110603918edb71-1",
     "12b6799eaf5bd99b-2",
     "0b16217c50dbabb3-1",
+    "f15732d31ea166fa-1",
     "12b6799eaf5bd99b-3",
-    "30f78007217e46da-1",
     "cebb04ed84733eef-3",
-    "cebb04ed84733eef-2",
-    "10f3525a1962c7b1-1",
-    "96832c023d97aa46-1",
+    "cc6101d705d01b36-1",
     "e9bc5986e153aab5-1",
-    "00500c928da212f7-1",
-    "dc6e00eaeabd737d-1",
-    "e41545f9a57c55d3-1"
+    "96832c023d97aa46-1",
+    "cebb04ed84733eef-1",
+    "31adec434d6b04c0-1",
+    "1c6c381999d571b0-2",
+    "13a687a0a7ac9bcb-1",
+    "e41545f9a57c55d3-1",
+    "integrations/b84ecc560bc2eb6d-1",
+    "e41545f9a57c55d3-2"
    ],
    "lots": 1,
    "merged": false,
    "review": {
-    "lines": 17,
-    "kept": 15,
-    "rejected": 2,
+    "lines": 16,
+    "kept": 16,
+    "rejected": 0,
     "unreviewed": 4
    },
    "never_truncate": false
@@ -116,9 +115,9 @@
    "order": 4,
    "title": "Structure",
    "heading": "## 4. Structure {#structure}",
-   "line_start": 43,
-   "line_end": 51,
-   "bytes": 783,
+   "line_start": 42,
+   "line_end": 53,
+   "bytes": 1004,
    "budget_bytes": 2000,
    "cut_lines": 0,
    "writer": "script",
@@ -131,9 +130,9 @@
    ],
    "facts_available": 3,
    "facts_cited": [
-    "12b6799eaf5bd99b-1",
     "12b6799eaf5bd99b-2",
-    "12b6799eaf5bd99b-3"
+    "12b6799eaf5bd99b-3",
+    "27110603918edb71-1"
    ],
    "lots": 0,
    "merged": false,
@@ -145,9 +144,9 @@
    "order": 5,
    "title": "Mise en œuvre par domaine",
    "heading": "## 5. Mise en œuvre par domaine {#surface}",
-   "line_start": 52,
-   "line_end": 58,
-   "bytes": 667,
+   "line_start": 54,
+   "line_end": 59,
+   "bytes": 441,
    "budget_bytes": 4000,
    "cut_lines": 0,
    "writer": "agent",
@@ -160,15 +159,14 @@
    ],
    "facts_available": 2,
    "facts_cited": [
-    "a30bdab607e005e7-1",
     "b50470acdd691e30-1"
    ],
    "lots": 1,
    "merged": false,
    "review": {
     "lines": 4,
-    "kept": 4,
-    "rejected": 0,
+    "kept": 3,
+    "rejected": 1,
     "unreviewed": 2
    },
    "never_truncate": false
@@ -178,9 +176,9 @@
    "order": 6,
    "title": "Fichiers critiques",
    "heading": "## 6. Fichiers critiques {#files}",
-   "line_start": 59,
-   "line_end": 71,
-   "bytes": 1174,
+   "line_start": 60,
+   "line_end": 73,
+   "bytes": 1326,
    "budget_bytes": 2000,
    "cut_lines": 0,
    "writer": "script",
@@ -197,8 +195,8 @@
    "order": 7,
    "title": "Relations avec d'autres packs",
    "heading": "## 7. Relations avec d'autres packs {#relations}",
-   "line_start": 72,
-   "line_end": 81,
+   "line_start": 74,
+   "line_end": 83,
    "bytes": 320,
    "budget_bytes": 1500,
    "cut_lines": 0,
@@ -216,30 +214,28 @@
    "order": 8,
    "title": "Tests attendus",
    "heading": "## 8. Tests attendus {#tests}",
-   "line_start": 82,
-   "line_end": 89,
-   "bytes": 1483,
+   "line_start": 84,
+   "line_end": 90,
+   "bytes": 1332,
    "budget_bytes": 2000,
    "cut_lines": 0,
    "writer": "agent",
    "kinds": [
     "test_case"
    ],
-   "facts_available": 6,
+   "facts_available": 4,
    "facts_cited": [
-    "13a687a0a7ac9bcb-1",
-    "d105cdff3ecccfc0-1",
     "44e804e9277ae7fe-1",
+    "d105cdff3ecccfc0-1",
     "c8adfcfac47fe93a-1",
-    "2476578c8ac84af6-1",
-    "5dd507c53997f001-1"
+    "2476578c8ac84af6-1"
    ],
    "lots": 1,
    "merged": false,
    "review": {
-    "lines": 6,
-    "kept": 5,
-    "rejected": 1,
+    "lines": 4,
+    "kept": 4,
+    "rejected": 0,
     "unreviewed": 0
    },
    "never_truncate": false
@@ -249,8 +245,8 @@
    "order": 9,
    "title": "Questions ouvertes",
    "heading": "## 9. Questions ouvertes {#questions}",
-   "line_start": 90,
-   "line_end": 93,
+   "line_start": 91,
+   "line_end": 94,
    "bytes": 91,
    "budget_bytes": 1500,
    "cut_lines": 0,
@@ -258,13 +254,13 @@
    "kinds": [
     "suspicious"
    ],
-   "facts_available": 3,
+   "facts_available": 1,
    "facts_cited": [],
    "lots": 1,
    "merged": false,
    "review": {
-    "lines": 0,
-    "kept": 0,
+    "lines": 1,
+    "kept": 1,
     "rejected": 0,
     "unreviewed": 0
    },
@@ -275,25 +271,23 @@
    "order": 10,
    "title": "Alertes",
    "heading": "## 10. Alertes {#alerts}",
-   "line_start": 94,
-   "line_end": 97,
-   "bytes": 344,
+   "line_start": 95,
+   "line_end": 98,
+   "bytes": 78,
    "budget_bytes": 4000,
    "cut_lines": 0,
    "writer": "agent",
    "kinds": [
     "suspicious"
    ],
-   "facts_available": 3,
-   "facts_cited": [
-    "e9b8732b8a56d766-1"
-   ],
+   "facts_available": 1,
+   "facts_cited": [],
    "lots": 1,
    "merged": false,
    "review": {
-    "lines": 2,
-    "kept": 1,
-    "rejected": 1,
+    "lines": 0,
+    "kept": 0,
+    "rejected": 0,
     "unreviewed": 0
    },
    "never_truncate": true
@@ -303,9 +297,9 @@
    "order": 11,
    "title": "Couverture",
    "heading": "## 11. Couverture {#coverage}",
-   "line_start": 98,
-   "line_end": 105,
-   "bytes": 658,
+   "line_start": 99,
+   "line_end": 106,
+   "bytes": 659,
    "budget_bytes": 1500,
    "cut_lines": 0,
    "writer": "script",
@@ -319,16 +313,16 @@
   }
  ],
  "dedup": {
-  "base": 49,
+  "base": 48,
   "taken_in": 0,
-  "out_of_scope": 9,
-  "pool_before": 40,
-  "pool_after": 40,
-  "related_pairs": 24
+  "out_of_scope": 13,
+  "pool_before": 35,
+  "pool_after": 33,
+  "related_pairs": 25
  },
  "lint": {
   "ok": true,
   "errors": 0,
-  "warnings": 0
+  "warnings": 1
  }
 }

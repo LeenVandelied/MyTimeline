@@ -1,8 +1,8 @@
 {
- "files": 688,
- "bytes": 4473123,
+ "files": 700,
+ "bytes": 4622028,
  "by_repo": {
-  "mytimeline": 688
+  "mytimeline": 700
  },
  "entities": 7,
  "seeds": 7,
@@ -13,18 +13,18 @@
  "folders_on_entity_seeds": [],
  "groups": 1,
  "groups_with_files": 1,
- "labelled": 388,
+ "labelled": 390,
  "by_how": {
-  "name": 347,
+  "name": 349,
   "fanin": 18,
   "imports": 23
  },
- "tech": 33,
+ "tech": 34,
  "transversal_home": 1,
  "ambiguous": 0,
- "unassigned": 266,
- "unassigned_rate": 0.3866,
- "unassigned_bytes_rate": 0.3479,
+ "unassigned": 275,
+ "unassigned_rate": 0.3929,
+ "unassigned_bytes_rate": 0.3561,
  "edges_source": "regex",
  "file_edges": 627,
  "graphify": {},
@@ -34,8 +34,6 @@
   "integrations",
   "state-machine"
  ],
- "notes": [
-  "instabilité au premier figement (189 fichiers basculés vers timeline par les alias du catalogue), phase 2 rejouée une fois avec aliases.json : diff « rien à faire »"
- ],
- "duration_s": 0.28
+ "notes": [],
+ "duration_s": 0.32
 }

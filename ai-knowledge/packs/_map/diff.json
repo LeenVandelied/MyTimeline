@@ -1,9 +1,9 @@
 {
- "verdict": "rien à faire",
+ "verdict": "rattachement automatique",
  "reasons": [],
- "added": 0,
+ "added": 12,
  "removed": 0,
- "modified": 0,
+ "modified": 122,
  "moved_pack": 0,
  "moved_unchanged_code": 0,
  "moved_changed_code": 0,
@@ -11,8 +11,18 @@
  "new_seeds": [],
  "gone_seeds": [],
  "new_leftover": 0,
+ "alias_moves": {
+  "n": 0,
+  "examples": []
+ },
  "touched_without_pack": [],
  "moves_by_pack_pair": [],
  "moved_examples": [],
- "touched_by_pack": {}
+ "touched_by_pack": {
+  "timeline": 71,
+  "frontend-socle": 49,
+  "authorization": 7,
+  "backend-socle": 4,
+  "integrations": 3
+ }
 }

@@ -2,16 +2,16 @@
 pack: state-machine
 kind: transversal
 name: États et machines à états
-generated_at: 2026-11-18T12:00:00Z
+generated_at: 2026-11-18T16:18:53Z
 generator: synth/1
-base_sha256: 7071902a64278984febe1c288edaaa9c73ea7692ceb653fe57d717b67a2c5883
-facts_in_base: 30
+base_sha256: 98809b1127fe4a85d0c0e1b1c26e34ed8355484f0f7452bd57e869d0523009cc
+facts_in_base: 34
 facts_in_pool: 17
-facts_cited: 10
+facts_cited: 13
 sections: state-machine.sections.json
 details: [state-machine.details.md]
 lang: fr
-curated_at: 2026-11-18T14:30:00Z
+curated_at: 2026-11-18T16:25:37Z
 curation: state-machine.curation.json
 ---
 ## 1. Quand activer {#activate}
@@ -26,19 +26,24 @@ Aucun fait de la base ne relève de cette section.
 
 ## 3. Règles du motif {#rules}
 
-### Export de données
-- Un job d'export est téléchargeable seulement si son statut est COMPLETED, si storageRef et expiresAt sont renseignés et si now précède expiresAt, voir `mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/export/ExportJob.java:65-70` [#39e016af7a8585d6-1]
-- Selon la javadoc, le cycle va de PENDING à RUNNING, puis à COMPLETED ou FAILED, et completedAt et expiresAt ne sont renseignés qu'à la complétion [#3b402fae6e28454a-1] [#8573c7ab10277f70-2]
-### Énumérations persistées
-- Selon la javadoc, ThemePreference est persisté par un AttributeConverter et non par @Enumerated(STRING), car le CHECK refuse le nom de la constante [#950044d26baf5570-1]
-- Selon la javadoc, RecurrenceUnit est persisté par son nom et la migration V7 réaligne les anciennes valeurs [#781bc749af77ddef-1]
+### Invariants
+- Selon la javadoc de ThemePreference, la persistance passe par un AttributeConverter et non par @Enumerated(STRING), qui écrirait LIGHT et serait refusé par le CHECK SQL. [#950044d26baf5570-1]
+- Selon la javadoc de ThemePreference, l'absence de préférence est représentée par null et non par une constante, SYSTEM étant un choix explicite distinct. [#950044d26baf5570-2]
+- Selon la javadoc de RecurrenceUnit, la constante est persistée par son nom via @Enumerated(STRING) côté entité. [#781bc749af77ddef-1]
+### Préférence de thème
+- ThemePreference.fromValue compare strictement aux trois valeurs minuscules et lève IllegalArgumentException pour null ou toute valeur inconnue. [#52f9f4a8f8d8b618-1]
+### Jobs d'export
+- Un job n'est téléchargeable que si son statut est COMPLETED, que storageRef et expiresAt sont non nuls et que la date courante précède expiresAt. [#39e016af7a8585d6-1]
+- Un job naît à l'état PENDING, sans storageRef, errorCode, completedAt ni expiresAt, et la source de l'état précédent n'est pas établie. [#7766b9e71e04f41e-1]
+- Selon la javadoc de ExportJob, les transitions sont pilotées par le use case et non par le modèle. [#8573c7ab10277f70-1]
+- Chaque format d'export porte un drapeau sync : JSON et MARKDOWN sont générés inline, ZIP et CSV de façon asynchrone via un job. [#430b26646b38cc0c-1]
 
 ## 4. Structure {#structure}
 
 #### mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/export/ExportJob.java
 | Symbole | Énoncé | Lignes | Fait |
 |---|---|---|---|
-| ExportJob.pending | La fabrique ExportJob.pending crée un job dont le statut initial est PENDING, sans storageRef, errorCode, completedAt ni expiresAt. (partiel) | L43-46 | [#7766b9e71e04f41e-1] |
+| ExportJob.pending | La fabrique ExportJob.pending crée un job dont l'état initial est PENDING, sans storageRef, errorCode, completedAt ni expiresAt. (partiel) | L43-46 | [#7766b9e71e04f41e-1] |
 
 ## 5. Mise en œuvre par domaine {#surface}
 
@@ -46,14 +51,14 @@ Aucun fait de la base ne relève de cette section.
 
 ## 6. Fichiers critiques {#files}
 
-Fichiers du pool au poids le plus élevé (5 sur 7), le poids étant la somme des scores de spécificité de leurs faits. Liste complète : annexe.
+Fichiers du pool au poids le plus élevé (5 sur 8), le poids étant la somme des scores de spécificité de leurs faits. Liste complète : annexe.
 
 | Fichier | Faits | Sortes dominantes |
 |---|---|---|
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/export/ExportJob.java` | 5 | convention 2, business_rule 1, state_transition 1 |
-| `mytimeline:frontend/src/lib/schemas/export.ts` | 4 | convention 2, business_rule 1, state_transition 1 |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/RecurrenceUnit.java` | 2 | convention 1, validation 1 |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/ThemePreference.java` | 2 | convention 1, validation 1 |
+| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/export/ExportJob.java` | 4 | business_rule 1, convention 1, state_transition 1 |
+| `mytimeline:frontend/src/lib/schemas/export.ts` | 3 | convention 1, state_transition 1, validation 1 |
+| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/ThemePreference.java` | 3 | convention 2, validation 1 |
+| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/export/ExportFormat.java` | 2 | convention 2 |
 | `mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/export/ExportJobStatus.java` | 2 | convention 2 |
 
 ## 7. Relations avec d'autres packs {#relations}
@@ -68,21 +73,22 @@ Packs liés par des faits repris, des faits équivalents écartés à la dédupl
 
 ## 8. Tests attendus {#tests}
 
-- Les tests fixent que markCompleted d'un job d'export passe le statut à COMPLETED, conserve le storageRef, pose completedAt à la valeur fournie et laisse expiresAt inchangé [#195292fcf3c5228b-1], voir `mytimeline:backend/src/test/java/com/matimeline/eventmanager/domain/models/export/ExportJobTest.java:18-31`.
+- Les tests fixent que la conversion depuis une valeur de préférence de thème rejette les variantes de casse, les espaces, la chaîne vide et les valeurs inconnues comme auto, voir `mytimeline:backend/src/test/java/com/matimeline/eventmanager/domain/models/ThemePreferenceTest.java:26-30` [#90a85c88083cdd28-1].
+- Les tests fixent que markCompleted d'un job d'export passe le statut à COMPLETED et conserve la date de complétion fournie, sans la dériver de la date d'expiration moins 24 heures, voir `mytimeline:backend/src/test/java/com/matimeline/eventmanager/domain/models/export/ExportJobTest.java:17-32` [#195292fcf3c5228b-1].
 
 ## 9. Questions ouvertes {#questions}
 
-- Qui impose l'ordre PENDING, RUNNING, puis COMPLETED ou FAILED, annoncé par la documentation du schéma `mytimeline:frontend/src/lib/schemas/export.ts:29` [#fe61f927fe31008f-1]. La base ne montre aucun code frontend qui pilote cette transition, et le modèle backend n'en vérifie pas l'ordre [#8096253e175ca857-1].
+- Le commentaire de module décrit le cycle PENDING, RUNNING, puis COMPLETED ou FAILED, mais le code ne porte que l'enum de valeurs, sans logique de transition ni garde (`mytimeline:frontend/src/lib/schemas/export.ts:29`). Le commentaire est-il l'intention voulue côté serveur, alors que le backend ne l'impose pas ? [#fe61f927fe31008f-1] [#43216ccd0ca58163-1] [#8096253e175ca857-1]
 
 ## 10. Alertes {#alerts}
 
-- Les méthodes de transition du job d'export (`mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/export/ExportJob.java:48-62`) ne lisent pas le statut courant, donc le modèle accepte un passage à RUNNING, COMPLETED ou FAILED depuis un job déjà terminé [#8096253e175ca857-1]. Le frontend traite COMPLETED et FAILED comme terminaux et arrête le polling dessus [#b41ecf1b43916e73-1]. Si vous ajoutez un appel à ces méthodes, vérifiez le statut avant l'appel, ou ajoutez la garde dans le modèle.
+Aucun fait de la base ne relève de cette section.
 
 ## 11. Couverture {#coverage}
 
 - Fichiers du pack : 23 ; avec au moins un fait en base : 13 ; sans fait après remise en file : 0.
-- Faits en base : 30, repris d'autres packs : +0, hors périmètre : -10, doublons écartés à la déduplication : -3, soit 17 dans le pool.
+- Faits en base : 34, repris d'autres packs : +0, hors périmètre : -14, doublons écartés à la déduplication : -3, soit 17 dans le pool.
 - Faits du pool venus d'un autre pack : 17 (par pack : section Relations).
-- Destination des 17 faits du pool : Règles du motif 13 ; Tests attendus 2 ; Alertes / Questions ouvertes 2 ; annexe seule 0 ; écartés (sorte `other` ou inconnue) 0.
+- Destination des 17 faits du pool : Règles du motif 12 ; Tests attendus 2 ; Alertes / Questions ouvertes 3 ; annexe seule 0 ; écartés (sorte `other` ou inconnue) 0.
 - Passe transversale : scope 23 fichiers, tous lus.
-- Base : sha256 7071902a6427…, générée le 2026-11-17.
+- Base : sha256 98809b1127fe…, générée le 2026-11-18.

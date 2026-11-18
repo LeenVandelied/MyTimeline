@@ -43,7 +43,6 @@
    ],
    "paths": [
     "mytimeline:backend/",
-    "mytimeline:frontend/src/hooks/",
     "mytimeline:frontend/src/types/",
     "mytimeline:frontend/src/components/events/",
     "mytimeline:frontend/src/components/products/"

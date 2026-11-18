@@ -2,16 +2,16 @@
 pack: backend-socle
 kind: technical
 name: Socle backend
-generated_at: 2026-11-18T12:00:00Z
+generated_at: 2026-11-18T16:25:37Z
 generator: synth/1
-base_sha256: 4be979f6ea5168923dfd048e41abcc924e556b27d10995ba60fbf025491e6cf3
-facts_in_base: 229
-facts_in_pool: 227
-facts_cited: 51
+base_sha256: 9a61a8cff90105a85e688e8c5813c2b40fe8d6fda8889c1458feba03dd619936
+facts_in_base: 213
+facts_in_pool: 210
+facts_cited: 57
 sections: backend-socle.sections.json
 details: [backend-socle.details.md]
 lang: fr
-curated_at: 2026-11-18T14:30:00Z
+curated_at: 2026-11-18T16:25:37Z
 curation: backend-socle.curation.json
 ---
 ## 1. Quand activer {#activate}
@@ -27,22 +27,26 @@ Aucun fait de la base ne relève de cette section.
 ## 3. Conventions {#rules}
 
 ### Invariants
-- Selon le commentaire de UserEntity, le nom et le type de la colonne de préférence de thème doivent correspondre à la migration V16 quand ddl-auto vaut validate. [#32eaa06d8b33424b-1]
-### Jetons JWT et identité
-- Les jetons sont signés en RS256 et parseClaims refuse tout autre algorithme. [#4aa88cfacaa0e8d4-1] [#2009e8befcdfb90e-1]
-- Une valeur jwt.private-key vide déclenche une paire RS256 éphémère au démarrage, et une clé invalide lève IllegalStateException sans reprendre la valeur configurée. [#be183b621d286328-1] [#d56dbbde62261227-1] [#fac6a46f66104090-1]
-- Selon la javadoc, CallerResolver est le point unique d'extraction de l'identité, et currentUser renvoie sans appeler le port si l'authentification est null, non authentifiée ou anonyme. [#b121fef8c04b27cd-1] [#33b11eb6b0aa82ac-2] [#33b11eb6b0aa82ac-3]
-### Entités et persistance
-- Le soft delete de ProductEntity est une restriction Hibernate sur archived, qui filtre toutes les lectures générées. [#3fb0487b6c2dbb00-1]
-- Une énumération est persistée en EnumType.STRING, sauf ThemePreference qui passe par un AttributeConverter sur varchar(16). [#43d75ab7438be436-1] [#32eaa06d8b33424b-2]
-### DTO et domaine
-- Dans un DTO de mise à jour, null signifie inchangé, un champ optionnel utilise un @Pattern non blanc plutôt que @NotBlank, et clearColor remet la couleur à null. [#c227eff8822478b9-1] [#164b6d90f910bb89-1] [#532f49858a41dbc9-2]
-- Les projections de sortie issues d'un modèle domaine (événement, produit, catégorie, utilisateur) se construisent par une méthode statique fromDomain qui lit le modèle sans recalcul [#f1d71478d755056e-1] [#0bd5a0cae9f4e904-1]
-- Une contrainte inter-champs se déclare par un getter booléen @AssertTrue et @JsonIgnore. [#f2b4cd18d208b4f8-1]
-- Les prédicats temporels du domaine reçoivent now en paramètre, et le Clock est un bean injectable. [#2fae5cab1ab1fc27-1] [#2dce25b3a3f9f4d6-1]
-- Les transitions de ExportJob (mark...) ne contrôlent pas l'état précédent. [#185f8a74f15e66fc-1]
-### Tests
-- BomDriftTest compare les versions par composants numériques avec un plancher minimum, et la référence est une CVE pour spring-security, tomcat, jackson et postgresql, mais un simple alignement sur le BOM pour flyway [#66abb4cdef3eec41-1] [#867f2794346b8c63-1]
+- Selon le commentaire de UserEntity, le nom et le type de la colonne du thème doivent correspondre à la migration V16, car ddl-auto vaut validate. [#32eaa06d8b33424b-1]
+- Les tests d'intégration tournent sur un PostgreSQL 16 partagé démarré une fois dans un bloc statique, et non sur H2. [#3b61f852056cda0c-2] [#3b61f852056cda0c-3] [#e1ae94a935cda2cf-1]
+- Selon la javadoc de BomDriftTest, un plancher de version est un test supérieur ou égal, relevé seulement quand une nouvelle CVE l'impose. [#e40866fd3c6bd641-3] [#e40866fd3c6bd641-4]
+### Sécurité
+- Une propriété jwt.private-key vide déclenche une paire RSA éphémère, et la clé est validée en @PostConstruct pour échouer au démarrage. [#be183b621d286328-1] [#d56dbbde62261227-1]
+- La chaîne de sécurité est stateless avec CSRF désactivé, et /error reste public pour éviter un faux 401. [#44fd89dd2c78cc26-1] [#44fd89dd2c78cc26-2] [#44fd89dd2c78cc26-3]
+- Le filtre de limitation laisse passer une route absente de la table LIMITS, refuse en 401 un appelant authentifié sans identifiant, et se désactive par app.rate-limit.enabled. [#9b5e49a0a2f1c36c-1] [#9b5e49a0a2f1c36c-2] [#79101b62c54db0ea-1]
+- Selon la javadoc, StrongPassword ne se pose pas sur AuthRequest.password pour que les comptes anciens puissent se connecter. [#636cd91bb727056f-1]
+- L'indicateur Brevo renvoie DOWN si la clé est vide, sinon UP, sans jamais reporter la valeur de la clé. [#2f794ce9f9e9fc68-1]
+### Domaine et DTOs
+- Les ports de service d'événement prennent des commandes domaine où null signifie non fourni, alors que le port de produit prend encore des DTO applicatifs [#d924eb8a38e68c61-1] [#532f49858a41dbc9-2]
+- Selon la javadoc, les projections n'exposent ni le hash du mot de passe ni le jti, et l'avatar passe par une URL relative fixe. [#b8e9a6964a69ebe3-1] [#cf79bd7b0d30f02d-1] [#c7a72e338aa1ba11-1]
+- Une écriture ciblée par identifiant et propriétaire renvoie 0 pour inconnu ou autre utilisateur, afin d'éviter l'énumération. [#7567d6a4cfc3e386-1]
+- Sur un utilisateur déjà existant, save ne recopie pas le thème, qui n'est modifié que par updateThemePreference ; à la création, save le pose [#337941493ce09ae5-1]
+- Les enums RecurrenceUnit, ThemePreference et ExportFormat convertissent une valeur externe par fromString, fromValue ou fromParam et lèvent une erreur sur valeur inconnue, mais d'autres enums du domaine comme Role n'ont pas de tel convertisseur [#38f89bbedf94c3f6-1] [#af9f81b7c350186b-1] [#4d79a2634dabdb27-1]
+- Les validations croisées de EventCreationRequest et EventUpdateRequest passent par un getter @AssertTrue, et themePreference est une String contrôlée par @Pattern, mais les autres enums en entrée ne suivent pas ce schéma [#f2b4cd18d208b4f8-1] [#dbd2bbe2eddcb65f-1]
+### Persistance et export
+- Toutes les entités ont un equals fondé sur un id non nul, et les entités métier (utilisateur, événement, produit, catégorie) portent colonnes d'audit et champ version, sauf les entités de session et de job d'export [#95bb2d7a6c03fe6d-1] [#322992155a7f5945-1]
+- Selon le commentaire de CategoryMapper, toEntity ne pose pas owner, le repository le rattache. [#90aa1ac5754d7284-1]
+- Les classes Jackson 3 viennent de tools.jackson, avec dates non horodatées, et une erreur de rendu devient une IllegalStateException générique. [#5d3d43026a6cbbcf-1] [#5d3d43026a6cbbcf-2] [#8588ccf8d1abd2e8-2]
 
 ## 4. Structure {#structure}
 
@@ -50,26 +54,25 @@ Aucun fait de la base ne relève de cette section.
 
 ## 5. Points d'entrée du socle {#surface}
 
-Aucun fait de la base ne relève de cette section.
+- La suppression logique des produits est portée par une restriction posée sur l'entité, qui filtre toutes les lectures générées par Hibernate, donc un produit archivé n'est jamais renvoyé par ces lectures (`mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/ProductEntity.java:20-25`) [#3fb0487b6c2dbb00-1]
 
 ## 6. Fichiers critiques {#files}
 
-Fichiers du pool au poids le plus élevé (12 sur 64), le poids étant la somme des scores de spécificité de leurs faits. Liste complète : annexe.
+Fichiers du pool au poids le plus élevé (11 sur 71), le poids étant la somme des scores de spécificité de leurs faits. Liste complète : annexe.
 
 | Fichier | Faits | Sortes dominantes |
 |---|---|---|
-| `mytimeline:backend/src/test/java/com/matimeline/eventmanager/architecture/ArchitectureTest.java` | 23 | convention 18, suspicious 4, config 1 |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtService.java` | 13 | convention 11, config 1, suspicious 1 |
-| `mytimeline:backend/src/test/java/com/matimeline/eventmanager/build/BomDriftTest.java` | 16 | convention 9, other 4, test_case 2 |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/CategoryEntity.java` | 10 | convention 9, suspicious 1 |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/utils/Utils.java` | 11 | convention 9, other 1, suspicious 1 |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/validation/StrongPassword.java` | 4 | convention 2, suspicious 2 |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/ports/repositories/ProductRepository.java` | 5 | convention 2, persistence_query 2, suspicious 1 |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/ProductEntity.java` | 5 | convention 4, suspicious 1 |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/CallerResolver.java` | 6 | convention 6 |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/EventCreationRequest.java` | 4 | convention 3, suspicious 1 |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/Event.java` | 4 | convention 3, suspicious 1 |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/EventEntity.java` | 4 | convention 3, suspicious 1 |
+| `mytimeline:backend/src/test/java/com/matimeline/eventmanager/build/BomDriftTest.java` | 20 | convention 14, test_case 3, suspicious 2 |
+| `mytimeline:backend/src/test/java/com/matimeline/eventmanager/architecture/ArchitectureTest.java` | 16 | convention 9, suspicious 3, test_case 3 |
+| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/SecurityConfig.java` | 16 | convention 15, config 1 |
+| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtService.java` | 8 | convention 5, config 2, suspicious 1 |
+| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/utils/Utils.java` | 9 | convention 7, other 1, suspicious 1 |
+| `mytimeline:backend/src/test/java/com/matimeline/eventmanager/support/AbstractPostgresIntegrationTest.java` | 7 | convention 5, config 1, suspicious 1 |
+| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/JsonExportRenderer.java` | 6 | convention 6 |
+| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/UserRateLimitingFilter.java` | 6 | convention 5, config 1 |
+| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/ProductEntity.java` | 4 | convention 2, persistence_query 1, suspicious 1 |
+| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/EventCreationRequest.java` | 3 | convention 2, suspicious 1 |
+| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/validation/StrongPassword.java` | 3 | convention 2, suspicious 1 |
 
 ## 7. Relations avec d'autres packs {#relations}
 
@@ -77,43 +80,38 @@ Packs liés par des faits repris, des faits équivalents écartés à la dédupl
 
 | Pack | Faits repris | Faits équivalents | Catalogue |
 |---|---|---|---|
-| timeline | 154 | 65 |  |
-| authorization | 9 | 0 |  |
+| timeline | 142 | 74 |  |
 | integrations | 9 | 0 |  |
+| authorization | 8 | 0 |  |
 | state-machine | 1 | 0 |  |
 
-- Faits du pool par pack d'origine : timeline 154, backend-socle 54, authorization 9, integrations 9, state-machine 1
+- Faits du pool par pack d'origine : timeline 142, backend-socle 50, integrations 9, authorization 8, state-machine 1
 
 ## 8. Tests attendus {#tests}
 
-- Un test d'intégration étend AbstractPostgresIntegrationTest avec SpringBootTest et AutoConfigureMockMvc, et reçoit MockMvc par injection. [#b5e6d1c5023e700a-1] [#087601bf2abf1f8c-1]
-- Les tests fixent que, limitation désactivée, une rafale depuis une seule IP ne renvoie jamais 429, l'IP étant posée par un post-processeur sur la requête. [#57050fdbe9c38e6d-1] [#57050fdbe9c38e6d-2]
-- Les tests fixent que les références de stockage invalides lèvent IllegalArgumentException, avec un répertoire @TempDir et un adaptateur recréé avant chaque test. [#76d453920ca7bf3e-1] [#42ca0c171861ac7e-1]
-- Les cas d'exception de Utils s'écrivent avec assertThatThrownBy puis isInstanceOf. Selon la javadoc, la classe couvre BR-EVE-003 et BR-EVE-004. [#998e745ee408fff7-1] [#cdcd105ce739c440-2]
-- Un test de service unitaire utilise MockitoExtension, un Mock pour le repository et InjectMocks pour le service, avec une fabrique privée pour les données. [#bddd337cc630571f-1] [#894540d50ac1fcf3-1]
-- Un test de contrat de DTO n'a pas de contexte Spring, utilise un ObjectMapper créé directement, et suffixe _nonBreaking les cas de compatibilité ascendante. [#4fccbc79cc5b6869-1] [#8f2835df25c06050-1]
-- Un test de garde de build ne lit que le classpath, sans contexte Spring ni conteneur. [#f5d2085dc3f5fdb3-2]
+- Les tests fixent qu'aucune session HTTP serveur n'est créée et qu'aucun cookie JSESSIONID n'est posé, pour une requête anonyme comme authentifiée. [#5928c8a4467023f8-1] [#4bb5fd2a31cd4dd5-1] [#19c21feb236a9de4-1]
+- Un test d'intégration de sécurité étend la base Postgres d'intégration et injecte MockMvc, qui traverse la vraie chaîne de filtres. [#8317d54819838941-1] [#2d9da826002f362c-1] [#33c89b3bd0e28692-1]
+- Les tests de versions de dépendances échouent sous un plancher lié à une CVE, avec la référence de CVE passée à l'assertion. Tomcat est lu par l'API publique et Jackson 3 par réflexion. [#5bdec60f957ece6c-2] [#b0aa9799cbd37002-1] [#8b0580694f84f313-1]
+- Le test de writeJsonError appelle par réflexion une méthode non publique, avec une réponse Mockito dont le writer écrit dans un StringWriter. Il relit le JSON produit avec un ObjectMapper. [#a3cf256b0641324c-1] [#4148f5b761fdc86d-1] [#df8b959c62266125-1]
+- Les tests de domaine n'ont aucun contexte Spring. Ils fixent que la date de fin d'un export terminé est la valeur fournie et non dérivée du TTL, et que la préférence de thème rejette les variantes de casse, d'espaces et les valeurs inconnues. [#dec1b07c9a52c00a-1] [#7ac79595659d2d9d-1]
+- Un test de service mocke le port de dépôt avec Mockito et laisse injecter le service testé. [#bddd337cc630571f-1]
 
 ## 9. Questions ouvertes {#questions}
 
-- L'autorité est-elle préfixée ROLE_ à la source ? Le service de détails utilisateur lit user.getRole() sans préfixe, alors que la Javadoc de CallerResolver cite hasAuthority("ROLE_USER"). [#13cd0990d0682f15-1]
-- Product.addEvent doit-il tolérer une liste null ? Le constructeur l'accepte et hasEvents la teste, mais addEvent appelle add sans contrôle. [#e4027da2250fba89-1]
-- Pourquoi durationUnit est-il un String libre alors que recurrenceUnit est un enum persisté en STRING ? La base ne le dit pas. [#8f39fdf783d90a95-1]
-- Le chargement EAGER par défaut de ProductEntity.category est-il voulu, alors que CategoryEntity.owner déclare LAZY ? [#f8f05e9e0279ea4d-1] [#15b280e64c4e4b41-2]
+- Les drapeaux de compte de CustomUserDetails sont-ils volontairement toujours vrais ? Selon le commentaire, tout renvoie true et la logique reste à écrire [#dc03b9374b880075-1].
+- UserMapper.toDomain doit-il renseigner la préférence de thème ? Il construit User sans elle, alors que UserResponse la lit [#d86713c491180960-1].
+- Les @ManyToOne de ProductEntity doivent-ils être LAZY ? Ils n'ont pas de fetch explicite, alors que la relation owner de CategoryEntity est LAZY [#f8f05e9e0279ea4d-1].
 
 ## 10. Alertes {#alerts}
 
-- La surcharge generateToken(String) émet un jeton sans claim jti, alors que la Javadoc de generateToken(Authentication) affirme que chaque token en embarque un. Ne pas supposer la présence du jti à la lecture d'un token et se fier au code. [#99cdc3c6ad8d23f3-1]
-- La règle ArchUnit sur HttpSession est lancée par rule.check sans FreezingArchRule.freeze, contrairement aux autres règles, donc la moindre violation fait échouer le test. Corriger la violation plutôt que chercher à la geler. [#367437a993c52dd8-1]
-- Role implémente GrantedAuthority et ProductRepository porte @Repository dans le domaine, deux violations que la javadoc d'ArchitectureTest dit gelées, alors qu'UserRepository n'a pas cette annotation. Ne pas ajouter d'import Spring au domaine et ne pas copier ce marquage. [#35b311daffb89d4f-1] [#673b6fa03e83df5f-1] [#4c15723b9868133f-1] [#0ba5e5c3fda3057c-1]
-- ProductService importe des DTOs de la couche application, alors que le port EventService prend des commandes domaine. Pour un nouveau port, suivre le modèle EventService. [#11311ead9b39c530-1] [#c381f6f4da90e746-1]
-- Le champ de catégorie s'appelle category à la création de produit, et categoryId à la mise à jour, et Event.setProduct écrit productId alors que son getter est getProductId. Vérifier le nom exact avant d'écrire un client ou un test. [#b43c6c49adde6e57-1] [#125f0a1489463c85-1]
+- Le champ events de ProductCreationRequest n'a pas de @Valid, donc les contraintes des EventCreationRequest imbriqués ne sont pas déclenchées par ce DTO [#46620ab1541f7886-1]. Une donnée invalide peut passer à la création de produit, donc ajouter @Valid avant de compter sur ces contraintes.
+- Le domaine n'est pas pur malgré la règle hexagonale. Role importe Spring Security [#35b311daffb89d4f-2], le port ProductRepository porte @Repository [#673b6fa03e83df5f-2] et le port ProductService utilise des DTOs applicatifs [#11311ead9b39c530-1].
 
 ## 11. Couverture {#coverage}
 
-- Fichiers du pack : 253 ; avec au moins un fait en base : 64 ; sans fait après remise en file : 0.
-- Faits en base : 229, repris d'autres packs : +0, hors périmètre : -0, doublons écartés à la déduplication : -2, soit 227 dans le pool.
-- Faits du pool venus d'un autre pack : 173 (par pack : section Relations).
-- Destination des 227 faits du pool : Conventions 144 ; Tests attendus 34 ; Alertes / Questions ouvertes 35 ; annexe seule 5 ; écartés (sorte `other` ou inconnue) 9.
-- Passe technique : scope 253 fichiers, lus 64 (25 %), non lus 189 : ce pack décrit le socle sur un échantillon, pas sur tout son scope.
-- Base : sha256 4be979f6ea51…, générée le 2026-11-17.
+- Fichiers du pack : 254 ; avec au moins un fait en base : 71 ; sans fait après remise en file : 0.
+- Faits en base : 213, repris d'autres packs : +0, hors périmètre : -0, doublons écartés à la déduplication : -3, soit 210 dans le pool.
+- Faits du pool venus d'un autre pack : 160 (par pack : section Relations).
+- Destination des 210 faits du pool : Conventions 148 ; Points d'entrée du socle 1 ; Tests attendus 30 ; Alertes / Questions ouvertes 22 ; annexe seule 5 ; écartés (sorte `other` ou inconnue) 4.
+- Passe technique : scope 254 fichiers, lus 71 (27 %), non lus 183 : ce pack décrit le socle sur un échantillon, pas sur tout son scope.
+- Base : sha256 9a61a8cff901…, générée le 2026-11-18.

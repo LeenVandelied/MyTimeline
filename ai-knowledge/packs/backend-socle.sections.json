@@ -3,14 +3,14 @@
  "schema": 1,
  "kind": "technical",
  "lang": "fr",
- "generated_at": "2026-11-18T12:00:00Z",
- "base_sha256": "4be979f6ea5168923dfd048e41abcc924e556b27d10995ba60fbf025491e6cf3",
- "pack_bytes": 9815,
- "pack_budget_bytes": 28540,
+ "generated_at": "2026-11-18T16:25:37Z",
+ "base_sha256": "9a61a8cff90105a85e688e8c5813c2b40fe8d6fda8889c1458feba03dd619936",
+ "pack_bytes": 10167,
+ "pack_budget_bytes": 28680,
  "details": [
   {
    "file": "backend-socle.details.md",
-   "bytes": 61905
+   "bytes": 60975
   }
  ],
  "sections": [
@@ -31,7 +31,8 @@
    "lots": 0,
    "merged": false,
    "review": null,
-   "never_truncate": false
+   "never_truncate": false,
+   "copied": false
   },
   {
    "id": "lexicon",
@@ -57,7 +58,8 @@
     "rejected": 0,
     "unreviewed": 0
    },
-   "never_truncate": false
+   "never_truncate": false,
+   "copied": true
   },
   {
    "id": "rules",
@@ -65,9 +67,9 @@
    "title": "Conventions",
    "heading": "## 3. Conventions {#rules}",
    "line_start": 27,
-   "line_end": 46,
-   "bytes": 2355,
-   "budget_bytes": 5040,
+   "line_end": 50,
+   "bytes": 3466,
+   "budget_bytes": 5180,
    "cut_lines": 0,
    "writer": "agent",
    "kinds": [
@@ -76,49 +78,61 @@
     "business_rule",
     "validation"
    ],
-   "facts_available": 144,
+   "facts_available": 148,
    "facts_cited": [
     "32eaa06d8b33424b-1",
-    "4aa88cfacaa0e8d4-1",
-    "2009e8befcdfb90e-1",
+    "3b61f852056cda0c-2",
+    "3b61f852056cda0c-3",
+    "e1ae94a935cda2cf-1",
+    "e40866fd3c6bd641-3",
+    "e40866fd3c6bd641-4",
     "be183b621d286328-1",
     "d56dbbde62261227-1",
-    "fac6a46f66104090-1",
-    "b121fef8c04b27cd-1",
-    "33b11eb6b0aa82ac-2",
-    "33b11eb6b0aa82ac-3",
-    "3fb0487b6c2dbb00-1",
-    "43d75ab7438be436-1",
-    "32eaa06d8b33424b-2",
-    "c227eff8822478b9-1",
-    "164b6d90f910bb89-1",
+    "44fd89dd2c78cc26-1",
+    "44fd89dd2c78cc26-2",
+    "44fd89dd2c78cc26-3",
+    "9b5e49a0a2f1c36c-1",
+    "9b5e49a0a2f1c36c-2",
+    "79101b62c54db0ea-1",
+    "636cd91bb727056f-1",
+    "2f794ce9f9e9fc68-1",
+    "d924eb8a38e68c61-1",
     "532f49858a41dbc9-2",
-    "f1d71478d755056e-1",
-    "0bd5a0cae9f4e904-1",
+    "b8e9a6964a69ebe3-1",
+    "cf79bd7b0d30f02d-1",
+    "c7a72e338aa1ba11-1",
+    "7567d6a4cfc3e386-1",
+    "337941493ce09ae5-1",
+    "38f89bbedf94c3f6-1",
+    "af9f81b7c350186b-1",
+    "4d79a2634dabdb27-1",
     "f2b4cd18d208b4f8-1",
-    "2fae5cab1ab1fc27-1",
-    "2dce25b3a3f9f4d6-1",
-    "185f8a74f15e66fc-1",
-    "66abb4cdef3eec41-1",
-    "867f2794346b8c63-1"
+    "dbd2bbe2eddcb65f-1",
+    "95bb2d7a6c03fe6d-1",
+    "322992155a7f5945-1",
+    "90aa1ac5754d7284-1",
+    "5d3d43026a6cbbcf-1",
+    "5d3d43026a6cbbcf-2",
+    "8588ccf8d1abd2e8-2"
    ],
    "lots": 1,
    "merged": false,
    "review": {
-    "lines": 26,
-    "kept": 23,
-    "rejected": 3,
+    "lines": 28,
+    "kept": 26,
+    "rejected": 2,
     "unreviewed": 5
    },
-   "never_truncate": false
+   "never_truncate": false,
+   "copied": false
   },
   {
    "id": "structure",
    "order": 4,
    "title": "Structure",
    "heading": "## 4. Structure {#structure}",
-   "line_start": 47,
-   "line_end": 50,
+   "line_start": 51,
+   "line_end": 54,
    "bytes": 82,
    "budget_bytes": 2000,
    "cut_lines": 0,
@@ -135,16 +149,17 @@
    "lots": 0,
    "merged": false,
    "review": null,
-   "never_truncate": false
+   "never_truncate": false,
+   "copied": false
   },
   {
    "id": "surface",
    "order": 5,
    "title": "Points d'entrée du socle",
    "heading": "## 5. Points d'entrée du socle {#surface}",
-   "line_start": 51,
-   "line_end": 54,
-   "bytes": 96,
+   "line_start": 55,
+   "line_end": 58,
+   "bytes": 395,
    "budget_bytes": 4000,
    "cut_lines": 0,
    "writer": "agent",
@@ -159,26 +174,29 @@
     "state_transition",
     "batch_job"
    ],
-   "facts_available": 0,
-   "facts_cited": [],
-   "lots": 0,
+   "facts_available": 1,
+   "facts_cited": [
+    "3fb0487b6c2dbb00-1"
+   ],
+   "lots": 1,
    "merged": false,
    "review": {
-    "lines": 0,
-    "kept": 0,
+    "lines": 1,
+    "kept": 1,
     "rejected": 0,
     "unreviewed": 0
    },
-   "never_truncate": false
+   "never_truncate": false,
+   "copied": true
   },
   {
    "id": "files",
    "order": 6,
    "title": "Fichiers critiques",
    "heading": "## 6. Fichiers critiques {#files}",
-   "line_start": 55,
-   "line_end": 73,
-   "bytes": 1940,
+   "line_start": 59,
+   "line_end": 76,
+   "bytes": 1841,
    "budget_bytes": 2000,
    "cut_lines": 0,
    "writer": "script",
@@ -188,15 +206,16 @@
    "lots": 0,
    "merged": false,
    "review": null,
-   "never_truncate": false
+   "never_truncate": false,
+   "copied": false
   },
   {
    "id": "relations",
    "order": 7,
    "title": "Relations avec d'autres packs",
    "heading": "## 7. Relations avec d'autres packs {#relations}",
-   "line_start": 74,
-   "line_end": 86,
+   "line_start": 77,
+   "line_end": 89,
    "bytes": 464,
    "budget_bytes": 1500,
    "cut_lines": 0,
@@ -207,106 +226,40 @@
    "lots": 0,
    "merged": false,
    "review": null,
-   "never_truncate": false
+   "never_truncate": false,
+   "copied": false
   },
   {
    "id": "tests",
    "order": 8,
    "title": "Tests attendus",
    "heading": "## 8. Tests attendus {#tests}",
-   "line_start": 87,
-   "line_end": 96,
-   "bytes": 1350,
+   "line_start": 90,
+   "line_end": 98,
+   "bytes": 1396,
    "budget_bytes": 2000,
    "cut_lines": 0,
    "writer": "agent",
    "kinds": [
     "test_case"
    ],
-   "facts_available": 34,
+   "facts_available": 30,
    "facts_cited": [
-    "b5e6d1c5023e700a-1",
-    "087601bf2abf1f8c-1",
-    "57050fdbe9c38e6d-1",
-    "57050fdbe9c38e6d-2",
-    "76d453920ca7bf3e-1",
-    "42ca0c171861ac7e-1",
-    "998e745ee408fff7-1",
-    "cdcd105ce739c440-2",
-    "bddd337cc630571f-1",
-    "894540d50ac1fcf3-1",
-    "4fccbc79cc5b6869-1",
-    "8f2835df25c06050-1",
-    "f5d2085dc3f5fdb3-2"
-   ],
-   "lots": 1,
-   "merged": false,
-   "review": {
-    "lines": 10,
-    "kept": 10,
-    "rejected": 0,
-    "unreviewed": 0
-   },
-   "never_truncate": false
-  },
-  {
-   "id": "questions",
-   "order": 9,
-   "title": "Questions ouvertes",
-   "heading": "## 9. Questions ouvertes {#questions}",
-   "line_start": 97,
-   "line_end": 103,
-   "bytes": 739,
-   "budget_bytes": 1500,
-   "cut_lines": 0,
-   "writer": "agent",
-   "kinds": [
-    "suspicious"
-   ],
-   "facts_available": 35,
-   "facts_cited": [
-    "13cd0990d0682f15-1",
-    "e4027da2250fba89-1",
-    "8f39fdf783d90a95-1",
-    "f8f05e9e0279ea4d-1",
-    "15b280e64c4e4b41-2"
-   ],
-   "lots": 1,
-   "merged": false,
-   "review": {
-    "lines": 4,
-    "kept": 4,
-    "rejected": 0,
-    "unreviewed": 0
-   },
-   "never_truncate": false
-  },
-  {
-   "id": "alerts",
-   "order": 10,
-   "title": "Alertes",
-   "heading": "## 10. Alertes {#alerts}",
-   "line_start": 104,
-   "line_end": 111,
-   "bytes": 1418,
-   "budget_bytes": 4000,
-   "cut_lines": 0,
-   "writer": "agent",
-   "kinds": [
-    "suspicious"
-   ],
-   "facts_available": 35,
-   "facts_cited": [
-    "99cdc3c6ad8d23f3-1",
-    "367437a993c52dd8-1",
-    "35b311daffb89d4f-1",
-    "673b6fa03e83df5f-1",
-    "4c15723b9868133f-1",
-    "0ba5e5c3fda3057c-1",
-    "11311ead9b39c530-1",
-    "c381f6f4da90e746-1",
-    "b43c6c49adde6e57-1",
-    "125f0a1489463c85-1"
+    "5928c8a4467023f8-1",
+    "4bb5fd2a31cd4dd5-1",
+    "19c21feb236a9de4-1",
+    "8317d54819838941-1",
+    "2d9da826002f362c-1",
+    "33c89b3bd0e28692-1",
+    "5bdec60f957ece6c-2",
+    "b0aa9799cbd37002-1",
+    "8b0580694f84f313-1",
+    "a3cf256b0641324c-1",
+    "4148f5b761fdc86d-1",
+    "df8b959c62266125-1",
+    "dec1b07c9a52c00a-1",
+    "7ac79595659d2d9d-1",
+    "bddd337cc630571f-1"
    ],
    "lots": 1,
    "merged": false,
@@ -316,16 +269,80 @@
     "rejected": 1,
     "unreviewed": 0
    },
-   "never_truncate": true
+   "never_truncate": false,
+   "copied": false
+  },
+  {
+   "id": "questions",
+   "order": 9,
+   "title": "Questions ouvertes",
+   "heading": "## 9. Questions ouvertes {#questions}",
+   "line_start": 99,
+   "line_end": 104,
+   "bytes": 543,
+   "budget_bytes": 1500,
+   "cut_lines": 0,
+   "writer": "agent",
+   "kinds": [
+    "suspicious"
+   ],
+   "facts_available": 22,
+   "facts_cited": [
+    "dc03b9374b880075-1",
+    "d86713c491180960-1",
+    "f8f05e9e0279ea4d-1"
+   ],
+   "lots": 1,
+   "merged": false,
+   "review": {
+    "lines": 4,
+    "kept": 4,
+    "rejected": 0,
+    "unreviewed": 0
+   },
+   "never_truncate": false,
+   "copied": true
+  },
+  {
+   "id": "alerts",
+   "order": 10,
+   "title": "Alertes",
+   "heading": "## 10. Alertes {#alerts}",
+   "line_start": 105,
+   "line_end": 109,
+   "bytes": 579,
+   "budget_bytes": 4000,
+   "cut_lines": 0,
+   "writer": "agent",
+   "kinds": [
+    "suspicious"
+   ],
+   "facts_available": 22,
+   "facts_cited": [
+    "46620ab1541f7886-1",
+    "35b311daffb89d4f-2",
+    "673b6fa03e83df5f-2",
+    "11311ead9b39c530-1"
+   ],
+   "lots": 1,
+   "merged": false,
+   "review": {
+    "lines": 4,
+    "kept": 2,
+    "rejected": 2,
+    "unreviewed": 0
+   },
+   "never_truncate": true,
+   "copied": true
   },
   {
    "id": "coverage",
    "order": 11,
    "title": "Couverture",
    "heading": "## 11. Couverture {#coverage}",
-   "line_start": 112,
-   "line_end": 119,
-   "bytes": 717,
+   "line_start": 110,
+   "line_end": 117,
+   "bytes": 747,
    "budget_bytes": 1500,
    "cut_lines": 0,
    "writer": "script",
@@ -335,20 +352,35 @@
    "lots": 0,
    "merged": false,
    "review": null,
-   "never_truncate": false
+   "never_truncate": false,
+   "copied": false
   }
  ],
  "dedup": {
-  "base": 229,
+  "base": 213,
   "taken_in": 0,
   "out_of_scope": 0,
-  "pool_before": 229,
-  "pool_after": 227,
-  "related_pairs": 67
+  "pool_before": 213,
+  "pool_after": 210,
+  "related_pairs": 77
  },
  "lint": {
   "ok": true,
   "errors": 0,
   "warnings": 0
+ },
+ "refresh": {
+  "mode": "only-changed",
+  "at": "2026-11-18T16:25:37Z",
+  "rewritten": [
+   "rules",
+   "tests"
+  ],
+  "copied": [
+   "lexicon",
+   "surface",
+   "questions",
+   "alerts"
+  ]
  }
 }
