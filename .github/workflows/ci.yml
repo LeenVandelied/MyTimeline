@@ -856,10 +856,20 @@ jobs:
       # cf. frontend/README.md § « Overrides npm » et la clé `_overridesRationale`.
       # Étape INFORMATIVE = dev+prod, continue-on-error.
       #
+      # 2026-11-18 — GATE AVEC LISTE D'EXCEPTIONS. `npm audit --audit-level=high` seul est
+      # remplacé par scripts/npm-audit-gate.mjs, qui lit le JSON de `npm audit --omit=dev`.
+      # La gate échoue sur tout avis high/critical absent de frontend/audit-allowlist.json
+      # ou dont `reviewBy` est dépassé, et avertit sur une exception périmée (avis disparu).
+      # Une exception est réservée aux avis SANS version corrigée publiée (même logique que
+      # `ignore-unfixed` de Trivy plus bas), jamais pour éviter une montée de version.
+      # Cf. frontend/README.md § « Exceptions d'audit npm ».
+      #
       # Le scan Trivy ci-dessous couvre le CRITICAL cross-stack, inchangé.
       - name: npm audit (frontend deps PROD, >= high) — BLOQUANT
         working-directory: frontend
-        run: npm audit --omit=dev --audit-level=high
+        run: |
+          npm audit --omit=dev --json > "$RUNNER_TEMP/npm-audit-prod.json" || true
+          node ../scripts/npm-audit-gate.mjs audit-allowlist.json < "$RUNNER_TEMP/npm-audit-prod.json"
 
       - name: npm audit (frontend deps dev+prod, >= high) — INFORMATIF
         working-directory: frontend
