@@ -1,0 +1,2 @@
+# Packs ai-stack : le lint compte les octets bruts, un CRLF au checkout dépasse les budgets.
+ai-knowledge/** text eol=lf

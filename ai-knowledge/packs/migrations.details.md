@@ -20,18 +20,19 @@
 | `mytimeline:backend/src/main/resources/db/migration/V3__add_audit_columns.sql` | 1 | convention 1 |
 | `mytimeline:backend/src/main/resources/db/migration/V5__fk_indexes.sql` | 1 | convention 1 |
 
+## Lignes hors budget {#t-cut_lines}
+
+| Section | Ligne |
+|---|---|
+| rules | - Selon le commentaire de V2, chaque fichier s'ouvre par un en-tête avec nom, titre et numéro d'issue [#40eb238b512fd73b-1]. |
+| rules | - V16 pose lock_timeout à 5 secondes en tête et regroupe ses opérations dans un seul ALTER TABLE rejouable. Les autres migrations ne le font pas [#58bbdf47e30dcfc8-1] [#61b42db9757c6a8e-2] [#333e76b9ff028bb8-1]. |
+| rules | - Les migrations à partir de V4 se terminent par un ROLLBACK manuel commenté, pas V1 à V3 [#b8094cb25528839b-1]. |
+
 ## Lignes rétrogradées {#t-demoted_lines}
 
 | Section | Ligne | Motif |
 |---|---|---|
-| rules | - Sur une base peuplée, un bloc DO compte les lignes non conformes et lève une exception avant tout ALTER, sans coercition silencieuse [#a3f563bc2f9587a4-1]. | rediscovered (13 appels) |
-| rules | - Avant d'ajouter un CHECK ou un not null, les lignes incohérentes sont neutralisées par UPDATE ciblé, vers ROLE_USER pour le rôle ou vers NULL pour une unité de récurrence invalide [#6d2386c8809cdfd6-1] [#1c7402a0f5b734f9-1] [#0049acf39aaa5953-1]. | rediscovered (9 appels) |
-| rules | - Un CHECK se rejoue par drop constraint if exists puis add constraint, et les index de clé étrangère par create index if not exists [#333e76b9ff028bb8-1] [#b3fc78ae062be38b-1]. | rediscovered (10 appels) |
-| rules | - Les index se nomment idx_<table>_<colonne>, aussi pour une colonne de purge temporelle [#e7d8e73c2ca02741-1]. | rediscovered (15 appels) |
-| rules | - Les colonnes d'audit sont created_at et updated_at en timestamp not null default now() [#87c989e06096a13a-1], et le verrou optimiste est version integer not null default 0 [#d3007a27b545f1b8-1]. | rediscovered (11 appels) |
-| rules | - Les opérations d'une même table sont regroupées dans un seul ALTER TABLE avec if not exists [#61b42db9757c6a8e-2]. | rediscovered (4 appels) |
-| alerts | - La FK owner_id de la table categories n'a pas de on delete, donc RESTRICT, alors que les autres FK vers users du lot utilisent on delete cascade, donc supprimer un utilisateur qui possède des catégories échoue : avant de toucher à la suppression d'utilisateurs, aligner la FK par une nouvelle migration ou supprimer les catégories d'abord `mytimeline:backend/src/main/resources/db/migration/V8__category_ownership.sql:37-39` [#dbca7a316c0c1c8c-1]. | rediscovered (6 appels) |
-| alerts | - Selon le commentaire de V9, la V10 est réservée (#158), mais V10__create_sessions.sql existe dans le lot, donc le commentaire est périmé : ne pas se fier à ce texte de réservation pour numéroter une migration et vérifier les fichiers présents `mytimeline:backend/src/main/resources/db/migration/V9__neutralize_invalid_recurrence_unit.sql:28` [#dbd260bc254e104d-1]. | rediscovered (8 appels) |
+| rules | - Les CHECK sont toujours nommés ck_table_colonne, car selon le commentaire de V16 un CHECK anonyme reçoit un nom automatique que drop constraint if exists ne retire pas [#61b42db9757c6a8e-1] [#333e76b9ff028bb8-1]. | deducible |
 
 ## Faits suspects {#t-suspicious}
 
