@@ -1,7 +1,9 @@
 import { test, expect } from './support/fixtures'
 import { type Locator, type Page, type Route } from '@playwright/test'
 import { PROD } from './support/accounts'
+import { sessionState } from './support/session'
 import { ensureAuthenticated } from './support/auth'
+import { PAGE_CHUNK_MARKERS, gatePageChunk } from './support/page-chunk-gate'
 import {
   getUserId,
   gotoProducts,
@@ -41,20 +43,25 @@ import {
  * formulaire), et aucun produit (état vide sans CTA).
  *
  * ─────────────────────────────────────────────────────────────────────────────
- * FALLBACKS DE SEGMENT — la porte RSC
+ * FALLBACKS DE SEGMENT — la porte sur le CHUNK de page (Next 16, Sprint 118)
  * ─────────────────────────────────────────────────────────────────────────────
- * Un `loading.tsx` n'est peint que pendant une navigation CLIENT, le temps que le
- * payload RSC de la route cible arrive — quelques ms en local. Relevé réseau (sonde
- * du S90, `next start` 15.5) : au chargement du dashboard, les liens du shell sont
- * PRÉCHARGÉS (`GET /fr/<route>?_rsc=…`, en-têtes `rsc: 1` + `next-router-prefetch: 1`) ;
- * le clic émet ENSUITE une seconde requête `?_rsc=…` avec `rsc: 1` et SANS
- * `next-router-prefetch`. Le préchargement fournit la frontière `loading.tsx`, la
- * seconde requête porte la page. On laisse donc passer le préchargement (sans lui,
- * le routeur n'a aucun fallback à peindre) et on RETIENT la seconde jusqu'à
- * l'assertion. Aucune temporisation : l'état est stable tant que la porte est close.
+ * Un `loading.tsx` n'est peint que pendant une navigation CLIENT. Sous Next 15 la
+ * porte retenait la requête RSC de navigation (la seconde `?_rsc=…`, SANS
+ * `next-router-prefetch`). Next 16 précharge PAR SEGMENT (`/_tree` puis
+ * `…/<route>/__PAGE__`, tous en `next-router-prefetch: 1`) : pour ces routes SSG, le
+ * clic n'émet PLUS AUCUNE requête RSC (sonde S118 contre `next start` 16.4.6), la porte
+ * n'était jamais atteinte. Retenir le segment `__PAGE__` ne peint rien non plus : le
+ * routeur garde l'ancienne page tant qu'il manque.
+ * Ce qui peint le fallback, mesuré sur timeline, settings et products : retenir le
+ * chunk client de la page du segment (#890 : reconnu à son contenu, cf.
+ * `support/page-chunk-gate.ts` — Turbopack ne nomme plus les chunks par route). Le RSC est en cache, React suspend sur le
+ * chunk manquant, `loading.tsx` sert de fallback (~100 ms après le clic, stable tant
+ * que la porte est close). C'est la porte déjà employée pour la fiche produit
+ * ci-dessous. Le chunk est souvent demandé dès le préchargement : la porte le retient
+ * alors AVANT le clic, ce qui revient au même.
  *
- * Le préchargement est ATTENDU avant le clic : un clic qui le devancerait naviguerait
- * sans frontière connue, et le squelette n'apparaîtrait jamais — un flake, pas un bug.
+ * Le préchargement RSC est ATTENDU avant le clic : un clic qui le devancerait
+ * naviguerait sans arbre connu.
  *
  * FICHE PRODUIT — autre porte, parce qu'autre chemin. Le SEUL accès UI à
  * `/fr/products/<id>` est `router.push` au clic d'une ligne (`ProductsListView.tsx`),
@@ -63,7 +70,7 @@ import {
  * encore la frontière. Ce qu'un utilisateur peut réellement voir est la fenêtre qui
  * SUIT l'arrivée du RSC : la page est un Client Component dont le chunk JS n'est pas
  * encore chargé, React suspend, et le `loading.tsx` du segment (livré dans ce même
- * payload) sert de fallback. On retient donc le chunk `page-<hash>.js` de la fiche.
+ * payload) sert de fallback. On retient donc le chunk client de la page fiche.
  *
  * ⚠ Borne de la preuve : ce fallback-là n'est visible qu'au PREMIER chargement du chunk
  * (réseau lent). Une fois le chunk en cache, rouvrir une fiche ne montre plus rien.
@@ -73,7 +80,7 @@ import {
  * servi depuis le cache et masquerait le produit semé (constaté par la sonde).
  */
 
-test.use({ storageState: PROD.storageState })
+test.use({ storageState: sessionState(PROD) })
 
 const DESKTOP = { width: 1280, height: 900 }
 const MOBILE_PORTRAIT = { width: 390, height: 844 }
@@ -126,63 +133,18 @@ function isRscFor(url: string, pathname: string): boolean {
 }
 
 interface RscGate {
-  /** Résolue quand la requête de NAVIGATION (non préchargement) a été interceptée. */
+  /** Résolue quand une requête retenue a été interceptée. */
   held: Promise<void>
   /** Libère la requête retenue. Idempotent. */
   release: () => void
 }
 
-/**
- * Retient les requêtes dont l'URL satisfait `matches` et que `hold` désigne ; les
- * autres requêtes appariées passent librement.
- */
-async function gateRequests(
-  page: Page,
-  matches: (url: string) => boolean,
-  hold: (headers: Record<string, string>) => boolean,
-): Promise<RscGate> {
-  let release: () => void = () => {}
-  const gate = new Promise<void>((resolve) => {
-    release = resolve
-  })
-  let markHeld: () => void = () => {}
-  const held = new Promise<void>((resolve) => {
-    markHeld = resolve
-  })
-  await page.route(
-    (url) => matches(url.toString()),
-    async (route: Route) => {
-      if (!hold(route.request().headers())) {
-        await route.continue()
-        return
-      }
-      markHeld()
-      await gate
-      await route.continue()
-    },
-  )
-  return { held, release: () => release() }
-}
-
-/**
- * Retient la requête RSC de navigation vers `pathname`. Les préchargements
- * (`next-router-prefetch: 1`) passent librement.
- */
-function gateRscNavigation(page: Page, pathname: string): Promise<RscGate> {
-  return gateRequests(
-    page,
-    (url) => isRscFor(url, pathname),
-    (headers) => headers['next-router-prefetch'] !== '1',
-  )
-}
-
-/**
- * Chunk client de la PAGE fiche produit (`app/[locale]/(app)/products/[productId]/page-<hash>.js`,
- * crochets éventuellement encodés). Le chunk `loading-<hash>.js` du même segment
- * n'est PAS apparié : c'est lui qui doit arriver pour peindre le fallback.
- */
-const PRODUCT_DETAIL_PAGE_CHUNK_RE =
-  /\/_next\/static\/chunks\/app\/.*\/products\/(?:%5B|\[)productId(?:%5D|\])\/page-[^/]+\.js$/
+/** #890 — marqueur du chunk de page par segment `(app)/<segment>` (cf. `page-chunk-gate.ts`). */
+const SEGMENT_MARKERS = {
+  timeline: PAGE_CHUNK_MARKERS.timeline,
+  products: PAGE_CHUNK_MARKERS.products,
+  settings: PAGE_CHUNK_MARKERS.settings,
+} as const
 
 /** Promesse résolue à la réponse du PRÉCHARGEMENT RSC de `pathname`. */
 function waitForPrefetch(page: Page, pathname: string): Promise<unknown> {
@@ -388,14 +350,15 @@ test.describe('#629 — squelettes de segment pendant une navigation client', ()
 
   /**
    * Charge le dashboard, attend le préchargement de `pathname`, puis clique
-   * `trigger` avec la navigation retenue. Rend la porte (déjà `held`).
+   * `trigger` avec le chunk de page retenu. Rend la porte (déjà `held`).
    */
   async function navigateGated(
     page: Page,
     pathname: string,
     trigger: (p: Page) => Locator,
   ): Promise<RscGate> {
-    const gate = await gateRscNavigation(page, pathname)
+    const segment = pathname.split('/').pop() as keyof typeof SEGMENT_MARKERS
+    const gate = await gatePageChunk(page, SEGMENT_MARKERS[segment])
     const prefetched = waitForPrefetch(page, pathname)
     await ensureAuthenticated(page)
     await prefetched
@@ -459,11 +422,7 @@ test.describe('#629 — squelettes de segment pendant une navigation client', ()
       categoryId: category.id,
     })
     // Porte sur le CHUNK de la page, pas sur le RSC : cf. en-tête « Fiche produit ».
-    const gate = await gateRequests(
-      page,
-      (url) => PRODUCT_DETAIL_PAGE_CHUNK_RE.test(url),
-      () => true,
-    )
+    const gate = await gatePageChunk(page, PAGE_CHUNK_MARKERS.productDetail)
     await gotoProducts(page)
     const row = page.getByTestId(`products-row-${product.id}`)
     await expect(row).toBeVisible()

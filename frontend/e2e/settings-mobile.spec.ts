@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { ensureAuthenticated } from './support/auth'
 import { SHARED } from './support/accounts'
+import { sessionState } from './support/session'
 
 /**
  * #87 — E2E Réglages MOBILE (375px, iPhone 14 ~390 / Android réf ~360) :
@@ -13,7 +14,7 @@ import { SHARED } from './support/accounts'
  * suppression (le compte partagé ne doit pas être détruit) : on vérifie l'ouverture
  * du sheet + le passage à l'étape confirmation, puis la fermeture par backdrop.
  */
-test.use({ viewport: { width: 375, height: 812 }, storageState: SHARED.storageState })
+test.use({ viewport: { width: 375, height: 812 }, storageState: sessionState(SHARED) })
 
 test.describe('Réglages mobile : drill-down + bottom sheet suppression', () => {
   test('index -> détail -> retour, puis bottom sheet suppression compte', async ({ page }) => {

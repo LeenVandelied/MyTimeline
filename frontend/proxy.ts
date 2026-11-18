@@ -11,7 +11,15 @@ import {
 import { verifyAuthCookie } from '@/lib/auth-token-verify'
 import { canonicalizeLocation, canonicalOrigins } from '@/lib/canonical-host'
 
-// Ce middleware gère la redirection basée sur la langue
+// #889 — ex-`middleware.ts`, renommé selon la convention Next 16 (`proxy.ts`, export
+// nommé `proxy`). ⚠ Le proxy tourne TOUJOURS sur le runtime Node (non configurable) :
+// les mentions « Edge » des modules qu'il importe (`auth-jwks`, `auth-token-verify`,
+// `canonical-host`, `auth-guard-paths`) décrivent une contrainte de portabilité qu'ils
+// respectent encore (WebCrypto, `fetch`, ni `fs` ni `path`), plus le runtime effectif.
+// L'état de module (cache JWKS, mémoïsations) est désormais partagé par le processus
+// Node au lieu d'un isolat Edge : même sémantique, durée de vie plus longue.
+
+// Ce proxy gère la redirection basée sur la langue
 const intlMiddleware = createMiddleware({
   // Liste des langues supportées (source de vérité unique — #235)
   locales: [...SUPPORTED_LOCALES],
@@ -109,7 +117,7 @@ function withCanonicalOrigin(response: NextResponse): NextResponse {
  * ⚠ `verifyAuthCookie` ne LÈVE jamais, par construction : toute exception qui
  * remonterait ici deviendrait un 500 sur toutes les routes protégées (BUG-S45-001).
  */
-export default async function middleware(request: NextRequest): Promise<NextResponse> {
+export async function proxy(request: NextRequest): Promise<NextResponse> {
   const { pathname } = request.nextUrl
 
   // ⚠ `process.env.AUTH_JWKS_URL` en accès LITTÉRAL (et non `process.env[CONST]`) : c'est la
@@ -120,8 +128,8 @@ export default async function middleware(request: NextRequest): Promise<NextResp
   // l'une ni l'autre n'est exploitable ici, d'où une variable dédiée — #358).
   //
   // ⚠ `verifyAuthCookie` fait un appel RÉSEAU (découverte JWKS) au plus une fois par TTL et
-  // par isolat, jamais par requête, et ne LÈVE jamais : son `fetch` est enveloppé et borné par
-  // un timeout. Un backend lent ou mort dégrade la garde, il ne pend pas l'Edge et ne produit
+  // par processus (isolat Edge avant #889), jamais par requête, et ne LÈVE jamais : son `fetch` est enveloppé et borné par
+  // un timeout. Un backend lent ou mort dégrade la garde, il ne pend pas le proxy et ne produit
   // pas de 500 sur toutes les routes protégées (BUG-S45-001).
   const isRejected =
     isProtectedPathname(pathname) &&
@@ -203,7 +211,7 @@ export default async function middleware(request: NextRequest): Promise<NextResp
  * vérifié sur l'arbre `public/`).
  * Vérifié en compilant les deux entrées avec le path-to-regexp EMBARQUÉ de Next
  * (`{ delimiter: '/', sensitive: false, strict: false }`), cf. les cas ancrés
- * dans `middleware.test.ts` et le cas E2E de `e2e/auth-guard.spec.ts`.
+ * dans `proxy.test.ts` et le cas E2E de `e2e/auth-guard.spec.ts`.
  */
 export const config = {
   matcher: [

@@ -1,6 +1,15 @@
 import { eventLabelReadableInside } from './lib'
 import { isRecurringSeries } from './recurrence-marks'
-import { eventKind, PIN_FOOTPRINT_PX, PIN_HALF_WIDTH_PX, type PositionedEvent } from './zoom'
+import {
+  eventKind,
+  FIT_EDGE_AIR_PX,
+  FIT_MARGINS_PX,
+  PIN_FOOTPRINT_PX,
+  PIN_HALF_WIDTH_PX,
+  type EventGeometry,
+  type FitMargins,
+  type PositionedEvent,
+} from './zoom'
 
 /**
  * #746 — RÉSERVE DES LIBELLÉS dans l'empilage en rangées (cœur PUR : ni React, ni DOM).
@@ -119,4 +128,53 @@ export function applyLabelReserves(
     )
   }
   return map
+}
+
+/**
+ * #804 (suite, Sprint 117) — RÉSERVE DE QUEUE d'un recadrage `F` : emprise (px) que le
+ * libellé des événements finissant au DERNIER jour de l'étendue occupe après ce jour,
+ * avec la même estimation que le rendu (`applyLabelReserves`, vue desktop : seule la
+ * frise desktop recadre). Ponctuel : `pinFootprintPx` (plancher 100 px) ; barre à
+ * libellé extérieur : `outsideLabelTrailPx` ; barre à libellé intérieur : 0. `0` si
+ * aucun événement affiché ne finit à `endDay`.
+ *
+ * Vit ici et non dans `zoom.ts` : ce module importe `zoom.ts` (et évalue
+ * `PIN_HALF_WIDTH_PX` au chargement) — l'inverse créerait un cycle avec TDZ (#804).
+ *
+ * LIMITE ASSUMÉE : seuls les événements du dernier jour comptent. Un pin un jour plus tôt
+ * au libellé plus long peut, à forte échelle, dépasser davantage ; le cadrage dépendrait
+ * alors du niveau qu'il sert à choisir (calcul circulaire), pour un cas marginal.
+ */
+export function trailingLabelReservePx(
+  indexed: ReadonlyMap<string, readonly EventGeometry[]>,
+  displayedResourceIds: Iterable<string>,
+  endDay: number,
+): number {
+  let reserve = 0
+  for (const resourceId of displayedResourceIds) {
+    for (const g of indexed.get(resourceId) ?? []) {
+      const recurring = isRecurringSeries(g.event)
+      if (eventKind(g.event) === 'single') {
+        if (g.dayOffset === endDay) {
+          reserve = Math.max(reserve, pinFootprintPx(g.event.title, recurring, 'desktop'))
+        }
+        continue
+      }
+      if (g.dayOffset + g.spanDays !== endDay) continue
+      const archived = g.event.extendedProps?.archived === true
+      if (eventLabelReadableInside(g.event.color, archived)) continue
+      reserve = Math.max(reserve, outsideLabelTrailPx(g.event.title, recurring))
+    }
+  }
+  return reserve
+}
+
+/**
+ * Marges de recadrage desktop pour une réserve de queue donnée : la marge droite couvre
+ * la réserve réelle plus `FIT_EDGE_AIR_PX`, sans descendre sous le défaut #804
+ * (`FIT_MARGINS_PX.desktop`, plancher 100 + 35 px).
+ */
+export function fitMarginsForTrailReserve(trailReservePx: number): FitMargins {
+  const base = FIT_MARGINS_PX.desktop
+  return { ...base, trailPx: Math.max(base.trailPx, trailReservePx + FIT_EDGE_AIR_PX) }
 }

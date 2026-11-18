@@ -17,14 +17,14 @@ import java.util.Base64;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 import com.matimeline.eventmanager.infrastructure.security.JwtService;
 import com.matimeline.eventmanager.support.AbstractPostgresIntegrationTest;
 
@@ -89,7 +89,7 @@ class JwksEndpointIntegrationTest extends AbstractPostgresIntegrationTest {
     void jwks_neverExposesPrivateKeyParameters() throws Exception {
         JsonNode key = firstKey();
 
-        assertThat(key.fieldNames()).toIterable()
+        assertThat(key.propertyNames())
                 .containsExactlyInAnyOrder("kty", "use", "alg", "kid", "n", "e");
     }
 
@@ -131,7 +131,7 @@ class JwksEndpointIntegrationTest extends AbstractPostgresIntegrationTest {
      */
     @Test
     void modulus_isEncodedAsAnUnsignedBigEndianInteger() throws Exception {
-        byte[] modulus = Base64.getUrlDecoder().decode(firstKey().get("n").asText());
+        byte[] modulus = Base64.getUrlDecoder().decode(firstKey().get("n").asString());
 
         assertThat(modulus).hasSize(256);
         assertThat(modulus[0] & 0xFF).isGreaterThanOrEqualTo(0x80);
@@ -149,8 +149,8 @@ class JwksEndpointIntegrationTest extends AbstractPostgresIntegrationTest {
     /** Reconstruit la clé publique depuis les SEULS paramètres JWK servis par HTTP. */
     private PublicKey rebuildFromJwks() throws Exception {
         JsonNode key = firstKey();
-        BigInteger modulus = new BigInteger(1, Base64.getUrlDecoder().decode(key.get("n").asText()));
-        BigInteger exponent = new BigInteger(1, Base64.getUrlDecoder().decode(key.get("e").asText()));
+        BigInteger modulus = new BigInteger(1, Base64.getUrlDecoder().decode(key.get("n").asString()));
+        BigInteger exponent = new BigInteger(1, Base64.getUrlDecoder().decode(key.get("e").asString()));
         return KeyFactory.getInstance("RSA").generatePublic(new RSAPublicKeySpec(modulus, exponent));
     }
 

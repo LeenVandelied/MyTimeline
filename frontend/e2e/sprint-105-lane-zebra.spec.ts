@@ -2,6 +2,7 @@ import { test, expect } from './support/fixtures'
 import { type Page, type Route } from '@playwright/test'
 import { ensureAuthenticated } from './support/auth'
 import { PROD } from './support/accounts'
+import { sessionState } from './support/session'
 
 /**
  * Sprint 105 #596 — ZÉBRURES DE LANES (handoff Graphite : « Lanes en zébrures très
@@ -31,7 +32,7 @@ import { PROD } from './support/accounts'
  * sur le compte PROD. Événements à aujourd'hui + quelques jours (PIT-S91-005).
  */
 
-test.use({ storageState: PROD.storageState })
+test.use({ storageState: sessionState(PROD) })
 
 const PRODUCTS_LIST_RE = /\/api\/users\/[^/]+\/products(\?.*)?$/
 /** Aplat de zébrure (handoff) : alpha de l'encre. */

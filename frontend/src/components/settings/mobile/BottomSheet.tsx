@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { X } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { cn } from '@/lib/utils'
@@ -83,9 +83,13 @@ export function BottomSheet({
   })
 
   // Réinitialise l'offset de drag à chaque (ré)ouverture.
-  useEffect(() => {
+  // #891 — ajustement d'état PENDANT le rendu au changement de la prop (patron « valeur
+  // précédente » de React) plutôt qu'un `setState` dans un effet.
+  const [prevOpen, setPrevOpen] = useState(open)
+  if (open !== prevOpen) {
+    setPrevOpen(open)
     if (open) setDragY(0)
-  }, [open])
+  }
 
   const onGrabberPointerDown = useCallback((e: React.PointerEvent) => {
     dragStartY.current = e.clientY

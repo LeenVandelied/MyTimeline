@@ -40,7 +40,7 @@ export const isTerminalStatus = (status: ExportJobStatus): boolean =>
  * (nullable), `expiresAt` (nullable, ISO string sans offset).
  */
 export const exportJobResponseSchema = z.object({
-  jobId: z.string().uuid(),
+  jobId: z.guid(),
   status: exportJobStatusSchema,
   format: exportFormatSchema,
   downloadUrl: z.string().nullable(),

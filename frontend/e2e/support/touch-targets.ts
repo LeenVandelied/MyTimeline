@@ -14,18 +14,16 @@ import { expect, type Locator } from '@playwright/test'
  * ait à penser à l'y inscrire. `expectAllTouchable` exige un nombre MINIMAL de
  * contrôles mesurés : une requête qui ne trouverait rien serait verte.
  *
- * DEUX PROFILS DE MESURE, choisis par options (défaut = profil complet) :
- *  - COMPLET (défaut, `sprint-101`/`sprint-102`, et toute spec neuve) : exempte
- *    `[aria-hidden="true"]` (select « bulle » de Radix Select dans un `<form>`,
- *    poignée `<span aria-hidden>` de l'action sheet), compte la hitbox `::before`
- *    (`TOUCH_TARGET_HITBOX`, `src/lib/touchTarget.ts`) comme taille effective, et
- *    tient pour invisible un contrôle à `opacity: 0` ou `display: none` ;
- *  - BOÎTE SEULE (`sprint-99`, historique #738) : aucune de ces trois règles. Garder
- *    ce profil sur les réglages est un choix de NON-RÉGRESSION de la factorisation
- *    (#768 ne devait rien changer à ce que mesure chaque spec), pas une préférence :
- *    aligner `sprint-99` sur le profil complet est une décision à part.
- *  Les trois règles sont des options INDÉPENDANTES plutôt qu'un seul drapeau pour
- *  qu'une spec qui n'en veut qu'une le dise, sans hériter des deux autres.
+ * PROFIL DE MESURE (défaut, TOUTES les specs depuis #837) : exempte
+ * `[aria-hidden="true"]` (select « bulle » de Radix Select dans un `<form>`, poignée
+ * `<span aria-hidden>` de l'action sheet), compte la hitbox `::before`
+ * (`TOUCH_TARGET_HITBOX`, `src/lib/touchTarget.ts`) comme taille effective, et tient
+ * pour invisible un contrôle à `opacity: 0` ou `display: none`. Les trois règles restent
+ * des options INDÉPENDANTES (`MeasureOptions`) pour qu'une spec qui en écarte une le
+ * dise, sans renoncer aux deux autres.
+ * HISTORIQUE : #768 avait gardé `sprint-99` en profil « boîte seule » (`BOX_ONLY`, aucune
+ * des trois règles) par non-régression (DEC-S112-002). #837 l'a aligné après mesure
+ * (17 lignes identiques sous les deux profils, 3 runs) et a retiré `BOX_ONLY`.
  *
  * EXEMPTIONS COMMUNES (les deux profils) : `sr-only` (input file de l'avatar, jamais
  * ciblé au doigt) et poignées `*-grabber` des bottom sheets (28 px VOULUS, WCAG 2.5.8
@@ -79,13 +77,6 @@ export interface MeasureOptions {
 export interface TouchTargetOptions extends MeasureOptions {
   /** Préfixe des lignes de log (ex. `#754`) : relie le rapport à son issue. */
   tag: string
-}
-
-/** Profil BOÎTE SEULE de `sprint-99-touch-targets.spec.ts` (cf. en-tête). */
-export const BOX_ONLY: Required<MeasureOptions> = {
-  exemptAriaHidden: false,
-  countPseudoHitbox: false,
-  strictVisibility: false,
 }
 
 /**

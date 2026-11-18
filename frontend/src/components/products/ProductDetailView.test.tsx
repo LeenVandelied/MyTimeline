@@ -6,6 +6,7 @@ import userEvent from '@testing-library/user-event'
 import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { queryKeys } from '@/lib/query-keys'
+import { HANDLES_FORBIDDEN_INLINE } from '@/services/inlineErrorHandling'
 import type { Product } from '@/types/product'
 import { toLocalIsoDate } from '@/lib/date-iso'
 import { CreateEventProvider } from '@/components/layout/CreateEventContext'
@@ -54,10 +55,9 @@ vi.mock('@/hooks/useArchiveProduct', async (importOriginal) => {
   }
   return {
     ...actual,
-    useArchiveProduct: (userId: string | undefined) => {
-      const impl = archiveHooks.real ? actual.useArchiveProduct : fakeUseArchiveProduct
-      return impl(userId)
-    },
+    // #766 — les options de requête (opt-out 403) sont relayées au vrai hook.
+    useArchiveProduct: (...args: Parameters<typeof actual.useArchiveProduct>) =>
+      archiveHooks.real ? actual.useArchiveProduct(...args) : fakeUseArchiveProduct(args[0]),
     useIsProductArchivedHere: (productId: string) => {
       const impl = archiveHooks.real
         ? actual.useIsProductArchivedHere
@@ -399,7 +399,7 @@ describe('ProductDetailView', () => {
       await user.click(screen.getByTestId('product-detail-archive'))
       await user.click(screen.getByTestId('delete-dialog'))
 
-      expect(deleteProductMock).toHaveBeenCalledWith('user-1', 'p-alpha')
+      expect(deleteProductMock).toHaveBeenCalledWith('user-1', 'p-alpha', HANDLES_FORBIDDEN_INLINE)
       await waitFor(() => expect(pushMock).toHaveBeenCalledWith('/fr/products'))
       // L'invalidation a relancé la requête active et le cache ne contient plus le produit.
       await waitFor(() => expect(getProducts).toHaveBeenCalled())

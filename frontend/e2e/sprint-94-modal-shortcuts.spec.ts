@@ -1,6 +1,7 @@
 import { type Page } from '@playwright/test'
 import { expect, test } from './support/fixtures'
 import { PROD } from './support/accounts'
+import { sessionState } from './support/session'
 import { ensureAuthenticated } from './support/auth'
 import { neutralizeDevToolingPointerEvents } from './support/dev-tooling'
 import { getUserId, seedCategory, seedProduct, unique } from './support/products'
@@ -64,7 +65,7 @@ async function gotoTimeline(page: Page) {
   await expect(page.getByTestId('timeline-screen')).toBeVisible({ timeout: FIRST_NAV_BUDGET })
 }
 test.describe('#672 — raccourcis de la frise sous le panneau de création du shell', () => {
-  test.use({ storageState: PROD.storageState, viewport: DESKTOP })
+  test.use({ storageState: sessionState(PROD), viewport: DESKTOP })
 
   test('panneau ouvert : F/T/+/] sans effet ; panneau fermé : les mêmes touches agissent', async ({
     page,

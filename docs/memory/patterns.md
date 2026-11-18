@@ -1069,3 +1069,60 @@ Filtre ancré `addFilterBefore(…, AuthorizationFilter.class)` (donc après `Jw
 
 ## PAT-S112-008 — Un test « aucun toast » sur un statut que l'intercepteur ne toaste jamais se libelle en garde-fou, avec témoin
 409 sur `PUT /api/me/preferences` : vacant par construction comme preuve d'opt-out. Le garder comme non-régression (rougira si une branche 409 toastante apparaît) avec un témoin « même statut sans opt-out = 0 toast » qui documente la mesure. (Sprint 112 #833)
+
+## PAT-S113-001 — Retour de focus centralisé dans `DialogContent` : capturer dans `onOpenAutoFocus`
+`hooks/useReturnFocus.ts` branché dans `ui/dialog.tsx` : `document.activeElement` est lu dans `onOpenAutoFocus` (FocusScope 1.1.2 l'émet AVANT de déplacer le focus) et restauré dans `onCloseAutoFocus` s'il est encore `isConnected` ; le handler de l'hôte passe en premier et un `preventDefault` de sa part fait abstenir le hook (#700 intact). Couvre les dialogues contrôlés sans `Dialog.Trigger` (PIT-S112-001). Anti-pattern : capturer dans un `useEffect` de l'hôte, qui s'exécute après l'autofocus et capture le dialogue lui-même. (Sprint 113 #836)
+
+## PAT-S113-002 — Un mock de hook relaie ses arguments au vrai hook
+`fake(userId)` à signature figée avale tout paramètre ajouté plus tard (ici les `InlineErrorOptions`), et l'assertion sur le service échoue avec `undefined`. Écrire `(...args: Parameters<typeof actual.useX>) => actual.useX(...args)`. (Sprint 113 #766)
+
+## PAT-S113-003 — Cible de repli de focus en `tabIndex={-1}` sans `outline-none`
+Un élément focalisé par script (repli `<form>`) garde le contour `:focus-visible` du DS : `focus:outline-none` est refusé par le garde-fou `tsx-focus-utility.test.ts` (DEC-S58-001). (Sprint 113, review)
+
+## PAT-S114-001 — Ligne flex : l'élément prioritaire en base auto plafonnée, le sacrifiable en `flex-1 min-w-0 truncate`
+Nom + texte secondaire tronqués sur une ligne : le prioritaire en base auto plafonnée (`sm:max-w-[60%]`), le sacrifiable en `flex-1 min-w-0 truncate` (base 0), le bout de ligne en `ms-auto shrink-0`. Anti-pattern : `flex-1` sur l'élément à protéger face à un voisin en base auto — il est écrasé jusqu'à une lettre. (Sprint 114 #825)
+
+## PAT-S114-002 — Onglets à focus itinérant : `.focus()` dans le gestionnaire clavier, jamais dans un effet
+Refs par onglet scopées à l'instance ; `onKeyDown` fait `select(next)` puis `ref.focus()`. Un `useEffect(() => ref.focus(), [value])` volerait le focus au clic et à tout changement venu du parent. Le `.focus()` déclenché par une touche garde `:focus-visible` dans Chromium. (Sprint 114 #815)
+
+## PAT-S114-003 — Sonder un layout Tailwind sans `next dev` ni `next build`
+En vague parallèle (serveur Next réservé au lead), compiler `globals.css` via `postcss` + `@tailwindcss/postcss` (`createRequire` depuis `frontend/package.json`, `@source` vers la sonde), copier le balisage dans un HTML statique et le mesurer à la largeur réelle de la boîte. C'est une sonde, pas l'app : la spec E2E du lead tranche. (Sprint 114 #816)
+
+## PAT-S115-001 — Prouver un rendu nominal inchangé sans captures : empreinte géométrique de `body`
+Relever `tagName:left,top,width,height` de tous les éléments de `body` avant et après le correctif, par locale × largeur ; 0 diff = mise en page nominale identique sur cette plateforme. Anti-pattern : se fier aux seules specs de non-régression, qui n'échantillonnent que quelques éléments. (Sprint 115 #799, 587 éléments × 4 combinaisons)
+
+## PAT-S115-002 — Migration de masse dans les specs : script ligne à ligne + rejeu par lot + garde texte armée
+99 occurrences dans 72 specs : script qui ne réécrit que les lignes de code (pas les JSDoc, pas les `browser.newContext`), `prettier --write` + lint, rejeu par lots de 9, puis garde Vitest TEXTE (59 ms) qui rougit sur la forme brute, armée par mutation. Anti-pattern : `sed` global. (Sprint 115 #840)
+
+## PAT-S116-001 — Prouver qu'un `Retry-After` vient du BON seau quand deux seaux peuvent refuser
+Décaler leurs âges avec le TimeMeter piloté (seau du jeton créé à t0, requête à t0+30 s depuis une IP neuve dont le seau annoncerait 60) et asserter la valeur exacte (30). Anti-pattern : « présent et dans [1, 60] », vert quel que soit le seau. (Sprint 116 #567)
+
+## PAT-S116-002 — Tester un arrondi de délai avec une avance FRACTIONNAIRE
+Un seau neuf annonce 60 s pile, insensible à l'arrondi (vert sous mutation « arrondi inférieur »). Avancer de 20,5 s → asserter 40, puis 0,5 s restante → plancher 1. (Sprint 116 #567)
+
+## PAT-S116-003 — Un compteur statique qui modélise une sélection runtime appelle la MÊME fonction
+Le test de budget compte les comptes de chaque passe CI avec `selectSetupAccounts`, exportée et utilisée par `auth.setup.ts`, ancre l'appel syntaxiquement dans le setup, et n'accepte la variable qu'en préfixe de commande dans `ci.yml`. Anti-pattern : recopier la règle dans le test, ou lire un `env:` que le parseur ignore. (Sprint 116 #839)
+
+## PAT-S116-004 — E2E « absence de bannière » non vacant
+(1) attendre une preuve que l'intercepteur est passé (`console.error` du `catch` appelant) + deux `requestAnimationFrame` ; (2) témoin positif dans la même spec (500 sur une autre requête → bannière visible) ; (3) contrôle négatif rechargé à chaud qui rougit. Anti-pattern : `toHaveCount(0)` juste après le clic. (Sprint 116 #838)
+
+## PAT-S117-001 — Le helper de test appelle la fonction SANS l'argument optionnel quand il simule l'appelant réel
+`computeFit(extent, width)` sans 3ᵉ argument dans le helper qui simule `TimelineView` : la mutation du défaut rougit (4 → 8 rouges). Anti-pattern : un paramètre par défaut du helper égal à la constante, qui rend la mutation du défaut invisible. (Sprint 117 #804)
+
+## PAT-S117-002 — Fixture E2E qui dépend d'une mesure du rendu
+Stub `page.route` qui relit une variable `current` à chaque requête : produit provisoire → `goto` → mesure → `current = build(mesure)` → `page.reload()` → attente d'un attribut propre au jeu final (pas d'un simple compte, identique au provisoire). Anti-pattern : étendues codées en dur, calibrées pour un viewport. (Sprint 117 #805)
+
+## PAT-S117-003 — Garde desktop d'un composant qui ne s'ouvre que sous 768 px
+Ouvrir le tiroir à 375 px, puis `page.setViewportSize` à 1024 px et mesurer la MÊME instance (36 px desktop, 44 px mobile). Anti-pattern : déclarer le desktop « inchangé par construction » sans mesure. (Sprint 117 #837)
+
+## PAT-S120-001 — Valeur « client seulement » sans `setState` dans un effet
+`matchMedia`, `localStorage`, date du jour, `window.location` : `useSyncExternalStore(subscribe, clientSnapshot, serverSnapshot)` (cf. `src/hooks/useHydrated.ts`). L'instantané serveur sert au prérendu et à l'hydratation (aucun écart), puis React re-rend avec l'instantané client. L'instantané client doit être STABLE (même référence tant que rien ne change). Anti-pattern : `useState(null)` + `useEffect(() => setX(…), [])` (règle `set-state-in-effect`). (Sprint 120 #891)
+
+## PAT-S120-002 — Ref callback d'un ENFANT qui lit des valeurs fraîches d'un hook du PARENT
+Écrire ces refs en `useInsertionEffect` (phase mutation, avant l'attach des refs en phase layout). En `useLayoutEffect`, React les écrirait après l'attach des refs enfants : valeurs du commit précédent. (Sprint 120 #891, `useTimelineMobileState`)
+
+## PAT-S121-001 — Callback d'appelant lu dans une ref par un effet à effets de bord non idempotents
+`const cbRef = useRef(cb); useLayoutEffect(() => { cbRef.current = cb })`, lecture de `cbRef.current` dans le handler, deps de l'effet = seulement ce qui doit le rejouer (`[containerRef, active]` pour `useFocusTrap`). Anti-pattern : exiger un `useCallback` de chaque appelant (5 appelants stabilisaient, le 6e l'avait oublié). (Sprint 121 #858)
+
+## PAT-S121-002 — Préférence locale appliquée avant la première peinture sur toutes les pages
+Script inline généré depuis les constantes (`JSON.stringify`, liste fermée), rendu en tête de `<body>` par le layout SERVEUR qui porte `<html suppressHydrationWarning>` (`app/[locale]/layout.tsx`, `src/lib/density.ts`) ; le hook client ne sert qu'au choix et reste muet tant que `useHydrated()` est faux. Anti-pattern : le placer dans un layout imbriqué (`(app)`) — un `<script>` rendu pendant une navigation client ne s'exécute pas. Si une CSP front apparaît, ce script et celui de next-themes exigent nonce/hash. (Sprint 121 #898)

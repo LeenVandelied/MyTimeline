@@ -1,5 +1,6 @@
 import { test, expect, type Page } from '@playwright/test'
 import { LANDING_CTA, MOBILE_MENU, waitForFonts } from './support/contrast'
+import { applyTextX2 } from './support/text-zoom'
 
 /**
  * #614 — Barre de navigation COLLANTE de la landing, et traitement de ses liens.
@@ -260,17 +261,18 @@ test.describe('#614 — barre collante de la landing', () => {
  * Mesuré avant correctif (hauteur FIGÉE 93 px), 1024 px `de` : nav sur deux lignes,
  * texte débordant de 11,5 px sous la barre et 12,5 px au-dessus. Après : la barre
  * grandit (134 px) et l'ancre suit sa hauteur réelle.
+ *
+ * #799 : la feuille ×2 vit désormais dans `support/text-zoom.ts` (partagée avec
+ * `sprint-115-landing-text-200.spec.ts`) ; elle double les 8 crans, dont `2xl`/`3xl`
+ * qui ne touchent pas la barre.
  */
-const TEXT_X2_CSS =
-  ':root{--text-2xs:26px!important;--text-xs:30px!important;--text-sm:34px!important;' +
-  '--text-md:42px!important;--text-lg:54px!important;--text-xl:70px!important}'
 
 test('1024 px, de, texte ×2 — la barre contient son texte et l’ancre suit sa hauteur', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1024, height: 800 })
   await gotoLanding(page, 'de')
-  await page.addStyleTag({ content: TEXT_X2_CSS })
+  await applyTextX2(page)
   await waitForFonts(page)
 
   const bar = page.getByTestId(BAR)
@@ -286,6 +288,11 @@ test('1024 px, de, texte ×2 — la barre contient son texte et l’ancre suit s
     const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT)
     for (let n = walker.nextNode(); n; n = walker.nextNode()) {
       if (!n.textContent?.trim()) continue
+      // #799 : `Range` ignore le rognage d'un `.sr-only` (PIT-S77-002) et rend la boîte
+      // de son texte NON PEINT. Depuis que le groupe droit passe à la ligne à ×2, le
+      // libellé masqué « Sprache ändern » sortait de 14,5 px sous la barre — un faux
+      // rouge, aucun pixel visible ne dépasse.
+      if (n.parentElement?.closest('.sr-only')) continue
       const range = document.createRange()
       range.selectNodeContents(n)
       for (const r of Array.from(range.getClientRects())) {

@@ -11,7 +11,7 @@
 ## Stack
 
 - **Backend** : Java 21 + Spring Boot 3.4.13 + Hibernate/JPA + Spring Security + JWT (JJWT)
-- **Frontend** : Next.js 15 (Turbopack) + TypeScript 5 + Tailwind CSS v4 + Radix UI
+- **Frontend** : Next.js 16 (Turbopack en dev, `next build --webpack`) + TypeScript 5 + Tailwind CSS v4 + Radix UI
 - **Forms** : react-hook-form + Zod
 - **i18n** : next-intl + Crowdin (locale principale : `fr`)
 - **DB** : PostgreSQL (eventmanager @ localhost:5432)

@@ -1,5 +1,6 @@
 import { test, expect } from './support/fixtures'
 import { PROD } from './support/accounts'
+import { sessionState } from './support/session'
 import {
   getUserId,
   seedCategory,
@@ -86,7 +87,7 @@ import {
  * production (#462) ; le dossier est dans `sprint-62-select-focus-indicator.spec.ts`.
  */
 
-test.use({ storageState: PROD.storageState })
+test.use({ storageState: sessionState(PROD) })
 
 // DeleteConfirmDialog expose des data-testid stables (RF1 #218) : on cible ces
 // hooks plutôt que des libellés i18n devinés (anti-fragilité, cf. fix CI e2e).

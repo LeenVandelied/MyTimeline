@@ -12,6 +12,7 @@ import { EventCategoryField } from '@/components/events/EventCategoryField'
 import { EventFormDrawer } from '@/components/events/EventFormDrawer'
 import { useEventEditConflict } from '@/hooks/useEventEditConflict'
 import { deleteEvent } from '@/services/eventService'
+import { HANDLES_FORBIDDEN_INLINE } from '@/services/inlineErrorHandling'
 import { categoryColorsOf } from './lib'
 import { TimelineResponsive, type TimelineResponsiveProps } from './TimelineResponsive'
 import type { PositionedEvent } from './zoom'
@@ -94,7 +95,10 @@ export const TimelineEditHost: React.FC<TimelineEditHostProps> = (props) => {
   // par userId), qui LÈVE hors provider. OK aujourd'hui (dashboard + ProductDetailView
   // rendent sous AuthProvider) ; verrouillé par TimelineEditHost.test.tsx (montage sous
   // AuthProvider). Toute nouvelle page routant cette frise doit préserver l'ancêtre.
-  const conflict = useEventEditConflict(editing?.id, handleEditDone)
+  //
+  // #766 — `EventEditForm` rend `submitState === 'forbidden'` (cause explicite) : le PATCH
+  // se retire du toast global « accès refusé » (sinon double signalement).
+  const conflict = useEventEditConflict(editing?.id, handleEditDone, HANDLES_FORBIDDEN_INLINE)
 
   const defaultValues = useMemo<EventEditFormValues | null>(() => {
     if (!editing) return null
@@ -142,9 +146,9 @@ export const TimelineEditHost: React.FC<TimelineEditHostProps> = (props) => {
   )
 
   // Chemin MOBILE : le tap sur « Supprimer » de l'action sheet ARME la cible (ouvre la
-  // confirmation) — il ne supprime rien. Stabilisé en `useCallback` : `TimelineActionSheet`
-  // monte `useFocusTrap`, dont les callbacks non stabilisés provoquent un vol de focus
-  // (BUG-S44-001).
+  // confirmation) — il ne supprime rien. Stabilisé en `useCallback` (historique BUG-S44-001 :
+  // `useFocusTrap` rejouait le piège sur un callback instable ; ce n'est plus le cas depuis
+  // #858, S121).
   const requestDelete = useCallback((target: PositionedEvent) => setDeleteTarget(target), [])
 
   /**
@@ -169,7 +173,9 @@ export const TimelineEditHost: React.FC<TimelineEditHostProps> = (props) => {
    */
   const runDelete = useCallback(
     async (id: string) => {
-      await deleteEvent(id)
+      // #766 — les deux chemins (mobile, desktop) passent par `DeleteConfirmDialog`, qui
+      // affiche `errors.forbidden` sur un 403 : opt-out du toast global.
+      await deleteEvent(id, HANDLES_FORBIDDEN_INLINE)
       queryClient.invalidateQueries({ queryKey: queryKeys.products.all })
       conflict.reset()
       closeEditor()
@@ -200,7 +206,7 @@ export const TimelineEditHost: React.FC<TimelineEditHostProps> = (props) => {
   }, [])
 
   // Instable (dépend de l'objet `conflict`) : `EventFormDrawer` le stabilise avant de le
-  // passer à `useFocusTrap` — pas de vol de focus à chaque rendu.
+  // passer à `useFocusTrap` (requis avant #858 ; le piège lit désormais `onEscape` en ref).
   const handleClose = useCallback(() => {
     conflict.reset()
     closeEditor()

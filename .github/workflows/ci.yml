@@ -61,7 +61,7 @@ jobs:
           persist-credentials: false
 
       - name: Set up JDK 21
-        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
+        uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v4
         with:
           distribution: temurin
           java-version: "21"
@@ -91,7 +91,7 @@ jobs:
       # rouge (report jamais atteint) declencherait la meme erreur et noierait le
       # signal.
       - name: Upload rapport de couverture JaCoCo
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: jacoco-coverage-report
           path: backend/target/site/jacoco/
@@ -110,10 +110,10 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Set up Node 20
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+      - name: Set up Node 22
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: "20"
+          node-version: "22"
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
@@ -136,7 +136,7 @@ jobs:
       # backend : `path:` est relatif a la RACINE du depot, pas au `working-directory`
       # `frontend` du job.
       - name: Upload rapport de couverture Vitest (lcov)
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: vitest-coverage-report
           path: frontend/coverage/
@@ -149,7 +149,7 @@ jobs:
       - name: Lint
         run: npm run lint
 
-      # Gate de FORMATAGE (#528). Distinct du lint : `next lint` (eslint) ne
+      # Gate de FORMATAGE (#528). Distinct du lint : `eslint .` (#885) ne
       # verifie PAS le formatage, donc une CI verte ne disait rien de prettier.
       # Defaut consigne sous BUG-S71-002, redecouvert aux S71/S75/S77 sans etre
       # tranche. Dette de 119 fichiers reformatee dans le meme commit que ce
@@ -214,16 +214,16 @@ jobs:
           persist-credentials: false
 
       - name: Set up JDK 21
-        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
+        uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v4
         with:
           distribution: temurin
           java-version: "21"
           cache: maven
 
-      - name: Set up Node 20
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+      - name: Set up Node 22
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: "20"
+          node-version: "22"
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
@@ -236,11 +236,11 @@ jobs:
 
       # Paire RS256 JETABLE, générée À L'EXÉCUTION (audit de couverture S50). Le dépôt est
       # PUBLIC : aucune clé n'y est committée, et celle-ci meurt avec le runner. Elle est ce
-      # qui rend la vérification de signature Edge (#323) exerçable en E2E — jusqu'ici, seule
+      # qui rend la vérification de signature du proxy (#323) exerçable en E2E — jusqu'ici, seule
       # une paire ÉPHÉMÈRE générée par le backend existait, dont le frontend ne connaissait
       # pas la clé publique.
       #
-      # ⚠ Les deux modes du middleware sont MUTUELLEMENT EXCLUSIFS sur une instance Next (la
+      # ⚠ Les deux modes du proxy sont MUTUELLEMENT EXCLUSIFS sur une instance Next (la
       # variable est lue au runtime) : la première passe E2E tourne DÉGRADÉE (frontend sans
       # clé publique, contrat #302 -> `auth-guard.spec.ts`), la seconde tourne VÉRIFIANTE
       # (`auth-signature.spec.ts`). Le BACKEND, lui, signe avec cette paire dans les deux cas.
@@ -282,9 +282,9 @@ jobs:
           # #323 — JWT_SECRET (HS256) supprimé. La clé PRIVÉE vient de la paire jetable
           # générée au step précédent (rien n'est committé, rien ne survit au runner) : c'est
           # elle qui permet à la 2e passe E2E de publier la clé PUBLIQUE appairée au frontend
-          # et d'exercer réellement la vérification de signature Edge (audit S50).
+          # et d'exercer réellement la vérification de signature du proxy (audit S50).
           # Avant : paire ÉPHÉMÈRE générée par le backend, dont personne d'autre ne connaissait
-          # la clé publique -> vérification Edge jamais exercée hors tests unitaires.
+          # la clé publique -> vérification du proxy jamais exercée hors tests unitaires.
           JWT_PRIVATE_KEY: ${{ env.E2E_JWT_PRIVATE_KEY }}
           # Secret HMAC dédié aux tokens de download d'export (CI-only, non secret).
           EXPORT_TOKEN_SECRET: Q0lPbmx5SW5zZWN1cmVFeHBvcnRUb2tlblNlY3JldEZvckUyRVRlc3RzMDEyMzQ1Njc4OQ==
@@ -309,22 +309,37 @@ jobs:
           echo "BACKEND_PID=$!" >> "$GITHUB_ENV"
 
       # Attente de la disponibilité RÉELLE du backend avant de lancer Playwright
-      # (évite le flaky). Pas d'actuator : on poll un endpoint connu — `/api/auth/me`
-      # renvoie 401 sans cookie, ce qui prouve que l'app répond (tout code HTTP < 500
-      # non vide = up). Timeout ~90s (boot Spring + Flyway).
+      # (évite le flaky). Timeout ~90s (boot Spring + Flyway).
+      # #406 (S116) — l'ancien commentaire niait la présence d'Actuator : FAUX depuis #37
+      # (`spring-boot-starter-actuator`, backend/pom.xml). DÉCISION : le poll BASCULE de
+      # `/api/auth/me` vers `/actuator/health`, comme `flyway-smoke` (plus bas) et le
+      # healthcheck du service `backend-e2e` de docker-compose.yml (MÊMES profils dev,e2e).
+      # Pourquoi : un 401 sur `/api/auth/me` prouve que la chaîne de filtres web répond,
+      # pas que l'application est prête ; `{"status":"UP"}` agrège les indicateurs (dont la
+      # base). Exposition vérifiée en profil dev,e2e : `permitAll` sur `/actuator/health`
+      # (SecurityConfig, #37), aucune propriété `management.*` qui le masquerait (défaut
+      # Spring Boot : health exposé sur le web), hors des créneaux de `RateLimitingFilter`,
+      # et l'indicateur `brevo` (seul à pouvoir rendre DOWN sans panne) est `@Profile("prod")`.
+      # En plus : `kill -0` sort AUSSITÔT si la JVM est morte (au lieu d'attendre 90 s).
+      # Pas de preuve sur un run réel avant la PR S116 : c'est le run CI de la PR qui la donne.
       - name: Wait for backend readiness
         working-directory: backend
         run: |
           for i in $(seq 1 45); do
-            code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/api/auth/me || echo 000)
-            if [ "$code" != "000" ] && [ "$code" -lt 500 ]; then
-              echo "Backend up (HTTP $code) après ${i} tentative(s)."
+            if ! kill -0 "$BACKEND_PID" 2>/dev/null; then
+              echo "Backend MORT avant d'être prêt — logs :"
+              tail -n 200 backend.log || true
+              exit 1
+            fi
+            if curl -sf --max-time 5 http://localhost:8080/actuator/health | grep -q '"status":"UP"'; then
+              echo "Backend UP (/actuator/health) après ${i} tentative(s)."
               exit 0
             fi
-            echo "Attente backend... (tentative ${i}, code=$code)"
+            echo "Attente backend... (tentative ${i})"
             sleep 2
           done
-          echo "Backend indisponible après timeout — logs :"
+          echo "Backend jamais UP après timeout — santé et logs :"
+          curl -s http://localhost:8080/actuator/health || true
           tail -n 200 backend.log || true
           exit 1
 
@@ -353,14 +368,14 @@ jobs:
       # reellement livre (SSG de `generateStaticParams()`, prerendu de
       # `/_not-found`, minification, `experimental.globalNotFound`).
       #
-      # UN SEUL `next build`, DEUX `next start`. `middleware.ts` lit
+      # UN SEUL `next build`, DEUX `next start`. `proxy.ts` lit
       # `AUTH_JWKS_URL` au RUNTIME, par requete, explicitement NON inlinee
       # au build (mesure #322) : seuls les PROCESS doivent differer, pas les
       # artefacts. Un second build couterait +2,5 a +3 min pour un resultat
       # identique.
       #
       # ⚠ LE POINT DUR, ET LA RAISON DE DEUX PORTS PLUTOT QU'UN REDEMARRAGE.
-      # Les deux modes du middleware sont MUTUELLEMENT EXCLUSIFS sur une instance
+      # Les deux modes du proxy sont MUTUELLEMENT EXCLUSIFS sur une instance
       # Next. Avant #462, c'est le redemarrage du `webServer` par Playwright entre
       # les deux passes qui les rendait tous deux exercables. Or des que
       # `PLAYWRIGHT_BASE_URL` est posee, `webServer` vaut `undefined` : plus aucun
@@ -377,11 +392,12 @@ jobs:
       # au demarrage n'aurait AUCUN effet et rendrait un 404 sur /api/*, que le
       # harnais deguise ensuite en rate-limit, en CORS ou en 409.
       #
-      # ⚠ COUPLAGE NOUVEAU, ASSUME : `next.config.mjs:61-65` fixe
-      # `ignoreBuildErrors: false` et `ignoreDuringBuilds: false`. Ce job rougit
-      # donc desormais sur une erreur de types ou de lint, en doublon du job
-      # `frontend`. C'est le prix d'un artefact de production : on ne peut pas
-      # tester le build sans le construire.
+      # ⚠ COUPLAGE NOUVEAU, ASSUME : `next.config.mjs` fixe
+      # `typescript.ignoreBuildErrors: false`. Ce job rougit donc desormais sur une
+      # erreur de types, en doublon du job `frontend`. Depuis Next 16 (#885),
+      # `next build` ne lint plus : le lint n'est couvert que par le job `frontend`.
+      # C'est le prix d'un artefact de production : on ne peut pas tester le build
+      # sans le construire.
       # =========================================================================
       - name: Build frontend (production)
         working-directory: frontend
@@ -532,9 +548,9 @@ jobs:
 
       # PASSE 2 — MODE VÉRIFIANT (audit de couverture S50), contre le SECOND serveur
       # de production (:3001), démarré AVEC `AUTH_JWKS_URL` pointant sur le JWKS du
-      # backend (#358) : le middleware y découvre la clé publique appairée à la clé
+      # backend (#358) : le proxy (`proxy.ts`) y découvre la clé publique appairée à la clé
       # privée en service, et vérifie alors vraiment la signature RS256. Sans cette
-      # passe, la chaîne backend -> Edge n'était prouvée que par des tests unitaires
+      # passe, la chaîne backend -> proxy n'était prouvée que par des tests unitaires
       # de part et d'autre, jamais bout à bout.
       #
       # ⚠ `AUTH_JWT_PUBLIC_KEY` reste posée sur le PROCESS DE TEST, et SEULEMENT là.
@@ -565,10 +581,17 @@ jobs:
         # deux steps, qui casse silencieusement si la passe 1 est réordonnée ou retirée.
         # ⚠ Depuis #462 ce filtre est ENCORE PLUS nécessaire : le `storageState` de la passe 1
         # porte un cookie posé sur :3000, et cette passe interroge :3001. Re-provisionner est le
-        # seul chemin correct. Le rate-limit (ARMÉ depuis #547) ne s'y oppose pas : ces 4 register
-        # + 4 login s'ajoutent à ceux de la passe 1 dans les MÊMES seaux, et le budget des deux
-        # passes (12 register, 12 login en nominal) tient sous les plafonds du profil `e2e` (30/30).
-        run: npx playwright test auth.setup.ts auth-signature.spec.ts --output=test-results/passe-2-rs256
+        # seul chemin correct.
+        # #839 — `E2E_SETUP_ACCOUNTS=shared` : la passe ne re-provisionne QUE `SHARED`, seul compte
+        # d'`auth-signature.spec.ts` (le setup `persist account identities` reste entier). Ce
+        # register + ce login s'ajoutent à ceux de la passe 1 dans les MÊMES seaux (rate-limit
+        # ARMÉ depuis #547) : budget des deux passes register 10 / login 11 en nominal, 20 / 23
+        # au pire cas, sous les plafonds du profil `e2e` (30/30) — au lieu de 13/14 et 23/26.
+        # ⚠ La variable reste en PRÉFIXE de la commande, pas dans `env:` : c'est là que
+        # `e2e-rate-limit-budget.test.ts` la lit pour compter le setup de CETTE passe, et il
+        # rougit si elle apparaît ailleurs dans ce fichier, ou si une spec de la passe utilise
+        # un compte non provisionné (élargir la liste ET recompter, pas l'inverse).
+        run: E2E_SETUP_ACCOUNTS=shared npx playwright test auth.setup.ts auth-signature.spec.ts --output=test-results/passe-2-rs256
 
       # #461 — DEUX chemins, pas un. Ils portent des choses différentes :
       #   - `playwright-report/` : le rapport HTML, écrit par le reporter `html`
@@ -589,7 +612,7 @@ jobs:
       # nommage des sous-dossiers load-bearing pour rien.
       - name: Upload Playwright report (on failure)
         if: failure()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: playwright-report
           path: |
@@ -676,7 +699,7 @@ jobs:
           persist-credentials: false
 
       - name: Set up JDK 21
-        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
+        uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v4
         with:
           distribution: temurin
           java-version: "21"
@@ -790,10 +813,10 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Set up Node 20
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+      - name: Set up Node 22
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: "20"
+          node-version: "22"
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 

@@ -1,6 +1,7 @@
 import { expect, test } from './support/fixtures'
 import { type Locator, type Page } from '@playwright/test'
 import { PROD } from './support/accounts'
+import { sessionState } from './support/session'
 import { ensureAuthenticated } from './support/auth'
 import { neutralizeDevToolingPointerEvents } from './support/dev-tooling'
 import { WCAG_AA_NON_TEXT, describeRendering, readStable, waitForFonts } from './support/contrast'
@@ -202,7 +203,7 @@ for (const scheme of SCHEMES) {
   test.describe(`#325 — mini-frise d'aperçu, thème ${scheme}`, () => {
     // `next-themes` est en `defaultTheme="system" enableSystem` : l'émulation
     // `colorScheme` suffit à poser `.dark` sur <html> (précédent : #337).
-    test.use({ storageState: PROD.storageState, viewport: DESKTOP_SHORT, colorScheme: scheme })
+    test.use({ storageState: sessionState(PROD), viewport: DESKTOP_SHORT, colorScheme: scheme })
 
     test('chaque élément du handoff §6 est rendu et lisible', async ({ page }) => {
       test.setTimeout(180_000)

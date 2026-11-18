@@ -92,9 +92,10 @@ export const EventFormDrawer: React.FC<EventFormDrawerProps> = ({
   const isCompact = useMediaQuery('(max-width: 1023px)')
 
   /**
-   * `useFocusTrap` liste `onEscape` en dépendance d'effet : un callback instable
-   * relance le piège à chaque rendu et VOLE le focus vers le premier focusable
-   * (BUG-S44-001). L'édition passe un `onClose` recréé à chaque rendu (il dépend de
+   * Historique BUG-S44-001 : `useFocusTrap` listait `onEscape` en dépendance d'effet et
+   * un callback instable relançait le piège à chaque rendu. Depuis #858 (S121) il lit
+   * `onEscape` dans une ref ; la stabilisation ci-dessous n'est plus requise par le
+   * piège mais reste inoffensive. L'édition passe un `onClose` recréé à chaque rendu (il dépend de
    * l'objet renvoyé par `useEventEditConflict`) : on le stabilise ICI, une fois pour
    * tous les appelants, plutôt que d'exiger un `useCallback` parfait de chacun.
    */

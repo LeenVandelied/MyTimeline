@@ -443,10 +443,12 @@ focalisé (atteint par `→`, cf. plus bas) — **24 cas, 4 côtés peints sur 4
   tablist** (réflexe à proscrire : `overflow-x-auto` « parce qu'elle déborde à
   390px ») — garde E2E `e2e/sprint-107-tab-focus-outline.spec.ts` (clair,
   2 routes × 2 largeurs, + auto-contrôle par la même mutation).
-- ⚠️ **Constaté en passant, hors périmètre** : `→` / `←` déplacent la **sélection**
-  mais PAS le focus (`components/ui/tabs.tsx` n'appelle aucun `.focus()`). Le focus
-  reste sur un onglet devenu `aria-selected="false"` et `tabIndex=-1` — écart au
-  motif APG « tablist à activation automatique ». Cf. RECOMMAND_FOLLOWUP du S107.
+- ✅ **Corrigé au Sprint 114 (#815)** : `→` / `←` / `Home` / `End` déplaçaient la
+  sélection sans le focus. `components/ui/tabs.tsx` appelle désormais `.focus()` sur
+  l'onglet nouvellement sélectionné, dans le gestionnaire clavier (jamais dans un
+  effet : un clic ou un changement venu du parent ne vole pas le focus), conformément
+  au motif APG « tablist à activation automatique ». `:focus-visible` est conservé.
+  Gardes : `ui/tabs.test.tsx` et `e2e/sprint-114-tabs-focus-follows.spec.ts`.
 
 ## 9 · Palette curatée des 12 couleurs — mesures (#577, Sprint 84)
 

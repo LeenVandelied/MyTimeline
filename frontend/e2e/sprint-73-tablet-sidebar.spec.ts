@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test'
 import { SHARED } from './support/accounts'
+import { sessionState } from './support/session'
 import { ensureAuthenticated } from './support/auth'
 import { neutralizeDevToolingPointerEvents } from './support/dev-tooling'
 
@@ -45,7 +46,7 @@ import { neutralizeDevToolingPointerEvents } from './support/dev-tooling'
  * `setup`) → zéro register. Tests de LECTURE seule : compte partagé.
  */
 
-test.use({ storageState: SHARED.storageState })
+test.use({ storageState: sessionState(SHARED) })
 
 /** Seuil `md` de Tailwind (48rem) : apparition de la sidebar repliée. */
 const MD = 768

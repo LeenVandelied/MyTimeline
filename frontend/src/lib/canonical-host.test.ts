@@ -20,7 +20,7 @@ beforeEach(() => {
  * #322 — Origine canonique des redirections du middleware (ADR-004 §Limites).
  *
  * Module PUR : aucun `NextRequest` ici. La composition réelle avec la garde et
- * avec next-intl est couverte par `middleware.test.ts`.
+ * avec next-intl est couverte par `proxy.test.ts`.
  */
 
 describe('parseCanonicalOrigins — formes acceptées', () => {

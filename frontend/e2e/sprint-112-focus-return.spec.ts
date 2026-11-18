@@ -63,7 +63,7 @@ import { trackSeed } from './support/seed-cleanup'
  * l'arbre et attaché `onClick` au CTA : c'est la barrière nommée `waitForEmptyStateHydrated`.
  */
 
-test.use({ storageState: sessionState(PROD), viewport: { width: 1280, height: 900 } })
+test.use({ storageState: sessionState(PROD) })
 
 /** `GET|POST /api/users/{userId}/products` — listing de `ProductsListView` et création. */
 const PRODUCTS_RE = /\/api\/users\/([^/]+)\/products(\?.*)?$/
@@ -189,193 +189,218 @@ test.afterEach(async ({ page }) => {
   }
 })
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// /products — onglet liste
-// ═══════════════════════════════════════════════════════════════════════════════
-test.describe('#700 — /products : focus au retour du tiroir ouvert depuis l’état vide', () => {
-  /** Remplit et soumet le vrai formulaire de création (catégorie semée). */
-  async function submitProduct(page: Page, dialog: Locator, categoryId: string): Promise<void> {
-    await dialog.getByTestId('product-name-input').fill(unique('S112 Focus Prod'))
-    await dialog.getByTestId('product-category-trigger').click()
-    await page.getByTestId(`product-category-option-${categoryId}`).click()
-    // Événement couplé : la visibilité du produit dans le listing est garantie.
-    await dialog.getByTestId('product-first-event-date').fill(todayIsoDate())
-    await dialog.getByTestId('product-submit').click()
-  }
+/**
+ * #836 (Sprint 113) — LES MÊMES CAS EN VIEWPORT MOBILE. Sous `sm`, les tiroirs
+ * (`ProductDrawer`, `CategoryDrawer`) sont rendus en bottom sheet ancrée en bas : le
+ * Sprint 112 n'avait mesuré que le desktop. Même code sous test, même `DialogContent`
+ * Radix ; seule la géométrie change.
+ */
+const VIEWPORTS = [
+  { label: 'desktop', size: { width: 1280, height: 900 } },
+  { label: 'mobile (bottom sheet)', size: { width: 375, height: 812 } },
+] as const
 
-  test('annulation (bouton puis Échap) → focus rendu au CTA de l’état vide', async ({ page }) => {
-    const stub = await stubList(page, PRODUCTS_RE)
-    stubs.push(stub)
-    await gotoProducts(page)
-    const cta = await waitForEmptyStateHydrated(page, 'products-empty')
+for (const viewport of VIEWPORTS) {
+  test.describe(viewport.label, () => {
+    test.use({ viewport: viewport.size })
 
-    const dialog = await openFromCta(page, cta)
-    await dialog.getByRole('button', { name: 'Annuler', exact: true }).click()
-    await expect(dialog).toBeHidden()
-    await expect(cta).toBeFocused()
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // /products — onglet liste
+    // ═══════════════════════════════════════════════════════════════════════════════
+    test.describe('#700 — /products : focus au retour du tiroir ouvert depuis l’état vide', () => {
+      /** Remplit et soumet le vrai formulaire de création (catégorie semée). */
+      async function submitProduct(page: Page, dialog: Locator, categoryId: string): Promise<void> {
+        await dialog.getByTestId('product-name-input').fill(unique('S112 Focus Prod'))
+        await dialog.getByTestId('product-category-trigger').click()
+        await page.getByTestId(`product-category-option-${categoryId}`).click()
+        // Événement couplé : la visibilité du produit dans le listing est garantie.
+        await dialog.getByTestId('product-first-event-date').fill(todayIsoDate())
+        await dialog.getByTestId('product-submit').click()
+      }
 
-    const again = await openFromCta(page, cta)
-    await page.keyboard.press('Escape')
-    await expect(again).toBeHidden()
-    await expect(cta).toBeFocused()
+      test('annulation (bouton puis Échap) → focus rendu au CTA de l’état vide', async ({
+        page,
+      }) => {
+        const stub = await stubList(page, PRODUCTS_RE)
+        stubs.push(stub)
+        await gotoProducts(page)
+        const cta = await waitForEmptyStateHydrated(page, 'products-empty')
+
+        const dialog = await openFromCta(page, cta)
+        await dialog.getByRole('button', { name: 'Annuler', exact: true }).click()
+        await expect(dialog).toBeHidden()
+        await expect(cta).toBeFocused()
+
+        const again = await openFromCta(page, cta)
+        await page.keyboard.press('Escape')
+        await expect(again).toBeHidden()
+        await expect(cta).toBeFocused()
+      })
+
+      test('création, rechargement au rythme du réseau → focus sur le bouton permanent', async ({
+        page,
+      }) => {
+        // Semis AVANT le premier chargement (staleTime 30 s, cf. `sprint-90`).
+        const category = await seedCategory(page, unique('S112 Focus Cat'))
+        const stub = await stubList(page, PRODUCTS_RE)
+        stubs.push(stub)
+        await gotoProducts(page)
+        const cta = await waitForEmptyStateHydrated(page, 'products-empty')
+
+        const dialog = await openFromCta(page, cta)
+        stub.setPhase('network')
+        await submitProduct(page, dialog, category.id)
+
+        await expect(dialog).toBeHidden()
+        await expect(page.getByTestId('products-table')).toBeVisible()
+        await expect(page.getByTestId('products-empty')).toHaveCount(0)
+        await expect(page.getByTestId('products-new-button')).toBeFocused()
+        expect(await focusIsOnBody(page), 'focus perdu sur body').toBe(false)
+      })
+
+      test('création, rechargement LENT (GET retenu) → CTA puis bouton permanent, jamais body', async ({
+        page,
+      }) => {
+        const category = await seedCategory(page, unique('S112 Focus Cat'))
+        const stub = await stubList(page, PRODUCTS_RE)
+        stubs.push(stub)
+        await gotoProducts(page)
+        const cta = await waitForEmptyStateHydrated(page, 'products-empty')
+
+        const dialog = await openFromCta(page, cta)
+        stub.setPhase('gated')
+        await submitProduct(page, dialog, category.id)
+
+        // Rechargement retenu : tiroir fermé, liste ENCORE vide, focus rendu au CTA.
+        await stub.held
+        await expect(dialog).toBeHidden()
+        await expect(page.getByTestId('products-empty')).toBeVisible()
+        await expect(cta).toBeFocused()
+
+        stub.release()
+        await expect(page.getByTestId('products-table')).toBeVisible()
+        await expect(page.getByTestId('products-empty')).toHaveCount(0)
+        await expect(page.getByTestId('products-new-button')).toBeFocused()
+        expect(await focusIsOnBody(page), 'focus perdu sur body').toBe(false)
+      })
+    })
+
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // /products — onglet Catégories
+    // ═══════════════════════════════════════════════════════════════════════════════
+    test.describe('#700 — catégories vides : focus au retour du tiroir ouvert depuis l’état vide', () => {
+      /** Remplit et soumet le vrai formulaire de création de catégorie. */
+      async function submitCategory(dialog: Locator): Promise<void> {
+        await dialog.getByTestId('category-name-input').fill(unique('S112 Focus Cat'))
+        // #577 — palette du handoff (motif `categories.spec.ts`).
+        await dialog.getByTestId('category-swatch-#3B62D4').click()
+        await dialog.getByTestId('category-submit').click()
+      }
+
+      /** Les cartes rendues (liste non vide) : au moins une `li` dans la vue. */
+      function categoryCards(page: Page): Locator {
+        return page.getByTestId('categories-view').locator('li')
+      }
+
+      test('annulation (bouton puis Échap) → focus rendu au CTA de l’état vide', async ({
+        page,
+      }) => {
+        const stub = await stubList(page, CATEGORIES_RE)
+        stubs.push(stub)
+        await openCategoriesTab(page)
+        const cta = await waitForEmptyStateHydrated(page, 'categories-empty')
+
+        const dialog = await openFromCta(page, cta)
+        await dialog.getByRole('button', { name: 'Annuler', exact: true }).click()
+        await expect(dialog).toBeHidden()
+        await expect(cta).toBeFocused()
+
+        const again = await openFromCta(page, cta)
+        await page.keyboard.press('Escape')
+        await expect(again).toBeHidden()
+        await expect(cta).toBeFocused()
+      })
+
+      test('création, rechargement au rythme du réseau → focus sur le bouton permanent', async ({
+        page,
+      }) => {
+        const stub = await stubList(page, CATEGORIES_RE)
+        stubs.push(stub)
+        await openCategoriesTab(page)
+        const cta = await waitForEmptyStateHydrated(page, 'categories-empty')
+
+        const dialog = await openFromCta(page, cta)
+        stub.setPhase('network')
+        await submitCategory(dialog)
+
+        await expect(dialog).toBeHidden()
+        await expect(categoryCards(page).first()).toBeVisible()
+        await expect(page.getByTestId('categories-empty')).toHaveCount(0)
+        await expect(page.getByTestId('categories-new-button')).toBeFocused()
+        expect(await focusIsOnBody(page), 'focus perdu sur body').toBe(false)
+      })
+
+      test('création, rechargement LENT (GET retenu) → CTA puis bouton permanent, jamais body', async ({
+        page,
+      }) => {
+        const stub = await stubList(page, CATEGORIES_RE)
+        stubs.push(stub)
+        await openCategoriesTab(page)
+        const cta = await waitForEmptyStateHydrated(page, 'categories-empty')
+
+        const dialog = await openFromCta(page, cta)
+        stub.setPhase('gated')
+        await submitCategory(dialog)
+
+        await stub.held
+        await expect(dialog).toBeHidden()
+        await expect(page.getByTestId('categories-empty')).toBeVisible()
+        await expect(cta).toBeFocused()
+
+        stub.release()
+        await expect(categoryCards(page).first()).toBeVisible()
+        await expect(page.getByTestId('categories-empty')).toHaveCount(0)
+        await expect(page.getByTestId('categories-new-button')).toBeFocused()
+        expect(await focusIsOnBody(page), 'focus perdu sur body').toBe(false)
+      })
+    })
+
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // Témoin : tiroir ouvert depuis le BOUTON PERMANENT (liste non vide, réseau réel)
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // Même gestionnaire `onCloseAutoFocus` : la branche « pas depuis l'état vide » était
+    // laissée à Radix, qui ne rend le focus qu'à un `Dialog.Trigger` — absent ici.
+    test.describe('#700 — témoin : tiroir ouvert depuis le bouton permanent', () => {
+      test('/products : annulation → focus rendu à « Nouveau produit »', async ({ page }) => {
+        const category = await seedCategory(page, unique('S112 Focus Cat'))
+        const userId = await getUserId(page)
+        await seedProduct(page, {
+          userId,
+          name: unique('S112 Focus Prod'),
+          categoryId: category.id,
+        })
+        await gotoProducts(page)
+        // Barrière d'hydratation : le tableau n'est rendu qu'après la requête CLIENT.
+        await expect(page.getByTestId('products-table')).toBeVisible()
+        const button = page.getByTestId('products-new-button')
+
+        const dialog = await openFromCta(page, button)
+        await dialog.getByRole('button', { name: 'Annuler', exact: true }).click()
+        await expect(dialog).toBeHidden()
+        await expect(button).toBeFocused()
+      })
+
+      test('catégories : annulation → focus rendu à « Nouvelle catégorie »', async ({ page }) => {
+        await seedCategory(page, unique('S112 Focus Cat'))
+        await openCategoriesTab(page)
+        await expect(page.getByTestId('categories-view').locator('li').first()).toBeVisible()
+        const button = page.getByTestId('categories-new-button')
+
+        const dialog = await openFromCta(page, button)
+        await dialog.getByRole('button', { name: 'Annuler', exact: true }).click()
+        await expect(dialog).toBeHidden()
+        await expect(button).toBeFocused()
+      })
+    })
   })
-
-  test('création, rechargement au rythme du réseau → focus sur le bouton permanent', async ({
-    page,
-  }) => {
-    // Semis AVANT le premier chargement (staleTime 30 s, cf. `sprint-90`).
-    const category = await seedCategory(page, unique('S112 Focus Cat'))
-    const stub = await stubList(page, PRODUCTS_RE)
-    stubs.push(stub)
-    await gotoProducts(page)
-    const cta = await waitForEmptyStateHydrated(page, 'products-empty')
-
-    const dialog = await openFromCta(page, cta)
-    stub.setPhase('network')
-    await submitProduct(page, dialog, category.id)
-
-    await expect(dialog).toBeHidden()
-    await expect(page.getByTestId('products-table')).toBeVisible()
-    await expect(page.getByTestId('products-empty')).toHaveCount(0)
-    await expect(page.getByTestId('products-new-button')).toBeFocused()
-    expect(await focusIsOnBody(page), 'focus perdu sur body').toBe(false)
-  })
-
-  test('création, rechargement LENT (GET retenu) → CTA puis bouton permanent, jamais body', async ({
-    page,
-  }) => {
-    const category = await seedCategory(page, unique('S112 Focus Cat'))
-    const stub = await stubList(page, PRODUCTS_RE)
-    stubs.push(stub)
-    await gotoProducts(page)
-    const cta = await waitForEmptyStateHydrated(page, 'products-empty')
-
-    const dialog = await openFromCta(page, cta)
-    stub.setPhase('gated')
-    await submitProduct(page, dialog, category.id)
-
-    // Rechargement retenu : tiroir fermé, liste ENCORE vide, focus rendu au CTA.
-    await stub.held
-    await expect(dialog).toBeHidden()
-    await expect(page.getByTestId('products-empty')).toBeVisible()
-    await expect(cta).toBeFocused()
-
-    stub.release()
-    await expect(page.getByTestId('products-table')).toBeVisible()
-    await expect(page.getByTestId('products-empty')).toHaveCount(0)
-    await expect(page.getByTestId('products-new-button')).toBeFocused()
-    expect(await focusIsOnBody(page), 'focus perdu sur body').toBe(false)
-  })
-})
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// /products — onglet Catégories
-// ═══════════════════════════════════════════════════════════════════════════════
-test.describe('#700 — catégories vides : focus au retour du tiroir ouvert depuis l’état vide', () => {
-  /** Remplit et soumet le vrai formulaire de création de catégorie. */
-  async function submitCategory(dialog: Locator): Promise<void> {
-    await dialog.getByTestId('category-name-input').fill(unique('S112 Focus Cat'))
-    // #577 — palette du handoff (motif `categories.spec.ts`).
-    await dialog.getByTestId('category-swatch-#3B62D4').click()
-    await dialog.getByTestId('category-submit').click()
-  }
-
-  /** Les cartes rendues (liste non vide) : au moins une `li` dans la vue. */
-  function categoryCards(page: Page): Locator {
-    return page.getByTestId('categories-view').locator('li')
-  }
-
-  test('annulation (bouton puis Échap) → focus rendu au CTA de l’état vide', async ({ page }) => {
-    const stub = await stubList(page, CATEGORIES_RE)
-    stubs.push(stub)
-    await openCategoriesTab(page)
-    const cta = await waitForEmptyStateHydrated(page, 'categories-empty')
-
-    const dialog = await openFromCta(page, cta)
-    await dialog.getByRole('button', { name: 'Annuler', exact: true }).click()
-    await expect(dialog).toBeHidden()
-    await expect(cta).toBeFocused()
-
-    const again = await openFromCta(page, cta)
-    await page.keyboard.press('Escape')
-    await expect(again).toBeHidden()
-    await expect(cta).toBeFocused()
-  })
-
-  test('création, rechargement au rythme du réseau → focus sur le bouton permanent', async ({
-    page,
-  }) => {
-    const stub = await stubList(page, CATEGORIES_RE)
-    stubs.push(stub)
-    await openCategoriesTab(page)
-    const cta = await waitForEmptyStateHydrated(page, 'categories-empty')
-
-    const dialog = await openFromCta(page, cta)
-    stub.setPhase('network')
-    await submitCategory(dialog)
-
-    await expect(dialog).toBeHidden()
-    await expect(categoryCards(page).first()).toBeVisible()
-    await expect(page.getByTestId('categories-empty')).toHaveCount(0)
-    await expect(page.getByTestId('categories-new-button')).toBeFocused()
-    expect(await focusIsOnBody(page), 'focus perdu sur body').toBe(false)
-  })
-
-  test('création, rechargement LENT (GET retenu) → CTA puis bouton permanent, jamais body', async ({
-    page,
-  }) => {
-    const stub = await stubList(page, CATEGORIES_RE)
-    stubs.push(stub)
-    await openCategoriesTab(page)
-    const cta = await waitForEmptyStateHydrated(page, 'categories-empty')
-
-    const dialog = await openFromCta(page, cta)
-    stub.setPhase('gated')
-    await submitCategory(dialog)
-
-    await stub.held
-    await expect(dialog).toBeHidden()
-    await expect(page.getByTestId('categories-empty')).toBeVisible()
-    await expect(cta).toBeFocused()
-
-    stub.release()
-    await expect(categoryCards(page).first()).toBeVisible()
-    await expect(page.getByTestId('categories-empty')).toHaveCount(0)
-    await expect(page.getByTestId('categories-new-button')).toBeFocused()
-    expect(await focusIsOnBody(page), 'focus perdu sur body').toBe(false)
-  })
-})
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// Témoin : tiroir ouvert depuis le BOUTON PERMANENT (liste non vide, réseau réel)
-// ═══════════════════════════════════════════════════════════════════════════════
-// Même gestionnaire `onCloseAutoFocus` : la branche « pas depuis l'état vide » était
-// laissée à Radix, qui ne rend le focus qu'à un `Dialog.Trigger` — absent ici.
-test.describe('#700 — témoin : tiroir ouvert depuis le bouton permanent', () => {
-  test('/products : annulation → focus rendu à « Nouveau produit »', async ({ page }) => {
-    const category = await seedCategory(page, unique('S112 Focus Cat'))
-    const userId = await getUserId(page)
-    await seedProduct(page, { userId, name: unique('S112 Focus Prod'), categoryId: category.id })
-    await gotoProducts(page)
-    // Barrière d'hydratation : le tableau n'est rendu qu'après la requête CLIENT.
-    await expect(page.getByTestId('products-table')).toBeVisible()
-    const button = page.getByTestId('products-new-button')
-
-    const dialog = await openFromCta(page, button)
-    await dialog.getByRole('button', { name: 'Annuler', exact: true }).click()
-    await expect(dialog).toBeHidden()
-    await expect(button).toBeFocused()
-  })
-
-  test('catégories : annulation → focus rendu à « Nouvelle catégorie »', async ({ page }) => {
-    await seedCategory(page, unique('S112 Focus Cat'))
-    await openCategoriesTab(page)
-    await expect(page.getByTestId('categories-view').locator('li').first()).toBeVisible()
-    const button = page.getByTestId('categories-new-button')
-
-    const dialog = await openFromCta(page, button)
-    await dialog.getByRole('button', { name: 'Annuler', exact: true }).click()
-    await expect(dialog).toBeHidden()
-    await expect(button).toBeFocused()
-  })
-})
+}

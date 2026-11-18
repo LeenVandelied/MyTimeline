@@ -62,7 +62,7 @@ export type ArchivedProduct = z.infer<typeof archivedProductSchema>
  */
 export const productCreateSchema = z.object({
   name: z.string().min(1).max(100),
-  category: z.string().uuid(),
+  category: z.guid(),
   color: hexColorSchema.optional(),
   events: z.array(eventCreationSchema).optional(),
 })
@@ -88,7 +88,7 @@ export type ProductCreate = z.infer<typeof productCreateSchema>
 export const productUpdateSchema = z
   .object({
     name: z.string().min(1).max(100).optional(),
-    categoryId: z.string().uuid().optional(),
+    categoryId: z.guid().optional(),
     color: hexColorSchema.optional(),
     clearColor: z.literal(true).optional(),
   })

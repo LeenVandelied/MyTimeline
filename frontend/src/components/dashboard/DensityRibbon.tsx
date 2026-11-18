@@ -169,43 +169,36 @@ export const DensityRibbon: React.FC<DensityRibbonProps> = ({
     setVpStart((v) => Math.round(v))
   }, [])
 
-  const onPointerDown = useCallback(
-    (e: React.PointerEvent<HTMLDivElement>) => {
-      if (e.pointerType === 'mouse' && e.button !== 0) return
-      if (dragRef.current) return
-      e.currentTarget.setPointerCapture?.(e.pointerId)
-      dragRef.current = { pointerId: e.pointerId, x0: e.clientX, origin: start }
-      setDragging(true)
-    },
-    [start],
-  )
+  // #891 — gestionnaires posés sur un élément DOM : la mémoïsation manuelle n'apportait
+  // rien et la règle preserve-manual-memoization la rejetait (valeur non préservable).
+  const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.pointerType === 'mouse' && e.button !== 0) return
+    if (dragRef.current) return
+    e.currentTarget.setPointerCapture?.(e.pointerId)
+    dragRef.current = { pointerId: e.pointerId, x0: e.clientX, origin: start }
+    setDragging(true)
+  }
 
-  const onPointerMove = useCallback(
-    (e: React.PointerEvent<HTMLDivElement>) => {
-      const drag = dragRef.current
-      if (!drag || drag.pointerId !== e.pointerId) return
-      const trackWidthPx = trackRef.current?.getBoundingClientRect().width ?? 0
-      setVpStart(
-        dragViewportStart({
-          originStart: drag.origin,
-          deltaPx: e.clientX - drag.x0,
-          trackWidthPx,
-          rangeDays,
-        }),
-      )
-    },
-    [rangeDays],
-  )
+  const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    const drag = dragRef.current
+    if (!drag || drag.pointerId !== e.pointerId) return
+    const trackWidthPx = trackRef.current?.getBoundingClientRect().width ?? 0
+    setVpStart(
+      dragViewportStart({
+        originStart: drag.origin,
+        deltaPx: e.clientX - drag.x0,
+        trackWidthPx,
+        rangeDays,
+      }),
+    )
+  }
 
-  const onKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLDivElement>) => {
-      const next = keyToViewportStart(e.key, start, rangeDays)
-      if (next === null) return
-      e.preventDefault()
-      setVpStart(next)
-    },
-    [start, rangeDays],
-  )
+  const onKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    const next = keyToViewportStart(e.key, start, rangeDays)
+    if (next === null) return
+    e.preventDefault()
+    setVpStart(next)
+  }
 
   const barTitle = (b: DensityBucket) => `${fmt.format(b.date)} · ${nf.format(b.count)}`
 
@@ -295,7 +288,7 @@ export const DensityRibbon: React.FC<DensityRibbonProps> = ({
         // La règle est DANS le rail : elle défile avec les barres.
         <div className="relative">
           <div
-            className="scrollbar-none flex h-24 overflow-x-auto pr-6"
+            className="flex h-24 scrollbar-none overflow-x-auto pr-6"
             role="img"
             aria-label={t('label', { days: rangeDays })}
             data-testid="dashboard-density-ribbon-scroll"

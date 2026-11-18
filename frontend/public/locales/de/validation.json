@@ -33,6 +33,7 @@
     "endBeforeStart": "Das Enddatum muss am oder nach dem Startdatum liegen",
     "colorInvalid": "Ungültige Farbe (Hexadezimalformat erwartet, z. B. #3B82F6)",
     "submitError": "Beim Speichern ist ein Fehler aufgetreten, bitte versuche es erneut.",
+    "forbidden": "Änderung verweigert: Du bist nicht berechtigt, dieses Ereignis zu bearbeiten.",
     "conflict": "Dieses Ereignis wurde zwischenzeitlich geändert. Lade neu, um die neueste Version zu sehen.",
     "reload": "Neu laden"
   }

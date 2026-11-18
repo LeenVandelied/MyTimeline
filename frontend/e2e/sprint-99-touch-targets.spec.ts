@@ -1,13 +1,8 @@
 import { test, expect, type Locator, type Page, type Route } from '@playwright/test'
 import { ensureAuthenticated, minimalPngBuffer, openSettingsChapter } from './support/auth'
 import { SHARED } from './support/accounts'
-import {
-  BOX_ONLY,
-  EPS,
-  MIN_TARGET,
-  expectAllTouchable,
-  measureControls,
-} from './support/touch-targets'
+import { sessionState } from './support/session'
+import { EPS, MIN_TARGET, expectAllTouchable, measureControls } from './support/touch-targets'
 
 /**
  * #738 (Sprint 99) — CIBLES TACTILES 44 px des Réglages mobiles (WCAG 2.5.5).
@@ -39,7 +34,7 @@ import {
  * faisait moins de 44 px. Depuis #768, ce sélecteur est celui, UNIQUE, de
  * `support/touch-targets.ts` : la sonde protège donc aussi `sprint-101`/`sprint-102`.
  *
- * MESURE : `support/touch-targets.ts` (#768), profil BOÎTE SEULE (cf. `TOUCH`).
+ * MESURE : `support/touch-targets.ts` (#768), profil COMPLET depuis #837 (cf. `TOUCH`).
  *
  * DONNÉES : le compte partagé n'a en général ni avatar, ni autre session, ni
  * export async. Ces états sont donc FOURNIS par `page.route` (réponses conformes
@@ -65,12 +60,14 @@ const EXPORT_JOB_IDS = {
 } as const
 
 /**
- * Profil BOÎTE SEULE (`support/touch-targets.ts`) : pas d'exemption `aria-hidden`, pas
- * de hitbox `::before`, visibilité = boîte non nulle et `visibility` — exactement ce que
- * mesurait la copie locale d'avant #768. Aligner les réglages sur le profil complet est
- * une décision à part, pas un effet de bord de la factorisation.
+ * Profil COMPLET de `support/touch-targets.ts`, comme toutes les autres specs de cibles
+ * tactiles. #768 avait gardé ici un profil « boîte seule » (`BOX_ONLY`, DEC-S112-002) en
+ * non-régression de la factorisation ; #837 l'a retiré après mesure : 17 lignes `#738`/
+ * `#763` IDENTIQUES sous les deux profils, 3 runs sur 3, 14 passed (aucun réglage n'a de
+ * hitbox `::before`, de contrôle sous `aria-hidden` ni à `opacity: 0`). Si un réglage
+ * reçoit un jour `TOUCH_TARGET_HITBOX`, sa zone cliquable se prouve par `expectHitbox`.
  */
-const TOUCH = { tag: '#738', ...BOX_ONLY } as const
+const TOUCH = { tag: '#738' } as const
 
 /** Hauteur rendue d'un élément par testid (oracle desktop). */
 async function heightOf(page: Page, testId: string): Promise<number> {
@@ -182,7 +179,7 @@ async function expectOptionsTouchable(page: Page, trigger: string, min: number):
 }
 
 test.describe('#738 — Réglages mobiles (375 px) : toutes les cibles >= 44 px', () => {
-  test.use({ viewport: MOBILE, storageState: SHARED.storageState })
+  test.use({ viewport: MOBILE, storageState: sessionState(SHARED) })
 
   test('index des chapitres', async ({ page }) => {
     await ensureAuthenticated(page)
@@ -258,7 +255,7 @@ test.describe('#738 — Réglages mobiles (375 px) : toutes les cibles >= 44 px'
       label.append(input, track)
       el.prepend(label)
     })
-    const measured = await measureControls(root, TOUCH)
+    const measured = await measureControls(root)
     const probe = measured.filter((m) => m.label.includes('zz-probe-switch'))
     console.log(
       `[#763 sonde] ${probe.map((m) => `${m.label}=${m.width.toFixed(1)}x${m.height.toFixed(1)}`).join(' | ')}`,
@@ -335,7 +332,7 @@ test.describe('#738 — Réglages mobiles (375 px) : toutes les cibles >= 44 px'
  * texte fait 24,28 px avec la police du DS, pas les 20 px de `text-sm`).
  */
 test.describe('#738 — Réglages desktop (1280 px) : hauteurs inchangées', () => {
-  test.use({ viewport: DESKTOP, storageState: SHARED.storageState })
+  test.use({ viewport: DESKTOP, storageState: sessionState(SHARED) })
 
   test('profil : champs 36, submit 36, suppression avatar 36×36', async ({ page }) => {
     await withFakeAvatar(page)

@@ -100,11 +100,12 @@ export function useMobileKeyboard({
     hideRef.current = onKeyboardHide
   })
 
+  // #891 — retour à IDLE quand le hook est désactivé : ajusté PENDANT le rendu (état
+  // dérivé de `enabled`) plutôt que par un `setState` dans l'effet.
+  if (!enabled && !sameState(state, IDLE)) setState(IDLE)
+
   useEffect(() => {
-    if (!enabled) {
-      setState((prev) => (sameState(prev, IDLE) ? prev : IDLE))
-      return
-    }
+    if (!enabled) return
     if (typeof window === 'undefined') return
     const viewportAtMount = window.visualViewport
     // NO-OP explicite : pas d'API, pas de mesure, pas de style inline posé.

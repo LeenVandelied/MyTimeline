@@ -1,6 +1,7 @@
 import { expect, test } from './support/fixtures'
 import { type Locator, type Page } from '@playwright/test'
 import { PROD } from './support/accounts'
+import { sessionState } from './support/session'
 import { ensureAuthenticated } from './support/auth'
 import { neutralizeDevToolingPointerEvents } from './support/dev-tooling'
 import { getUserId, openCategoriesTab, seedCategory, seedProduct, unique } from './support/products'
@@ -37,7 +38,7 @@ import { EVENT_PALETTE } from '../src/lib/event-palette'
  * (`react-colorful`, piloté au pointeur — hors périmètre, comme au S73).
  */
 
-test.use({ storageState: PROD.storageState, viewport: { width: 1280, height: 900 } })
+test.use({ storageState: sessionState(PROD), viewport: { width: 1280, height: 900 } })
 
 const CLICK_BUDGET = 15_000
 const FIRST_NAV_BUDGET = 60_000

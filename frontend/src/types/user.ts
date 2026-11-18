@@ -2,7 +2,7 @@ import { z } from 'zod'
 import { THEME_OPTIONS } from '@/types/settings'
 
 export const UserSchema = z.object({
-  id: z.string().uuid(),
+  id: z.guid(),
   name: z.string(),
   username: z.string(),
   email: z.string().email('Invalid email'),

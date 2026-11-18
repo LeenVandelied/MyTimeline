@@ -4,6 +4,7 @@ import '../../src/styles/animations.css'
 import React, { ReactNode } from 'react'
 import { notFound } from 'next/navigation'
 import { NextIntlClientProvider } from 'next-intl'
+import { setRequestLocale } from 'next-intl/server'
 import { loadMessages } from '../../i18n'
 import { fontVariables, fontUiStyle } from '../fonts'
 import { ThemeProvider } from '@/components/theme-provider'
@@ -14,6 +15,7 @@ import { OfflineBanner } from '@/components/shared/OfflineBanner'
 import { ApiErrorTranslatorBridge } from '@/services/ApiErrorTranslatorBridge'
 import { AppToaster } from '@/components/ui/toaster'
 import { SUPPORTED_LOCALES, DEFAULT_LOCALE, isSupportedLocale } from '@/i18n/locales'
+import { DENSITY_INIT_SCRIPT } from '@/lib/density'
 
 /**
  * #413 — CE layout porte le `<html>` / `<body>` de l'application.
@@ -44,6 +46,17 @@ export default async function LocaleLayout({
     notFound()
   }
 
+  // #885 (Next 16) — SANS cet appel, toute la branche `[locale]` sort du
+  // prérendu statique : le `NextIntlClientProvider` serveur lit `formats`,
+  // `now` et `timeZone` via `getConfig()` SANS locale, donc `i18n.ts` attend
+  // `requestLocale`, qui retombe sur `headers()` (rendu dynamique). Mesuré à la
+  // montée : les 13 routes `/[locale]/*` passaient de ● (SSG, 52 pages) à ƒ.
+  // `next/root-params` (voie recommandée par next-intl 4.14) ne s'applique pas :
+  // `[locale]` n'est PAS un paramètre racine ici, le layout racine étant
+  // `app/layout.tsx` (cf. #413). `setRequestLocale` reste le mécanisme
+  // documenté pour ce cas. Filet : la table des routes de `next build`.
+  setRequestLocale(locale)
+
   const messages = await loadMessages(locale)
 
   return (
@@ -60,6 +73,17 @@ export default async function LocaleLayout({
       style={fontUiStyle}
     >
       <body>
+        {/*
+          #898 — densité persistée appliquée AVANT la première peinture et l'hydratation,
+          sur TOUTES les pages (avant : seule la section Préférences, via `useDensity`).
+          Premier enfant de <body>, script inline bloquant : il s'exécute avant que le
+          reste du corps soit analysé, donc aucune peinture en densité normale. Rendu par
+          ce layout SERVEUR : présent dans le HTML servi, jamais créé côté client (un
+          <script> rendu par React au client ne s'exécute pas). L'attribut qu'il pose sur
+          <html> est couvert par `suppressHydrationWarning` ci-dessus. Pas de nonce : le
+          frontend ne sert aucune CSP (vérifié #898), même cas que le script next-themes.
+        */}
+        <script dangerouslySetInnerHTML={{ __html: DENSITY_INIT_SCRIPT }} />
         {/*
           Ordre des providers (imposé) : Theme (S6 #45) > Auth (S7 #40)
           > Query (S7 #48, inséré entre AuthProvider et {children}).

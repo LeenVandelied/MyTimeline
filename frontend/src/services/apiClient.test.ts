@@ -428,4 +428,73 @@ describe('apiClient response interceptor', () => {
     networkStatusStore.clear()
     vi.useRealTimers()
   })
+
+  /**
+   * #838 — un 500 déclaré traité inline (`inlineHandledStatuses: [500]`, cas du
+   * `PUT /me/preferences`) n'alimente PLUS le bus réseau #76 : sans quoi la
+   * bannière `OfflineBanner` « erreur serveur » s'affichait pour un échec sans
+   * conséquence visible. Les bords : même route sans l'option → report conservé ;
+   * l'opt-out vise le 500 seul (un 503 sur la même requête reporte) ; le 429 reste
+   * sans toast ni report ; un état server-error déjà posé par une AUTRE requête
+   * n'est pas effacé par ce 500 silencieux.
+   */
+  describe('#838 — bus réseau et opt-out 500 par requête', () => {
+    const preferencesError = (status: number, inline: boolean) => ({
+      response: { status },
+      config: {
+        url: '/me/preferences',
+        method: 'put',
+        ...(inline ? { inlineHandledStatuses: [500] } : {}),
+      },
+    })
+
+    it('500 avec inlineHandledStatuses [500] : aucun report server-error, aucun toast', async () => {
+      const { networkStatusStore } = await import('./networkStatus')
+      networkStatusStore.clear()
+      const error = preferencesError(500, true)
+      await expect(rejectionHandler!(error)).rejects.toBe(error)
+      expect(networkStatusStore.getIssue()).toBeNull()
+      expect(toastErrorMock).not.toHaveBeenCalled()
+      vi.useRealTimers()
+    })
+
+    it("500 sur la même route SANS l'option : report server-error et toast conservés", async () => {
+      const { networkStatusStore } = await import('./networkStatus')
+      networkStatusStore.clear()
+      await expect(rejectionHandler!(preferencesError(500, false))).rejects.toBeDefined()
+      expect(networkStatusStore.getIssue()).toBe('server-error')
+      expect(toastErrorMock).toHaveBeenCalledTimes(1)
+      networkStatusStore.clear()
+      vi.useRealTimers()
+    })
+
+    it("503 avec inlineHandledStatuses [500] : report conservé (l'opt-out vise le 500 seul)", async () => {
+      const { networkStatusStore } = await import('./networkStatus')
+      networkStatusStore.clear()
+      await expect(rejectionHandler!(preferencesError(503, true))).rejects.toBeDefined()
+      expect(networkStatusStore.getIssue()).toBe('server-error')
+      networkStatusStore.clear()
+      vi.useRealTimers()
+    })
+
+    it('429 (avec ou sans option) : ni toast ni report — comportement #831 inchangé', async () => {
+      const { networkStatusStore } = await import('./networkStatus')
+      networkStatusStore.clear()
+      await expect(rejectionHandler!(preferencesError(429, true))).rejects.toBeDefined()
+      await expect(rejectionHandler!(preferencesError(429, false))).rejects.toBeDefined()
+      expect(networkStatusStore.getIssue()).toBeNull()
+      expect(toastErrorMock).not.toHaveBeenCalled()
+      vi.useRealTimers()
+    })
+
+    it("un 500 traité inline n'efface pas un server-error posé par une autre requête", async () => {
+      const { networkStatusStore } = await import('./networkStatus')
+      networkStatusStore.clear()
+      await expect(rejectionHandler!(makeError(500))).rejects.toBeDefined()
+      await expect(rejectionHandler!(preferencesError(500, true))).rejects.toBeDefined()
+      expect(networkStatusStore.getIssue()).toBe('server-error')
+      networkStatusStore.clear()
+      vi.useRealTimers()
+    })
+  })
 })

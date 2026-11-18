@@ -132,7 +132,13 @@ export function useTimelineViewport(
 ): TimelineViewport {
   const [state, setState] = useState<ViewportState>(INITIAL_STATE)
   const stateRef = useRef(state)
-  stateRef.current = state
+  // #891 — miroir de `state` écrit en effet de layout, plus pendant le rendu
+  // (`react-hooks/refs`). Déclaré AVANT l'effet de layout qui appelle `sync()` : les
+  // effets s'exécutent dans l'ordre de déclaration, `sync` lit donc l'état du rendu
+  // courant. Ses autres appelants (rAF, minuterie de `resync`) passent après le commit.
+  useLayoutEffect(() => {
+    stateRef.current = state
+  }, [state])
 
   /**
    * `force` ignore l'hystérésis et RECALCULE les bandes depuis la fenêtre

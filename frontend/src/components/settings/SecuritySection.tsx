@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslations } from 'next-intl'
 import axios from 'axios'
@@ -40,7 +40,7 @@ export function SecuritySection() {
     defaultValues: { oldPassword: '', newPassword: '', confirmPassword: '' },
   })
 
-  const newPassword = form.watch('newPassword')
+  const newPassword = useWatch({ control: form.control, name: 'newPassword' })
 
   const onSubmit = async (values: ChangePasswordFormValues) => {
     form.clearErrors('root')

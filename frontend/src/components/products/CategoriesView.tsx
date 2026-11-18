@@ -14,6 +14,7 @@ import { EmptyState } from '@/components/shared/EmptyState'
 import { LoadingSkeleton } from '@/components/shared/LoadingSkeleton'
 import { useCategories } from '@/hooks/useCategories'
 import { useDeleteCategory } from '@/hooks/useDeleteCategory'
+import { HANDLES_FORBIDDEN_INLINE } from '@/services/inlineErrorHandling'
 import type { Category } from '@/types/category'
 
 /**
@@ -46,7 +47,9 @@ export function CategoriesView() {
   const t = useTranslations('products.categories')
 
   const categoriesQuery = useCategories(true)
-  const deleteMutation = useDeleteCategory()
+  // #766 — `handleDeleteConfirm` relance l'erreur et `DeleteConfirmDialog` affiche `errors.forbidden`
+  // sur un 403 : la requête se retire du toast global (sinon double signalement).
+  const deleteMutation = useDeleteCategory(HANDLES_FORBIDDEN_INLINE)
 
   const categories = React.useMemo(() => categoriesQuery.data ?? [], [categoriesQuery.data])
 
@@ -180,6 +183,9 @@ export function CategoriesView() {
                   aria-label={t('openEdit', { name: category.name })}
                   onClick={() => setEditCategory(category)}
                   onKeyDown={(e) => {
+                    // #836 — Entrée/Espace sur la corbeille remontaient jusqu'ici :
+                    // `preventDefault` annulait la suppression et ouvrait l'ÉDITION.
+                    if (e.target !== e.currentTarget) return
                     if (e.key === 'Enter' || e.key === ' ') {
                       e.preventDefault()
                       setEditCategory(category)

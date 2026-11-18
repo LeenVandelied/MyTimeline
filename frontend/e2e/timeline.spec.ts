@@ -2,6 +2,7 @@ import { test, expect } from './support/fixtures'
 import { type Page, type Route } from '@playwright/test'
 import { ensureAuthenticated } from './support/auth'
 import { PROD } from './support/accounts'
+import { sessionState } from './support/session'
 import { getUserId, seedCategory, seedProduct, todayIsoDate, unique } from './support/products'
 import { LANE_GUTTER_PX, revealSeededLane } from './support/timeline-lanes'
 
@@ -45,7 +46,7 @@ declare global {
  * spec connaît le nom seedé — les deux voies sont stables, aucune ne dépend de l'ordre.
  */
 
-test.use({ storageState: PROD.storageState })
+test.use({ storageState: sessionState(PROD) })
 
 const API = '/api'
 

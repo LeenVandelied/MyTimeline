@@ -4,13 +4,14 @@ import type { ReactNode } from 'react'
 import { MutationCache, QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useArchiveProduct, useIsProductArchivedHere } from './useArchiveProduct'
 import { queryKeys } from '@/lib/query-keys'
+import { HANDLES_FORBIDDEN_INLINE } from '@/services/inlineErrorHandling'
 import type { Product } from '@/types/product'
 
 /**
  * PIT-S92-004 — Archivage produit : `DELETE` via `deleteProduct`, puis (succès seulement)
  * retrait du produit du cache de la liste + invalidation du préfixe `products.all`.
  *
- * ⚠ Piège outillage documenté dans `useSetEventArchived.test.tsx` (Vitest 3.2.7) : un mock
+ * ⚠ Piège outillage documenté dans `useSetEventArchived.test.tsx` (mesuré sous Vitest 3.2.7, suite toujours verte sous 5.1.0) : un mock
  * partagé réinitialisé en `beforeEach` qui rend une promesse rejetée fait rapporter le rejet
  * comme erreur de test. Remède identique : un `vi.fn()` NEUF par test, porté par un objet
  * mutable (pas un `let` : PIT-S90-009), et les cas d'erreur passent par `mutate`. La
@@ -66,7 +67,19 @@ describe('useArchiveProduct', () => {
 
     await result.current.mutateAsync({ productId: 'p-1' })
 
-    expect(deleteProductMock).toHaveBeenCalledWith('user-1', 'p-1')
+    expect(deleteProductMock).toHaveBeenCalledWith('user-1', 'p-1', undefined)
+  })
+
+  it('#766 — transmet les options de requête (opt-out 403) au service', async () => {
+    deleteProductMock.mockResolvedValue(undefined)
+    const client = makeClient()
+    const { result } = renderHook(() => useArchiveProduct('user-1', HANDLES_FORBIDDEN_INLINE), {
+      wrapper: makeWrapper(client),
+    })
+
+    await result.current.mutateAsync({ productId: 'p-1' })
+
+    expect(deleteProductMock).toHaveBeenCalledWith('user-1', 'p-1', HANDLES_FORBIDDEN_INLINE)
   })
 
   it('succès : invalide products.all et retire le produit de la liste en cache', async () => {

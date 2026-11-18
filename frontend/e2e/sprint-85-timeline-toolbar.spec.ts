@@ -2,6 +2,7 @@ import { test, expect } from './support/fixtures'
 import { type Locator, type Page, type Route } from '@playwright/test'
 import { ensureAuthenticated } from './support/auth'
 import { PROD } from './support/accounts'
+import { sessionState } from './support/session'
 
 /**
  * #602 (Sprint 85) — Barre d'outils de l'écran Vue Timeline : boutons
@@ -27,7 +28,7 @@ import { PROD } from './support/accounts'
  * `waitForToolbarMounted` nomme cette barrière avant tout clic.
  */
 
-test.use({ storageState: PROD.storageState })
+test.use({ storageState: sessionState(PROD) })
 
 const PRODUCTS_LIST_RE = /\/api\/users\/[^/]+\/products(\?.*)?$/
 

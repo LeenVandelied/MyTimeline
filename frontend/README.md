@@ -5,11 +5,11 @@ complète et le démarrage de l'environnement de développement.
 
 ## Stack
 
-Next.js 15 (Turbopack) · TypeScript 5 · Tailwind CSS v4
+Next.js 16 (Turbopack en dev, webpack au build) · TypeScript 5 · Tailwind CSS v4
 
 ## Démarrer ce module seul
 
-Prérequis : Node 20 (version de la CI et de `frontend/Dockerfile`) — le README racine, lui,
+Prérequis : Node 22 (≥ 22.12, `engines` de `package.json` ; version de la CI et de `frontend/Dockerfile`) — le README racine, lui,
 ne demande que Docker et couvre l'installation complète.
 
 ```bash
@@ -17,7 +17,7 @@ npm ci
 npm run dev
 ```
 
-L'app router est sous [`app/`](./app), le middleware sous [`middleware.ts`](./middleware.ts).
+L'app router est sous [`app/`](./app), le middleware sous [`proxy.ts`](./proxy.ts).
 
 ## Overrides npm (`package.json` > `overrides`) — ne pas supprimer
 

@@ -262,7 +262,8 @@ describe('ProductDrawer', () => {
     await user.click(confirm)
 
     await waitFor(() => expect(archiveMutateAsync).toHaveBeenCalledWith({ productId: 'p3' }))
-    expect(useArchiveProductSpy).toHaveBeenCalledWith('user-1')
+    // #766 — opt-out 403 : `DeleteConfirmDialog` affiche `errors.forbidden`.
+    expect(useArchiveProductSpy).toHaveBeenCalledWith('user-1', HANDLES_FORBIDDEN_INLINE)
     await waitFor(() =>
       expect(toastSuccessMock).toHaveBeenCalledWith('common.toast.productArchived'),
     )

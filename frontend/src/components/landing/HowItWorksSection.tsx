@@ -13,7 +13,9 @@ import type { EventPaletteRole } from '@/lib/event-palette'
  * `docs/memory/sprints/sprint-103/maquette-landing-frise-cas-usage.md` §1.
  *
  * CONTENU DES 3 ANCIENNES FEATURES — rien n'est perdu :
- *   · rappels            → jalon `reminder` ;
+ *   · rappels            → jalon `reminder` — REFORMULÉ au S115 (#797) : le produit
+ *     n'envoie AUCUN rappel ; le jalon dit « voir venir l'échéance sur la frise ». La
+ *     clé `reminder` reste (testids, E2E) ; ne pas réintroduire de promesse d'envoi ;
  *   · visualisation      → jalon `coverage` (barres pleines sur la frise) + titre de section ;
  *   · organisation par produit/catégorie → jalon `deadline` (« rangé par produit et par
  *     catégorie ») — absent de la maquette, ajouté explicitement.

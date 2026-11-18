@@ -30,6 +30,17 @@ interface HomePageProps {
  * #613 (Sprint 103) — la section témoignages est RETIRÉE : ses 4 avis nominatifs étaient
  * inventés (FR codé en dur, hors i18n). Elle ne revient qu'avec de vraies citations
  * sourcées ; `HomePage.test.tsx` interdit sa réintroduction silencieuse.
+ *
+ * #799 (WCAG 1.4.4) — `break-words` (`overflow-wrap: break-word`) sur la racine, HÉRITÉ
+ * par toutes les sections. À texte ×2, des mots seuls dépassent leur colonne : `h1`
+ * du hero (« Organisieren » 417 px pour 343 à 375 px ; 537–679 px pour 396 à 1024 px,
+ * sur la frise animée), `h2` du bandeau final (« Organisation » 398 px pour 343), `h3`/`p`
+ * des jalons de la frise (« renouvellements », « Mindesthaltbarkeit » : ~250 px pour
+ * 227). Posé ici plutôt que section par section : une section future en hérite.
+ * `break-word` (et non `anywhere`) ne change PAS la taille min-content, donc aucune
+ * mise en page nominale : il n'agit que sur un mot qui ne tient pas sur sa ligne. Les
+ * libellés `white-space: nowrap` (frise du hero, badges) n'en sont pas affectés.
+ * Garde-fou : `e2e/sprint-115-landing-text-200.spec.ts`.
  */
 export default function HomePage({ params }: HomePageProps) {
   const defaultLocale = useLocale()
@@ -38,7 +49,7 @@ export default function HomePage({ params }: HomePageProps) {
   useSectionAnimation()
 
   return (
-    <div className="bg-bg text-ink min-h-screen">
+    <div className="bg-bg text-ink min-h-screen break-words">
       <HeaderSection locale={locale} />
       <HeroSection locale={locale} />
       <HowItWorksSection />

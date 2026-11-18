@@ -1,6 +1,7 @@
 import { type Locator, type Page } from '@playwright/test'
 import { expect, test } from './support/fixtures'
 import { PROD } from './support/accounts'
+import { sessionState } from './support/session'
 import { ensureAuthenticated } from './support/auth'
 import { neutralizeDevToolingPointerEvents } from './support/dev-tooling'
 import { getUserId, seedCategory, unique } from './support/products'
@@ -382,7 +383,7 @@ async function measureRegime(page: Page, viewport: { width: number; height: numb
 }
 
 test.describe('#714/#732 — TALL 390×844 : sheet CLAMPÉE, croix ENTIÈREMENT recouverte (décision B étendue)', () => {
-  test.use({ storageState: PROD.storageState, viewport: VIEWPORTS.tall })
+  test.use({ storageState: sessionState(PROD), viewport: VIEWPORTS.tall })
 
   test('(a)+(c) la sheet atteint `max-h-[92vh]` et le recouvrement vaut TOUTE la hauteur de la croix', async ({
     page,
@@ -422,7 +423,7 @@ test.describe('#714/#732 — TALL 390×844 : sheet CLAMPÉE, croix ENTIÈREMENT 
 })
 
 test.describe('#714 — MID 390×740 : croix ENTIÈREMENT recouverte (pire cas)', () => {
-  test.use({ storageState: PROD.storageState, viewport: VIEWPORTS.mid })
+  test.use({ storageState: sessionState(PROD), viewport: VIEWPORTS.mid })
 
   test('(a)+(c) le recouvrement vaut TOUTE la hauteur de la croix, et la bande d’overlay en est disjointe', async ({
     page,
@@ -484,7 +485,7 @@ test.describe('#714 — MID 390×740 : croix ENTIÈREMENT recouverte (pire cas)'
 })
 
 test.describe('#714 — SHORT 390×667 : sheet CLAMPÉE à 92vh, croix partiellement recouverte', () => {
-  test.use({ storageState: PROD.storageState, viewport: VIEWPORTS.short })
+  test.use({ storageState: sessionState(PROD), viewport: VIEWPORTS.short })
 
   test('(a)+(c) la sheet atteint bien `max-h-[92vh]` et le recouvrement reste PARTIEL et borné', async ({
     page,

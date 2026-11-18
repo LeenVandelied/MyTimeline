@@ -1,6 +1,7 @@
 import { expect, test } from './support/fixtures'
 import { type Page } from '@playwright/test'
 import { PROD } from './support/accounts'
+import { sessionState } from './support/session'
 import { ensureAuthenticated } from './support/auth'
 import { neutralizeDevToolingPointerEvents } from './support/dev-tooling'
 import { deleteProduct, getUserId, seedCategory, seedProduct, unique } from './support/products'
@@ -41,7 +42,7 @@ import { deleteProduct, getUserId, seedCategory, seedProduct, unique } from './s
  * PRÉREQUIS RUNTIME : backend + front avec proxy `/api` (cf. `playwright.config.ts`).
  */
 
-test.use({ storageState: PROD.storageState })
+test.use({ storageState: sessionState(PROD) })
 
 /** Portrait mobile de référence (iPhone 14). */
 const MOBILE_PORTRAIT = { width: 390, height: 844 }

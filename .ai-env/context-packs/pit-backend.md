@@ -974,6 +974,42 @@ Sortie `command not found` (exit 127) avalée par un `;`, puis la sonde `/api/au
 `pgrep -f` lit la ligne de commande complète, y compris celle du shell qui exécute la boucle : l'attente s'apparie à elle-même (tâche coupée à 10 min). Attendre sur un PID (`while kill -0 $PID`) ou sur un fichier produit, jamais sur un motif présent dans la commande. (Sprint 112, lead)
 
 
+## PIT-S113-003 — Sous le hook RTK, `vitest run` ne donne que `PASS (n) FAIL (n)`, même redirigé vers un fichier
+Aucun nom de test : impossible de savoir QUEL test a rougi lors d'un test de mutation. `rtk proxy npx vitest run --reporter=verbose`. À mettre dans tout briefing qui demande une preuve de non-vacuité. (Sprint 113, review)
+
+
+## PIT-S115-005 — Contre `next dev`, 7 faux rouges de préchargement connus, pas 4
+`sprint-106-product-detail` #698 (`:495`, `:529`, `:549`) rougit ×3 contre `next dev`, comme `sprint-90-first-contact` #629 ×4 : préchargement RSC absent en dev. A/B sur la version non migrée → mêmes rouges. Prévention : imputer ces 7 cas à l'environnement ; la suite qui fait foi tourne contre `next build` + `next start`. (Sprint 115 #840)
+
+
+## PIT-S116-001 — `Retry-After` n'est pas un en-tête de réponse CORS-safelisted
+Le front dev appelle `:8080` depuis `:3000` : sans `setExposedHeaders`, le JS ne lit pas `Retry-After` (seuls Cache-Control, Content-Language, Content-Length, Content-Type, Expires, Last-Modified, Pragma le sont). Le `CorsFilter` passe avant le limiteur, donc l'asserter SUR le 429. Prévention : tout nouvel en-tête de réponse destiné au JS passe par `SecurityConfig.setExposedHeaders`. (Sprint 116 #567)
+
+
+## PIT-S116-002 — Un seau de rate-limit à clé fournie par l'attaquant ne devient un oracle que s'il dépend de la base
+Le seau par jeton de reset-password est créé pour toute valeur ≤ 128 caractères, sans accès base : jeton réel et inconnu donnent le même 429 et le même `Retry-After`. Prévention : ne jamais introduire de lookup (existence/validité du jeton) avant `tryConsumeToken`, sinon le délai annoncé trahit l'existence. (Sprint 116 #567, audit sécurité)
+
+
+## PIT-S116-003 — Un `node_modules` resté en zod 3 se déguise en régression du code
+Après le passage à zod 4, le `node_modules` du worktree était en zod 3.24.2 : tous les tests important `types/settings.ts` levaient `z.guid is not a function`. Prévention : en début de sprint, comparer la version INSTALLÉE (`node -p "require('./node_modules/zod/package.json').version"`) au `package.json`, ou `npm ci` d'office si le lock a bougé. (Sprint 116 #838)
+
+
+## PIT-S116-005 — `warn-test-delegation` refuse toute commande dont le TEXTE contient `npx playwright test`
+Y compris un heredoc qui écrit cette chaîne dans un test ou un commentaire `ci.yml` : l'édition entière est refusée SANS être appliquée. Prévention : préfixer `SKIP_DELEGATION=1` ou passer par Write, et vérifier après un refus que rien n'a été écrit avant de rejouer. (Sprint 116 #839)
+
+
+## PIT-S118-001 — PR Dependabot npm rouges après rebase : le lock régénéré perd un pair optionnel imbriqué
+Dependabot retire `next-intl/node_modules/@swc/helpers` (pair optionnel de `@swc/core`) ; `npm ci` (npm 10) refuse le lock (`Missing: @swc/helpers@… from lock file`) et chaque `@dependabot rebase` reproduit l'erreur. Prévention : appliquer la montée en local (`npm install`, lock régénéré par npm 10) au lieu de re-rebaser. Suivi : #888. (Sprint 118 #882)
+
+
+## PIT-S119-001 — Spring 7 : `EntityManager` introuvable au démarrage de Tomcat, MockMvc vert
+Sous Spring Boot 4 / Spring Framework 7, `jpaSharedEM_entityManagerFactory` (Spring Data) n'est plus candidat à l'injection (`autowireCandidate=false`) : l'`EntityManager` vient du FactoryBean `entityManagerFactory`, reconnu seulement une fois instancié. Tomcat crée les filtres (`JwtFilter` → `UserDetailsService` → adaptateurs `*JpaImpl` injectés par constructeur) avant la fabrique → « No qualifying bean of type EntityManager » au boot réel et en `RANDOM_PORT`, alors que les tests MockMvc passent. Correctif : bean `EntityManager` partagé `@Fallback` (`infrastructure/config/JpaSharedEntityManagerConfig`). Prévention : après toute montée Spring, démarrer le jar (`java -jar`) ou un test `RANDOM_PORT`, jamais MockMvc seul. (Sprint 119 #886)
+
+
+## PIT-S119-002 — Boot 4 modulaire : une dépendance tierce ne suffit plus à activer son auto-configuration
+`flyway-core` seul ne migre plus au démarrage (il faut `spring-boot-starter-flyway`) ; `RestClient.Builder` n'est plus fourni par le starter web (il faut `spring-boot-starter-restclient`) ; `@AutoConfigureMockMvc` exige `spring-boot-starter-webmvc-test`, `@WithMockUser` `spring-boot-starter-security-test`. Symptômes : `NoSuchBeanDefinitionException` ou schéma absent sous `ddl-auto=validate`. Prévention : pour chaque techno utilisée, vérifier son starter dans la table du guide de migration Boot 4. (Sprint 119 #886)
+
+
 ---
 
 ## §2 — Index historique (titre = règle ; détail dans docs/memory/pitfalls.md)

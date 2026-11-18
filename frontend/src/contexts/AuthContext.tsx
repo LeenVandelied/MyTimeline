@@ -130,6 +130,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // #653 — AUCUN arbitrage de thème ici (décision S111 : connexion explicite
   // seulement ; un appareil déjà connecté suit le compte à sa reconnexion).
   useEffect(() => {
+    // #891 — faux positif de `set-state-in-effect` : `loadUser` est `async` et ne touche
+    // l'état qu'APRÈS `await getUserProfile()` (commitUser / setLoading), jamais de façon
+    // synchrone dans le corps de l'effet ; c'est la récupération de données au montage.
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- état posé après await, cf. ci-dessus
     void loadUser()
   }, [loadUser])
 
@@ -142,6 +146,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
    * `services/apiClient.ts` — ne pas la dupliquer ici (revue S111).
    * #833 — l'échec étant absorbé ici, le PUT opte out du toast global « erreur
    * serveur » (500) ; le 409 n'en a pas (aucune branche 409 dans l'intercepteur).
+   * #838 — la même option tait la bannière `OfflineBanner` sur ce 500 (bus réseau).
    */
   const persistThemeChoice = useCallback(
     async (choice: ThemeChoice): Promise<void> => {

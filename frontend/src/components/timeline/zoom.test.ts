@@ -10,11 +10,14 @@ import {
   computeRange,
   daysBetween,
   displayedEventDayExtent,
-  FIT_MARGIN_PX,
+  FIT_EDGE_AIR_PX,
+  FIT_MARGINS_PX,
+  type FitMargins,
   indexEventsByResource,
   initialZoomState,
   isWeekend,
   positionEvents,
+  scaleEventPositions,
   zoomReducer,
   DAY_WIDTH_PX,
   PIN_FOOTPRINT_PX,
@@ -353,45 +356,200 @@ describe('#597 recadrage (FIT)', () => {
     expect(computeFit({ startDay: 10, endDay: 20 }, 0)).toBeNull()
   })
 
+  // #804 — marges asymétriques : 40 px avant l'étendue, 135 px après (desktop).
+  const { leadPx: LEAD, trailPx: TRAIL } = FIT_MARGINS_PX.desktop
+
   it('étendue COURTE : niveau le plus fin (`day`), centrée', () => {
-    // Largeur utile 1000 − 2 × 40 = 920 px ; 5 j → 184 px/j idéal → `day` (96).
+    // Largeur utile 1000 − 40 − 135 = 825 px ; 5 j → 165 px/j idéal → `day` (96).
     const fit = computeFit({ startDay: 100, endDay: 105 }, 1000)
     expect(fit?.level).toBe('day')
-    const lead = FIT_MARGIN_PX + (920 - 5 * DAY_WIDTH_PX.day) / 2
+    const lead = LEAD + (825 - 5 * DAY_WIDTH_PX.day) / 2
     expect(fit?.offsetDays).toBeCloseTo(100 - lead / DAY_WIDTH_PX.day, 10)
   })
 
-  it('étendue d’un seul jour (un ponctuel) : `day`, centrée sur la date', () => {
+  it('étendue d’un seul jour (un ponctuel) : `day`, emprise pin + libellé centrée', () => {
     const fit = computeFit({ startDay: 50, endDay: 50 }, 1000)
     expect(fit?.level).toBe('day')
-    // La date tombe au milieu de la largeur utile (marges comprises).
-    expect(((fit?.offsetDays ?? 0) - 50) * -DAY_WIDTH_PX.day).toBeCloseTo(500, 10)
+    // #804 — la date tombe à 40 + 825 / 2 = 452,5 px : l'EMPRISE [date − 5, date + 100]
+    // est centrée (même air de part et d'autre), plus la date seule.
+    const datePx = (50 - (fit?.offsetDays ?? 0)) * DAY_WIDTH_PX.day
+    expect(datePx).toBeCloseTo(LEAD + (1000 - LEAD - TRAIL) / 2, 10)
+    expect(datePx - PIN_HALF_WIDTH_PX).toBeCloseTo(1000 - (datePx + PIN_FOOTPRINT_PX.desktop), 10)
   })
 
   it('étendue MOYENNE : le niveau le plus FIN qui tient (et le niveau plus fin déborde)', () => {
-    // 60 j dans 920 px → 15,3 px/j : `week` (34) déborde, `month` (12) tient.
+    // 60 j dans 825 px → 13,75 px/j : `week` (34) déborde, `month` (12) tient.
     const fit = computeFit({ startDay: 200, endDay: 260 }, 1000)
     expect(fit?.level).toBe('month')
-    expect(60 * DAY_WIDTH_PX.month).toBeLessThanOrEqual(920)
-    expect(60 * DAY_WIDTH_PX.week).toBeGreaterThan(920)
-    const lead = FIT_MARGIN_PX + (920 - 60 * DAY_WIDTH_PX.month) / 2
+    expect(60 * DAY_WIDTH_PX.month).toBeLessThanOrEqual(825)
+    expect(60 * DAY_WIDTH_PX.week).toBeGreaterThan(825)
+    const lead = LEAD + (825 - 60 * DAY_WIDTH_PX.month) / 2
     expect(fit?.offsetDays).toBeCloseTo(200 - lead / DAY_WIDTH_PX.month, 10)
   })
 
   it('étendue LONGUE : `year`, et alignée à gauche (marge comprise) si elle déborde encore', () => {
-    // 1000 j dans 1120 px → 1,12 px/j < 2,2 : aucun niveau ne tient.
+    // 1000 j dans 1025 px → 1,025 px/j < 2,2 : aucun niveau ne tient.
     const fit = computeFit({ startDay: 400, endDay: 1400 }, 1200)
     expect(fit?.level).toBe('year')
-    expect(fit?.offsetDays).toBeCloseTo(400 - FIT_MARGIN_PX / DAY_WIDTH_PX.year, 10)
+    expect(fit?.offsetDays).toBeCloseTo(400 - LEAD / DAY_WIDTH_PX.year, 10)
     // Deux ans tiennent en `year` dans un viewport large : centrés, pas alignés.
     const twoYears = computeFit({ startDay: 400, endDay: 1130 }, 1800)
     expect(twoYears?.level).toBe('year')
-    const lead = FIT_MARGIN_PX + (1720 - 730 * DAY_WIDTH_PX.year) / 2
+    const lead = LEAD + (1800 - LEAD - TRAIL - 730 * DAY_WIDTH_PX.year) / 2
     expect(twoYears?.offsetDays).toBeCloseTo(400 - lead / DAY_WIDTH_PX.year, 10)
   })
 
   it('décalage borné à 0 (l’étendue commence au bord de la piste)', () => {
     const fit = computeFit({ startDay: 1, endDay: 3 }, 1000)
     expect(fit?.offsetDays).toBe(0)
+  })
+})
+
+/**
+ * #804 — Après `F`, le libellé d'un pin en BOUT d'étendue reste dans la piste. On rejoue
+ * le cadrage de bout en bout sur les DONNÉES (étendue → `computeFit` → échelle du niveau
+ * retenu) et on relève l'emprise réelle de chaque événement (`eventTrackExtent` : pin à
+ * `date − 5`, libellé jusqu'à `date + PIN_FOOTPRINT_PX`) dans le repère du viewport
+ * (0 = bord droit de la gouttière, `width` = bord droit du conteneur).
+ * ⚠ Géométrie pure : la mesure en pixels RÉELS (police, troncature CSS) relève de l'E2E.
+ */
+describe('#804 recadrage : emprise pin + libellé en bout d’étendue', () => {
+  const rangeStart = new Date(2026, 0, 1)
+  const now = new Date(2026, 0, 1)
+  /** Piste utile d'un viewport desktop de 1000 px (gouttière 176 px). */
+  const W = 1000 - 176
+
+  const day = (n: number) => {
+    const d = addDays(rangeStart, n)
+    const mm = String(d.getMonth() + 1).padStart(2, '0')
+    const dd = String(d.getDate()).padStart(2, '0')
+    return `${d.getFullYear()}-${mm}-${dd}`
+  }
+  const pin = (id: string, n: number) => evt(id, day(n), day(n), 'r1', 'single')
+  const bar = (id: string, from: number, to: number) => evt(id, day(from), day(to), 'r2')
+
+  /**
+   * Emprises (px, repère viewport) de chaque événement après le cadrage `F`. Sans
+   * `margins`, `computeFit` est appelé comme le fait `TimelineView` (défaut desktop).
+   */
+  function framed(
+    events: FullCalendarEvent[],
+    width: number,
+    margins?: FitMargins,
+    footprint: number = PIN_FOOTPRINT_PX.desktop,
+  ) {
+    const indexed = indexEventsByResource(events, rangeStart, now)
+    const extent = displayedEventDayExtent(indexed, ['r1', 'r2'])
+    const fit = margins ? computeFit(extent, width, margins) : computeFit(extent, width)
+    if (!fit) throw new Error('cadrage nul')
+    const dw = DAY_WIDTH_PX[fit.level]
+    const scrollPx = fit.offsetDays * dw
+    const extents = new Map<string, { start: number; end: number }>()
+    for (const list of scaleEventPositions(indexed, dw, undefined, footprint).values()) {
+      for (const e of list) {
+        const { start, end } = eventTrackExtent(e)
+        extents.set(e.id, { start: start - scrollPx, end: end - scrollPx })
+      }
+    }
+    return { fit, extents }
+  }
+
+  /** Marges #597 (40 px des deux côtés) : contrôle négatif de chaque jeu. */
+  const LEGACY: FitMargins = { leadPx: 40, trailPx: 40 }
+  const EPS = 1e-9
+
+  it('marges dérivées de l’emprise du pin (demi-pin à gauche, pin + libellé à droite)', () => {
+    expect(FIT_MARGINS_PX.desktop).toEqual({
+      leadPx: PIN_HALF_WIDTH_PX + FIT_EDGE_AIR_PX,
+      trailPx: PIN_FOOTPRINT_PX.desktop + FIT_EDGE_AIR_PX,
+    })
+    expect(FIT_MARGINS_PX.mobile).toEqual({
+      leadPx: PIN_HALF_WIDTH_PX + FIT_EDGE_AIR_PX,
+      trailPx: PIN_FOOTPRINT_PX.mobile + FIT_EDGE_AIR_PX,
+    })
+    // Le bord gauche de #597 (40 px) ne bouge pas.
+    expect(FIT_MARGINS_PX.desktop.leadPx).toBe(40)
+    expect(FIT_MARGINS_PX.desktop.trailPx).toBe(135)
+    expect(FIT_MARGINS_PX.mobile.trailPx).toBe(125)
+  })
+
+  it('jeu 1 — deux pins qui remplissent la largeur : le libellé du dernier n’est plus coupé', () => {
+    // 21 j : avec 40/40 px, `week` (34 px/j) tenait juste — 714 px dans 744.
+    const events = [pin('first', 100), pin('last', 121)]
+    const legacy = framed(events, W, LEGACY).extents.get('last')!
+    expect(legacy.end, 'contrôle négatif #597 : libellé coupé').toBeGreaterThan(W)
+
+    const { fit, extents } = framed(events, W)
+    expect(fit.level).toBe('month')
+    expect(extents.get('last')!.end).toBeLessThanOrEqual(W - FIT_EDGE_AIR_PX + EPS)
+    expect(extents.get('first')!.start).toBeGreaterThanOrEqual(FIT_EDGE_AIR_PX - EPS)
+  })
+
+  it('jeu 2 — un pin seul : emprise entière, même air à gauche et à droite', () => {
+    const legacy = framed([pin('only', 300)], W, LEGACY).extents.get('only')!
+    // #597 centrait la DATE : l'air droit (412 − 100) était bien plus petit que le gauche.
+    expect(W - legacy.end).toBeLessThan(legacy.start)
+
+    const { fit, extents } = framed([pin('only', 300)], W)
+    expect(fit.level).toBe('day')
+    const e = extents.get('only')!
+    expect(e.start).toBeCloseTo(W - e.end, 10)
+    expect(e.end).toBeLessThanOrEqual(W - FIT_EDGE_AIR_PX + EPS)
+  })
+
+  it('jeu 3 — barre en tête, pin en queue : barre entière, libellé du pin entier', () => {
+    // 61 j : avec 40/40 px, `month` (12 px/j) tenait juste — 732 px dans 744.
+    const events = [bar('bar', 200, 230), pin('last', 261)]
+    const legacy = framed(events, W, LEGACY).extents.get('last')!
+    expect(legacy.end, 'contrôle négatif #597').toBeGreaterThan(W)
+
+    const { fit, extents } = framed(events, W)
+    expect(fit.level).toBe('quarter')
+    expect(extents.get('bar')!.start).toBeGreaterThanOrEqual(FIT_EDGE_AIR_PX - EPS)
+    expect(extents.get('last')!.end).toBeLessThanOrEqual(W - FIT_EDGE_AIR_PX + EPS)
+  })
+
+  it('jeu 4 — pin en tête (extrémité GAUCHE), pin au milieu, pin en queue, en `year`', () => {
+    // 650 j × 2,2 = 1430 px dans 1624 − 175 = 1449 : `year` tient, centré.
+    const width = 1800 - 176
+    const events = [pin('first', 400), pin('mid', 700), pin('last', 1050)]
+    const { fit, extents } = framed(events, width)
+    expect(fit.level).toBe('year')
+    // Gauche : le demi-pin qui déborde de la date reste dans la piste, avec l'air.
+    expect(extents.get('first')!.start).toBeGreaterThanOrEqual(FIT_EDGE_AIR_PX - EPS)
+    expect(extents.get('last')!.end).toBeLessThanOrEqual(width - FIT_EDGE_AIR_PX + EPS)
+  })
+
+  it('jeu 5 — étendue qui déborde même en `year` : alignée à gauche, pin de tête entier', () => {
+    const events = [pin('first', 400), pin('last', 1400)]
+    const { fit, extents } = framed(events, 1200 - 176)
+    expect(fit.level).toBe('year')
+    expect(extents.get('first')!.start).toBeCloseTo(FIT_EDGE_AIR_PX, 10)
+  })
+
+  it('mobile : marges mobiles (emprise 90 px) — le libellé du dernier pin tient', () => {
+    const width = 700
+    const events = [pin('first', 100), pin('last', 118)]
+    const legacy = framed(events, width, LEGACY, PIN_FOOTPRINT_PX.mobile).extents.get('last')!
+    expect(legacy.end, 'contrôle négatif #597').toBeGreaterThan(width)
+
+    const { extents } = framed(events, width, FIT_MARGINS_PX.mobile, PIN_FOOTPRINT_PX.mobile)
+    expect(extents.get('last')!.end).toBeLessThanOrEqual(width - FIT_EDGE_AIR_PX + EPS)
+    expect(extents.get('first')!.start).toBeGreaterThanOrEqual(FIT_EDGE_AIR_PX - EPS)
+  })
+
+  it('libellé plus long que le plancher : l’appelant élargit `trailPx` à la réserve réelle', () => {
+    // Réserve #746 d'un long titre (plafond 11 + 240 px) ; 54 j remplissent `month`.
+    const reserve = 251
+    const events = [pin('first', 100), pin('last', 154)]
+    const floorOnly = framed(events, W, undefined, reserve).extents.get('last')!
+    expect(floorOnly.end, 'le plancher 100 px ne couvre pas 251 px').toBeGreaterThan(W)
+
+    const widened: FitMargins = {
+      ...FIT_MARGINS_PX.desktop,
+      trailPx: Math.max(FIT_MARGINS_PX.desktop.trailPx, reserve + FIT_EDGE_AIR_PX),
+    }
+    const { extents } = framed(events, W, widened, reserve)
+    expect(extents.get('last')!.end).toBeLessThanOrEqual(W - FIT_EDGE_AIR_PX + EPS)
   })
 })

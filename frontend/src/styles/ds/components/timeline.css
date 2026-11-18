@@ -965,6 +965,18 @@
    z-index 1 : au-dessus des lanes, SOUS l'étiquette sticky (`--z-sticky`) et la ligne
    TODAY (`--z-cursor`). */
 .mt-tlm--landscape .mt-tlm__evt-wrap--pin{z-index:1;}
+/* #837 — même débordement pour le `⋯` d'une DURÉE (44 px dans la lane de 34 px) : la
+   lane suivante recouvrait ses 5 px du bas — mesuré par `expectClickableBox`
+   (`e2e/sprint-117-touch-targets`) : 3 points de bord sur 8 désignaient la lane
+   suivante, cible réelle ≈ 39 px. z-index sur le BOUTON (item flex : le z-index s'y
+   applique sans `position`), PAS sur le wrap : un wrap de durée en z-index 1 couvre de
+   sa boîte toute la hauteur de SA lane et, peint après la lane du dessus, captait le
+   débordement bas du pin de cette lane (rouge `sprint-91-event-pin` paysage/Jour, pin et
+   barre à la même date). Même étage (1) que le wrap du pin : sous `--z-sticky` et
+   `--z-cursor`. La lane n'est PAS agrandie (densité paysage) ; `TOUCH_TARGET_HITBOX`
+   ne convient pas (la boîte fait déjà 44 px, le défaut est un recouvrement, et ses
+   `max-md:` sont inertes en paysage ≥ 768 px de large). */
+.mt-tlm--landscape .mt-tlm__evt-more{z-index:1;}
 .mt-tlm--landscape .mt-tlm__evt--pin .mt-evt-pin{height:24px;}
 /* #595 — fantôme de durée à la hauteur des barres paysage (24 px), centré sur la lane. */
 .mt-tlm--landscape .mt-tlm__ghost{top:calc(50% - 12px); height:24px;}

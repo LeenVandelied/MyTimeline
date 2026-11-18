@@ -17,9 +17,9 @@ import type { User } from '@/types/auth'
  * Tant que `loading` est `true` (re-fetch `/me` au montage — source de vérité
  * serveur, cf. `AuthContext`), on ne redirige pas. Une fois `loading` retombé,
  * si aucun `user` → redirection vers `/${locale}/login` (localisée,
- * `localePrefix:'always'` ; `middleware.ts` = next-intl seul, aucune protection
- * serveur). `middleware.ts` n'assurant pas de garde serveur, cette garde
- * client reste la seule ligne de défense (defense-in-depth : shell + pages).
+ * `localePrefix:'always'`). La garde serveur de `proxy.ts` (#302/#323, ADR-004)
+ * coupe l'accès anonyme en amont mais n'est pas une frontière d'autorisation :
+ * cette garde client reste une ligne de défense (defense-in-depth : shell + pages).
  */
 export function useAuthGuard(): { user: User | null; loading: boolean } {
   const locale = useLocale()

@@ -51,6 +51,9 @@ interface PerfHarnessProps {
  * `useLayoutEffect`, puis double `requestAnimationFrame` pour approcher la frame
  * peinte) et publie le relevé sur `window.__mtTimelinePerf`.
  */
+// #891 — `react-hooks/purity` coupée pour CE harnais seul : il chronomètre le rendu, donc
+// lit `performance.now()` pendant le rendu PAR CONSTRUCTION (début de rendu → commit).
+/* eslint-disable react-hooks/purity */
 const PerfHarness: React.FC<PerfHarnessProps> = ({ eventCount, laneCount }) => {
   // Génération du jeu de données MESURÉE À PART : elle n'appartient pas au coût
   // de rendu de la frise (elle simule la réponse réseau déjà désérialisée).
@@ -85,6 +88,7 @@ const PerfHarness: React.FC<PerfHarnessProps> = ({ eventCount, laneCount }) => {
     <TimelineView events={events} resources={resources} locale={STORY_LOCALE} today={STORY_TODAY} />
   )
 }
+/* eslint-enable react-hooks/purity */
 
 const meta = {
   title: 'Timeline/TimelineView (perf #69)',

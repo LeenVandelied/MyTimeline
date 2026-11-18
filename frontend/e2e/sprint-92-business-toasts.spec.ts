@@ -1,6 +1,7 @@
 import { type Locator, type Page } from '@playwright/test'
 import { expect, test } from './support/fixtures'
 import { PROD } from './support/accounts'
+import { sessionState } from './support/session'
 import { ensureAuthenticated } from './support/auth'
 import { neutralizeDevToolingPointerEvents } from './support/dev-tooling'
 import { getUserId, seedCategory, seedProduct, unique } from './support/products'
@@ -127,7 +128,7 @@ async function createEventThroughDrawer(page: Page, productId: string, title: st
 }
 
 test.describe('#621 — toasts métier (desktop)', () => {
-  test.use({ storageState: PROD.storageState, viewport: DESKTOP })
+  test.use({ storageState: sessionState(PROD), viewport: DESKTOP })
 
   test('création d’un événement : toast DS « Événement créé », au jeton --z-toast, carte captante (conteneur transparent au pointeur) hors de la croix du drawer', async ({
     page,
@@ -230,7 +231,7 @@ test.describe('#621 — toasts métier (desktop)', () => {
 })
 
 test.describe('#621 — toasts métier (mobile portrait)', () => {
-  test.use({ storageState: PROD.storageState, viewport: MOBILE_PORTRAIT })
+  test.use({ storageState: sessionState(PROD), viewport: MOBILE_PORTRAIT })
 
   test('le toast de création ne recouvre pas le bouton flottant « Nouvel événement »', async ({
     page,

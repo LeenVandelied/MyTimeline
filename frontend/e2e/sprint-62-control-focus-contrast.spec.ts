@@ -1,6 +1,7 @@
 import { test, expect } from './support/fixtures'
 import { type Locator, type Page } from '@playwright/test'
 import { PROD } from './support/accounts'
+import { sessionState } from './support/session'
 import { getUserId, seedCategory, seedProduct, unique } from './support/products'
 import {
   assertFocusVisible,
@@ -66,7 +67,7 @@ import {
  * Cf. `docs/memory/sprints/sprint-47/e2e-local-runbook.md`.
  */
 
-test.use({ storageState: PROD.storageState })
+test.use({ storageState: sessionState(PROD) })
 
 /**
  * Amène le focus CLAVIER sur `target`.

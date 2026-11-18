@@ -128,7 +128,14 @@ describe('useExportFlow — polling multi-tours', () => {
     await act(async () => {
       await vi.advanceTimersByTimeAsync(4000)
     })
+    // #892 — React 19 : le 2e poll part à 4 000 ms pile ; sa réponse traverse ensuite
+    // la notification TanStack (setTimeout 0, factice ici), le rendu et l'effet qui passe
+    // la phase à `ready`. Une marge de 50 ms (bien sous l'intervalle de 4 s) laisse cette
+    // chaîne se dérouler ; le décompte EXACT de 2 appels prouve qu'aucun 3e poll n'a servi.
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(50)
+    })
     expect(result.current.phase).toBe('ready')
-    expect(getExportJob.mock.calls.length).toBeGreaterThanOrEqual(2)
+    expect(getExportJob).toHaveBeenCalledTimes(2)
   })
 })
