@@ -2,16 +2,16 @@
 pack: timeline
 kind: domain
 name: Chronologie, comptes et exports
-generated_at: 2026-11-17T10:36:11Z
+generated_at: 2026-11-18T16:25:37Z
 generator: synth/1
-base_sha256: b34b44aece11fa7158147f9364a0ee24a25166ca6893a552261df3cde8576db3
-facts_in_base: 3432
-facts_in_pool: 3811
-facts_cited: 272
+base_sha256: d03884d4f76b40a7e8e14bd9288f41d1a7a0e2decb4ba91ac960d09fec65757b
+facts_in_base: 3489
+facts_in_pool: 3835
+facts_cited: 251
 sections: timeline.sections.json
 details: [timeline.details.md, timeline.details-2.md, timeline.details-3.md, timeline.details-4.md, timeline.details-5.md]
 lang: fr
-curated_at: 2026-11-18T14:30:00Z
+curated_at: 2026-11-18T16:25:37Z
 curation: timeline.curation.json
 ---
 ## 1. Quand activer {#activate}
@@ -26,274 +26,290 @@ Ce pack s'active quand la demande ou le code touche l'un de ces éléments.
 
 | Terme | Sens dans ce projet | Faits |
 |---|---|---|
-| Plafond d'occurrences | Seuil au-delà duquel la série déclenche un hint non bloquant. | [#283e0810fafd8d67-1] |
-| Statut d'export | Chaîne de 16 caractères au plus, sans énumération JPA. L'interface retient PENDING quand le statut est absent. | [#85b1d006e979a352-1] [#06a05b879421e6bc-1] |
-| JWKS | Liste de clés publiques RSA au format JWK, publiée selon la javadoc sur le chemin well-known. | [#042056a3f37230ce-1] [#bd483e8a6418f21f-1] |
+| jti | Identifiant unique du jeton JWT, clé d'une session révocable. | [#418d4adc7fee0dac-1] [#93dc60b640f0fdc8-1] |
+| Archivé | Drapeau non nul, faux par défaut, sur les événements et les produits. | [#98649e0e86a3b1c6-1] [#72fa54403d11c95f-1] |
+| Désarchivage | Restauration d'un produit archivé, avec dialogue et toast de succès dédiés. | [#8dccc4820b488289-1] [#157c943f6ce33a30-1] |
+| version | Champ de verrou optimiste, non nul, sur catégorie, utilisateur et token de réinitialisation. | [#1ee271544739b97e-1] [#e27a6a1000df3dab-1] [#f79315c1c6117474-1] |
+| Conflit | Dialogue qui propose de recharger, garder sa version ou prendre celle du serveur. | [#2f0bb1925d1e0492-1] |
+| Export utilisateur | Record du profil, des catégories, des produits et de la date de génération. | [#f91b00ba5d4ed35f-2] |
+| Touche F | Raccourci associé à help.fit, qui recadre la vue et ne passe pas en plein écran. | [#7e9ec971e6653cd6-1] |
+| Niveau de zoom | Libellé lu sous dashboard.timeline.zoom suivi du niveau courant. | [#a14c0b842e0c6136-1] [#602ce428d238c18c-1] |
+| En-tête de groupe | Nom accessible d'une catégorie repliable, avec la catégorie et son nombre de produits. | [#0f7a9bbcfdc2c652-1] [#14bc87b8d153285c-2] |
+| Drawer | Panneau de détail d'un événement, dont les libellés sont partagés entre bottom sheet, paysage et desktop. | [#de2d0cf1f72e0ef3-1] [#25a9ff75a339ec18-2] |
 
 ## 3. Règles {#rules}
 
+### Invariants
+- Un secret d'export Base64 de moins de 32 octets ou une clé JWT non décodable fait échouer le démarrage, une clé JWT vide génère une paire éphémère. [#0dd681c74a1aa052-1] [#3e283637c7d910ad-1] [#ea75b1cbb9a129b7-1]
 ### Événements et récurrence
-- Au PATCH, les contrôles portent sur l'état fusionné. Un récurrent sans recurrenceUnit est refusé (400, sauf unité déjà en base) et une recurrenceEndDate avant startDate donne 422, l'égalité étant tolérée [#aacec85a42631428-1] [#b6235b8320b518a9-1] [#0b3cf5d7d914c2f1-1] [#d01e46587544f0ca-1] [#a7e9024c920debf4-7] [#a607aeea0e1b1902-3] [#a7e9024c920debf4-8].
-- Une endDate fusionnée avant startDate lève EndDateBeforeStartException (422) après dérivation de endDate, sans écriture [#b6235b8320b518a9-2] [#db68aae9040aa635-1] [#a607aeea0e1b1902-1] [#912e0bd0543bc058-1].
-- Pour duration, un durationUnit nul ou hors days, weeks, months, years lève InvalidDurationUnitException [#8cd20c75d6215999-1] [#8cd20c75d6215999-2] [#c879b210d34f3958-1].
-- Une date de début absente vaut aujourd'hui (création d'événement, mapper, création de produit) [#cfa788ce2a539c7c-1] [#7c67ebb440f30dce-1] [#f2de85ebfc81aa4b-2].
-- Une série sans recurrenceEndDate est développée jusqu'à un horizon fixe, et MAX_OCCURRENCES tronque et marque capped sans bloquer la soumission côté front [#41062bd03b16beee-1] [#41062bd03b16beee-2] [#e3b3229ba3d5f32d-1] [#f8ee0906616caa32-2].
-- expand lève IllegalArgumentException si début ou unité nul ou fin avant début. Le preview renvoie 422 pour fin avant début, 400 si startDate ou recurrenceUnit manque [#0cef617a5b3df27d-3] [#0ece7cd5a68913f4-2] [#9ca46c37957a94d9-1] [#9ca46c37957a94d9-2] [#9ca46c37957a94d9-3] [#0b8263bb9b6f5091-1] [#2b19edc8b1db9a8c-1] [#cf8e84542238dc51-1].
-- La migration V4 s'interrompt sur un type nul, trop long ou hors énumération. V9 réécrit les alias de recurrence_unit puis met NULL le reste [#7280a5ee3a5128bd-1] [#c53bd5a742d3c763-1] [#c53bd5a742d3c763-2].
-### Comptes et mots de passe
-- StrongPassword impose 8 à 100 caractères, une majuscule et un chiffre, null accepté. Elle s'applique à l'inscription et au nouveau mot de passe (changement, reset), pas à oldPassword ni au login [#7ad92ccf1be8253c-1] [#35a76cbef6d96d4d-1] [#e723430070a8a989-3] [#e723430070a8a989-1] [#c93a584635359762-1] [#7a229a904081eb5b-1] [#aef117845e4cb334-1] [#8a0b4636eca3fe14-1] [#fdd11ccacbd697fd-1] [#f02759cf558b524d-1] [#9a8b62738cb2437a-1].
-- Un token de reset non UUID (refusé sans accès base), expiré, consommé, d'un compte disparu ou en conflit optimiste lève la même InvalidPasswordResetTokenException, 400 générique [#a6fac6d9ffbda813-1] [#5754f049d8a57cbb-1] [#ff29dec7a1ac5a76-1] [#5754f049d8a57cbb-2] [#e3a38c640b4e23ac-1] [#a68b3c10ac841c62-1].
-- La demande de reset est asynchrone, sans signal pour un email inconnu, toute RuntimeException étant avalée et journalisée par nom de classe [#a0a4c1649f1ff5c1-1] [#a0a4c1649f1ff5c1-2] [#a0a4c1649f1ff5c1-3].
-- Sans clé API Brevo l'envoi est sauté avec un warning, et une erreur HTTP n'est pas propagée. Une locale inconnue donne le template FR [#a2e5716b0136e600-1] [#a2e5716b0136e600-2] [#802bc13c62eddc54-1] [#7383058e6a3d254d-2].
-- Un username déjà pris donne 409 à l'inscription et au PATCH /api/me, l'inchangé restant permis. Le login renvoie un 401 générique [#4f75632d5a5d2a55-1] [#17e3bf9f223b2e13-1] [#f2687ee00902e873-1] [#936b70beb75a6b4e-1] [#47c33f906b9a4454-1].
-- La préférence de thème n'accepte que light, dark ou system en minuscules (400 validation_failed). PUT /api/me/preferences est limité à 30 par minute, 429 au-delà, 401 sans principal [#092b51caa7587310-1] [#fdd2b53a6f98dc15-1] [#c2b6dada4b60b4e4-1] [#9e28bcaa631902f1-1] [#e79a9bf179544d41-1] [#8877a1ae55915227-1] [#fe0f5fd74a265fe4-1] [#6b9213683e3c927f-1] [authorization/90d187d27a2f51aa-1].
-### Exports
-- Un format synchrone en asynchrone, ou l'inverse, ou un format inconnu, lève ExportFormatNotSupportedException (400) [#a9ab1ef6682c3f62-1] [#ea414ed4631f90d5-1] [#e9d2b09a65a4cd09-1] [integrations/4804c85a3711897e-1] [integrations/9eae9bf0b2626984-1] [integrations/14ae53180e3f4bf4-1].
-- Côté front, JSON et MARKDOWN sont synchrones (téléchargement direct), les autres passent par un job pollé toutes les 4000 ms jusqu'à COMPLETED ou FAILED. Toute erreur de requête donne network [#772dc94bf8ca6667-1] [state-machine/b41ecf1b43916e73-1] [#27212c52d14b6e76-1] [#4bbcb9082b51e911-1] [#4025e56523b42a45-1] [#ef050ccbf09a1f86-1] [#bc9aacfb871ca055-1] [#885c1f26f101ef0f-1] [#885c1f26f101ef0f-2] [#4025e56523b42a45-2] [#ef050ccbf09a1f86-2] [#885c1f26f101ef0f-3].
-- Le téléchargement exige une downloadUrl, et un lien est expiré quand expiresAt est lisible et atteint (recalcul toutes les 60 s) [#86636ae7e17b6f77-1] [#55bc983a210b02d6-1] [#e8c03ac292500a24-1].
+- Une série sans fin est bornée à 5 ans, toute génération s'arrête à 4000 occurrences et capped passe à true si la borne est tronquée. [#41062bd03b16beee-1] [#41062bd03b16beee-2] [#5ef94ec404d76429-1] [#61a1588b02a3d2db-1] [#e3b3229ba3d5f32d-1] [#17dc4dce7f212d84-1]
+- Un événement récurrent sans recurrenceUnit après fusion lève RecurrenceUnitRequiredException (400), une unité déjà en base suffit. [#aacec85a42631428-1] [#0b3cf5d7d914c2f1-1] [#a7e9024c920debf4-7] [#f3828eaddaed4001-1]
+- recurrenceEndDate antérieure au début lève RecurrenceEndDateBeforeStartException (422), l'égalité passe. [#b6235b8320b518a9-1] [#d01e46587544f0ca-1] [#0ece7cd5a68913f4-2] [#a607aeea0e1b1902-3]
+- endDate fusionnée antérieure au début lève EndDateBeforeStartException (422), l'égalité passe. [#b6235b8320b518a9-2] [#db68aae9040aa635-1] [#a607aeea0e1b1902-1] [#4c017405e960c003-1]
+- Un événement duration voit sa endDate recalculée depuis la durée, ce qui écrase une endDate explicite. [#aacec85a42631428-2] [#bb35c8c70ef8823a-1] [#a7e9024c920debf4-3] [#54c3c82083d7ffe6-1]
+- Un événement single garde une endDate explicite, sinon elle suit la startDate, et un PATCH de couleur seule ne la touche pas. [#aacec85a42631428-3] [#195f4bf96e561e6d-1] [#ce573472cbd9b4ce-1] [#35513b08008b2dce-1]
+- À la création, startDate vaut aujourd'hui si absente et archived vaut false. [#cfa788ce2a539c7c-1] [#a48c06237f45d2de-1] [#7c67ebb440f30dce-1]
+- Un PATCH dont la version diffère du serveur est refusé en 409 avec l'événement serveur, une version nulle désactive le contrôle, et la suppression ne contrôle pas la version. [#f69d0a1d79ba1dcc-1] [#4241dce0d6a889f3-1] [#f799ce846f488c08-1] [#3dcdc86e498ae065-1]
 ### Catégories et produits
-- Un nom de catégorie est unique par propriétaire, conflit 409 (CategoryNameConflictException, inline côté front), un renommage au même nom passe [#ba31f6a5db61ec28-1] [#d123364ba318b9da-1] [#19c33a17e3cf9919-1] [#9f799e2d9d2d861f-1] [#fba96d460f2450be-1] [#5304bb991a666436-1].
-- Supprimer une catégorie avec produits actifs ou archivés sans cible lève CategoryInUseException (409). Une cible égale à elle-même donne 409 [#1638778c4a46dea3-1] [#b7d1911e28ca76b4-1] [#c402da788964f3bc-1] [#cbf5b74a7e242967-2] [#f0513e2d42b16d79-1] [#5e04d2cfcb66f7e0-1] [#cd16ad1c9e9fa785-1] [#76f94b32e0200775-1].
-- Avec cible, la réassignation précède la suppression dans la même transaction. Une catégorie sans ownerId est système, sans édition de nom ni suppression en interface [#efea43ee0f941cb7-1] [#314b5fde9e395a92-1] [#b7d1911e28ca76b4-2] [#86db74ab152ae17f-1] [#2463d1e77e28b1c9-1] [#33da7df0027e0494-3].
-- Sur un produit, clearColor prime et une couleur null laisse inchangé. La couleur suit produit, catégorie, repli [#a3eb16026b46748b-1] [#899f1de20e93ed30-1] [#a302776ec2389479-1] [#cceb6584ad89abec-1].
-- Front : nom de catégorie 1 à 255, nom de produit 1 à 100 avec catégorie UUID, mise à jour exigeant au moins un champ, clearColor seulement true [#afddec28fb0c6ae0-1] [#979d6aa61abcbf9d-1] [#9be1ff27da67daed-1] [#3365823e14a410eb-1] [#85d4d2f1bc91cd90-1].
-### Sessions et sécurité
-- Avatar vide, au-delà de 5 Mo ou non JPEG, PNG, WebP (magic bytes) lève InvalidAvatarException (400). L'ancien fichier n'est supprimé qu'après sauvegarde si la référence change [#b07280d7f022e8c8-1] [#b07280d7f022e8c8-2] [#b07280d7f022e8c8-3] [#5dbfe014d6dfd839-1] [#a310b28e04e37268-1] [#bc1da3233312d2b0-1].
-- Le stockage local génère une référence UUID, rejette slash, antislash et deux points, extension de 1 à 5 caractères [a-z0-9] [#3de2a9f6b683e136-1] [#9efe1fa6a41d42f9-1] [#9efe1fa6a41d42f9-2] [#b2873e4d4f5e3f4d-1].
+- Le nom de catégorie est unique par utilisateur (409), un renommage vers le nom courant passe. [#d123364ba318b9da-1] [#d123364ba318b9da-2] [#19c33a17e3cf9919-1] [#9f799e2d9d2d861f-1] [#fba96d460f2450be-1]
+- Quand des produits référencent la catégorie supprimée, la cible de réassignation doit exister et différer d'elle (409), contrôlée avant la réassignation ; sans produit référençant, la cible n'est pas contrôlée [#cbf5b74a7e242967-3] [#cbf5b74a7e242967-2] [#f0513e2d42b16d79-1] [#0be3eea186591f81-1]
+- Un produit ne vise qu'une catégorie de l'appelant ou une catégorie système (ownerId nul). [#86db74ab152ae17f-1] [#f2de85ebfc81aa4b-3]
+- Supprimer un produit l'archive, et restaurer un produit non archivé de l'utilisateur lève ProductNotFoundException. [#669f21c5b918f82d-1] [#546c68b6aa3b3d38-1] [#f738c3ddc6ee4f34-1] [#4491bcc4a7396b95-2]
+- clearColor prime sur la couleur fournie et rétablit celle de la catégorie. [#a3eb16026b46748b-1] [#2ba88ad590a623f5-1]
+### Comptes, mots de passe et sessions
+- Un token de reset nul, non UUID, expiré, consommé ou orphelin donne la même InvalidPasswordResetTokenException (400), et un conflit de verrou à la consommation aussi. [#a6fac6d9ffbda813-1] [#5754f049d8a57cbb-1] [#ff29dec7a1ac5a76-1] [#e3a38c640b4e23ac-1] [#5754f049d8a57cbb-3]
+- Un email inconnu au reset ne crée rien et ne signale rien (anti-énumération). [#a0a4c1649f1ff5c1-4] [#7eb1d255b2e8e536-1]
+- Sans clé Brevo l'envoi est ignoré avec un avertissement, et une erreur Brevo n'est pas propagée. [#a2e5716b0136e600-1] [#a2e5716b0136e600-2]
+- Un avatar vide, trop gros ou hors JPEG, PNG, WebP (magic bytes) est refusé, la taille d'abord. [#b07280d7f022e8c8-1] [#b07280d7f022e8c8-2] [#b07280d7f022e8c8-3] [#177ef047a8f1e617-1]
+- Une session est active si non révoquée et non expirée, et un jti révoqué ou inconnu est refusé en 401. [#a9bd168d26f2c8f7-1] [#e98d53ccea1b37d6-2] [#11cece36cefdf4b1-1] [#371ba7258b8b964f-1]
+- PUT /api/me/preferences est limité à 30 requêtes par minute et par utilisateur (429 avec Retry-After). [#9e28bcaa631902f1-1] [#11277b4419cd6d3a-4]
+### Interface
+- À la connexion, une préférence de thème du compte s'applique localement sans réécriture, sinon un choix local valide est envoyé par PUT, et un échec n'interrompt pas la connexion. [#92ea89296c8f1f33-1] [#578e3e00aa9045bb-1] [#427016883bfd7f92-1] [#fc95119617c03935-2]
+- Un 409 fait passer submitState à conflict, keep-mine est limité à 3 re-soumissions consécutives et renvoie la version du serveur. [#adeed4e0056e686c-3] [#abcc706ce023caf5-1] [#e7828afd4550c2fa-1] [#d2651cfda6ee0b00-2]
+- Un segment de chemin au percent-encoding malformé est protégé par défaut (fail-closed). [#900602e68ea9cda2-2] [#917b03990260e2f7-1]
+- Archiver un événement demande confirmation, désarchiver est immédiat et envoie la version détenue. [#777b17f14ee5c8a0-1] [#b7c1a395c17883e4-1] [#1705d88184858dca-1]
+- Créer un produit ou un événement invalide products.all, supprimer une catégorie invalide categories.all et products.all. [#96a94e972017e2ed-1] [#9141be543d56ebb5-2] [#e2fe7ab7808baf35-1]
 ### Vérifié dans le code
-- PasswordResetTokenPurgeScheduler.purgeConsumedAndExpired supprime via deleteConsumedOrExpiredBefore tout token consommé immédiatement, et les expirés seulement après la rétention (24h par défaut) [#integrations/757e913cb9162988-1] [#85c2925ef276badb-1] `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/PasswordResetTokenRepositoryJpaImpl.java:93-94`.
-- Le restore d'un produit renvoie 404 uniforme (ProductNotFoundException) pour inconnu, non archivé ou d'autrui, et 403 seulement si le userId du path diffère du caller [#7ffbb5f0b0666075-1] [#23aead80049aa52e-1] `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java:108-132`.
-- durationUnit null donne un 422 uniquement pour type='duration' avec durationValue non nul (InvalidDurationUnitException, handleInvalidDurationUnit) [#35513b08008b2dce-1] [#backend-socle/2faddb776ec7b9ad-2] [#8cd20c75d6215999-1] `mytimeline:backend/src/main/java/com/matimeline/eventmanager/utils/Utils.java:57-62`.
-- Après un 409 au désarchivage, useSetEventArchived invalide products.all dans son onError. handleUnarchive n'a pas à le faire [#cc800a010618b0e6-1] [#9160ee03da7f807b-1] `mytimeline:frontend/src/hooks/useSetEventArchived.ts:38-46`.
-- CategoryController.deleteCategory requires isOwnedBy for the target and the reassign target, and ProductServiceImpl.resolveAssignableCategory blocks cross-user assignment, so the unscoped productRepository.updateCategoryForProducts only touches the owner's products [#fee4a3fe030b8963-1] [#7066eb160400bf67-1] `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryController.java:135-137`.
-- Le contrôleur E2eResetTokenController (GET /api/test-support/password-reset-token) est protégé par @Profile("e2e") et ne doit jamais être activé hors test [#integrations/4c61ca6e2f106b0b-1] `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenController.java:43-45`.
+- revokeAllByUserIdExcept(userId, null) révoque toutes les sessions de l'utilisateur, y compris celle de l'appel ; SessionController résout le jti (cookie puis Bearer) pour l'éviter [#integrations/43a257f98e513c20-1] [#0ccfd21bcf72c4f1-1] [#0ccfd21bcf72c4f1-2] `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/SessionRepositoryJpaImpl.java:111-119`.
+- UserMapper.toDomain n'hydrate pas themePreference volontairement (ArchitectureTest) : elle est posée par UserRepositoryJpaImpl.toDomain via withThemePreference, et seul updateThemePreference l'écrit [#integrations/cce726721f5e944c-1] [#b6d61bb2ddbdb333-1] `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/UserRepositoryJpaImpl.java:102-111`.
+- CategoryServiceImpl.deleteCategory réassigne puis supprime dans une seule transaction @Transactional : un échec de categoryRepository.deleteById annule la réassignation [#cbf5b74a7e242967-1] [#b7d1911e28ca76b4-1] [#cbf5b74a7e242967-2] `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/CategoryServiceImpl.java:115-148`.
+- Le contrôle de PasswordResetToken.isUsable vit dans PasswordResetServiceImpl.resetPassword, pas dans consume, donc tout nouvel appelant de consume doit le refaire [#5754f049d8a57cbb-1] [#a901c5e0a601a742-1] `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/PasswordResetServiceImpl.java:143`.
+- Ne passer à GlobalExceptionHandler.buildBody (Map.of) que des messages non null : toute nouvelle exception dont ex.getMessage() est transmis doit fixer un message non null à la construction [#5a4d4415109852aa-1] [#b07280d7f022e8c8-1] [#2cf9b80cc241b9c3-1] [#b07280d7f022e8c8-2] `mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/exceptions/CategoryReassignTargetInvalidException.java:11-12`.
 
 ## 4. Structure {#structure}
 
-#### mytimeline:frontend/src/components/timeline/TimelineView.tsx
-| Symbole | Énoncé | Lignes | Fait |
-|---|---|---|---|
-| TimelineView.toggleCategory | Le clic sur l'en-tête de catégorie inverse son état de repli dans la table collapsed. (partiel) | L641 | [#b3e983f718d425b1-1] |
-| TimelineView.toggleHiddenCategory | Le filtre de la sidebar inverse l'état masqué d'une catégorie, distinct du repli. (partiel) | L654 | [#cce8185974a8e6b9-1] |
 #### mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java
 | Symbole | Énoncé | Lignes | Fait |
 |---|---|---|---|
-| AuthController | Le contrôleur AuthController est exposé sous le préfixe /api/auth. | L49 | [#1112a80d33a97a53-1] |
-| AuthController.login | POST /api/auth/login authentifie le couple username et mot de passe, pose le cookie jwt, enregistre la session et répond un message sans le token dans le corps. | L111-143 | [#a95aa345e1f0eeae-1] |
-| AuthController.register | POST /api/auth/register crée un utilisateur avec le rôle ROLE_USER et un mot de passe haché, et répond 201. | L209-210 | [#f81f483188ff32d4-1] |
-| AuthController.logout | Le logout révoque le jti du token courant via sessionService.revokeCurrentSession, puis efface le cookie jwt. (partiel) | L250-260 | [#authorization/ed68a63fc2b66b67-1] |
-| AuthController.refreshToken | POST /api/auth/refresh ré-émet un token pour un utilisateur existant uniquement si le token est valide et sa session active. | L269-270 | [#08a39f689d7f03a2-1] |
-| AuthController.refreshToken | Le refresh génère un nouveau token à partir de token, révoque le jti de l'ancien token avec revokeSessionSilently, puis enregistre le jti du nouveau token avec registerSession. | L319-324 | [#authorization/10efe7ec9942ce01-1] |
-| AuthController.forgotPassword | La route forgot-password renvoie toujours un 200 avec le même message, après appel de passwordResetService.requestReset, quel que soit le résultat de la recherche. | L354-360 | [#authorization/ebe5ee4325e1c2af-1] |
-| AuthController.forgotPassword | POST /api/auth/forgot-password délègue au service la demande de réinitialisation et renvoie toujours le même message neutre. | L354-360 | [#84a2033cf7918249-1] |
-| AuthController.resetPassword | POST /api/auth/reset-password délègue au service la réinitialisation du mot de passe à partir du token et du nouveau mot de passe. | L368-372 | [#aab1134b89038e1e-1] |
+| AuthController | Le contrôleur d'authentification est exposé sous le préfixe /api/auth. | L49-50 | [#1112a80d33a97a53-1] |
+| AuthController.login | POST /api/auth/login authentifie via AuthenticationManager, enregistre la session, pose le cookie jwt et renvoie un message sans le token dans le corps. | L111-131 | [#a95aa345e1f0eeae-1] |
+| AuthController.getUserDetails | GET /api/auth/me lit le cookie jwt, valide le token et renvoie le profil si le jti est actif, sinon 401 avec le code unauthorized. | L145-146 | [#590297f36ef2a89b-1] |
+| AuthController.register | POST /api/auth/register crée un utilisateur après vérification d'unicité du username et renvoie 201 avec un message. | L209-210 | [#f81f483188ff32d4-1] |
+| AuthController.logout | POST /api/auth/logout révoque le jti du cookie courant, puis renvoie un cookie jwt vide de maxAge 0. | L250-267 | [#2beec02afff39c89-1] |
+| AuthController.logout | Le logout appelle revokeSessionSilently sur le jti du cookie, ce qui révoque la session en base, puis efface le cookie jwt avec maxAge à zéro. (partiel) | L256-260 | [#authorization/ed68a63fc2b66b67-1] |
+| AuthController.refreshToken | POST /api/auth/refresh renouvelle le token après validation de signature, expiration et jti actif, puis fait pivoter la session. | L269-270 | [#08a39f689d7f03a2-1] |
+| AuthController.refreshToken | Le refresh valide la signature et l'expiration du token avant toute réémission, et renvoie 401 si validateToken renvoie false. (partiel) | L300-303 | [#authorization/71768ef1221dd0c4-1] |
+| AuthController.refreshToken | Le refresh génère un nouveau token, révoque l'ancien jti via revokeSessionSilently puis enregistre le nouveau jti via registerSession. (partiel) | L319-326 | [#authorization/10efe7ec9942ce01-1] |
+| AuthController.forgotPassword | POST /api/auth/forgot-password délègue la demande de réinitialisation puis renvoie toujours 200 avec le même message neutre. | L354-360 | [#84a2033cf7918249-1] |
+| AuthController.resetPassword | POST /api/auth/reset-password délègue la réinitialisation au service puis renvoie 200 avec un message de succès. | L368-372 | [#aab1134b89038e1e-1] |
+#### mytimeline:frontend/src/components/timeline/TimelineView.tsx
+| Symbole | Énoncé | Lignes | Fait |
+|---|---|---|---|
+| TimelineView.toggleCategory | Chaque appel de toggleCategory bascule l'état replié de la catégorie donnée. (partiel) | L716-718 | [#b3e983f718d425b1-1] |
+| TimelineView.focusNav | La navigation clavier mémorise la pastille active par resourceId et eventId via setActiveNav. (partiel) | L1049 | [#75ba464eb4907242-1] |
+| TimelineView.onKey | La touche Échap ferme en priorité le panneau de sidebar ouvert, puis le drawer sélectionné, puis quitte le plein écran. (partiel) | L1599-1605 | [#95804e978f39c002-3] |
+#### mytimeline:frontend/src/components/EventEditForm.test.tsx
+| Symbole | Énoncé | Lignes | Fait |
+|---|---|---|---|
+| EventEditForm | Le passage de conflict à submitting ferme le dialogue de conflit et replie le focus sur le formulaire event-form, jamais sur body. | L264-274 | [#b8527ad2d2e16965-1] |
+| EventEditForm.archived | Cocher le toggle archived n'archive pas directement : une confirmation s'ouvre et la case reste décochée tant que rien n'est confirmé. (partiel) | L413-420 | [#b2d162176e935275-2] |
+| EventEditForm.archived | Désarchiver un événement archivé ne demande aucune confirmation et sort immédiatement du verrou. (partiel) | L449-456 | [#dd5f5f0be4add9fb-1] |
 #### mytimeline:frontend/src/components/EventEditForm.tsx
 | Symbole | Énoncé | Lignes | Fait |
 |---|---|---|---|
-| EventEditForm.onChange | Cocher le switch archived ouvre la confirmation d'archivage sans changer la valeur, et le décocher repasse archived à false immédiatement. | L918-921 | [#b7c1a395c17883e4-1] |
-| EventEditForm.onConfirm | Confirmer l'archivage pose archived à true avec shouldDirty et ferme le dialog d'archivage, passant de false à true. | L961-964 | [#2af828f18863dd55-1] |
-| EventEditForm.ConflictDialog | Le ConflictDialog est ouvert quand submitState vaut conflict, et sa fermeture appelle onConflictDismiss. (partiel) | L983-986 | [#5fac1a9bd07ae3d6-1] |
-#### mytimeline:frontend/src/components/events/NewEventDrawer.tsx
+| EventEditForm | Cocher le toggle d'archivage n'modifie pas la valeur, il ouvre le ArchiveConfirmDialog. Décocher le toggle passe archived à false immédiatement. (partiel) | L956-959 | [#777b17f14ee5c8a0-1] |
+| EventEditForm | L'archivage passe de archived false à archived true via onConfirm du ArchiveConfirmDialog, sans soumission immédiate, avec shouldDirty activé. | L1017-1020 | [#2af828f18863dd55-1] |
+| EventEditForm | Le ConflictDialog est ouvert lorsque submitState vaut conflict. (partiel) | L1040 | [#5fac1a9bd07ae3d6-1] |
+#### mytimeline:frontend/src/components/timeline/TimelineMobileLandscape.tsx
 | Symbole | Énoncé | Lignes | Fait |
 |---|---|---|---|
-| NewEventDrawer.productId | L'identifiant de produit est initialisé à partir de la prop initialProductId, ou à une chaîne vide si elle est absente. (partiel) | L94 | [#bf172ae034f932b9-1] |
-| NewEventDrawer.submitState | submitState vaut submitting pendant la mutation, error si la mutation est en erreur, sinon idle. | L136-140 | [#01254420649f333c-1] |
-#### mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/SessionRevocationIntegrationTest.java
-| Symbole | Énoncé | Lignes | Fait |
-|---|---|---|---|
-| DELETE /api/sessions/{id} | La suppression d'une session par DELETE /api/sessions/{id} révoque son jti, et la requête suivante avec le même token renvoie 401. (partiel) | L172-177 | [#ee1214a05da3d26c-1] |
-| DELETE /api/sessions/others | La suppression des autres sessions révoque toutes les sessions du caller sauf la courante, et la session courante ne liste plus qu'elle-même. (partiel) | L202-213 | [#dfd58c73787be539-1] |
-| POST /api/auth/logout | Le logout révoque le token courant, et une requête suivante avec ce token renvoie 401. (partiel) | L217-226 | [#f7eb84d1ac9a459e-1] |
-#### mytimeline:frontend/src/components/timeline/TimelineEditHost.tsx
-| Symbole | Énoncé | Lignes | Fait |
-|---|---|---|---|
-| TimelineEditHost.closeEditor | closeEditor remet editing à null, ce qui ferme l'éditeur, sans condition de rôle. (partiel) | L66 | [#c710d917f4138318-1] |
-| TimelineEditHost.requestDelete | Sur le chemin mobile, requestDelete arme deleteTarget avec l'événement ciblé sans le supprimer, pour l'utilisateur mobile. (partiel) | L148 | [#ec6df84414022355-1] |
-| TimelineEditHost.runDelete | Après une suppression confirmée par le serveur, runDelete remet deleteTarget à null et ferme l'éditeur. (partiel) | L175-176 | [#0c7d658378b5b928-1] |
-| TimelineEditHost.handleDeleteOpenChange | Quand le dialog de confirmation se ferme, deleteTarget revient à null. (partiel) | L198-200 | [#723d8cceb4d00bf7-1] |
-| TimelineEditHost.setEditing | Le callback onEditEvent passe editing de null à l'événement choisi via setEditing. (partiel) | L211 | [#1eff0f6d5a21a8ed-1] |
-#### mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ExportController.java
-| Symbole | Énoncé | Lignes | Fait |
-|---|---|---|---|
-| ExportController.exportInline | GET /api/export lit le paramètre format, convertit via ExportFormat.fromParam, puis renvoie le fichier rendu en synchrone pour le seul utilisateur appelant. | L65-74 | [#0aa6060fb83fdf19-1] |
-| ExportController.submitAsync | Le POST /api/export soumet un job asynchrone via exportService.submitAsync et répond 202 ACCEPTED avec un ExportJobResponse. (partiel) | L77-88 | [#integrations/2b18bf12bda7aa89-1] |
-| ExportController.submitAsync | POST /api/export soumet un job asynchrone via exportService.submitAsync et renvoie 202 avec le jobId et l'URL de téléchargement éventuelle. | L77-88 | [#53de777e6e7fe836-1] |
-| ExportController.download | GET /api/export/download/{jobId} exige un token signé en paramètre, puis renvoie le fichier si le token correspond au job et à l'appelant, sinon 404. | L109-129 | [#49bb154a99436e4a-1] |
-#### mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java
-| Symbole | Énoncé | Lignes | Fait |
-|---|---|---|---|
-| ProductServiceImpl.archiveById | Le produit passe à l'état archivé par archiveById, sans contrôle de rôle visible dans ce fichier. (partiel) | L174-179 | [#8c425e7918db9e34-1] |
-| ProductServiceImpl.restoreProduct | Un produit archivé est désarchivé par l'UPDATE natif restoreArchivedByIdAndUserId, pour l'utilisateur appelant, selon la javadoc l'ownership étant porté par la requête SQL. (partiel) | L193-200 | [#0ba293f8c1399fed-1] |
-#### mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/PasswordResetServiceImpl.java
-| Symbole | Énoncé | Lignes | Fait |
-|---|---|---|---|
-| PasswordResetServiceImpl.resetPassword | Le token passe à l'état consommé via token.consume puis markConsumed, après la mise à jour du mot de passe, pour une requête de reset valide. (partiel) | L181-183 | [#aad7d72cf42e1372-1] |
-#### mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductRestoreIntegrationTest.java
-| Symbole | Énoncé | Lignes | Fait |
-|---|---|---|---|
-| GET /api/users/{userId}/products/archived | Le test appelle GET /api/users/{userId}/products/archived avec le caller authentifié et attend 200 avec un tableau. | L140 | [#2d9a3ff216421e91-1] |
-| POST /api/users/{userId}/products/{productId}/restore | Le test appelle POST restore sur un produit archivé du caller, attend 204, puis vérifie en base que archived vaut false. (partiel) | L184-186 | [#acfee7b18b09e0f8-1] |
-#### mytimeline:frontend/src/hooks/useExportFlow.ts
-| Symbole | Énoncé | Lignes | Fait |
-|---|---|---|---|
-| useExportFlow.inlineMutation | Passe de confirm à ready par inlineMutation après téléchargement direct du fichier pour un format sync (JSON ou MARKDOWN selon la javadoc). (partiel) | L68-71 | [#4025e56523b42a45-1] |
-| useExportFlow.inlineMutation | Passe à error avec la clé network quand l'export sync échoue. (partiel) | L72-75 | [#4025e56523b42a45-2] |
-| useExportFlow.submitMutation | Passe de confirm à preparing par submitMutation une fois la requête async POST acceptée, pour un format non synchrone. (partiel) | L81-85 | [#ef050ccbf09a1f86-1] |
-| useExportFlow.submitMutation | Passe à error avec la clé network quand la requête async POST échoue. (partiel) | L86-89 | [#ef050ccbf09a1f86-2] |
-| useExportFlow.useEffect | Passe de preparing à ready lorsque le polling reçoit le statut COMPLETED, en stockant le job terminé. (partiel) | L104-109 | [#885c1f26f101ef0f-1] |
-| useExportFlow.useEffect | Passe de preparing à error avec la clé jobFailed lorsque le polling reçoit le statut FAILED. (partiel) | L110-112 | [#885c1f26f101ef0f-2] |
-| useExportFlow.useEffect | Passe de preparing à error avec la clé network lorsque la requête de polling du job est en erreur. (partiel) | L117-122 | [#885c1f26f101ef0f-3] |
-| useExportFlow.reset | reset remet la phase à confirm et vide jobId, completedJob et errorKey, sans condition de phase. (partiel) | L153-158 | [#04fd6f4781e163ca-1] |
-#### mytimeline:frontend/src/hooks/useEventEditConflict.ts
-| Symbole | Énoncé | Lignes | Fait |
-|---|---|---|---|
-| useEventEditConflict.runSubmit | runSubmit pose submitState à submitting avant l'appel updateEvent. (partiel) | L138 | [#adeed4e0056e686c-1] |
-| useEventEditConflict.runSubmit | submitState passe de submitting à idle par runSubmit, si updateEvent se résout sans erreur. (partiel) | L143 | [#adeed4e0056e686c-2] |
-| useEventEditConflict.runSubmit | submitState passe de submitting à conflict par runSubmit, si la réponse est un 409. (partiel) | L153 | [#adeed4e0056e686c-3] |
-| useEventEditConflict.runSubmit | submitState passe de submitting à error par runSubmit, si l'erreur n'est pas un 409. (partiel) | L159 | [#adeed4e0056e686c-4] |
-#### mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportServiceImpl.java
-| Symbole | Énoncé | Lignes | Fait |
-|---|---|---|---|
-| ExportServiceImpl.submitAsync | Un job d'export est créé à l'état PENDING via ExportJob.pending puis persisté par save avant le déclenchement du worker. (partiel) | L84 | [#769c2078292e160d-1] |
-#### mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/AsyncExportRunner.java
-| Symbole | Énoncé | Lignes | Fait |
-|---|---|---|---|
-| AsyncExportRunner.run | Le job lu par findDomainById passe de PENDING à RUNNING via markRunning avant d'être sauvegardé. (partiel) | L62-68 | [#batch/12b6799eaf5bd99b-1] |
-| AsyncExportRunner.run | Le job passe de RUNNING à COMPLETED via markCompleted, avec la référence de stockage et l'expiration, après assemblage, rendu et stockage sans exception. (partiel) | L71-78 | [#batch/12b6799eaf5bd99b-2] |
-| AsyncExportRunner.run | Le job passe de RUNNING à FAILED avec le code borné GENERATION_ERROR lorsqu'une RuntimeException est capturée. (partiel) | L80-83 | [#batch/12b6799eaf5bd99b-3] |
-#### mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/EventOptimisticLockConflictIntegrationTest.java
-| Symbole | Énoncé | Lignes | Fait |
-|---|---|---|---|
-| EventService.updateEvent | Le premier update via eventService.updateEvent fait passer la version de l'event de 0 à 1 en base. (partiel) | L96-97 | [#78b5e3ccd15a2eb5-1] |
-#### mytimeline:frontend/src/components/timeline/useTimelineMobileGestures.ts
-| Symbole | Énoncé | Lignes | Fait |
-|---|---|---|---|
-| useTimelineMobileGestures.onEvtPointerDown | Un appui sur un bloc d'événement lance un minuteur de 500 ms, qui à son échéance marque le long-press comme déclenché et ouvre la cible d'action. (partiel) | L63-66 | [#1d253650283a96b3-1] |
-#### mytimeline:frontend/src/components/timeline/TimelineSidebar.tsx
-| Symbole | Énoncé | Lignes | Fait |
-|---|---|---|---|
-| useTimelineSidebarPanel | Le panneau passe de ouvert à fermé lorsque le palier de largeur permanent est atteint, sans action utilisateur. (partiel) | L92-94 | [#549b4223f54beab3-1] |
-#### mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/export/ExportJob.java
-| Symbole | Énoncé | Lignes | Fait |
-|---|---|---|---|
-| ExportJob.pending | La fabrique ExportJob.pending crée un job dont le statut initial est PENDING, sans storageRef, errorCode, completedAt ni expiresAt. (partiel) | L43-46 | [#state-machine/7766b9e71e04f41e-1] |
-#### mytimeline:frontend/src/components/products/RestoreProductDialog.tsx
-| Symbole | Énoncé | Lignes | Fait |
-|---|---|---|---|
-| RestoreProductDialog.handleConfirm | Le désarchivage passe l'erreur à notFound si le rejet porte le statut 404, à generic pour tout autre rejet, et le dialog reste ouvert dans les deux cas. | L73-84 | [#8d417e8f1206a66f-1] |
-#### mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/SessionRepositoryJpaImpl.java
-| Symbole | Énoncé | Lignes | Fait |
-|---|---|---|---|
-| SessionRepositoryJpaImpl.revokeByJti | La révocation par jti met revokedAt à l'instant courant, uniquement pour les sessions dont revokedAt est encore nul, par un UPDATE JPQL idempotent. (partiel) | L88-97 | [#integrations/20d82e6d0c58db82-1] |
-| SessionRepositoryJpaImpl.revokeById | La révocation par id met revokedAt à l'instant courant, uniquement pour une session encore active, par un UPDATE JPQL. (partiel) | L99-108 | [#integrations/495912b73d8f6736-1] |
-#### mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/ResetPasswordTokenRateLimitIntegrationTest.java
-| Symbole | Énoncé | Lignes | Fait |
-|---|---|---|---|
-| ResetPasswordTokenRateLimitIntegrationTest.sameToken_afterWindowAdvance_allowedAgain | Après épuisement du quota d'un token, un avancement de 61 secondes du TimeMeter rétablit l'acceptation de ce même token, qui repasse de bloqué à accepté. (partiel) | L142-155 | [#63722541b1787773-1] |
-#### mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/UserController.java
-| Symbole | Énoncé | Lignes | Fait |
-|---|---|---|---|
-| UserController.getCurrentUser | GET /api/me renvoie UserResponse du caller construit par UserResponse.fromDomain, et 401 si le caller est vide. | L81-88 | [#39abf49228940ff7-1] |
-| UserController.updateCurrentUser | PATCH /api/me valide UserUpdateRequest avec @Valid, met à jour name, username et email du caller via userService.updateUser et renvoie UserResponse. | L109-144 | [#44a6633627a639b2-1] |
-| UserController.updatePreferences | PUT /api/me/preferences pose la préférence de thème du caller via userService.updateThemePreference et renvoie UserResponse, 401 si le caller est vide. | L160-170 | [#6246da44d5470c02-1] |
-| UserController.changePassword | POST /api/me/change-password délègue à userService.changePassword avec le caller, l'ancien et le nouveau mot de passe, puis répond 204. | L178-188 | [#6336f7992455e033-1] |
-| UserController.deleteCurrentUser | DELETE /api/me valide DeleteAccountRequest avec @Valid, appelle userService.deleteAccount puis efface le cookie jwt et répond 204. | L203-220 | [#0da8dd6f6a0ebd79-1] |
-| UserController.uploadAvatar | POST /api/me/avatar accepte un multipart dont la part file est transmise à avatarService.uploadAvatar, puis relit le caller et renvoie UserResponse. | L233-256 | [#a90f85d9f81b63b2-1] |
-| UserController.getAvatar | GET /api/me/avatar renvoie les octets de l'avatar du caller avec le Content-Type issu de avatarService.getAvatar. | L264-275 | [#621744931ed57366-1] |
-| UserController.deleteAvatar | DELETE /api/me/avatar appelle avatarService.deleteAvatar sur le caller et répond 204. | L282-290 | [#2c3d083359b4c1ec-1] |
+| TimelineMobileLandscape.userHidden | Le clic sur le bouton de bascule inverse userHidden via setUserHidden, sauf quand minimapForcedHidden est vrai et que le bouton est désactivé. (partiel) | L148-158 | [#f131221c2e86dbed-3] |
 #### mytimeline:frontend/src/components/products/ProductsListView.tsx
 | Symbole | Énoncé | Lignes | Fait |
 |---|---|---|---|
-| ProductsListView.goToDetail | Un clic sur une ligne navigue vers la fiche produit de la locale courante par router.push. | L367 | [#2c540fa4ff145e61-1] |
-#### mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java
+| ProductsListView.handleArchiveConfirm | La confirmation d'archivage appelle la mutation, affiche le toast de succès puis referme le dialogue d'archivage en vidant le produit ciblé. (partiel) | L214-219 | [#3a95d25f1a1bcb63-1] |
+#### mytimeline:frontend/src/components/products/ProductDetailView.tsx
 | Symbole | Énoncé | Lignes | Fait |
 |---|---|---|---|
-| ProductController.createProduct | POST /api/users/{userId}/products reçoit un ProductCreationRequest validé par @Valid, appelle productService.createProduct et renvoie 201 avec ProductResponse. | L50-66 | [#fab511f8078ce706-1] |
-| ProductController.getProducts | GET /api/users/{userId}/products renvoie la liste des ProductResponse issue de productService.getProductsWithEvents pour le caller. | L68-85 | [#3ce901cb2b85d119-1] |
-| ProductController.getArchivedProducts | GET /api/users/{userId}/products/archived renvoie la liste des ArchivedProductResponse du caller, avec les mêmes contrôles 401 et 403 que les autres routes. | L92-106 | [#f778175892d0fa70-1] |
-| ProductController.restoreProduct | POST /api/users/{userId}/products/{productId}/restore appelle productService.restoreProduct(productId, userId) puis répond 204 sans lecture préalable du produit. | L118-132 | [#23aead80049aa52e-1] |
-| ProductController.getProductById | GET /api/users/{userId}/products/{productId} renvoie 404 si le produit est absent et 403 s'il n'appartient pas au userId du path, sinon 200 avec ProductResponse. | L134-154 | [#3ed6a3b197a70d6e-1] |
-| ProductController.updateProduct | PATCH /api/users/{userId}/products/{productId} valide le corps ProductUpdateRequest avec @Valid, délègue la mise à jour à productService.updateProduct et renvoie 200 avec ProductResponse. | L156-181 | [#586f24cc5cefccfd-1] |
-| ProductController.deleteProduct | DELETE /api/users/{userId}/products/{productId} appelle productService.archiveById et répond 204. | L183-206 | [#9ee1b92aced8cd1b-1] |
-| ProductController.getEventsByProductId | GET /api/users/{userId}/products/{productId}/events renvoie la liste des EventResponse du produit après contrôle d'existence et d'appartenance. | L208-236 | [#36151ba5fa137869-1] |
-#### mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryController.java
+| ProductDetailView.handleUnarchive | Le désarchivage d'un événement appelle setEventArchived avec archived à false et la version détenue, ce qui le fait passer de archivé à actif. (partiel) | L213-217 | [#623da4d8d722ca9c-1] |
+#### mytimeline:frontend/src/hooks/useEventEditConflict.ts
 | Symbole | Énoncé | Lignes | Fait |
 |---|---|---|---|
-| CategoryController.createCategory | POST /api/categories crée une catégorie rattachée à l'appelant identifié par JWT et répond 201, ou 401 sans appelant. | L47-57 | [#f485695163211d8d-1] |
-| CategoryController.getAllCategories | GET /api/categories liste les catégories de l'appelant avec leurs compteurs de produits, obtenus en une requête groupée. | L59-80 | [#770aaa4a74ea7da7-1] |
-| CategoryController.updateCategory | PATCH /api/categories/{id} renvoie 404 si la catégorie est absente, puis met à jour nom, couleur et description pour le propriétaire. | L98-118 | [#b0c63e5ab9d313aa-1] |
-#### mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/EventController.java
+| useEventEditConflict.runSubmit | submitState passe à submitting au début de runSubmit, avant l'appel updateEvent. (partiel) | L149 | [#adeed4e0056e686c-1] |
+| useEventEditConflict.runSubmit | submitState passe de submitting à idle quand updateEvent réussit, puis onDone reçoit les valeurs enregistrées. (partiel) | L154 | [#adeed4e0056e686c-2] |
+| useEventEditConflict.runSubmit | submitState passe de submitting à conflict quand updateEvent échoue avec un statut HTTP 409. (partiel) | L164 | [#adeed4e0056e686c-3] |
+| useEventEditConflict.runSubmit | submitState passe de submitting à forbidden pour un 403, et à error pour tout autre statut hors 409. (partiel) | L172 | [#adeed4e0056e686c-5] |
+| useEventEditConflict.onKeepMine | onKeepMine relance runSubmit en mode keep-mine avec les valeurs locales et la version serveur, passant de conflict à submitting. (partiel) | L204 | [#d2651cfda6ee0b00-1] |
+#### mytimeline:frontend/src/contexts/AuthContext.tsx
 | Symbole | Énoncé | Lignes | Fait |
 |---|---|---|---|
-| EventController.createEvent | POST /api/events reçoit un EventCreationRequest validé par @Valid et renvoie un EventResponse avec le statut 201. | L46-47 | [#25dce09a9944db71-1] |
-| EventController.updateEvent | PATCH /api/events/{id} accepte un EventUpdateRequest partiel validé par @Valid et renvoie un EventResponse. | L71-72 | [#20c89602e30a4bd4-1] |
-| EventController.deleteEvent | DELETE /api/events/{id} vérifie l'ownership, supprime l'événement via eventService.deleteById et renvoie 200 sans corps. | L97-105 | [#5e212c16f85d65a1-1] |
-#### mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/EventControllerOwnershipTest.java
+| AuthProvider.login | login passe loading à true, appelle loginService puis loadUser avec applyAccountThemeAtLogin, puis adoptLocalThemeAtLogin si le compte est non null, et relance toute erreur après journalisation. (partiel) | L212-232 | [#6cdde4fa63d83939-1] |
+| AuthProvider.logout | logout appelle logoutService, puis publie user à null dans le finally, même si l'appel échoue, sans toucher au thème local. (partiel) | L251-262 | [#ea9033dcdc97b664-1] |
+#### mytimeline:frontend/src/components/products/ProductSparkline.tsx
 | Symbole | Énoncé | Lignes | Fait |
 |---|---|---|---|
-| EventControllerOwnershipTest.deleteEvent_crossUser_returns403ForbiddenJson_andDoesNotDelete | La route DELETE /api/events/{id} est appelée avec un cookie jwt, et la réponse attendue est 403 de type JSON avec error forbidden. | L120-123 | [#8a2205415eeb9644-1] |
-| EventControllerOwnershipTest.createEvent_owner_returns201_withEventResponseBody | Un POST /api/events par le propriétaire du produit renvoie 201 avec un corps contenant id, title, type, isAllDay, color, archived et productId. | L178-212 | [#7a448ff848abf02b-1] |
+| ProductSparkline.now | La valeur de référence now est capturée une seule fois au montage du composant et ne change plus ensuite. (partiel) | L60 | [#9c644bfe891abd5e-1] |
+#### mytimeline:frontend/src/components/timeline/TimelineSidebar.tsx
+| Symbole | Énoncé | Lignes | Fait |
+|---|---|---|---|
+| useTimelineSidebarPanel | Le panneau passe de ouvert à fermé quand le palier 1024 px est franchi vers le haut, si isPermanent devient vrai, sans action utilisateur. (partiel) | L95-98 | [#549b4223f54beab3-1] |
+| useTimelineSidebarPanel.toggle | La fonction toggle inverse l'état open du panneau. (partiel) | L100 | [#5e1a2695d68c5d78-1] |
+| useTimelineSidebarPanel | Un pointerdown hors du panneau et hors du bouton ferme le panneau, et le focus revient au bouton seulement si le focus a été perdu. (partiel) | L116-130 | [#a0548f48b34db289-1] |
+#### mytimeline:frontend/src/components/events/NewEventDrawer.tsx
+| Symbole | Énoncé | Lignes | Fait |
+|---|---|---|---|
+| NewEventDrawer.submitState | Le submitState passe à submitting quand la mutation est en cours, à error quand elle est en erreur, et reste idle sinon. | L136-140 | [#01254420649f333c-1] |
+#### mytimeline:frontend/src/components/timeline/TimelineEditHost.tsx
+| Symbole | Énoncé | Lignes | Fait |
+|---|---|---|---|
+| TimelineEditHost.closeEditor | closeEditor remet editing à null, ce qui ferme le drawer d'édition. (partiel) | L67 | [#c710d917f4138318-1] |
+| TimelineEditHost.requestDelete | requestDelete arme deleteTarget avec l'événement ciblé sans appeler deleteEvent, ce qui ouvre DeleteConfirmDialog. (partiel) | L152 | [#ec6df84414022355-1] |
+| TimelineEditHost.handleDeleteOpenChange | Quand le dialog de suppression se ferme, deleteTarget est remis à null. (partiel) | L204-206 | [#723d8cceb4d00bf7-1] |
+#### mytimeline:frontend/src/hooks/useExportFlow.ts
+| Symbole | Énoncé | Lignes | Fait |
+|---|---|---|---|
+| useExportFlow.inlineMutation | Après un export sync réussi, le fichier est téléchargé dans le navigateur et la phase passe à ready. (partiel) | L68-71 | [#4025e56523b42a45-1] |
+| useExportFlow | Pendant la phase preparing, un job COMPLETED fait passer la phase à ready et enregistre le job terminé. (partiel) | L109-111 | [#885c1f26f101ef0f-1] |
+| useExportFlow | Pendant la phase preparing, un job FAILED fait passer la phase à error avec la clé jobFailed. (partiel) | L112-114 | [#885c1f26f101ef0f-2] |
+| useExportFlow | Pendant la phase preparing, une erreur de polling fait passer la phase à error avec la clé network. (partiel) | L115-119 | [#3ac447f58eb4efa6-1] |
+| useExportFlow.downloadMutation | Un échec du téléchargement du fichier async fait passer la phase à error avec la clé network. (partiel) | L123-131 | [#ef050ccbf09a1f86-2] |
+| useExportFlow.start | start lance l'export synchrone (inlineMutation) si le format est sync, sinon l'export asynchrone (submitMutation). (partiel) | L138-142 | [#4bbcb9082b51e911-1] |
+#### mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtFilter.java
+| Symbole | Énoncé | Lignes | Fait |
+|---|---|---|---|
+| JwtFilter.doFilterInternal | Le contexte de sécurité passe d'un état sans authentification à un UsernamePasswordAuthenticationToken lorsque la signature, l'expiration et le jti valides sont confirmés. (partiel) | L73-85 | [#authorization/197122bdd1e5948a-1] |
+#### mytimeline:frontend/src/lib/schemas/export.ts
+| Symbole | Énoncé | Lignes | Fait |
+|---|---|---|---|
+| exportJobStatusSchema | Le cycle de vie d'un job d'export est PENDING, puis RUNNING, puis COMPLETED ou FAILED, et isTerminalStatus considère COMPLETED et FAILED comme terminaux. | L29-35 | [#27212c52d14b6e76-1] |
+#### mytimeline:frontend/src/components/products/CategoriesView.tsx
+| Symbole | Énoncé | Lignes | Fait |
+|---|---|---|---|
+| CategoriesView.handleDeleteConfirm | Après une suppression réussie, la catégorie ciblée est remise à null et le dialog de suppression se ferme, la mutation étant appelée avec l'identifiant et la cible de réassignation. (partiel) | L106-112 | [#99fa514fcf0f6ee9-1] |
+#### mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/AsyncExportRunner.java
+| Symbole | Énoncé | Lignes | Fait |
+|---|---|---|---|
+| AsyncExportRunner.run | Le job passe à l'état en cours par markRunning puis est sauvegardé, avant la génération du fichier. (partiel) | L62-68 | [#c3a528471fd7ac8b-1] |
+| AsyncExportRunner.run | Après génération et stockage sans exception, le job passe à COMPLETED avec la référence de stockage et une expiration. (partiel) | L77 | [#batch/12b6799eaf5bd99b-2] |
+| AsyncExportRunner.run | Toute RuntimeException pendant la génération fait passer le job à FAILED avec le code fixe GENERATION_ERROR, sans journaliser le message ni la stack. (partiel) | L80-85 | [#batch/12b6799eaf5bd99b-3] |
+#### mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/SessionRepositoryJpaImpl.java
+| Symbole | Énoncé | Lignes | Fait |
+|---|---|---|---|
+| SessionRepositoryJpaImpl.revokeByJti | revokeByJti pose revokedAt à l'instant courant uniquement sur la session ciblée par jti qui n'est pas encore révoquée. | L88-97 | [#integrations/20d82e6d0c58db82-2] |
+| SessionRepositoryJpaImpl.revokeById | revokeById pose revokedAt à l'instant courant uniquement sur la session ciblée par id qui n'est pas encore révoquée. | L100-108 | [#integrations/495912b73d8f6736-1] |
+| SessionRepositoryJpaImpl.revokeAllByUserIdExcept | revokeAllByUserIdExcept révoque les sessions actives de l'utilisateur, en épargnant celle dont le jti vaut exceptJti, et toutes ses sessions actives si exceptJti est null. | L111-130 | [#integrations/43a257f98e513c20-1] |
+#### mytimeline:frontend/src/hooks/useArchiveProduct.ts
+| Symbole | Énoncé | Lignes | Fait |
+|---|---|---|---|
+| useArchiveProduct.onSuccess | Au succès de la suppression, le produit est retiré du cache withEvents de l'utilisateur, puis products.all et categories.all sont invalidés. (partiel) | L67-75 | [#d335e6c90a373b1c-1] |
+#### mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportServiceImpl.java
+| Symbole | Énoncé | Lignes | Fait |
+|---|---|---|---|
+| ExportServiceImpl.submitAsync | Un job créé par submitAsync entre dans l'état PENDING par ExportJob.pending, puis le worker asynchrone est déclenché sur son identifiant. (partiel) | L84-85 | [#batch/27110603918edb71-1] |
+#### mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ProductRepositoryJpaImpl.java
+| Symbole | Énoncé | Lignes | Fait |
+|---|---|---|---|
+| ProductRepositoryJpaImpl.restoreArchivedByIdAndUserId | restoreArchivedByIdAndUserId désarchive un produit par UPDATE natif, incrémente version et pose updated_at, seulement si id et user_id correspondent et que archived vaut true. | L250-258 | [#546c68b6aa3b3d38-1] |
+#### mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/PasswordResetTokenRepositoryJpaImpl.java
+| Symbole | Énoncé | Lignes | Fait |
+|---|---|---|---|
+| PasswordResetTokenRepositoryJpaImpl.markConsumed | Le token passe à l'état consommé en posant usedAt par markConsumed, avec un UPDATE gardé par la version lue lors du contrôle. (partiel) | L61-66 | [#7d2ff9885a18cd26-1] |
+#### mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/PasswordResetToken.java
+| Symbole | Énoncé | Lignes | Fait |
+|---|---|---|---|
+| PasswordResetToken.consume | La méthode PasswordResetToken.consume renvoie une nouvelle instance dont usedAt est renseigné, l'instance courante restant inchangée, et ne vérifie pas isUsable. (partiel) | L72-74 | [#state-machine/40e5b14c857cea95-1] |
+#### mytimeline:frontend/src/components/timeline/TimelineMobileLandscape.test.tsx
+| Symbole | Énoncé | Lignes | Fait |
+|---|---|---|---|
+| TimelineResponsive | Selon le test, la rotation de portrait vers paysage passe de la variante portrait à la variante paysage sans remontage, en conservant le zoom et l'événement sélectionné, pour l'utilisateur qui tourne l'appareil. (partiel) | L395-403 | [#d783ec5ae3b5b006-1] |
+#### mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/export/ExportJob.java
+| Symbole | Énoncé | Lignes | Fait |
+|---|---|---|---|
+| ExportJob.pending | La fabrique ExportJob.pending crée un job dont l'état initial est PENDING, sans storageRef, errorCode, completedAt ni expiresAt. (partiel) | L43-46 | [#state-machine/7766b9e71e04f41e-1] |
 #### mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/SecurityConfig.java
 | Symbole | Énoncé | Lignes | Fait |
 |---|---|---|---|
-| SecurityConfig.securityFilterChain | Les chemins /error et JwksController.JWKS_PATH sont accessibles sans authentification, la javadoc de la section JWKS indiquant que la clé publique n'est pas un secret. | L164-170 | [#authorization/8bc3a1ce71fe4ba9-2] |
-#### mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/SessionController.java
+| SecurityConfig.securityFilterChain | La route /actuator/health est accessible sans authentification (permitAll). | L161 | [#authorization/8bc3a1ce71fe4ba9-1] |
+| SecurityConfig.securityFilterChain | La route /error est accessible sans authentification (permitAll). | L166 | [#authorization/8bc3a1ce71fe4ba9-2] |
+| SecurityConfig.securityFilterChain | Toutes les routes /api/auth/** sont publiques (permitAll). | L173 | [#authorization/8bc3a1ce71fe4ba9-3] |
+#### mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/GlobalExceptionHandler.java
 | Symbole | Énoncé | Lignes | Fait |
 |---|---|---|---|
-| SessionController.getActiveSessions | GET /api/sessions renvoie la liste des SessionResponse actives du caller, avec le jti courant résolu depuis le cookie jwt ou l'en-tête Bearer. | L49-63 | [#d277e59bd6e4a2bb-1] |
-| SessionController.revokeOtherSessions | DELETE /api/sessions/others appelle sessionService.revokeOtherSessions avec l'id du caller et le jti courant, puis répond 204. | L65-81 | [#410b76a3663a6bdb-1] |
-| SessionController.revokeSession | DELETE /api/sessions/{id} appelle sessionService.revokeSession avec l'id de la session et l'id du caller, puis répond 204. | L83-93 | [#37b24b68237ae598-1] |
-#### mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/RecurrencePreviewControllerTest.java
+| GlobalExceptionHandler.handleNotFound | Traduit EventNotFound, ProductNotFound, CategoryNotFound, UserNotFound, SessionNotFound et AvatarNotFound en 404 avec le code NOT_FOUND et le message générique Resource not found. | L41-53 | [#161ab1263e9740cc-1] |
+#### mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductRestoreIntegrationTest.java
 | Symbole | Énoncé | Lignes | Fait |
 |---|---|---|---|
-| POST /api/events/recurrence-preview | Le test appelle POST /api/events/recurrence-preview avec un corps JSON, en content type application/json. | L71-73 | [#d8d929e3a50a23ed-1] |
-#### mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/JwksEndpointIntegrationTest.java
+| ProductRestoreIntegrationTest.getArchived_returnsOnlyCallersArchivedProducts_includingWithoutEvents | Le test appelle GET /api/users/{userId}/products/archived avec le caller authentifié. | L140 | [#2d9a3ff216421e91-1] |
+| ProductRestoreIntegrationTest.restore_ownArchivedProduct_returns204_andProductWithEventsIsVisibleAgain | Le test appelle POST /api/users/{userId}/products/{productId}/restore avec le caller authentifié et attend 204. | L184-186 | [#acfee7b18b09e0f8-1] |
+#### mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/UserController.java
 | Symbole | Énoncé | Lignes | Fait |
 |---|---|---|---|
-| JwksEndpointIntegrationTest.jwks_isReachableAnonymously_andExposesOneRs256SigningKey | Le test asserte qu'un GET anonyme sur le chemin JWKS répond 200 en JSON, avec une seule clé RSA de signature RS256. | L68-70 | [#integrations/b1cbd278e4a1e919-1] |
-#### mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/RecurrencePreviewController.java
+| UserController.getCurrentUser | GET /api/me renvoie le profil du caller via UserResponse.fromDomain, sans hash, ou 401 si aucun caller. | L81-88 | [#39abf49228940ff7-1] |
+| UserController.updateCurrentUser | PATCH /api/me met à jour name, username et email du caller, validés par @Valid UserUpdateRequest, et renvoie UserResponse. | L109-144 | [#44a6633627a639b2-1] |
+| UserController.updatePreferences | PUT /api/me/preferences pose la préférence de thème du caller via userService.updateThemePreference et renvoie UserResponse. | L160-170 | [#6246da44d5470c02-1] |
+| UserController.changePassword | POST /api/me/change-password délègue à userService.changePassword avec l'ancien et le nouveau mot de passe, puis renvoie 204. | L178-188 | [#6336f7992455e033-1] |
+| UserController.deleteCurrentUser | DELETE /api/me supprime le compte du caller via userService.deleteAccount, efface le cookie jwt et renvoie 204. | L203-220 | [#0da8dd6f6a0ebd79-1] |
+| UserController.uploadAvatar | POST /api/me/avatar accepte un fichier multipart nommé file, délègue à avatarService.uploadAvatar et renvoie le UserResponse relu. | L233-256 | [#a90f85d9f81b63b2-1] |
+| UserController.getAvatar | GET /api/me/avatar renvoie les octets de l'avatar du caller avec le Content-Type stocké. | L264-275 | [#621744931ed57366-1] |
+| UserController.deleteAvatar | DELETE /api/me/avatar supprime l'avatar du caller via avatarService.deleteAvatar et renvoie 204. | L282-290 | [#2c3d083359b4c1ec-1] |
+#### mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryController.java
 | Symbole | Énoncé | Lignes | Fait |
 |---|---|---|---|
-| RecurrencePreviewController.previewRecurrence | POST /api/events/recurrence-preview reçoit un RecurrencePreviewRequest validé par @Valid, appelle recurrenceExpansionService.expand et renvoie 200 avec RecurrencePreviewResponse. | L56-76 | [#f75694096a2946cf-1] |
-#### mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/JwksController.java
+| CategoryController.createCategory | POST /api/categories crée une catégorie appartenant à l'appelant et renvoie 201 avec le DTO de réponse, ou 401 sans appelant identifié. | L35-48 | [#f485695163211d8d-1] |
+| CategoryController.getAllCategories | GET /api/categories renvoie les catégories de l'appelant et les catégories système, avec leurs compteurs de produits de l'appelant. | L59-79 | [#770aaa4a74ea7da7-1] |
+| CategoryController.getCategoryById | GET /api/categories/{id} renvoie la catégorie si elle appartient à l'appelant ou est système, sinon 404. | L82-96 | [#dc3c3b0c63eeafe8-1] |
+| CategoryController.updateCategory | PATCH /api/categories/{id} met à jour nom, couleur et description après contrôle de propriété, avec 404 si absente et 403 si non possédée. | L98-119 | [#b0c63e5ab9d313aa-1] |
+| CategoryController.deleteCategory | DELETE /api/categories/{id} vérifie la propriété de la cible et de la catégorie de réassignation éventuelle, puis délègue la suppression et renvoie 204. | L121-154 | [#fee4a3fe030b8963-1] |
+#### mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/SessionRevocationIntegrationTest.java
 | Symbole | Énoncé | Lignes | Fait |
 |---|---|---|---|
-| JwksController.jwks | GET /.well-known/jwks.json renvoie le JWK Set JSON du service JwtService avec un en-tête Cache-Control public, max-age de 300 secondes. | L61-66 | [#a7f30b129e6af9f9-1] |
+| SessionRevocationIntegrationTest.login | Le helper login appelle POST /api/auth/login avec un corps JSON et récupère le cookie jwt, qui doit être présent. | L130-142 | [#63ef6ad8a2f74a2d-1] |
+#### mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailService.java
+| Symbole | Énoncé | Lignes | Fait |
+|---|---|---|---|
+| BrevoEmailService.sendPasswordResetEmail | sendPasswordResetEmail envoie l'email de réinitialisation via Brevo, ou ne fait rien si la clé API est absente ou vide. | L76-78 | [#ca78343fc343a97c-1] |
+#### mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ExportController.java
+| Symbole | Énoncé | Lignes | Fait |
+|---|---|---|---|
+| ExportController | Déclare le préfixe de routes /api/export pour le contrôleur d'export. | L46 | [#cb378d37bc460857-1] |
+| ExportController.exportInline | Expose GET /api/export avec le paramètre format, renvoie le fichier inline en 200 et 401 sans appelant. | L65-74 | [#0aa6060fb83fdf19-1] |
+| ExportController.submitAsync | Expose POST /api/export qui soumet un job d'export asynchrone pour l'appelant et renvoie 202 avec ExportJobResponse. | L77-88 | [#53de777e6e7fe836-1] |
+| ExportController.jobStatus | Expose GET /api/export/job/{jobId} qui renvoie le statut du job scopé à l'appelant, avec 404 si le job est inconnu ou appartient à un autre utilisateur. | L91-102 | [#63c2ecc98ef26923-1] |
+| ExportController.download | Expose GET /api/export/download/{jobId} qui exige un token signé valide, lié au jobId et à l'appelant, sinon répond 404. | L109-129 | [#49bb154a99436e4a-1] |
+#### mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java
+| Symbole | Énoncé | Lignes | Fait |
+|---|---|---|---|
+| ProductController.createProduct | POST /api/users/{userId}/products crée un produit pour le caller, renvoie 201, 401 si aucun caller et 403 si userId diffère du caller. | L50-66 | [#fab511f8078ce706-1] |
+| ProductController.getProducts | GET /api/users/{userId}/products renvoie les produits du caller via getProductsWithEvents, mappés en ProductResponse. | L68-85 | [#3ce901cb2b85d119-1] |
+| ProductController.getArchivedProducts | GET /api/users/{userId}/products/archived renvoie les produits archivés du caller en ArchivedProductResponse. | L92-106 | [#f778175892d0fa70-1] |
+| ProductController.restoreProduct | POST restore contrôle le caller puis appelle productService.restoreProduct avec productId et userId, et renvoie 204. | L118-132 | [#23aead80049aa52e-1] |
+| ProductController.getProductById | GET d'un produit renvoie 404 si le produit est absent, 403 s'il n'appartient pas au userId, sinon le produit. | L134-154 | [#3ed6a3b197a70d6e-1] |
+| ProductController.updateProduct | PATCH d'un produit contrôle le caller, l'existence (404) et l'ownership (403), puis délègue la mise à jour à productService.updateProduct. | L156-181 | [#586f24cc5cefccfd-1] |
+| ProductController.deleteProduct | DELETE d'un produit contrôle le caller, l'existence et l'ownership, puis archive le produit et renvoie 204. | L183-206 | [#9ee1b92aced8cd1b-1] |
 
 ## 5. Endpoints et écrans {#surface}
 
-### Refus et accès
-- Les routes produit portent le userId dans le chemin et renvoient 403 si le produit n'appartient pas à ce userId, 404 s'il est absent [#3ed6a3b197a70d6e-1][#8aad666de4a63c22-1].
-- Une catégorie d'autrui ou inexistante donne 404 en lecture, mais le PATCH renvoie 403 pour une catégorie système ou d'autrui [#dc3c3b0c63eeafe8-1][#841220fccd00d9ee-1].
-- Révoquer la session d'un autre utilisateur lève SessionNotFoundException, sans révéler son existence [#d1735de25cd0161d-1][#de509e2411ca1e4d-1].
-- /me renvoie 401 si le jti de la session est révoqué ou inconnu, et le refresh exige un token valide et une session active [#11cece36cefdf4b1-1][#08a39f689d7f03a2-1].
-- Le JWKS est public, avec un cache de 300 secondes [#a7f30b129e6af9f9-1][authorization/8bc3a1ce71fe4ba9-2].
-### Export et produits
-- downloadAsyncExport retire le préfixe /api de l'URL du job, alors que les autres services appellent apiClient par chemin relatif sans préfixe [#frontend-socle/c8e7542069dbe36c-1][#136df6d9fe823927-1].
-- deleteProduct envoie un DELETE mais archive le produit (soft delete). La restauration passe par POST sur /restore et les archivés par GET sur /products/archived [#fecb9d17e61afceb-1][#ad598a2371cf6d94-1][#1c6a2baf2a5fb067-1].
-- Un événement archivé se désarchive avec sa version, ajoutée au corps seulement si c'est un nombre [#623da4d8d722ca9c-1][#9d00cfec1fb46818-1].
-### Écrans
-- Dans le drawer produit, la date du premier événement n'existe qu'en création et le bouton Archiver qu'en édition [#3736e3a2725416ec-1][#c46479f96c8316f7-1].
-- La fiche produit lit le cache de useProductsWithEvents sans requête dédiée et affiche une alerte notFound si l'id y manque [#f1600dfbba1bba53-1][#e5ef256423509da4-3].
+### Accès et propriété
+- DELETE d'un produit l'archive au lieu de le supprimer, et la restauration passe par une mise à jour native filtrée sur archived = true [#9ee1b92aced8cd1b-1] [#0ba293f8c1399fed-1].
+- GET /api/export/download/{jobId} exige un token signé dont jobId et ownerId correspondent à la route et à l'appelant, sinon 404 [#49bb154a99436e4a-1] [#7f33002b8ba30692-1]. Le statut d'un job d'un autre utilisateur donne aussi 404 [#63c2ecc98ef26923-1].
+### Auth et support
+- Une fois le contrôleur atteint, POST /api/auth/forgot-password renvoie un 200 au message neutre, que le compte existe ou non, mais la limitation de débit (5 par minute et par IP) et la validation du corps peuvent le refuser avant, et l'envoi Brevo est un no-op sans clé API [#84a2033cf7918249-1] [#ca78343fc343a97c-1].
+### Écrans et services front
+- La vue `mytimeline:frontend/src/components/products/ProductDetailView.tsx:99-108` lit le produit dans le cache useProductsWithEvents. Un produit absent affiche « introuvable ou archivé », sans distinguer inexistant et archivé [#e5ef256423509da4-1] [#e5ef256423509da4-3].
+- Les statuts 403, 404 et 409 des catégories sont attendus et non journalisés `mytimeline:frontend/src/services/categoryService.ts:15` [#f05111165c180b0b-1].
+- La suppression d'un événement n'invalide le cache products, ne ferme l'éditeur et ne vide la cible qu'en cas de succès [#0c7d658378b5b928-1].
+- POST /api/events/recurrence-preview calcule count et capped sans rien persister, et le formulaire `mytimeline:frontend/src/components/EventEditForm.tsx:211-229` affiche un hint non bloquant au-delà du plafond [#f75694096a2946cf-1] [#2f6523b0e23d6041-1] [#2f6523b0e23d6041-3].
+- Un lien d'export async expiré remplace le téléchargement par un message et une relance, et le téléchargement retire le préfixe /api de l'URL [#ce85c05afb36b414-3] [#136df6d9fe823927-1].
+- Le thème n'est écrit sur le compte que si l'utilisateur est authentifié et que le compte ne porte pas déjà ce choix [#7f91461060c8adbb-1] [#5b0acaa2f1dbcb70-1].
 
 ## 6. Fichiers critiques {#files}
 
-Fichiers du pool au poids le plus élevé (12 sur 388), le poids étant la somme des scores de spécificité de leurs faits. Liste complète : annexe.
+Fichiers du pool au poids le plus élevé (12 sur 390), le poids étant la somme des scores de spécificité de leurs faits. Liste complète : annexe.
 
 | Fichier | Faits | Sortes dominantes |
 |---|---|---|
-| `mytimeline:frontend/src/components/EventEditForm.test.tsx` | 50 | business_rule 19, test_case 18, convention 3 |
-| `mytimeline:frontend/src/components/timeline/TimelineView.tsx` | 39 | business_rule 16, other 8, convention 4 |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java` | 34 | convention 7, endpoint 7, business_rule 5 |
-| `mytimeline:frontend/src/components/products/ProductDrawer.tsx` | 34 | business_rule 14, ui_screen 6, other 5 |
-| `mytimeline:frontend/src/components/EventEditForm.tsx` | 28 | business_rule 8, convention 4, config 3 |
-| `mytimeline:frontend/src/components/categories/CategoryDrawer.tsx` | 26 | business_rule 11, ui_screen 5, role_check 4 |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/UserController.java` | 26 | endpoint 8, business_rule 6, validation 4 |
-| `mytimeline:frontend/src/components/timeline/TimelineView.test.tsx` | 66 | test_case 51, business_rule 7, other 5 |
-| `mytimeline:frontend/src/lib/auth-token-verify.ts` | 24 | business_rule 14, other 4, convention 2 |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/GlobalExceptionHandler.java` | 24 | validation 13, other 4, business_rule 3 |
-| `mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductControllerOwnershipTest.java` | 24 | business_rule 6, role_check 6, test_case 6 |
-| `mytimeline:frontend/src/components/products/ProductDetailView.tsx` | 29 | ui_screen 12, business_rule 6, i18n_key 3 |
+| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java` | 40 | business_rule 8, endpoint 8, convention 6 |
+| `mytimeline:frontend/src/components/timeline/TimelineView.tsx` | 39 | business_rule 18, convention 5, state_transition 3 |
+| `mytimeline:frontend/src/components/products/ProductDrawer.tsx` | 36 | business_rule 11, ui_screen 7, validation 7 |
+| `mytimeline:frontend/src/components/EventEditForm.test.tsx` | 66 | test_case 47, convention 5, validation 4 |
+| `mytimeline:frontend/src/components/EventEditForm.tsx` | 29 | business_rule 11, ui_screen 5, convention 4 |
+| `mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/EventServiceImplTest.java` | 30 | test_case 11, business_rule 10, validation 6 |
+| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/SecurityConfig.java` | 28 | convention 16, role_check 4, config 3 |
+| `mytimeline:frontend/src/components/timeline/TimelineMobileLandscape.tsx` | 29 | business_rule 11, convention 6, i18n_key 5 |
+| `mytimeline:frontend/src/components/products/ProductsListView.tsx` | 31 | business_rule 10, other 10, ui_screen 3 |
+| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/GlobalExceptionHandler.java` | 23 | validation 14, other 4, convention 2 |
+| `mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductControllerOwnershipTest.java` | 32 | test_case 16, business_rule 6, role_check 5 |
+| `mytimeline:frontend/src/components/products/ProductDetailView.tsx` | 24 | ui_screen 9, business_rule 6, convention 2 |
 
 ## 7. Relations avec d'autres packs {#relations}
 
@@ -301,42 +317,43 @@ Packs liés par des faits repris, des faits équivalents écartés à la dédupl
 
 | Pack | Faits repris | Faits équivalents | Catalogue |
 |---|---|---|---|
-| integrations | 216 | 113 |  |
-| authorization | 115 | 41 |  |
-| backend-socle | 116 | 39 |  |
+| integrations | 209 | 117 |  |
+| authorization | 93 | 95 |  |
+| backend-socle | 103 | 41 |  |
 | batch | 23 | 20 |  |
-| state-machine | 21 | 9 |  |
-| migrations | 13 | 15 |  |
-| frontend-socle | 13 | 2 |  |
+| frontend-socle | 26 | 10 |  |
+| state-machine | 21 | 13 |  |
+| migrations | 15 | 14 |  |
 
 ## 8. Tests attendus {#tests}
 
-- Les tests fixent qu'une session révoquée reçoit 401 et qu'une session d'un autre utilisateur donne 404 [#e6d1632a53f68b9b-1] [#2e3501dea5107043-1] [#integrations/9eb6cde81f1c0949-1].
-- Les tests fixent que register, reset et change rejettent les mêmes mots de passe hors politique [#f773aa0d731af8bc-1] [#4d0aa47965aec484-1] [#29edea2b4b988201-1] [#a63d1c82957aa567-1].
-- Une nouvelle route doit être déclarée dans PROTECTED_APP_SEGMENTS, car les tests la comparent aux dossiers sous (app) [#8649558ca2452cb8-2] [#df054f9afe4233dc-1].
-- Un nouveau test de frise doit stubber requestFullscreen et exitFullscreen [#082a96a4ff8c99e7-1] [#0fc55cdd9363d09d-2].
+- Un PATCH d'événement avec une version périmée lève EventConflictException sans save et rend un 409 au corps plat, une version nulle saute le contrôle [#4b5d2af8bee1f637-1] [#389538cba31288b5-1] [#a7e9024c920debf4-2] [#7b0c17246e7a9d53-1] [#c7dc54d30122d1a9-1]
+- Les contraintes CHECK sont prouvées par du SQL natif qui doit échouer [#cabb10c4513fcbd5-1] [#87f01d1728f1c9ca-1] [#406b679dba71f5f9-1]
+- Un test d'intégration étend AbstractPostgresIntegrationTest et se connecte pour obtenir le cookie jwt [#84f234916728eaac-1] [#e606b84631db196b-1]
 
 ## 9. Questions ouvertes {#questions}
 
-- Le 404 pour un produit existant sans événement est-il voulu ? Le code le traite comme un produit inconnu [#e7bf3b5c8af92396-1].
-- Le commentaire de createProduct dit productId null et sans effet, mais le code passe product.getId() à Event [#7e3bc5890148b684-1].
-- L'écart de calcul des récurrences entre frontend et backend (dérive au 28 après février côté backend) est-il voulu ? [#4379776f0ee85c7b-1] [#fc88597e84160f54-1].
+- Pourquoi GET d'une catégorie d'un autre utilisateur donne-t-il 404 alors que PATCH et DELETE donnent 403 ? La base ne dit pas quel choix est voulu [#5ffa90402c2ed5d3-1].
+- Le DELETE groupé de ExportPurgeScheduler.purgeExpired peut-il laisser la transaction en rollback seul pour les jobs suivants ? Aucun savepoint n'est visible [#3d07a90220ba90ff-2].
+- L'unicité du username peut-elle être violée en course ? [#28df165ba39642e4-1]
+- La mini-frise doit-elle inclure les événements archivés ? [#e7ae87f69a75289c-1]
 
 ## 10. Alertes {#alerts}
 
-- AsyncExportRunner ne capture que RuntimeException et ExportJob ne contrôle pas son statut avant ses transitions. Une Error laisse le job RUNNING, gérez FAILED vous-même [#batch/e9b8732b8a56d766-1] [#state-machine/8096253e175ca857-1].
-- PasswordResetToken.consume ne vérifie pas isUsable (garde dans resetPassword) et le catch du conflit optimiste suppose un saveAndFlush dans markConsumed ⇒ Garder la garde et le flush [#state-machine/c37611432b5807a9-1] [#5754f049d8a57cbb-1] [#e703cb1fc1f6d1d6-1] [#5754f049d8a57cbb-2]
-- Pour un type duration, changer le facteur de date recalcule endDate et écrase celle du payload ⇒ Ne pas compter sur une endDate explicite dans un PATCH [#aacec85a42631428-2]
-- UserMapper.toDomain et changePassword construisent un User sans themePreference, que UserResponse.fromDomain lit ⇒ Écrire la préférence par updateThemePreference [#backend-socle/d86713c491180960-1] [#dbcd8a010490bc1d-1] [#17f190f13ed535c6-1]
-- previewRecurrence traduit toute IllegalArgumentException de expand en RecurrenceEndDateBeforeStartException. Distinguer les causes avant d'en ajouter [#94d0aece4bf5a1de-1].
-- Dans TimelineBottomSheet, onClose est appelé dans l'updater de setDragY et pointercancel réutilise le relâchement : un geste annulé au-delà de 80 px ferme le sheet [#1145fb020b8bd40e-1] [#1145fb020b8bd40e-2].
-- isEdit dans EventEditForm ne dépend que de onDelete ⇒ ne pas le passer en création [#871ea3a89de2f9c5-1]
-- Plusieurs tests de rejet n'assertent que la classe Exception, donc toute erreur SQL passe ⇒ Préciser le type avant de s'y fier [#87f01d1728f1c9ca-1] [#9ec9f44160c5574d-1] [#27ffb31a2a203822-1]
-- Le port ProductService importe des DTO applicatifs et ProductRepository porte l'annotation Spring, contre la règle hexagonale ⇒ Ne pas reproduire [#c9e29f7126480ec4-1] [#d2afa60d54aa4907-1]
+- La surcharge generateToken(String) ne pose pas de jti, alors que JwtFilter n'authentifie que si le jti correspond à une session active ⇒ Utiliser la surcharge Authentication pour tout token de session [#cb51750c3a8dc0ff-1] [#815b663297c90786-2]
+- CustomUserDetails renvoie true pour les quatre états de compte, donc un compte verrouillé ou désactivé n'est pas refusé [#54107dc05fbc7803-1].
+- Les transitions markRunning, markCompleted et markFailed de ExportJob n'imposent aucun enchaînement, un job FAILED peut passer à COMPLETED ⇒ Poser la garde soi-même [#state-machine/8096253e175ca857-1]
+- La suppression d'un événement n'a pas de clause de version, une édition concurrente committée est supprimée sans conflit [#68124f11363668ae-1] [#integrations/6439e02e65f081e7-1] [#154d12374c0caa77-1]
+- V9 met à NULL toute unité de récurrence hors WEEK, MONTH, YEAR, et le CHECK de V4 est en minuscules ⇒ Écrire les unités en majuscules [#886d2ad64e13f7fd-1] [#c53bd5a742d3c763-2] [#310442fce9aaa115-1] [#migrations/29933d39a46bb560-1]
+- V12 remplace par ROLE_USER tout rôle NULL ou inconnu, et ne doit pas tourner en production sans décision humaine [#67db88ee69eb92d5-1] [#7665b5f08587801a-1].
+- getCategoryByName cherche par nom seul alors que l'unicité est par utilisateur, donc préférer findByOwnerAndName [#bbf7c3a8544cae1f-1] [#0ef270b4957f4985-1] [#integrations/fbacb4352f182c9b-1].
+- PATCH d'une catégorie renvoie 404 si absente et 403 si d'un autre utilisateur, alors que GET renvoie 404 dans les deux cas [#07832a8955e28a7c-1].
+- LocalStorageAdapter.load lève IllegalArgumentException pour une référence vide, nulle ou avec séparateur, malgré la javadoc qui promet un Optional vide [#2f5c382628b2ed24-1] [#21441e6ea68952b9-1].
 
 ## 11. Couverture {#coverage}
 
-- Fichiers du pack : 388 ; cités par au moins un fait : 388 ; non cités définitifs : 0.
-- Faits en base : 3 432 ; dans le pool après déduplication : 3 811 (dont 517 repris d'autres packs) ; cités dans ce pack : 350 ; en annexe : 2 142 ; ni cités ni en annexe : 1 065 ; écartés (sorte `other`) : 493.
-- Fichiers dont au moins un fait est cité ici : 127 sur 388.
-- Base : sha256 b34b44aece11…, générée le 2026-11-17.
+- Fichiers du pack : 390 ; avec au moins un fait en base : 390 ; sans fait après remise en file : 0.
+- Faits en base : 3 489, repris d'autres packs : +800, hors périmètre : -0, doublons écartés à la déduplication : -454, soit 3 835 dans le pool.
+- Faits du pool venus d'un autre pack : 490 (par pack : section Relations).
+- Destination des 3 835 faits du pool : Lexique 81 ; Règles 780 ; Endpoints et écrans 389 ; Tests attendus 1 144 ; Alertes / Questions ouvertes 261 ; annexe seule 741 ; écartés (sorte `other` ou inconnue) 439.
+- Base : sha256 d03884d4f76b…, générée le 2026-11-18.

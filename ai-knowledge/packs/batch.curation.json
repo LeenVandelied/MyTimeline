@@ -1,20 +1,20 @@
 {
  "pack": "batch",
  "schema": 1,
- "curated_at": "2026-11-18T14:30:00Z",
+ "curated_at": "2026-11-18T16:25:37Z",
  "curator": "curate/1",
- "base_sha256": "fdcbb25631235367ccad8623d570ec570aba54c591f72818c3aed9649d49bf66",
- "pack_sha256_before": "afaa3d67a6e81babf608b1f9b9f59510fd2d6840c6ee132062f635694e24d580",
- "pack_sha256_after": "1e4fe68bcfddb70c5217542b3e08b75cfc6d35ebd7a686f3e1f5fff04c38cd05",
+ "base_sha256": "362045e6a2042ec5e5b4b1975cb19b0ca11225b01474c9908ac71899fb44e0c9",
+ "pack_sha256_before": "02c67c08a7dfdd0cb26008e6793f357cceeaabd595e8acec5dcd2ccd9ececb00",
+ "pack_sha256_after": "f287ffc7490e08a695a8fdbe4f48a2d983314e60f5a87b7cdbd2f26b5ce4e54a",
  "criteria_sha256": "48e0e20f086c5b11deecfecdc547ba1d6115faee1597a5aaf682f6c699e92423",
  "models": {
   "measure": "haiku",
   "refute": "sonnet"
  },
- "base_fingerprint": "e334cb782a0fe7c5780af8df51a701b921ad71aa61181c3bbf1ca4b113f8ab74",
+ "base_fingerprint": "e5b761d54175a43b8b346f0051c19d8fd36094198e2a1170f1501d781c49f41c",
  "bytes": {
-  "before": 8030,
-  "after": 7674,
+  "before": 7739,
+  "after": 7739,
   "by_section": {
    "activate": {
     "before": 184,
@@ -25,40 +25,40 @@
     "after": 78
    },
    "rules": {
-    "before": 1804,
-    "after": 1499
+    "before": 1833,
+    "after": 1833
    },
    "structure": {
-    "before": 783,
-    "after": 783
+    "before": 1004,
+    "after": 1004
    },
    "surface": {
-    "before": 667,
-    "after": 667
+    "before": 441,
+    "after": 441
    },
    "files": {
-    "before": 1174,
-    "after": 1174
+    "before": 1326,
+    "after": 1326
    },
    "relations": {
     "before": 320,
     "after": 320
    },
    "tests": {
-    "before": 1483,
-    "after": 1483
+    "before": 1332,
+    "after": 1332
    },
    "questions": {
     "before": 91,
     "after": 91
    },
    "alerts": {
-    "before": 458,
-    "after": 344
+    "before": 78,
+    "after": 78
    },
    "coverage": {
-    "before": 658,
-    "after": 658
+    "before": 659,
+    "after": 659
    }
   }
  },
@@ -67,41 +67,25 @@
    "id": "batch:rules:1",
    "section": "rules",
    "rank": 1,
-   "text": "- Les méthodes planifiées de purge et le worker d'export sont @Transactional. [#cebb04ed84733eef-1] [#31adec434d6b04c0-1] [#8c0af7c8fb9efde8-2]",
-   "fact_text": "Les méthodes planifiées de purge et le worker d'export sont @Transactional",
+   "text": "- Un job créé par submitAsync entre en PENDING, puis le worker asynchrone est lancé sur son identifiant. [#27110603918edb71-1]",
+   "fact_text": "Un job créé par submitAsync entre en PENDING, puis le worker asynchrone est lancé sur son identifiant",
    "consigne": null,
    "consigne_dropped": false,
    "cites": [
-    "batch/cebb04ed84733eef-1",
-    "batch/31adec434d6b04c0-1",
-    "batch/8c0af7c8fb9efde8-2"
+    "batch/27110603918edb71-1"
    ],
    "files": [
-    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportPurgeScheduler.java",
-    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/PasswordResetTokenPurgeScheduler.java",
-    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/AsyncExportRunner.java"
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportServiceImpl.java"
    ],
    "ranges": [
     [
-     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportPurgeScheduler.java",
-     61,
-     62,
-     "368aeaaa3df33d46041d1af7729af9a196be9dbf208a6637f9f0e766332c6507"
-    ],
-    [
-     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/PasswordResetTokenPurgeScheduler.java",
-     72,
-     73,
-     "3d3ba3b451705bad4586a00e5db7e8066d3d3d248a459668ec89dd4f953da176"
-    ],
-    [
-     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/AsyncExportRunner.java",
-     60,
-     61,
-     "fb56c89a4ec4c678b5f34a642b3cd8cee3cd9ae399568cd79cef6dcd0ba0561d"
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportServiceImpl.java",
+     84,
+     85,
+     "46117b4dd8ff9306e8677c956bbc91c7a079caecc1efef738defd73c71fa79eb"
     ]
    ],
-   "code_sha256": "1809e08491ca463f2a2d6bdd966a48af74bf78ffa8c5a93d35114baa328ff076",
+   "code_sha256": "46117b4dd8ff9306e8677c956bbc91c7a079caecc1efef738defd73c71fa79eb",
    "verdict": "admit",
    "reason": "admitted",
    "final": true,
@@ -110,36 +94,41 @@
     "deduce": {
      "covered": false,
      "overlap": {
-      "identifiers": null,
+      "identifiers": 1.0,
       "values": null,
-      "terms": 0.333,
+      "terms": 0.2,
       "n": {
-       "identifiers": 0,
+       "identifiers": 2,
        "values": 0,
-       "terms": 6
+       "terms": 5
       }
      },
-     "restatement": "Trois méthodes de batch sont annotées @Transactional : AsyncExportRunner.run, ExportPurgeScheduler.purgeExpired et PasswordResetTokenPurgeScheduler.purgeConsumedAndExpired. Chaque exécution s'effectue donc dans une transaction, ce qui inclut la suppression des lignes.",
-     "confidence": "high"
+     "restatement": "`ExportServiceImpl.submitAsync` persiste d'abord un `ExportJob.pending(ownerId, format, now)` via `jobRepository.save`, puis appelle `asyncRunner.run(pending.getId())`. Le job existe donc en base à l'état PENDING avant que la génération asynchrone ne soit déclenchée.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-18T16:25:29Z"
     },
     "rediscover": {
      "found": true,
-     "cost": 2,
-     "within_budget": true,
+     "cost": 7,
+     "within_budget": false,
      "covered": false,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/packs-0-10-bfb23b/backend/src/main/java/com/matimeline/eventmanager/application/services/ExportPurgeScheduler.java",
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/packs-0-10-bfb23b/backend/src/main/java/com/matimeline/eventmanager/application/services/ExportServiceImpl.java",
      "file_ok": true,
      "overlap": {
-      "identifiers": null,
+      "identifiers": 1.0,
       "values": null,
-      "terms": 0.167,
+      "terms": 0.2,
       "n": {
-       "identifiers": 0,
+       "identifiers": 2,
        "values": 0,
-       "terms": 6
+       "terms": 5
       }
      },
-     "job": "batch:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_services_AsyncExportRunner.java:1"
+     "job": "batch:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_services_AsyncExportRunner.java:1",
+     "reused": true,
+     "reused_from": "2026-11-18T16:25:29Z"
     },
     "comment": [],
     "refute": {
@@ -147,9 +136,9 @@
      "refuted": 0,
      "refute_unproven": 0,
      "reasons": [
-      "Les deux @Scheduled (ExportPurgeScheduler L61, PasswordResetTokenPurgeScheduler L72) et AsyncExportRunner.run (L60) portent @Transactional. Aucun autre @Scheduled dans le backend.",
-      "Les deux méthodes planifiées (@Scheduled) et AsyncExportRunner.run portent @Transactional ; aucun autre @Scheduled dans le backend.",
-      "Les deux méthodes @Scheduled (ExportPurgeScheduler L61, PasswordResetTokenPurgeScheduler L72) et AsyncExportRunner.run (L60) portent @Transactional ; aucun autre @Scheduled dans le backend."
+      "ExportServiceImpl.submitAsync L84-85 sauvegarde ExportJob.pending puis appelle asyncRunner.run(pending.getId()).",
+      "ExportServiceImpl.submitAsync L84-85 sauvegarde ExportJob.pending puis appelle asyncRunner.run(pending.getId()).",
+      "ExportServiceImpl.submitAsync L84-85 sauvegarde ExportJob.pending (status PENDING) puis appelle asyncRunner.run(pending.getId()), qui est @Async(\"exportExecutor\")."
      ],
      "evidence": [
       "",
@@ -169,29 +158,31 @@
        [
         {
          "tool": "Grep",
-         "target": "@Scheduled|@Async (backend main java)",
-         "found": "Deux @Scheduled, tous deux @Transactional. Autre @Async: PasswordResetServiceImpl.requestReset, hors périmètre de la règle."
+         "target": "@Async dans backend/src/main",
+         "found": "AsyncExportRunner.run est @Async(\"exportExecutor\"), bean séparé"
+        }
+       ],
+       [
+        {
+         "tool": "Read",
+         "target": "ExportServiceImpl.java L65-105",
+         "found": "submitAsync enregistre le job PENDING puis lance le runner avec l'id."
         }
        ],
        [
         {
          "tool": "Grep",
-         "target": "@Scheduled|@Async dans backend/src/main/java",
-         "found": "deux @Scheduled seulement (ExportPurgeScheduler, PasswordResetTokenPurgeScheduler), tous deux @Transactional ; @Async sur AsyncExportRunner (transactionnel) et PasswordResetServiceImpl (hors sujet)"
-        }
-       ],
-       [
-        {
-         "tool": "Grep",
-         "target": "@Scheduled|@Async dans backend/src/main/java",
-         "found": "Seulement 2 méthodes @Scheduled, toutes deux suivies de @Transactional ; run() aussi."
+         "target": "static ExportJob pending",
+         "found": "ExportJob.pending crée le job avec ExportJobStatus.PENDING."
         }
        ]
       ],
       "untraced": 0,
       "over_budget": 0,
       "unproven": 0
-     }
+     },
+     "reused": true,
+     "reused_from": "2026-11-18T16:25:29Z"
     }
    },
    "contrary": null,
@@ -207,90 +198,14 @@
    "id": "batch:rules:2",
    "section": "rules",
    "rank": 2,
-   "text": "- Le worker run s'exécute sur l'executor exportExecutor. [#8c0af7c8fb9efde8-1]",
-   "fact_text": "Le worker run s'exécute sur l'executor exportExecutor",
+   "text": "- Après génération et stockage sans exception, le job passe à COMPLETED avec une expiration à la date courante plus 24 heures, ce qui le rend éligible à la purge. [#12b6799eaf5bd99b-2] [#0b16217c50dbabb3-1] [#f15732d31ea166fa-1]",
+   "fact_text": "Après génération et stockage sans exception, le job passe à COMPLETED avec une expiration à la date courante plus 24 heures, ce qui le rend éligible à la purge",
    "consigne": null,
    "consigne_dropped": false,
    "cites": [
-    "batch/8c0af7c8fb9efde8-1"
-   ],
-   "files": [
-    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/AsyncExportRunner.java"
-   ],
-   "ranges": [
-    [
-     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/AsyncExportRunner.java",
-     59,
-     59,
-     "f361bc66c16faf4786a5b5e259e1fd1c90853676d1eef3d4fe66fd751a6b1000"
-    ]
-   ],
-   "code_sha256": "f361bc66c16faf4786a5b5e259e1fd1c90853676d1eef3d4fe66fd751a6b1000",
-   "verdict": "admit",
-   "reason": "rediscovered",
-   "final": true,
-   "measures": {
-    "fidelity": null,
-    "deduce": {
-     "covered": false,
-     "overlap": {
-      "identifiers": 1.0,
-      "values": null,
-      "terms": 0.0,
-      "n": {
-       "identifiers": 1,
-       "values": 0,
-       "terms": 3
-      }
-     },
-     "restatement": "La méthode AsyncExportRunner.run est annotée @Async(\"exportExecutor\", donc son exécution est déportée sur le pool nommé exportExecutor. L'extrait ne montre que cette annotation.",
-     "confidence": "high"
-    },
-    "rediscover": {
-     "found": true,
-     "cost": 1,
-     "within_budget": true,
-     "covered": true,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/packs-0-10-bfb23b/backend/src/main/java/com/matimeline/eventmanager/application/services/AsyncExportRunner.java",
-     "file_ok": true,
-     "overlap": {
-      "identifiers": 1.0,
-      "values": null,
-      "terms": 1.0,
-      "n": {
-       "identifiers": 1,
-       "values": 0,
-       "terms": 3
-      }
-     },
-     "job": "batch:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_services_AsyncExportRunner.java:1",
-     "rank_in_lot": 1
-    },
-    "comment": [],
-    "refute": null
-   },
-   "contrary": null,
-   "check": "scope",
-   "general": "pattern_pack",
-   "kept_for": "rediscovered",
-   "placed": {
-    "pack_line": 32,
-    "annex_table": null
-   },
-   "uses": 0
-  },
-  {
-   "id": "batch:rules:3",
-   "section": "rules",
-   "rank": 3,
-   "text": "- Le job passe de PENDING à RUNNING, puis à COMPLETED avec référence de stockage et expiration à 24 h après la fin. [#12b6799eaf5bd99b-1] [#12b6799eaf5bd99b-2] [#0b16217c50dbabb3-1]",
-   "fact_text": "Le job passe de PENDING à RUNNING, puis à COMPLETED avec référence de stockage et expiration à 24 h après la fin",
-   "consigne": null,
-   "consigne_dropped": false,
-   "cites": [
-    "batch/12b6799eaf5bd99b-1",
     "batch/12b6799eaf5bd99b-2",
-    "batch/0b16217c50dbabb3-1"
+    "batch/0b16217c50dbabb3-1",
+    "batch/f15732d31ea166fa-1"
    ],
    "files": [
     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/AsyncExportRunner.java"
@@ -298,24 +213,24 @@
    "ranges": [
     [
      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/AsyncExportRunner.java",
-     62,
-     68,
-     "20b8cbe72621b2441a5ab9d5637cb0ead295393d42c83c5fc4b6cc6a92cad2fb"
-    ],
-    [
-     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/AsyncExportRunner.java",
-     71,
-     78,
-     "964ef052869a403806aa3c6ed1c1df53f011eb7604fa51acd302deb1cfb71568"
-    ],
-    [
-     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/AsyncExportRunner.java",
-     75,
      77,
-     "270e81ab93ee0603d14afa234ba8b3ef0e55ff352003fa1dba50d49efd0b2904"
+     77,
+     "aea194ee18f842e26d8ea5be7c4b14aa4d4b06dfc52170af20b1d4f79edbfc5d"
+    ],
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/AsyncExportRunner.java",
+     76,
+     76,
+     "17620d084d134931261fd232c7c561ab252cd4030631aeaf2fc44f842745d8e9"
+    ],
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/AsyncExportRunner.java",
+     35,
+     35,
+     "fa2e668d8ecd6d738c8ee719eca5ed21bc6614048d2266e7bcd71ca0aaa3047b"
     ]
    ],
-   "code_sha256": "17f1331ab3dc704fc5aa09bfc2cf272737f45713c6473b8382f094f244f41610",
+   "code_sha256": "56b91d16227c6b01bfed36d048cfa3aa8650214a65cd9aa808f6e43257221455",
    "verdict": "admit",
    "reason": "admitted",
    "final": true,
@@ -325,20 +240,23 @@
      "covered": false,
      "overlap": {
       "identifiers": 0.0,
-      "values": 0.0,
-      "terms": 0.0,
+      "values": 1.0,
+      "terms": 0.182,
       "n": {
-       "identifiers": 3,
+       "identifiers": 1,
        "values": 1,
-       "terms": 4
+       "terms": 11
       }
      },
-     "restatement": "AsyncExportRunner.run charge le job par jobRepository.findDomainById(jobId). Si le job est absent, il logge un warn « export job introuvable » et retourne sans rien faire. Sinon il appelle job.markRunning() puis jobRepository.save(job).",
-     "confidence": "high"
+     "restatement": "Lors de la fin d'un export réussi, `AsyncExportRunner.run` appelle `job.markCompleted(storageRef, now, expiresAt)` avec `expiresAt = now.plusHours(DOWNLOAD_TTL_HOURS)`, où la constante `DOWNLOAD_TTL_HOURS` vaut 24. Le téléchargement expire donc 24 heures après la fin de la génération.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-18T16:25:29Z"
     },
     "rediscover": {
      "found": true,
-     "cost": 3,
+     "cost": 5,
      "within_budget": true,
      "covered": false,
      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/packs-0-10-bfb23b/backend/src/main/java/com/matimeline/eventmanager/application/services/AsyncExportRunner.java",
@@ -346,14 +264,16 @@
      "overlap": {
       "identifiers": 1.0,
       "values": 1.0,
-      "terms": 0.25,
+      "terms": 0.182,
       "n": {
-       "identifiers": 3,
+       "identifiers": 1,
        "values": 1,
-       "terms": 4
+       "terms": 11
       }
      },
-     "job": "batch:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_services_AsyncExportRunner.java:1"
+     "job": "batch:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_services_AsyncExportRunner.java:1",
+     "reused": true,
+     "reused_from": "2026-11-18T16:25:29Z"
     },
     "comment": [],
     "refute": {
@@ -361,9 +281,9 @@
      "refuted": 0,
      "refute_unproven": 0,
      "reasons": [
-      "AsyncExportRunner.run (L67-78) fait markRunning, puis markCompleted(storageRef, now, now.plusHours(DOWNLOAD_TTL_HOURS=24)); seul ce worker complète un job.",
-      "AsyncExportRunner.run L67-78 fait markRunning puis markCompleted(storageRef, now, now+24h) ; PENDING est le statut de départ selon la Javadoc.",
-      "AsyncExportRunner.run L67-77 : markRunning, puis markCompleted(storageRef, now, now+24h) ; le job part de PENDING selon le Javadoc. Fidèle."
+      "AsyncExportRunner.run L73-78 : après store sans exception, markCompleted(storageRef, now, now+DOWNLOAD_TTL_HOURS=24) ; ExportPurgeScheduler appelle findExpired(now), donc éligible. Pas de contre-exemple.",
+      "AsyncExportRunner.run L76-78 passe à COMPLETED avec now+24h dans le try ; findExpired sélectionne expiresAt non nul et dépassé, donc le job est purgeable. Pas de contre-exemple.",
+      "AsyncExportRunner.run L75-78 fait markCompleted(storageRef, now, now+24h) via DOWNLOAD_TTL_HOURS=24 puis save, et findExpired (ExportJobRepositoryJpaImpl) remonte les jobs dont expiresAt est dépassé, donc COMPLETED est éligible."
      ],
      "evidence": [
       "",
@@ -383,46 +303,48 @@
        [
         {
          "tool": "Grep",
-         "target": "markRunning|markCompleted|expiresAt (backend main java)",
-         "found": "Seul AsyncExportRunner appelle markRunning/markCompleted, aucun contre-exemple dans la portée."
-        }
-       ],
-       [
-        {
-         "tool": "Read",
-         "target": "AsyncExportRunner.java",
-         "found": "RUNNING puis COMPLETED avec storageRef et expiresAt = now + DOWNLOAD_TTL_HOURS (24)"
+         "target": "findExpired|markCompleted dans backend/src/main",
+         "found": "markCompleted appelé uniquement dans AsyncExportRunner ; findExpired utilisé par ExportPurgeScheduler"
         }
        ],
        [
         {
          "tool": "Grep",
-         "target": "@Scheduled|@Async dans backend/src/main/java",
-         "found": "Un seul worker d'export (AsyncExportRunner), pas d'autre flux export contredisant le cycle."
+         "target": "markCompleted|findExpired",
+         "found": "ExportJob.markCompleted pose COMPLETED et expiresAt ; findExpired filtre expiresAt IS NOT NULL AND < now ; catch RuntimeException bascule en FAILED."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "findExpired|markCompleted|pending dans backend/src/main",
+         "found": "markCompleted fixe status COMPLETED et expiresAt ; findExpired filtre expiresAt IS NOT NULL AND < now ; aucune autre voie ne pose COMPLETED sans expiration."
         }
        ]
       ],
       "untraced": 0,
       "over_budget": 0,
       "unproven": 0
-     }
+     },
+     "reused": true,
+     "reused_from": "2026-11-18T16:25:29Z"
     }
    },
    "contrary": null,
    "check": "scope",
-   "general": "pattern_pack",
+   "general": "words:sans exception",
    "placed": {
-    "pack_line": 33,
+    "pack_line": 31,
     "annex_table": null
    },
    "uses": 0
   },
   {
-   "id": "batch:rules:4",
+   "id": "batch:rules:3",
    "section": "rules",
-   "rank": 4,
-   "text": "- Toute RuntimeException fait passer le job de RUNNING à FAILED avec le code GENERATION_ERROR. [#12b6799eaf5bd99b-3]",
-   "fact_text": "Toute RuntimeException fait passer le job de RUNNING à FAILED avec le code GENERATION_ERROR",
+   "rank": 3,
+   "text": "- Toute RuntimeException pendant la génération met le job en FAILED avec le code fixe GENERATION_ERROR, sans journaliser message ni stack. [#12b6799eaf5bd99b-3]",
+   "fact_text": "Toute RuntimeException pendant la génération met le job en FAILED avec le code fixe GENERATION_ERROR, sans journaliser message ni stack",
    "consigne": null,
    "consigne_dropped": false,
    "cites": [
@@ -435,11 +357,11 @@
     [
      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/AsyncExportRunner.java",
      80,
-     83,
-     "ebd96adcbfca9fdc6cd57170b25cf38e1a1aa84c35ca88cede6ae063de293b4d"
+     85,
+     "d09d51da3c724c82df42c2621b81b8c616bb67e5c35150ec6991b72b88c142a1"
     ]
    ],
-   "code_sha256": "ebd96adcbfca9fdc6cd57170b25cf38e1a1aa84c35ca88cede6ae063de293b4d",
+   "code_sha256": "d09d51da3c724c82df42c2621b81b8c616bb67e5c35150ec6991b72b88c142a1",
    "verdict": "admit",
    "reason": "rediscovered",
    "final": true,
@@ -448,21 +370,24 @@
     "deduce": {
      "covered": false,
      "overlap": {
-      "identifiers": 0.5,
+      "identifiers": 0.667,
       "values": null,
-      "terms": 0.5,
+      "terms": 0.333,
       "n": {
-       "identifiers": 4,
+       "identifiers": 3,
        "values": 0,
-       "terms": 2
+       "terms": 6
       }
      },
-     "restatement": "Dans le catch de AsyncExportRunner.run, toute RuntimeException déclenche job.markFailed(\"GENERATION_ERROR\") puis save. Le message et la stack ne sont pas enregistrés, seul ce code borné l'est, pour éviter une fuite d'informations.",
-     "confidence": "high"
+     "restatement": "Dans `AsyncExportRunner.run`, toute `RuntimeException` est attrapée. Le job passe à `markFailed(\"GENERATION_ERROR\")`, est sauvegardé, et le log ne contient que le nom de la classe d'exception, sans message ni stack trace.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-18T16:25:29Z"
     },
     "rediscover": {
      "found": true,
-     "cost": 3,
+     "cost": 5,
      "within_budget": true,
      "covered": true,
      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/packs-0-10-bfb23b/backend/src/main/java/com/matimeline/eventmanager/application/services/AsyncExportRunner.java",
@@ -470,15 +395,17 @@
      "overlap": {
       "identifiers": 1.0,
       "values": null,
-      "terms": 1.0,
+      "terms": 0.833,
       "n": {
-       "identifiers": 4,
+       "identifiers": 3,
        "values": 0,
-       "terms": 2
+       "terms": 6
       }
      },
      "job": "batch:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_services_AsyncExportRunner.java:1",
-     "rank_in_lot": 2
+     "rank_in_lot": 3,
+     "reused": true,
+     "reused_from": "2026-11-18T16:25:29Z"
     },
     "comment": [],
     "refute": null
@@ -486,6 +413,102 @@
    "contrary": null,
    "check": "scope",
    "general": "words:toute",
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 32,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "batch:rules:4",
+   "section": "rules",
+   "rank": 4,
+   "text": "- Le fichier est supprimé via le port exportStorage avant la suppression de la ligne, et selon la javadoc un job en échec reste en base et est retenté au tick suivant. [#cebb04ed84733eef-3] [#cc6101d705d01b36-1]",
+   "fact_text": "Le fichier est supprimé via le port exportStorage avant la suppression de la ligne, et selon la javadoc un job en échec reste en base et est retenté au tick suivant",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "batch/cebb04ed84733eef-3",
+    "batch/cc6101d705d01b36-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportPurgeScheduler.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportPurgeScheduler.java",
+     68,
+     73,
+     "4ea3430fb88b72f304dd58548891df941be23dd2ff14cf47335c0a0fdca0512f"
+    ],
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportPurgeScheduler.java",
+     32,
+     33,
+     "be5cf7815213a5ccf40b64534b417e535742261a5cd6abd1c656364dc5f2a002"
+    ]
+   ],
+   "code_sha256": "470172fd6e77c16126ba742421457cb0cbbc893ef88a460fea950599ffc01b67",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
+      "terms": 0.333,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 12
+      }
+     },
+     "restatement": "Dans `purgeExpired`, l'ordre est fixé : le fichier de stockage est supprimé en premier (uniquement si `storageRef` n'est pas null), puis la ligne `export_jobs` est supprimée. Le commentaire indique que la suppression du fichier est idempotente, une référence absente étant un no-op.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-18T16:25:29Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 3,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/packs-0-10-bfb23b/backend/src/main/java/com/matimeline/eventmanager/application/services/ExportPurgeScheduler.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.583,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 12
+      }
+     },
+     "job": "batch:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_services_AsyncExportRunner.java:1",
+     "rank_in_lot": 2,
+     "reused": true,
+     "reused_from": "2026-11-18T16:25:29Z"
+    },
+    "comment": [
+     {
+      "id": "batch/cc6101d705d01b36-1",
+      "verdict": "contradicted"
+     }
+    ],
+    "refute": null
+   },
+   "contrary": null,
+   "confronts": [
+    "batch/cc6101d705d01b36-1"
+   ],
+   "check": "scope",
+   "general": "pattern_pack",
    "kept_for": "rediscovered",
    "placed": {
     "pack_line": 34,
@@ -497,91 +520,32 @@
    "id": "batch:rules:5",
    "section": "rules",
    "rank": 5,
-   "text": "- exportExecutor a 2 threads de cœur, 4 au maximum et une file de 50, et à saturation la tâche s'exécute sur le thread appelant. [#027974c1249cea1d-1] [#027974c1249cea1d-2]",
-   "fact_text": "exportExecutor a 2 threads de cœur, 4 au maximum et une file de 50, et à saturation la tâche s'exécute sur le thread appelant",
+   "text": "- La purge des tokens de réinitialisation tourne toutes les 24 heures par défaut (app.password-reset.purge.interval-ms) et garde les tokens expirés 24 heures par défaut (retention-hours). [#e9bc5986e153aab5-1] [#96832c023d97aa46-1]",
+   "fact_text": "La purge des tokens de réinitialisation tourne toutes les 24 heures par défaut (app.password-reset.purge.interval-ms) et garde les tokens expirés 24 heures par défaut (retention-hours)",
    "consigne": null,
    "consigne_dropped": false,
    "cites": [
-    "batch/027974c1249cea1d-1",
-    "batch/027974c1249cea1d-2"
+    "batch/e9bc5986e153aab5-1",
+    "batch/96832c023d97aa46-1"
    ],
    "files": [
-    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/config/AsyncConfig.java"
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/PasswordResetTokenPurgeScheduler.java"
    ],
    "ranges": [
     [
-     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/config/AsyncConfig.java",
-     53,
-     63,
-     "845b888d808fe6edd4fca413b4e423d513daf5cd479dcebbde30666cfb7ca762"
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/PasswordResetTokenPurgeScheduler.java",
+     70,
+     71,
+     "e79ec0fe736642b30aff9fef5651596ac7c80202a6e7ed6aa60218aa86b8b3b0"
     ],
     [
-     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/config/AsyncConfig.java",
-     60,
-     60,
-     "710591df9fa53f311ed095ad07ca5aa97682eab4c6fc227ff6630c34548b6929"
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/PasswordResetTokenPurgeScheduler.java",
+     58,
+     58,
+     "f4bdd73c72029f7011c0ec7e485bfdd4ae47385ce7b996e4bb86e1b8e4244c0d"
     ]
    ],
-   "code_sha256": "abc0e763c89ccee1b1555e39926a3942d37ec8ceadbdde67f9b0807f0a4c37cc",
-   "verdict": "annex",
-   "reason": "deducible",
-   "final": true,
-   "measures": {
-    "fidelity": null,
-    "deduce": {
-     "covered": true,
-     "overlap": {
-      "identifiers": 1.0,
-      "values": 1.0,
-      "terms": 0.75,
-      "n": {
-       "identifiers": 1,
-       "values": 3,
-       "terms": 8
-      }
-     },
-     "restatement": "Le bean exportExecutor utilise un ThreadPoolTaskExecutor avec un core de 2, un max de 4, une file de 50, le préfixe de threads « export- » et un CallerRunsPolicy en cas de saturation. Quand la file est pleine, la tâche s'exécute donc dans le thread appelant.",
-     "confidence": "high"
-    },
-    "rediscover": null,
-    "comment": [],
-    "refute": null
-   },
-   "contrary": null,
-   "check": "scope",
-   "general": "pattern_pack",
-   "placed": {
-    "pack_line": null,
-    "annex_table": {
-     "part": "batch.details.md",
-     "row": 1
-    }
-   },
-   "uses": 0
-  },
-  {
-   "id": "batch:rules:6",
-   "section": "rules",
-   "rank": 6,
-   "text": "- La purge des exports tourne en fixedDelay toutes les heures, premier passage après 5 minutes, réglable par app.export.purge.*. [#30f78007217e46da-1]",
-   "fact_text": "La purge des exports tourne en fixedDelay toutes les heures, premier passage après 5 minutes, réglable par app.export.purge.*",
-   "consigne": null,
-   "consigne_dropped": false,
-   "cites": [
-    "batch/30f78007217e46da-1"
-   ],
-   "files": [
-    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportPurgeScheduler.java"
-   ],
-   "ranges": [
-    [
-     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportPurgeScheduler.java",
-     59,
-     60,
-     "172aea051af858bb008c101b36becc4e7703b260bc10b09d3e3b63422083e363"
-    ]
-   ],
-   "code_sha256": "172aea051af858bb008c101b36becc4e7703b260bc10b09d3e3b63422083e363",
+   "code_sha256": "b3574344345e40f7ccbbf0fa0323dd527e9e89c5fc804015bee437d0f3673e4d",
    "verdict": "admit",
    "reason": "admitted",
    "final": true,
@@ -590,41 +554,41 @@
     "deduce": {
      "covered": false,
      "overlap": {
-      "identifiers": 0.5,
+      "identifiers": 1.0,
       "values": 1.0,
-      "terms": 0.25,
+      "terms": 0.364,
       "n": {
-       "identifiers": 2,
+       "identifiers": 1,
        "values": 1,
-       "terms": 8
+       "terms": 11
       }
      },
-     "restatement": "ExportPurgeScheduler.purgeExpired est planifié en fixedDelay, par défaut 3600000 ms (1 heure), avec un initialDelay par défaut de 300000 ms (5 minutes). Les deux valeurs sont surchargeables par propriétés de configuration.",
+     "restatement": "`PasswordResetTokenPurgeScheduler.purgeConsumedAndExpired` est planifiée avec un `fixedDelay` par défaut de 86 400 000 ms (24 heures) et un `initialDelay` par défaut de 300 000 ms (5 minutes). Le constructeur injecte `app.password-reset.purge.retention-hours` avec une valeur par défaut de 24.",
      "confidence": "high",
      "files_read_missing": true,
      "reused": true,
-     "reused_from": "2026-11-17T10:45:42Z"
+     "reused_from": "2026-11-18T16:25:29Z"
     },
     "rediscover": {
      "found": true,
-     "cost": 2,
+     "cost": 4,
      "within_budget": true,
      "covered": false,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/backend/src/main/java/com/matimeline/eventmanager/application/services/ExportPurgeScheduler.java",
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/packs-0-10-bfb23b/backend/src/main/java/com/matimeline/eventmanager/application/services/PasswordResetTokenPurgeScheduler.java",
      "file_ok": true,
      "overlap": {
-      "identifiers": 1.0,
+      "identifiers": 0.0,
       "values": 1.0,
-      "terms": 0.0,
+      "terms": 0.364,
       "n": {
-       "identifiers": 2,
+       "identifiers": 1,
        "values": 1,
-       "terms": 8
+       "terms": 11
       }
      },
      "job": "batch:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_services_AsyncExportRunner.java:1",
      "reused": true,
-     "reused_from": "2026-11-17T10:45:42Z"
+     "reused_from": "2026-11-18T16:25:29Z"
     },
     "comment": [],
     "refute": {
@@ -632,9 +596,9 @@
      "refuted": 0,
      "refute_unproven": 0,
      "reasons": [
-      "ExportPurgeScheduler L59-60: fixedDelayString app.export.purge.interval-ms défaut 3600000 (1 h), initialDelayString défaut 300000 (5 min).",
-      "ExportPurgeScheduler L59-60 : fixedDelay 3600000 ms, initialDelay 300000 ms, via app.export.purge.*.",
-      "ExportPurgeScheduler L59-60 : fixedDelayString défaut 3600000 ms (1 h), initialDelayString défaut 300000 ms (5 min), propriétés app.export.purge.*."
+      "PasswordResetTokenPurgeScheduler L70 : interval-ms défaut 86400000 (24 h), L58 : retention-hours défaut 24.",
+      "@Scheduled fixedDelayString par défaut 86400000 ms (24h) et @Value retention-hours:24 dans PasswordResetTokenPurgeScheduler, conformes à la ligne.",
+      "PasswordResetTokenPurgeScheduler L70-71 a fixedDelay par défaut 86400000 ms (24 h) et L58 retention-hours par défaut 24, conformes à la ligne."
      ],
      "evidence": [
       "",
@@ -654,29 +618,178 @@
        [
         {
          "tool": "Grep",
-         "target": "@Scheduled",
-         "found": "Une seule déclaration pour la purge des exports, valeurs conformes."
+         "target": "@Scheduled dans backend/src/main",
+         "found": "un seul scheduler de purge des tokens, valeurs par défaut conformes"
         }
        ],
        [
         {
          "tool": "Read",
-         "target": "ExportPurgeScheduler.java",
-         "found": "valeurs par défaut 1 h et 5 min confirmées"
+         "target": "PasswordResetTokenPurgeScheduler.java",
+         "found": "Défauts 86400000 ms et 24 h confirmés."
         }
        ],
        [
         {
          "tool": "Read",
-         "target": "ExportPurgeScheduler.java",
-         "found": "Valeurs conformes à la ligne."
+         "target": "PasswordResetTokenPurgeScheduler.java",
+         "found": "Valeurs par défaut 86400000 et 24 confirmées."
         }
        ]
       ],
       "untraced": 0,
       "over_budget": 0,
       "unproven": 0
-     }
+     },
+     "reused": true,
+     "reused_from": "2026-11-18T16:25:29Z"
+    }
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "placed": {
+    "pack_line": 35,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "batch:rules:6",
+   "section": "rules",
+   "rank": 6,
+   "text": "- Les méthodes planifiées sont @Transactional, et le TaskScheduler par défaut n'est pas surchargé. [#cebb04ed84733eef-1] [#31adec434d6b04c0-1] [#1c6c381999d571b0-2]",
+   "fact_text": "Les méthodes planifiées sont @Transactional, et le TaskScheduler par défaut n'est pas surchargé",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "batch/cebb04ed84733eef-1",
+    "batch/31adec434d6b04c0-1",
+    "batch/1c6c381999d571b0-2"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportPurgeScheduler.java",
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/PasswordResetTokenPurgeScheduler.java",
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/config/SchedulingConfig.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportPurgeScheduler.java",
+     61,
+     62,
+     "368aeaaa3df33d46041d1af7729af9a196be9dbf208a6637f9f0e766332c6507"
+    ],
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/PasswordResetTokenPurgeScheduler.java",
+     72,
+     73,
+     "3d3ba3b451705bad4586a00e5db7e8066d3d3d248a459668ec89dd4f953da176"
+    ],
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/config/SchedulingConfig.java",
+     17,
+     19,
+     "5ec996d78584814aeb95af2d09f2493bc15e0e5bcf8bd53d9f914682136c1e9c"
+    ]
+   ],
+   "code_sha256": "c48a3ad1464610060fdc2a570551e6f5d8dcc5538b11cd41ef3dca78aa05b4cd",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
+      "terms": 0.4,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 5
+      }
+     },
+     "restatement": "`ExportPurgeScheduler.purgeExpired` et `PasswordResetTokenPurgeScheduler.purgeConsumedAndExpired` sont toutes deux annotées `@Transactional`, donc exécutées dans une transaction. La classe `SchedulingConfig` est annotée `@Configuration` et `@EnableScheduling`, ce qui active l'exécution des méthodes `@Scheduled`.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-18T16:25:29Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 3,
+     "within_budget": true,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/packs-0-10-bfb23b/backend/src/main/java/com/matimeline/eventmanager/application/services/ExportPurgeScheduler.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
+      "terms": 0.8,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 5
+      }
+     },
+     "job": "batch:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_services_AsyncExportRunner.java:1",
+     "reused": true,
+     "reused_from": "2026-11-18T16:25:29Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Seules deux méthodes @Scheduled existent (ExportPurgeScheduler.purgeExpired, PasswordResetTokenPurgeScheduler.purgeConsumedAndExpired), toutes deux @Transactional ; aucun TaskScheduler ni SchedulingConfigurer défini.",
+      "Les deux seules méthodes @Scheduled (ExportPurgeScheduler, PasswordResetTokenPurgeScheduler) portent @Transactional ; aucun TaskScheduler ni SchedulingConfigurer n'est défini, SchedulingConfig précise ne pas surcharger le TaskScheduler par défaut.",
+      "Les deux seuls @Scheduled (ExportPurgeScheduler L59-61, PasswordResetTokenPurgeScheduler L70-72) sont @Transactional ; aucun TaskScheduler ni SchedulingConfigurer dans backend/src/main, SchedulingConfig ne porte que @EnableScheduling."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "scope",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "@Scheduled|TaskScheduler|SchedulingConfigurer|@EnableAsync dans backend/src/main",
+         "found": "2 @Scheduled, tous deux @Transactional ; aucun bean TaskScheduler surchargé, SchedulingConfig précise qu'il ne remplace pas le TaskScheduler par défaut"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "@Scheduled|TaskScheduler|SchedulingConfigurer dans backend/src/main",
+         "found": "Deux @Scheduled, aucun bean TaskScheduler ni configurer ; seule mention en commentaire de SchedulingConfig."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "@Scheduled|TaskScheduler|SchedulingConfigurer|@EnableAsync dans backend/src/main",
+         "found": "Deux @Scheduled, aucun bean TaskScheduler ni configurer ; SchedulingConfig documente ne pas surcharger le TaskScheduler par défaut."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-18T16:25:29Z"
     }
    },
    "contrary": null,
@@ -692,358 +805,25 @@
    "id": "batch:rules:7",
    "section": "rules",
    "rank": 7,
-   "text": "- Chaque job d'export est purgé dans son propre try, le fichier est supprimé avant la ligne, et en cas d'erreur le job reste pour un passage ultérieur. [#cebb04ed84733eef-3] [#cebb04ed84733eef-2]",
-   "fact_text": "Chaque job d'export est purgé dans son propre try, le fichier est supprimé avant la ligne, et en cas d'erreur le job reste pour un passage ultérieur",
+   "text": "- Le test de purge des exports fixe initial-delay-ms et interval-ms à 3600000 pour neutraliser le tick automatique. [#13a687a0a7ac9bcb-1]",
+   "fact_text": "Le test de purge des exports fixe initial-delay-ms et interval-ms à 3600000 pour neutraliser le tick automatique",
    "consigne": null,
    "consigne_dropped": false,
    "cites": [
-    "batch/cebb04ed84733eef-3",
-    "batch/cebb04ed84733eef-2"
+    "batch/13a687a0a7ac9bcb-1"
    ],
    "files": [
-    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportPurgeScheduler.java"
+    "mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/ExportPurgeSchedulerIntegrationTest.java"
    ],
    "ranges": [
     [
-     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportPurgeScheduler.java",
-     68,
-     73,
-     "4ea3430fb88b72f304dd58548891df941be23dd2ff14cf47335c0a0fdca0512f"
-    ],
-    [
-     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportPurgeScheduler.java",
-     67,
-     79,
-     "a5365cdf39a9f323421c30d56dc1af14af11b433e3aac3ccdf82fb7888062d42"
-    ]
-   ],
-   "code_sha256": "d8baa9429925cfe252bf150034141d0ddd3534ee1ee2a19958b620fee5a08955",
-   "verdict": "admit",
-   "reason": "admitted",
-   "final": true,
-   "measures": {
-    "fidelity": null,
-    "deduce": {
-     "covered": false,
-     "overlap": {
-      "identifiers": null,
-      "values": null,
-      "terms": 0.3,
-      "n": {
-       "identifiers": 0,
-       "values": 0,
-       "terms": 10
-      }
-     },
-     "restatement": "ExportPurgeScheduler.purgeExpired supprime d'abord le fichier via exportStorage.delete(storageRef) si storageRef n'est pas null, puis la ligne via deleteById, et incrémente purged. Une RuntimeException est attrapée, loggée uniquement avec le nom de la classe d'exception, et le job sera retenté au tick suivant.",
-     "confidence": "high"
-    },
-    "rediscover": {
-     "found": true,
-     "cost": 2,
-     "within_budget": true,
-     "covered": false,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/packs-0-10-bfb23b/backend/src/main/java/com/matimeline/eventmanager/application/services/ExportPurgeScheduler.java",
-     "file_ok": true,
-     "overlap": {
-      "identifiers": null,
-      "values": null,
-      "terms": 0.3,
-      "n": {
-       "identifiers": 0,
-       "values": 0,
-       "terms": 10
-      }
-     },
-     "job": "batch:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_services_AsyncExportRunner.java:1"
-    },
-    "comment": [],
-    "refute": {
-     "votes": 3,
-     "refuted": 0,
-     "refute_unproven": 0,
-     "reasons": [
-      "ExportPurgeScheduler L66-79: boucle sur chaque job avec try/catch RuntimeException, delete du fichier (L71) avant deleteById (L73), job conservé et retenté en cas d'erreur. Une seule boucle de purge existe.",
-      "ExportPurgeScheduler L66-79 : try/catch par job, delete du fichier avant deleteById, erreur loguée et job retenté.",
-      "ExportPurgeScheduler L66-79 : try/catch par job, delete du fichier (L71) avant deleteById (L73), catch RuntimeException avec retry au tick suivant. Seule la boucle de purge d'export est concernée."
-     ],
-     "evidence": [
-      "",
-      "",
-      ""
-     ],
-     "consigne_verdict": "n/a",
-     "question_verdict": "n/a",
-     "searched": true,
-     "search": {
-      "check": "scope",
-      "outcome": null,
-      "votes": 3,
-      "supporters": 0,
-      "budget": 30,
-      "searches": [
-       [
-        {
-         "tool": "Grep",
-         "target": "@Scheduled",
-         "found": "Un seul scheduler de purge d'exports, pas d'autre chemin de purge divergent."
-        }
-       ],
-       [
-        {
-         "tool": "Grep",
-         "target": "@Scheduled dans backend/src/main/java",
-         "found": "un seul purgeur d'export, aucun contre-exemple"
-        }
-       ],
-       [
-        {
-         "tool": "Read",
-         "target": "ExportPurgeScheduler.java",
-         "found": "Aucun chemin de purge d'export sans try par job."
-        }
-       ]
-      ],
-      "untraced": 0,
-      "over_budget": 0,
-      "unproven": 0
-     }
-    }
-   },
-   "contrary": null,
-   "check": "scope",
-   "general": "words:chaque",
-   "placed": {
-    "pack_line": 37,
-    "annex_table": null
-   },
-   "uses": 0
-  },
-  {
-   "id": "batch:rules:8",
-   "section": "rules",
-   "rank": 8,
-   "text": "- Selon la javadoc, les logs de purge ne portent qu'un compte, sans email, user_id, storage_ref ni jobId. [#cc6101d705d01b36-1]",
-   "fact_text": "Selon la javadoc, les logs de purge ne portent qu'un compte, sans email, user_id, storage_ref ni jobId",
-   "consigne": null,
-   "consigne_dropped": false,
-   "cites": [
-    "batch/cc6101d705d01b36-1"
-   ],
-   "files": [
-    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportPurgeScheduler.java"
-   ],
-   "ranges": [
-    [
-     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportPurgeScheduler.java",
-     33,
-     35,
-     "3ac5c61b93e8b8348ee38d13ed86e4e849866a261e100445ba14542b4dacdd90"
-    ]
-   ],
-   "code_sha256": "3ac5c61b93e8b8348ee38d13ed86e4e849866a261e100445ba14542b4dacdd90",
-   "verdict": "hold",
-   "reason": "comment_contradicted",
-   "final": true,
-   "measures": {
-    "fidelity": null,
-    "deduce": null,
-    "rediscover": null,
-    "comment": [
-     {
-      "id": "batch/cc6101d705d01b36-1",
-      "verdict": "contradicted"
-     }
-    ],
-    "refute": null
-   },
-   "contrary": {
-    "fact": "batch/cc6101d705d01b36-1",
-    "file": "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportPurgeScheduler.java",
-    "lines": [
-     76,
-     82
-    ],
-    "evidence": "log.warn(\"Skipping one expired export job during purge ({}), will retry next run\",",
-    "code_says": "La purge journalise un compte (info « Purged {} expired export job(s) ») mais aussi, dans le warn en cas d'échec, le nom simple de la classe d'exception via getSimpleName(), qui n'est ni un compte ni un identifiant personnel."
-   },
-   "check": "scope",
-   "general": "pattern_pack",
-   "placed": {
-    "pack_line": null,
-    "annex_table": null
-   },
-   "uses": 0
-  },
-  {
-   "id": "batch:rules:9",
-   "section": "rules",
-   "rank": 9,
-   "text": "- La purge des tokens de réinitialisation supprime ce qui est antérieur à maintenant moins la rétention (24 h par défaut), toutes les 24 h par défaut. [#10f3525a1962c7b1-1] [#96832c023d97aa46-1] [#e9bc5986e153aab5-1]",
-   "fact_text": "La purge des tokens de réinitialisation supprime ce qui est antérieur à maintenant moins la rétention (24 h par défaut), toutes les 24 h par défaut",
-   "consigne": null,
-   "consigne_dropped": false,
-   "cites": [
-    "batch/10f3525a1962c7b1-1",
-    "batch/96832c023d97aa46-1",
-    "batch/e9bc5986e153aab5-1"
-   ],
-   "files": [
-    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/PasswordResetTokenPurgeScheduler.java"
-   ],
-   "ranges": [
-    [
-     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/PasswordResetTokenPurgeScheduler.java",
-     74,
-     74,
-     "519e1876dcd3e149d570170b4f9e358d7373a6b5d9b8bc4e248a090d95896db1"
-    ],
-    [
-     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/PasswordResetTokenPurgeScheduler.java",
-     55,
-     58,
-     "2897c851338e15f77f15263047c211ba2cc39e5da2baacf19bca0d6b19144a04"
-    ],
-    [
-     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/PasswordResetTokenPurgeScheduler.java",
-     70,
-     71,
-     "e79ec0fe736642b30aff9fef5651596ac7c80202a6e7ed6aa60218aa86b8b3b0"
-    ]
-   ],
-   "code_sha256": "68611bd72f836145e4ed02adbae4e652186f7bcd5bae1f00a070c222653e0f7f",
-   "verdict": "admit",
-   "reason": "admitted",
-   "final": true,
-   "measures": {
-    "fidelity": null,
-    "deduce": {
-     "covered": false,
-     "overlap": {
-      "identifiers": null,
-      "values": 1.0,
-      "terms": 0.25,
-      "n": {
-       "identifiers": 0,
-       "values": 1,
-       "terms": 8
-      }
-     },
-     "restatement": "PasswordResetTokenPurgeScheduler calcule expiredBefore = LocalDateTime.now(clock).minus(retention). La rétention vient du constructeur, lue dans la propriété app.password-reset.purge.retention-hours avec une valeur par défaut de 24.",
-     "confidence": "high"
-    },
-    "rediscover": {
-     "found": true,
-     "cost": 5,
-     "within_budget": true,
-     "covered": false,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/packs-0-10-bfb23b/backend/src/main/java/com/matimeline/eventmanager/application/services/PasswordResetTokenPurgeScheduler.java",
-     "file_ok": true,
-     "overlap": {
-      "identifiers": null,
-      "values": 1.0,
-      "terms": 0.25,
-      "n": {
-       "identifiers": 0,
-       "values": 1,
-       "terms": 8
-      }
-     },
-     "job": "batch:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_services_AsyncExportRunner.java:1"
-    },
-    "comment": [],
-    "refute": {
-     "votes": 3,
-     "refuted": 0,
-     "refute_unproven": 0,
-     "reasons": [
-      "PasswordResetTokenPurgeScheduler: expiredBefore = now - retention (L74), retention-hours défaut 24 (L58), interval-ms défaut 86400000 (24 h, L70).",
-      "PasswordResetTokenPurgeScheduler L74 : now moins retention (24 h par défaut), interval-ms par défaut 86400000 (24 h).",
-      "PasswordResetTokenPurgeScheduler L74 : now moins retention (défaut 24 h, L58) ; L70 interval défaut 86400000 ms = 24 h."
-     ],
-     "evidence": [
-      "",
-      "",
-      ""
-     ],
-     "consigne_verdict": "n/a",
-     "question_verdict": "n/a",
-     "searched": true,
-     "search": {
-      "check": "scope",
-      "outcome": null,
-      "votes": 3,
-      "supporters": 0,
-      "budget": 30,
-      "searches": [
-       [
-        {
-         "tool": "Grep",
-         "target": "@Scheduled",
-         "found": "Un seul scheduler de purge des tokens, valeurs par défaut conformes."
-        }
-       ],
-       [
-        {
-         "tool": "Grep",
-         "target": "@Scheduled dans backend/src/main/java",
-         "found": "un seul purgeur de tokens, valeurs par défaut conformes"
-        }
-       ],
-       [
-        {
-         "tool": "Read",
-         "target": "PasswordResetTokenPurgeScheduler.java",
-         "found": "Valeurs par défaut 24 h pour rétention et intervalle."
-        }
-       ]
-      ],
-      "untraced": 0,
-      "over_budget": 0,
-      "unproven": 0
-     }
-    }
-   },
-   "contrary": null,
-   "check": "scope",
-   "general": "words:toutes",
-   "placed": {
-    "pack_line": 38,
-    "annex_table": null
-   },
-   "uses": 0
-  },
-  {
-   "id": "batch:rules:10",
-   "section": "rules",
-   "rank": 10,
-   "text": "- requestReset est @Async sur passwordResetExecutor (2 à 4 threads, file de 100). [#00500c928da212f7-1] [#dc6e00eaeabd737d-1]",
-   "fact_text": "requestReset est @Async sur passwordResetExecutor (2 à 4 threads, file de 100)",
-   "consigne": null,
-   "consigne_dropped": false,
-   "cites": [
-    "batch/00500c928da212f7-1",
-    "batch/dc6e00eaeabd737d-1"
-   ],
-   "files": [
-    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/PasswordResetServiceImpl.java",
-    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/config/AsyncConfig.java"
-   ],
-   "ranges": [
-    [
-     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/PasswordResetServiceImpl.java",
-     99,
-     100,
-     "d9b1e9bf31aa9971483049e2829acccb7d3f790aaaab2d2a69bceac2efe8891c"
-    ],
-    [
-     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/config/AsyncConfig.java",
-     34,
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/ExportPurgeSchedulerIntegrationTest.java",
      43,
-     "f291293a9fa99f99c7987e1926765210e8f2143c0b8f8ae54e3a0bbff227fc89"
+     47,
+     "2e0874a837beac8f36e407ec9537894660c3ddf1280527166eaf43bd6156c564"
     ]
    ],
-   "code_sha256": "1cb62e9dabed932b55dea5824579eb46fb0cc980d3a6c64b2674e60490b0ebcb",
+   "code_sha256": "2e0874a837beac8f36e407ec9537894660c3ddf1280527166eaf43bd6156c564",
    "verdict": "admit",
    "reason": "rediscovered",
    "final": true,
@@ -1052,39 +832,144 @@
     "deduce": {
      "covered": false,
      "overlap": {
-      "identifiers": 1.0,
+      "identifiers": null,
       "values": 0.0,
-      "terms": 0.333,
+      "terms": 0.7,
       "n": {
-       "identifiers": 2,
-       "values": 3,
-       "terms": 3
+       "identifiers": 0,
+       "values": 1,
+       "terms": 10
       }
      },
-     "restatement": "PasswordResetServiceImpl.requestReset est annoté @Async(\"passwordResetExecutor\") et @Transactional. L'envoi de la demande de réinitialisation est donc asynchrone et transactionnel.",
-     "confidence": "high"
+     "restatement": "`ExportPurgeSchedulerIntegrationTest` est un `@SpringBootTest` qui fixe `app.export.purge.initial-delay-ms` et `app.export.purge.interval-ms` à 3 600 000 ms. Le tick automatique est ainsi neutralisé, et le test appelle lui-même `purgeExpired()`.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-18T16:25:29Z"
     },
     "rediscover": {
      "found": true,
-     "cost": 6,
+     "cost": 1,
      "within_budget": true,
      "covered": true,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/packs-0-10-bfb23b/backend/src/main/java/com/matimeline/eventmanager/infrastructure/config/AsyncConfig.java",
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/packs-0-10-bfb23b/backend/src/test/java/com/matimeline/eventmanager/application/services/ExportPurgeSchedulerIntegrationTest.java",
      "file_ok": true,
      "overlap": {
-      "identifiers": 1.0,
+      "identifiers": null,
       "values": 1.0,
-      "terms": 0.667,
+      "terms": 0.7,
       "n": {
-       "identifiers": 2,
-       "values": 3,
-       "terms": 3
+       "identifiers": 0,
+       "values": 1,
+       "terms": 10
       }
      },
      "job": "batch:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_services_AsyncExportRunner.java:1",
-     "rank_in_lot": 3
+     "rank_in_lot": 1,
+     "reused": true,
+     "reused_from": "2026-11-18T16:25:29Z"
     },
     "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 38,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "batch:rules:8",
+   "section": "rules",
+   "rank": 8,
+   "text": "- Dans ForgotPasswordAsyncTest, PasswordResetService est le bean réel proxifié (@Async sur PasswordResetServiceImpl.requestReset) et seuls UserRepository, PasswordResetTokenRepository et EmailService sont mockés [#e41545f9a57c55d3-1] [#integrations/b84ecc560bc2eb6d-1] [#e41545f9a57c55d3-2] `mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ForgotPasswordAsyncTest.java:60-71`.",
+   "fact_text": "Dans ForgotPasswordAsyncTest, PasswordResetService est le bean réel proxifié (@Async sur PasswordResetServiceImpl.requestReset) et seuls UserRepository, PasswordResetTokenRepository et EmailService sont mockés ForgotPasswordAsyncTest.java",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "batch/e41545f9a57c55d3-1",
+    "integrations/b84ecc560bc2eb6d-1",
+    "batch/e41545f9a57c55d3-2"
+   ],
+   "files": [
+    "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ForgotPasswordAsyncTest.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ForgotPasswordAsyncTest.java",
+     60,
+     62,
+     "b634dffbec48d38a02cca4c328e809c70bcd4e8628c36a014acbcda0dea54570"
+    ],
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ForgotPasswordAsyncTest.java",
+     60,
+     62,
+     "b634dffbec48d38a02cca4c328e809c70bcd4e8628c36a014acbcda0dea54570"
+    ],
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ForgotPasswordAsyncTest.java",
+     61,
+     62,
+     "23bf9d81aea80a55267955f7436f3e486ae199d51865640ee8eb47d417a76a09"
+    ]
+   ],
+   "code_sha256": "26bb03e7134bc94534cafd00d494505e5120407b319847b2c8a3a495e478f0df",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.286,
+      "values": null,
+      "terms": 0.8,
+      "n": {
+       "identifiers": 7,
+       "values": 0,
+       "terms": 5
+      }
+     },
+     "restatement": "Dans la classe de test ForgotPasswordAsyncTest, le champ PasswordResetService est injecté via @Autowired en tant que bean Spring réel et non mocké, pour tester le proxy Spring (commentaire indiquant qu'il porte @Async). L'extrait ne montre pas l'annotation @Async elle-même, seulement le commentaire qui l'affirme.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 0,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/packs-0-10-bfb23b/backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ForgotPasswordAsyncTest.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 1.0,
+      "n": {
+       "identifiers": 7,
+       "values": 0,
+       "terms": 5
+      }
+     },
+     "job": "batch:rediscover:mytimeline_backend_src_test_java_com_matimeline_eventmanager_infrastructure_adapters_controllers_ForgotPasswordAsyncTest.java:1",
+     "rank_in_lot": 1
+    },
+    "comment": [
+     {
+      "id": "batch/e41545f9a57c55d3-1",
+      "verdict": "unverifiable"
+     },
+     {
+      "id": "integrations/b84ecc560bc2eb6d-1",
+      "verdict": "confirmed"
+     }
+    ],
     "refute": null
    },
    "contrary": null,
@@ -1098,201 +983,11 @@
    "uses": 0
   },
   {
-   "id": "batch:rules:11",
-   "section": "rules",
-   "rank": 11,
-   "text": "- Selon le commentaire du test, il injecte le bean réel proxifié et non un mock pour tester le proxy @Async. [#e41545f9a57c55d3-1]",
-   "fact_text": "Selon le commentaire du test, il injecte le bean réel proxifié et non un mock pour tester le proxy @Async",
-   "consigne": null,
-   "consigne_dropped": false,
-   "cites": [
-    "batch/e41545f9a57c55d3-1"
-   ],
-   "files": [
-    "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ForgotPasswordAsyncTest.java"
-   ],
-   "ranges": [
-    [
-     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ForgotPasswordAsyncTest.java",
-     60,
-     60,
-     "8389620b82333a6aaa52b5d9265f29135aa893611df6a7a17ddf75d117add5e6"
-    ]
-   ],
-   "code_sha256": "8389620b82333a6aaa52b5d9265f29135aa893611df6a7a17ddf75d117add5e6",
-   "verdict": "admit",
-   "reason": "admitted",
-   "final": true,
-   "measures": {
-    "fidelity": null,
-    "deduce": null,
-    "rediscover": null,
-    "comment": [
-     {
-      "id": "batch/e41545f9a57c55d3-1",
-      "verdict": "confirmed"
-     }
-    ],
-    "refute": {
-     "votes": 3,
-     "refuted": 0,
-     "refute_unproven": 0,
-     "reasons": [
-      "La ligne dit 'selon le commentaire' : le commentaire ligne 60 affirme bien un bean proxifié réel et non un mock. Les lignes 61 (@Autowired) puis 64-70 (@MockBean pour les autres dépendances) sont cohérentes.",
-      "La ligne est attribuée au commentaire du test (L60 de ForgotPasswordAsyncTest : « Bean Spring-proxifié réel (porte @Async) — PAS un mock »). Le Grep montre que les trois autres dépendances sont en @MockBean (L64, 67, 70) alors que passwordResetService est injecté sans mock, et que le test l'appelle via le proxy (L101). Aucun contre-exemple n'est porté par la ligne.",
-      "Le commentaire ligne 60 dit bien « Bean Spring-proxifié réel (porte @Async) — PAS un mock », et les autres dépendances sont des @MockBean (lignes 64-70), donc la ligne est fidèle et formulée « selon le commentaire »."
-     ],
-     "evidence": [
-      "",
-      "",
-      ""
-     ],
-     "consigne_verdict": "n/a",
-     "question_verdict": "n/a",
-     "searched": true,
-     "search": {
-      "check": "scope",
-      "outcome": null,
-      "votes": 3,
-      "supporters": 0,
-      "budget": 6,
-      "searches": [
-       [
-        {
-         "tool": "Grep",
-         "target": "@Async|@MockBean|@Autowired dans ForgotPasswordAsyncTest.java",
-         "found": "Ligne 61 @Autowired sous le commentaire, @MockBean sur d'autres champs, appel via proxy ligne 101."
-        }
-       ],
-       [
-        {
-         "tool": "Read",
-         "target": "refute-746dae6b0231.excerpt.txt",
-         "found": "Extrait L60 : commentaire sur le bean Spring proxifié réel, pas un mock."
-        },
-        {
-         "tool": "Grep",
-         "target": "@Async|@MockBean|@MockitoBean|@SpyBean dans ForgotPasswordAsyncTest.java",
-         "found": "@MockBean sur trois autres dépendances (L64, 67, 70). passwordResetService est le bean réel, appelé via le proxy @Async (L101)."
-        }
-       ],
-       [
-        {
-         "tool": "Grep",
-         "target": "@Async|@MockBean|@SpyBean dans ForgotPasswordAsyncTest.java",
-         "found": "Le commentaire ligne 60 confirme le bean réel proxifié. Les services voisins sont mockés par @MockBean aux lignes 64, 67 et 70. Le bean testé n'est pas mocké."
-        }
-       ]
-      ],
-      "untraced": 0,
-      "over_budget": 0,
-      "unproven": 0
-     }
-    }
-   },
-   "contrary": null,
-   "check": "scope",
-   "general": "pattern_pack",
-   "placed": {
-    "pack_line": 41,
-    "annex_table": null
-   },
-   "uses": 0
-  },
-  {
    "id": "batch:surface:1",
    "section": "surface",
    "rank": 1,
-   "text": "- La purge des exports lit les jobs expirés à l'instant courant via le dépôt des jobs d'export, dans `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportPurgeScheduler.java:63-64`. [#a30bdab607e005e7-1]",
-   "fact_text": "La purge des exports lit les jobs expirés à l'instant courant via le dépôt des jobs d'export, dans ExportPurgeScheduler.java",
-   "consigne": null,
-   "consigne_dropped": false,
-   "cites": [
-    "batch/a30bdab607e005e7-1"
-   ],
-   "files": [
-    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportPurgeScheduler.java"
-   ],
-   "ranges": [
-    [
-     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportPurgeScheduler.java",
-     63,
-     64,
-     "64e48dcbf57bd5dda4fab77d952411873c7fe3b1b12074f20bc2b81fa4552841"
-    ]
-   ],
-   "code_sha256": "64e48dcbf57bd5dda4fab77d952411873c7fe3b1b12074f20bc2b81fa4552841",
-   "verdict": "admit",
-   "reason": "admitted",
-   "final": true,
-   "measures": {
-    "fidelity": null,
-    "deduce": {
-     "covered": false,
-     "overlap": {
-      "identifiers": 1.0,
-      "values": null,
-      "terms": 0.286,
-      "n": {
-       "identifiers": 1,
-       "values": 0,
-       "terms": 7
-      }
-     },
-     "restatement": "ExportPurgeScheduler.purgeExpired calcule now = LocalDateTime.now(clock) puis récupère les jobs via exportJobRepository.findExpired(now). La purge s'appuie donc sur l'horloge injectée, pas sur l'heure système directe.",
-     "confidence": "high"
-    },
-    "rediscover": {
-     "found": true,
-     "cost": 2,
-     "within_budget": true,
-     "covered": false,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/packs-0-10-bfb23b/backend/src/main/java/com/matimeline/eventmanager/application/services/ExportPurgeScheduler.java",
-     "file_ok": true,
-     "overlap": {
-      "identifiers": 1.0,
-      "values": null,
-      "terms": 0.0,
-      "n": {
-       "identifiers": 1,
-       "values": 0,
-       "terms": 7
-      }
-     },
-     "job": "batch:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_services_AsyncExportRunner.java:1"
-    },
-    "comment": [],
-    "refute": {
-     "votes": 3,
-     "refuted": 0,
-     "refute_unproven": 0,
-     "reasons": [
-      "L63-64 : now = LocalDateTime.now(clock) puis exportJobRepository.findExpired(now), conforme.",
-      "ExportPurgeScheduler.purgeExpired L63-64 calcule now via clock puis appelle exportJobRepository.findExpired(now).",
-      "ExportPurgeScheduler.purgeExpired L63-64 calcule now via clock puis appelle exportJobRepository.findExpired(now), conforme à la ligne."
-     ],
-     "evidence": [
-      "",
-      "",
-      ""
-     ],
-     "consigne_verdict": "n/a",
-     "question_verdict": "n/a"
-    }
-   },
-   "contrary": null,
-   "placed": {
-    "pack_line": 55,
-    "annex_table": null
-   },
-   "uses": 0
-  },
-  {
-   "id": "batch:surface:2",
-   "section": "surface",
-   "rank": 2,
-   "text": "- La purge des tokens délègue au port du dépôt la suppression des tokens consommés ou expirés avant un seuil, et récupère le nombre de lignes supprimées, dans `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/PasswordResetTokenPurgeScheduler.java:75`. [#b50470acdd691e30-1]",
-   "fact_text": "La purge des tokens délègue au port du dépôt la suppression des tokens consommés ou expirés avant un seuil, et récupère le nombre de lignes supprimées, dans PasswordResetTokenPurgeScheduler.java",
+   "text": "- Le scheduler calcule une date limite égale à maintenant moins la durée de rétention, puis supprime en une seule requête les tokens consommés ou expirés avant cette date, voir `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/PasswordResetTokenPurgeScheduler.java:74-75` [#b50470acdd691e30-1]",
+   "fact_text": "Le scheduler calcule une date limite égale à maintenant moins la durée de rétention, puis supprime en une seule requête les tokens consommés ou expirés avant cette date, voir PasswordResetTokenPurgeScheduler.java",
    "consigne": null,
    "consigne_dropped": false,
    "cites": [
@@ -1304,12 +999,12 @@
    "ranges": [
     [
      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/PasswordResetTokenPurgeScheduler.java",
+     74,
      75,
-     75,
-     "86967ecb5d9b939fb162ad26df193bb98cb59fc59dd362ede72fb89d09affa79"
+     "42b4ef8cfe489589f64265376dbfe191b839241f968ac9011e7e2c7d2d4240c6"
     ]
    ],
-   "code_sha256": "86967ecb5d9b939fb162ad26df193bb98cb59fc59dd362ede72fb89d09affa79",
+   "code_sha256": "42b4ef8cfe489589f64265376dbfe191b839241f968ac9011e7e2c7d2d4240c6",
    "verdict": "admit",
    "reason": "admitted",
    "final": true,
@@ -1320,6 +1015,29 @@
      "overlap": {
       "identifiers": 1.0,
       "values": null,
+      "terms": 0.462,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 13
+      }
+     },
+     "restatement": "`PasswordResetTokenPurgeScheduler.purgeConsumedAndExpired` calcule `expiredBefore = now(clock) minus retention`, puis appelle `tokenRepository.deleteConsumedOrExpiredBefore(expiredBefore)` et stocke le nombre de lignes supprimées dans `purged`. Seuls les tokens consommés ou expirés avant ce seuil sont supprimés.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-18T16:25:29Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 11,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/packs-0-10-bfb23b/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/PasswordResetTokenRepositoryJpaImpl.java",
+     "file_ok": false,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
       "terms": 0.231,
       "n": {
        "identifiers": 1,
@@ -1327,27 +1045,9 @@
        "terms": 13
       }
      },
-     "restatement": "PasswordResetTokenPurgeScheduler.purgeConsumedAndExpired appelle tokenRepository.deleteConsumedOrExpiredBefore(expiredBefore) et stocke le nombre de lignes supprimées dans purged.",
-     "confidence": "high"
-    },
-    "rediscover": {
-     "found": true,
-     "cost": 5,
-     "within_budget": true,
-     "covered": false,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/packs-0-10-bfb23b/backend/src/main/java/com/matimeline/eventmanager/application/services/PasswordResetTokenPurgeScheduler.java",
-     "file_ok": true,
-     "overlap": {
-      "identifiers": 1.0,
-      "values": null,
-      "terms": 0.154,
-      "n": {
-       "identifiers": 1,
-       "values": 0,
-       "terms": 13
-      }
-     },
-     "job": "batch:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_services_AsyncExportRunner.java:1"
+     "job": "batch:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_services_AsyncExportRunner.java:1",
+     "reused": true,
+     "reused_from": "2026-11-18T16:25:29Z"
     },
     "comment": [],
     "refute": {
@@ -1355,9 +1055,9 @@
      "refuted": 0,
      "refute_unproven": 0,
      "reasons": [
-      "L75 : tokenRepository.deleteConsumedOrExpiredBefore(expiredBefore) renvoie un int purged, conforme.",
-      "L75 : tokenRepository.deleteConsumedOrExpiredBefore(expiredBefore) renvoie un int purged, conforme au constat.",
-      "L75 : tokenRepository.deleteConsumedOrExpiredBefore(expiredBefore) renvoie un int purged, conforme à la ligne."
+      "purgeConsumedAndExpired (L74-75) calcule now(clock) moins retention puis appelle un seul deleteConsumedOrExpiredBefore(expiredBefore) ; fidèle.",
+      "purgeConsumedAndExpired L74-75 calcule now(clock) moins retention puis appelle un seul deleteConsumedOrExpiredBefore.",
+      "purgeConsumedAndExpired (L74-75) calcule now(clock) moins retention puis appelle deleteConsumedOrExpiredBefore, une seule requête de suppression ; la ligne est fidèle."
      ],
      "evidence": [
       "",
@@ -1365,12 +1065,14 @@
       ""
      ],
      "consigne_verdict": "n/a",
-     "question_verdict": "n/a"
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-18T16:25:29Z"
     }
    },
    "contrary": null,
    "placed": {
-    "pack_line": 57,
+    "pack_line": 58,
     "annex_table": null
    },
    "uses": 0
@@ -1379,13 +1081,11 @@
    "id": "batch:tests:1",
    "section": "tests",
    "rank": 1,
-   "text": "- Les tests fixent qu'une purge d'export supprime le fichier du stockage et la ligne d'un job COMPLETED expiré [#13a687a0a7ac9bcb-1], et conserve fichier et ligne d'un job COMPLETED non expiré [#d105cdff3ecccfc0-1]. Voir `mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/ExportPurgeSchedulerIntegrationTest.java:94-118`, avec [#44e804e9277ae7fe-1].",
-   "fact_text": "Les tests fixent qu'une purge d'export supprime le fichier du stockage et la ligne d'un job COMPLETED expiré, et conserve fichier et ligne d'un job COMPLETED non expiré. Voir ExportPurgeSchedulerIntegrationTest.java, avec",
+   "text": "- Les tests fixent que la purge des exports supprime le fichier d'un job COMPLETED expiré via le stockage d'export et la ligne export_jobs correspondante, voir `mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/ExportPurgeSchedulerIntegrationTest.java:94-106` [#44e804e9277ae7fe-1].",
+   "fact_text": "Les tests fixent que la purge des exports supprime le fichier d'un job COMPLETED expiré via le stockage d'export et la ligne export_jobs correspondante, voir ExportPurgeSchedulerIntegrationTest.java",
    "consigne": null,
    "consigne_dropped": false,
    "cites": [
-    "batch/13a687a0a7ac9bcb-1",
-    "batch/d105cdff3ecccfc0-1",
     "batch/44e804e9277ae7fe-1"
    ],
    "files": [
@@ -1394,71 +1094,80 @@
    "ranges": [
     [
      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/ExportPurgeSchedulerIntegrationTest.java",
-     43,
-     47,
-     "2e0874a837beac8f36e407ec9537894660c3ddf1280527166eaf43bd6156c564"
-    ],
-    [
-     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/ExportPurgeSchedulerIntegrationTest.java",
-     109,
-     118,
-     "e7e7c3de6b9bb649ef80711bf5fbbf279a9bc48bbd3ce325aaf709b95147e903"
-    ],
-    [
-     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/ExportPurgeSchedulerIntegrationTest.java",
      94,
      106,
      "913276734335cee2a332c66dfb1166bbe048b4bacd6884447abddfe4c520b774"
     ]
    ],
-   "code_sha256": "db49aa96c7c46c35a5dd6a9a571fe7ceedccdd8925f1069fc248c0bc0db5bdf2",
+   "code_sha256": "913276734335cee2a332c66dfb1166bbe048b4bacd6884447abddfe4c520b774",
    "verdict": "admit",
-   "reason": "rediscovered",
+   "reason": "admitted",
    "final": true,
    "measures": {
     "fidelity": null,
     "deduce": {
      "covered": false,
      "overlap": {
-      "identifiers": 0.5,
+      "identifiers": 0.333,
       "values": null,
-      "terms": 0.6,
+      "terms": 0.4,
       "n": {
-       "identifiers": 2,
+       "identifiers": 3,
        "values": 0,
        "terms": 10
       }
      },
-     "restatement": "La classe ExportPurgeSchedulerIntegrationTest est un @SpringBootTest dont les délais initial-delay-ms et interval-ms sont fixés à 3600000 ms pour désactiver le tick automatique, et le test appelle purgeExpired() lui-même. Deux cas sont visés : un job complété non expiré (fichier et ligne conservés) et un job expiré (fichier et ligne supprimés).",
-     "confidence": "high"
+     "restatement": "Le test `expiredCompletedJob_fileAndRowPurged` stocke un fichier, crée un job COMPLETED expiré il y a une heure, vérifie que le fichier et la ligne existent, appelle `scheduler.purgeExpired()`, puis vérifie que le fichier et la ligne ont disparu.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-18T16:25:29Z"
     },
     "rediscover": {
      "found": true,
-     "cost": 7,
-     "within_budget": true,
-     "covered": true,
+     "cost": 8,
+     "within_budget": false,
+     "covered": false,
      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/packs-0-10-bfb23b/backend/src/test/java/com/matimeline/eventmanager/application/services/ExportPurgeSchedulerIntegrationTest.java",
      "file_ok": true,
      "overlap": {
-      "identifiers": 1.0,
+      "identifiers": 0.333,
       "values": null,
-      "terms": 0.5,
+      "terms": 0.1,
       "n": {
-       "identifiers": 2,
+       "identifiers": 3,
        "values": 0,
        "terms": 10
       }
      },
      "job": "batch:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_services_AsyncExportRunner.java:1",
-     "rank_in_lot": 4
+     "reused": true,
+     "reused_from": "2026-11-18T16:25:29Z"
     },
     "comment": [],
-    "refute": null
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "expiredCompletedJob_fileAndRowPurged (L94-106) vérifie fichier absent via exportStorage et ligne absente après purgeExpired.",
+      "Test L94-106 vérifie fichier et ligne supprimés après purgeExpired pour un job expiré.",
+      "expiredCompletedJob_fileAndRowPurged (L94-106) vérifie que le fichier est absent via exportStorage et la ligne export_jobs supprimée."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-18T16:25:29Z"
+    }
    },
    "contrary": null,
-   "kept_for": "rediscovered",
    "placed": {
-    "pack_line": 84,
+    "pack_line": 86,
     "annex_table": null
    },
    "uses": 0
@@ -1467,8 +1176,103 @@
    "id": "batch:tests:2",
    "section": "tests",
    "rank": 2,
-   "text": "- Les tests fixent que la purge d'export est idempotente : si le fichier est déjà absent, aucune exception n'est levée et la ligne est quand même purgée [#c8adfcfac47fe93a-1].",
-   "fact_text": "Les tests fixent que la purge d'export est idempotente : si le fichier est déjà absent, aucune exception n'est levée et la ligne est quand même purgée",
+   "text": "- Les tests fixent qu'un job COMPLETED non expiré garde son fichier et sa ligne après la purge, voir `mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/ExportPurgeSchedulerIntegrationTest.java:109-118` [#d105cdff3ecccfc0-1].",
+   "fact_text": "Les tests fixent qu'un job COMPLETED non expiré garde son fichier et sa ligne après la purge, voir ExportPurgeSchedulerIntegrationTest.java",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "batch/d105cdff3ecccfc0-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/ExportPurgeSchedulerIntegrationTest.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/ExportPurgeSchedulerIntegrationTest.java",
+     109,
+     118,
+     "e7e7c3de6b9bb649ef80711bf5fbbf279a9bc48bbd3ce325aaf709b95147e903"
+    ]
+   ],
+   "code_sha256": "e7e7c3de6b9bb649ef80711bf5fbbf279a9bc48bbd3ce325aaf709b95147e903",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": null,
+      "terms": 0.429,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "restatement": "Le test `nonExpiredCompletedJob_leftIntact` crée un job COMPLETED expirant dans deux heures. Après `scheduler.purgeExpired()`, le fichier et la ligne doivent être conservés.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-18T16:25:29Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 8,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/packs-0-10-bfb23b/backend/src/test/java/com/matimeline/eventmanager/application/services/ExportPurgeSchedulerIntegrationTest.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": null,
+      "terms": 0.143,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "job": "batch:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_services_AsyncExportRunner.java:1",
+     "reused": true,
+     "reused_from": "2026-11-18T16:25:29Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "nonExpiredCompletedJob_leftIntact (L109-118) vérifie fichier et ligne conservés pour un job expirant dans 2h.",
+      "Test L109-118 vérifie fichier et ligne conservés pour un job non expiré.",
+      "nonExpiredCompletedJob_leftIntact (L109-118) vérifie que fichier et ligne restent."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-18T16:25:29Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 87,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "batch:tests:3",
+   "section": "tests",
+   "rank": 3,
+   "text": "- Les tests fixent que la purge est idempotente, elle ne lève pas d'exception si le fichier est déjà absent et la ligne est tout de même supprimée, voir `mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/ExportPurgeSchedulerIntegrationTest.java:120-133` [#c8adfcfac47fe93a-1].",
+   "fact_text": "Les tests fixent que la purge est idempotente, elle ne lève pas d'exception si le fichier est déjà absent et la ligne est tout de même supprimée, voir ExportPurgeSchedulerIntegrationTest.java",
    "consigne": null,
    "consigne_dropped": false,
    "cites": [
@@ -1480,69 +1284,89 @@
    "ranges": [
     [
      "mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/ExportPurgeSchedulerIntegrationTest.java",
-     121,
+     120,
      133,
-     "44458bfecb598d0cfcec895713760cbe17df587d4dd3179eaeb00af96d7f39c9"
+     "b644a2af4c63668f4452eab072f12e7aabc3edacabe47f7fd29e0bae4b5327de"
     ]
    ],
-   "code_sha256": "44458bfecb598d0cfcec895713760cbe17df587d4dd3179eaeb00af96d7f39c9",
+   "code_sha256": "b644a2af4c63668f4452eab072f12e7aabc3edacabe47f7fd29e0bae4b5327de",
    "verdict": "admit",
-   "reason": "rediscovered",
+   "reason": "admitted",
    "final": true,
    "measures": {
     "fidelity": null,
     "deduce": {
      "covered": false,
      "overlap": {
-      "identifiers": null,
+      "identifiers": 0.0,
       "values": null,
-      "terms": 0.364,
+      "terms": 0.9,
       "n": {
-       "identifiers": 0,
+       "identifiers": 1,
        "values": 0,
-       "terms": 11
+       "terms": 10
       }
      },
-     "restatement": "Le test expiredJob_fileAlreadyAbsent_idempotentNoOp vérifie qu'un job expiré dont le fichier n'existe pas ne lève pas d'exception lors de purgeExpired, et que la ligne export_jobs est tout de même supprimée.",
-     "confidence": "high"
+     "restatement": "Le test expiredJob_fileAlreadyAbsent_idempotentNoOp vérifie que scheduler.purgeExpired ne lève aucune exception quand le fichier d'export référencé par un job terminé est déjà absent du stockage (exportStorage.load renvoie vide). Il attend ensuite que la ligne du job soit quand même supprimée du repository (findDomainById absent), ce qui prouve que la purge est idempotente.",
+     "confidence": "high",
+     "reused": true,
+     "reused_from": "2026-11-18T16:25:29Z"
     },
     "rediscover": {
      "found": true,
-     "cost": 7,
-     "within_budget": true,
-     "covered": true,
+     "cost": 8,
+     "within_budget": false,
+     "covered": false,
      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/packs-0-10-bfb23b/backend/src/test/java/com/matimeline/eventmanager/application/services/ExportPurgeSchedulerIntegrationTest.java",
      "file_ok": true,
      "overlap": {
-      "identifiers": null,
+      "identifiers": 0.0,
       "values": null,
-      "terms": 0.545,
+      "terms": 0.5,
       "n": {
-       "identifiers": 0,
+       "identifiers": 1,
        "values": 0,
-       "terms": 11
+       "terms": 10
       }
      },
      "job": "batch:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_services_AsyncExportRunner.java:1",
-     "rank_in_lot": 5
+     "reused": true,
+     "reused_from": "2026-11-18T16:25:29Z"
     },
     "comment": [],
-    "refute": null
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "expiredJob_fileAlreadyAbsent_idempotentNoOp (L121-133) utilise assertDoesNotThrow et vérifie la ligne supprimée.",
+      "Test L120-133 : assertDoesNotThrow et ligne supprimée avec fichier absent.",
+      "expiredJob_fileAlreadyAbsent_idempotentNoOp (L120-133) : assertDoesNotThrow et ligne supprimée."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-18T16:25:29Z"
+    }
    },
    "contrary": null,
-   "kept_for": "rediscovered",
    "placed": {
-    "pack_line": 85,
+    "pack_line": 88,
     "annex_table": null
    },
    "uses": 0
   },
   {
-   "id": "batch:tests:3",
+   "id": "batch:tests:4",
    "section": "tests",
-   "rank": 3,
-   "text": "- Les tests fixent que la purge des tokens de réinitialisation supprime les tokens consommés et ceux expirés depuis 48 heures, et garde le token valide et celui expiré depuis 30 minutes [#2476578c8ac84af6-1]. Voir `mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/PasswordResetTokenPurgeSchedulerIntegrationTest.java:88-116`.",
-   "fact_text": "Les tests fixent que la purge des tokens de réinitialisation supprime les tokens consommés et ceux expirés depuis 48 heures, et garde le token valide et celui expiré depuis 30 minutes. Voir PasswordResetTokenPurgeSchedulerIntegrationTest.java",
+   "rank": 4,
+   "text": "- Les tests fixent que la purge des tokens de réinitialisation de mot de passe supprime les tokens consommés et ceux expirés depuis plus que la rétention, et conserve un token valide et un token expiré dans la fenêtre de rétention, voir `mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/PasswordResetTokenPurgeSchedulerIntegrationTest.java:88-116` [#2476578c8ac84af6-1].",
+   "fact_text": "Les tests fixent que la purge des tokens de réinitialisation de mot de passe supprime les tokens consommés et ceux expirés depuis plus que la rétention, et conserve un token valide et un token expiré dans la fenêtre de rétention, voir PasswordResetTokenPurgeSchedulerIntegrationTest.java",
    "consigne": null,
    "consigne_dropped": false,
    "cites": [
@@ -1569,234 +1393,79 @@
      "covered": false,
      "overlap": {
       "identifiers": 0.0,
-      "values": 0.0,
-      "terms": 0.538,
+      "values": null,
+      "terms": 0.714,
       "n": {
        "identifiers": 1,
-       "values": 2,
-       "terms": 13
+       "values": 0,
+       "terms": 14
       }
      },
-     "restatement": "Le test purge_removesConsumedAndStaleExpired_keepsValidAndRecentlyExpired vérifie que purgeConsumedAndExpired supprime les tokens consommés et les tokens expirés au-delà de la rétention, et conserve les tokens valides et ceux expirés dans les 24 h.",
-     "confidence": "high"
+     "restatement": "Le test purge_removesConsumedAndStaleExpired_keepsValidAndRecentlyExpired appelle scheduler.purgeConsumedAndExpired() sur quatre tokens et vérifie la règle de purge : un token consommé est supprimé, un token expiré depuis 48 heures est supprimé, alors qu'un token valide non expiré et un token expiré depuis 30 minutes (dans la rétention de 24 heures indiquée dans le message d'assertion) sont conservés. La suppression est committée grâce au @Transactional du scheduler, selon le commentaire.",
+     "confidence": "high",
+     "reused": true,
+     "reused_from": "2026-11-18T16:25:29Z"
     },
     "rediscover": {
      "found": true,
-     "cost": 10,
+     "cost": 9,
      "within_budget": false,
      "covered": false,
      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/packs-0-10-bfb23b/backend/src/test/java/com/matimeline/eventmanager/application/services/PasswordResetTokenPurgeSchedulerIntegrationTest.java",
      "file_ok": true,
      "overlap": {
       "identifiers": 0.0,
-      "values": 1.0,
-      "terms": 0.462,
-      "n": {
-       "identifiers": 1,
-       "values": 2,
-       "terms": 13
-      }
-     },
-     "job": "batch:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_services_AsyncExportRunner.java:1"
-    },
-    "comment": [],
-    "refute": {
-     "votes": 3,
-     "refuted": 0,
-     "refute_unproven": 0,
-     "reasons": [
-      "Le test (L92-95, 107-115) crée un token consommé, un expiré à -48h, un valide et un expiré à -30 min. Il vérifie que les deux premiers sont supprimés et les deux autres conservés.",
-      "Le test L92-115 seed consommé, expiré 48h, valide et expiré 30 min, et vérifie les deux premiers supprimés et les deux autres conservés.",
-      "Le test L88-116 crée un token consommé, un expiré à -48h, un valide et un expiré à -30 min. Il vérifie les deux premiers supprimés et les deux autres conservés."
-     ],
-     "evidence": [
-      "",
-      "",
-      ""
-     ],
-     "consigne_verdict": "n/a",
-     "question_verdict": "n/a"
-    }
-   },
-   "contrary": null,
-   "placed": {
-    "pack_line": 86,
-    "annex_table": null
-   },
-   "uses": 0
-  },
-  {
-   "id": "batch:tests:4",
-   "section": "tests",
-   "rank": 4,
-   "text": "- Les tests fixent que requestReset est asynchrone : l'appel via le proxy rend la main en moins de 4000 ms alors que l'envoi d'email est bloqué sur un verrou de 5 secondes [#5dd507c53997f001-1]. Voir `mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ForgotPasswordAsyncTest.java:88-113`.",
-   "fact_text": "Les tests fixent que requestReset est asynchrone : l'appel via le proxy rend la main en moins de 4000 ms alors que l'envoi d'email est bloqué sur un verrou de 5 secondes. Voir ForgotPasswordAsyncTest.java",
-   "consigne": null,
-   "consigne_dropped": false,
-   "cites": [
-    "batch/5dd507c53997f001-1"
-   ],
-   "files": [
-    "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ForgotPasswordAsyncTest.java"
-   ],
-   "ranges": [
-    [
-     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ForgotPasswordAsyncTest.java",
-     88,
-     113,
-     "3f01e7683310a092026ea96822abae7b2108a1140e52cc6cb12617d38a505193"
-    ]
-   ],
-   "code_sha256": "3f01e7683310a092026ea96822abae7b2108a1140e52cc6cb12617d38a505193",
-   "verdict": "admit",
-   "reason": "admitted",
-   "final": true,
-   "measures": {
-    "fidelity": null,
-    "deduce": {
-     "covered": false,
-     "overlap": {
-      "identifiers": 0.5,
-      "values": 1.0,
-      "terms": 0.583,
-      "n": {
-       "identifiers": 2,
-       "values": 2,
-       "terms": 12
-      }
-     },
-     "restatement": "Le test requestReset_knownEmail_returnsImmediately_withoutWaitingForEmailSend vérifie que requestReset rend la main en moins de 4000 ms alors que l'envoi d'email est bloqué jusqu'à 5 s, puis attend via verify avec timeout(5000) l'appel à sendPasswordResetEmail et la création du token.",
-     "confidence": "high"
-    },
-    "rediscover": {
-     "found": true,
-     "cost": 9,
-     "within_budget": false,
-     "covered": false,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/packs-0-10-bfb23b/backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ForgotPasswordAsyncTest.java",
-     "file_ok": true,
-     "overlap": {
-      "identifiers": 0.5,
-      "values": 1.0,
-      "terms": 0.583,
-      "n": {
-       "identifiers": 2,
-       "values": 2,
-       "terms": 12
-      }
-     },
-     "job": "batch:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_services_AsyncExportRunner.java:1"
-    },
-    "comment": [],
-    "refute": {
-     "votes": 3,
-     "refuted": 0,
-     "refute_unproven": 0,
-     "reasons": [
-      "Le test (L94-105) bloque l'envoi sur un latch de 5 s et assert elapsed < 4000 ms après l'appel via le proxy.",
-      "Le test L95-105 bloque l'envoi sur un latch de 5 s et assert elapsed < 4000 ms via le proxy @Async.",
-      "Le test L88-113 bloque l'envoi sur un latch de 5 s (await(5, SECONDS)) et vérifie elapsed < 4000 L via le proxy @Async, conforme à la ligne."
-     ],
-     "evidence": [
-      "",
-      "",
-      ""
-     ],
-     "consigne_verdict": "n/a",
-     "question_verdict": "n/a"
-    }
-   },
-   "contrary": null,
-   "placed": {
-    "pack_line": 87,
-    "annex_table": null
-   },
-   "uses": 0
-  },
-  {
-   "id": "batch:tests:5",
-   "section": "tests",
-   "rank": 5,
-   "text": "- Pour vérifier l'asynchronisme, le test appelle le service par le proxy pour que l'annotation @Async s'applique, et bloque l'envoi d'email sur un CountDownLatch [#5dd507c53997f001-1].",
-   "fact_text": "Pour vérifier l'asynchronisme, le test appelle le service par le proxy pour que l'annotation @Async s'applique, et bloque l'envoi d'email sur un CountDownLatch",
-   "consigne": null,
-   "consigne_dropped": false,
-   "cites": [
-    "batch/5dd507c53997f001-1"
-   ],
-   "files": [
-    "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ForgotPasswordAsyncTest.java"
-   ],
-   "ranges": [
-    [
-     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ForgotPasswordAsyncTest.java",
-     88,
-     113,
-     "3f01e7683310a092026ea96822abae7b2108a1140e52cc6cb12617d38a505193"
-    ]
-   ],
-   "code_sha256": "3f01e7683310a092026ea96822abae7b2108a1140e52cc6cb12617d38a505193",
-   "verdict": "admit",
-   "reason": "rediscovered",
-   "final": true,
-   "measures": {
-    "fidelity": null,
-    "deduce": {
-     "covered": false,
-     "overlap": {
-      "identifiers": 0.0,
       "values": null,
-      "terms": 0.333,
+      "terms": 0.571,
       "n": {
        "identifiers": 1,
        "values": 0,
-       "terms": 12
-      }
-     },
-     "restatement": "Ce bloc est identique à celui de batch:tests:4 : le test requestReset_knownEmail_returnsImmediately_withoutWaitingForEmailSend vérifie que l'appel rend la main sans attendre l'envoi d'email bloqué, puis que l'envoi et la création du token ont bien lieu en asynchrone.",
-     "confidence": "high"
-    },
-    "rediscover": {
-     "found": true,
-     "cost": 9,
-     "within_budget": true,
-     "covered": true,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/packs-0-10-bfb23b/backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ForgotPasswordAsyncTest.java",
-     "file_ok": true,
-     "overlap": {
-      "identifiers": 1.0,
-      "values": null,
-      "terms": 0.5,
-      "n": {
-       "identifiers": 1,
-       "values": 0,
-       "terms": 12
+       "terms": 14
       }
      },
      "job": "batch:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_services_AsyncExportRunner.java:1",
-     "rank_in_lot": 6
+     "reused": true,
+     "reused_from": "2026-11-18T16:25:29Z"
     },
     "comment": [],
-    "refute": null
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Le test (L88-116) purge consommé et expiré depuis 48h, conserve le valide et l'expiré depuis 30 min (rétention 24h).",
+      "Test L88-116 couvre consommé et expiré ancien supprimés, valide et récemment expiré conservés.",
+      "Le test (L88-116) vérifie la suppression du consommé et de l'expiré depuis 48h, et la conservation du valide et de l'expiré depuis 30 min (rétention 24h)."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-18T16:25:29Z"
+    }
    },
    "contrary": null,
-   "kept_for": "rediscovered",
    "placed": {
-    "pack_line": 88,
+    "pack_line": 89,
     "annex_table": null
    },
    "uses": 0
   },
   {
-   "id": "batch:alerts:1",
-   "section": "alerts",
-   "rank": 1,
-   "text": "- Dans `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/AsyncExportRunner.java:80-85`, seules les RuntimeException sont capturées, donc une Error levée pendant la génération ne fait pas passer le job à FAILED et il reste RUNNING [#e9b8732b8a56d766-1]. Si vous modifiez ce bloc, gardez à l'esprit que le statut final n'est pas garanti et élargissez la capture ou ajoutez un nettoyage final.",
-   "fact_text": "Dans AsyncExportRunner.java, seules les RuntimeException sont capturées, donc une Error levée pendant la génération ne fait pas passer le job à FAILED et il reste RUNNING. Si vous modifiez ce bloc",
-   "consigne": "gardez à l'esprit que le statut final n'est pas garanti et élargissez la capture ou ajoutez un nettoyage final",
-   "consigne_dropped": true,
+   "id": "batch:rules:annex:89d6c7fb",
+   "section": "rules",
+   "rank": 4,
+   "text": "- La méthode run est @Async sur exportExecutor et @Transactional, et selon la javadoc elle vit dans un bean séparé, car @Async n'agit que par appel inter-bean via le proxy. [#8c0af7c8fb9efde8-1] [#3bf00b99fee4a5ee-1]",
+   "fact_text": "La méthode run est @Async sur exportExecutor et @Transactional, et selon la javadoc elle vit dans un bean séparé, car @Async n'agit que par appel inter-bean via le proxy",
+   "consigne": null,
+   "consigne_dropped": false,
    "cites": [
-    "batch/e9b8732b8a56d766-1"
+    "batch/8c0af7c8fb9efde8-1",
+    "batch/3bf00b99fee4a5ee-1"
    ],
    "files": [
     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/AsyncExportRunner.java"
@@ -1804,93 +1473,324 @@
    "ranges": [
     [
      "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/AsyncExportRunner.java",
-     80,
-     85,
-     "d09d51da3c724c82df42c2621b81b8c616bb67e5c35150ec6991b72b88c142a1"
+     59,
+     61,
+     "c53faf51e7402650834b06309f17f724316dbdb4ad964471aac2a3aa711f3264"
+    ],
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/AsyncExportRunner.java",
+     26,
+     27,
+     "fe0aba4ea36b281b46ea85f8cc885e6612d6185dd2d72b63b994fabdf6da8792"
     ]
    ],
-   "code_sha256": "d09d51da3c724c82df42c2621b81b8c616bb67e5c35150ec6991b72b88c142a1",
-   "verdict": "admit",
-   "reason": "admitted",
+   "code_sha256": "b2fa061f94f94a17d022260b20fe8507120ed1e665ce70e82c03128ee6457b0a",
+   "verdict": "annex",
+   "reason": "deducible",
    "final": true,
    "measures": {
-    "fidelity": {
-     "fact_supported": true,
-     "consigne_supported": false,
-     "reason": "Le constat est porté par le fait batch/e9b8732b8a56d766-1 (seules les RuntimeException sont capturées, une Error laisse le job RUNNING), mais la consigne nomme un remède, élargir la capture ou ajouter un nettoyage final, qu'aucun fait cité ne décrit ni ne motive."
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.7,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 10
+      }
+     },
+     "restatement": "`AsyncExportRunner.run` est annotée `@Async(\"exportExecutor\")` et `@Transactional`. Le commentaire de classe précise que le bean est séparé de `ExportServiceImpl` parce que `@Async` ne fonctionne que sur un appel inter-bean passant par le proxy, jamais en auto-invocation.",
+     "confidence": "high",
+     "files_read_missing": true
     },
-    "deduce": null,
     "rediscover": null,
-    "comment": [],
-    "refute": {
-     "votes": 3,
-     "refuted": 0,
-     "refute_unproven": 0,
-     "reasons": [
-      "AsyncExportRunner.run (l.80) ne capture que RuntimeException. Une Error (OutOfMemoryError par exemple) saute le markFailed, et le job reste RUNNING après markRunning (l.67-68). Rien dans le code ne remet un job RUNNING en FAILED : markFailed n'est appelé qu'à la l.82, et la purge ne vise que les jobs expirés.",
-      "AsyncExportRunner.run (l.80) ne capture que RuntimeException, donc une Error ne déclenche pas markFailed. Aucun garde-fou trouvé ailleurs. Nuance non retenue pour réfuter : run est @Transactional (l.60), donc une Error provoquerait probablement un rollback et le job pourrait rester PENDING plutôt que RUNNING. Dans tous les cas FAILED n'est pas atteint.",
-      "Le catch de AsyncExportRunner.run (l.80) ne capture que RuntimeException, donc une Error ne passe pas par markFailed. Nuance : @Transactional (l.60) annule aussi sur Error, donc le statut en base reviendrait probablement à PENDING plutôt que RUNNING. Je garde la ligne dans le doute. Aucun garde-fou ni nettoyage ailleurs, et la recherche de RUNNING dans le backend n'en montre aucun."
-     ],
-     "evidence": [
-      "",
-      "",
-      ""
-     ],
-     "consigne_verdict": "supported",
-     "question_verdict": "n/a",
-     "searched": true,
-     "search": {
-      "check": "guards",
-      "outcome": null,
-      "votes": 3,
-      "supporters": 0,
-      "budget": 6,
-      "searches": [
-       [
-        {
-         "tool": "Grep",
-         "target": "markFailed|ExportStatus.RUNNING|findStale|stuck|RUNNING dans backend/src/main",
-         "found": "markFailed n'est appelé que dans AsyncExportRunner l.82. Aucun nettoyage ni reprise des jobs RUNNING bloqués. La purge de ExportJobRepositoryJpaImpl exclut PENDING/RUNNING (expires_at non nul)."
-        }
-       ],
-       [
-        {
-         "tool": "Read",
-         "target": "AsyncExportRunner.java",
-         "found": "Seul catch (RuntimeException e) l.80, pas de finally ni de catch Throwable/Error."
-        },
-        {
-         "tool": "Grep",
-         "target": "AsyncExportRunner|RUNNING dans backend/src/main",
-         "found": "Seul ExportServiceImpl appelle le runner. Aucun nettoyage des jobs RUNNING bloqués (le cleanup repository ne traite que expires_at non nul)."
-        }
-       ],
-       [
-        {
-         "tool": "Read",
-         "target": "AsyncExportRunner.java",
-         "found": "catch (RuntimeException e) seul, aucun finally ni catch Throwable."
-        },
-        {
-         "tool": "Grep",
-         "target": "AsyncExportRunner|RUNNING dans backend/src/main",
-         "found": "Seul appelant : ExportServiceImpl. Aucun job de nettoyage ou de reprise des jobs RUNNING ou bloqués."
-        }
-       ]
-      ],
-      "untraced": 0,
-      "over_budget": 0,
-      "unproven": 0
+    "comment": [
+     {
+      "id": "batch/3bf00b99fee4a5ee-1",
+      "verdict": "confirmed"
      }
-    }
+    ],
+    "refute": null
    },
    "contrary": null,
-   "check": "guards",
+   "check": "scope",
+   "general": "pattern_pack",
    "placed": {
-    "pack_line": 96,
-    "annex_table": null
+    "pack_line": null,
+    "annex_table": {
+     "part": "batch.details.md",
+     "row": 1
+    }
    },
-   "uses": 0
+   "uses": 0,
+   "carried_from": "2026-11-18T16:25:29Z"
+  },
+  {
+   "id": "batch:rules:annex:ca2cfeda",
+   "section": "rules",
+   "rank": 5,
+   "text": "- exportExecutor compte 2 à 4 threads et 50 places de file, et à saturation la tâche tourne sur le thread appelant, ce qui évite selon la javadoc un job PENDING orphelin. [#027974c1249cea1d-2] [#310320ec87a30534-1]",
+   "fact_text": "exportExecutor compte 2 à 4 threads et 50 places de file, et à saturation la tâche tourne sur le thread appelant, ce qui évite selon la javadoc un job PENDING orphelin",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "batch/027974c1249cea1d-2",
+    "batch/310320ec87a30534-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/config/AsyncConfig.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/config/AsyncConfig.java",
+     53,
+     63,
+     "845b888d808fe6edd4fca413b4e423d513daf5cd479dcebbde30666cfb7ca762"
+    ],
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/config/AsyncConfig.java",
+     50,
+     51,
+     "c0e9b429f88dff023259b8571b35f88b6c0fbe189234ece9918b307e49527c2d"
+    ]
+   ],
+   "code_sha256": "01d6ec756af258dbbf588ee42e49a353a8ffc4ef128c5263668b6e4184edbd2a",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 0.545,
+      "n": {
+       "identifiers": 2,
+       "values": 3,
+       "terms": 11
+      }
+     },
+     "restatement": "Le bean `exportExecutor` a un core de 2 threads, un max de 4, une file de 50 et le préfixe `export-`. Sa `RejectedExecutionHandler` est `CallerRunsPolicy` : quand le pool est saturé, la tâche s'exécute sur le thread appelant au lieu d'être rejetée. Le commentaire indique que cela évite de laisser un job PENDING orphelin.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": null,
+    "comment": [
+     {
+      "id": "batch/310320ec87a30534-1",
+      "verdict": "confirmed"
+     }
+    ],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "batch.details.md",
+     "row": 2
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-18T16:25:29Z"
+  },
+  {
+   "id": "batch:rules:annex:675fb432",
+   "section": "rules",
+   "rank": 6,
+   "text": "- La purge des exports est un fixedDelay réglé par app.export.purge.interval-ms (défaut 1 heure), voir `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportPurgeScheduler.java:59-60`. [#30f78007217e46da-1]",
+   "fact_text": "La purge des exports est un fixedDelay réglé par app.export.purge.interval-ms (défaut 1 heure), voir ExportPurgeScheduler.java",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "batch/30f78007217e46da-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportPurgeScheduler.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportPurgeScheduler.java",
+     59,
+     60,
+     "172aea051af858bb008c101b36becc4e7703b260bc10b09d3e3b63422083e363"
+    ]
+   ],
+   "code_sha256": "172aea051af858bb008c101b36becc4e7703b260bc10b09d3e3b63422083e363",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 3,
+       "values": 1,
+       "terms": 6
+      }
+     },
+     "restatement": "`ExportPurgeScheduler.purgeExpired` est planifiée avec un `fixedDelay` par défaut de 3 600 000 ms (1 heure) et un `initialDelay` par défaut de 300 000 ms (5 minutes). Ces valeurs sont surchargeables par les propriétés `app.export.purge.interval-ms` et `app.export.purge.initial-delay-ms`.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "batch.details.md",
+     "row": 3
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-18T16:25:29Z"
+  },
+  {
+   "id": "batch:rules:annex:0de06db0",
+   "section": "rules",
+   "rank": 7,
+   "text": "- Chaque job expiré est traité dans son propre try/catch, et l'échec journalise seulement le nom de la classe d'exception. [#cebb04ed84733eef-2]",
+   "fact_text": "Chaque job expiré est traité dans son propre try/catch, et l'échec journalise seulement le nom de la classe d'exception",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "batch/cebb04ed84733eef-2"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportPurgeScheduler.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportPurgeScheduler.java",
+     66,
+     79,
+     "4a297fa18c835b4b8c140a32744fd4b20851e4c49c45af76064f2cb596faa7af"
+    ]
+   ],
+   "code_sha256": "4a297fa18c835b4b8c140a32744fd4b20851e4c49c45af76064f2cb596faa7af",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 0.625,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 8
+      }
+     },
+     "restatement": "`purgeExpired` parcourt les jobs expirés et traite chacun dans son propre try/catch. Si `storageRef` n'est pas null, le fichier est supprimé, puis la ligne est supprimée par `deleteById`, et le compteur `purged` est incrémenté. En cas de `RuntimeException`, seul le type d'exception est loggé en `warn` et le job est repris au tick suivant.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "words:chaque",
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "batch.details.md",
+     "row": 4
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-18T16:25:29Z"
+  },
+  {
+   "id": "batch:rules:annex:26ec7639",
+   "section": "rules",
+   "rank": 11,
+   "text": "- requestReset est @Async sur passwordResetExecutor (2 threads, 4 au maximum, file de 100) et @Transactional. [#00500c928da212f7-1] [#dc6e00eaeabd737d-1]",
+   "fact_text": "requestReset est @Async sur passwordResetExecutor (2 threads, 4 au maximum, file de 100) et @Transactional",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "batch/00500c928da212f7-1",
+    "batch/dc6e00eaeabd737d-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/PasswordResetServiceImpl.java",
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/config/AsyncConfig.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/PasswordResetServiceImpl.java",
+     99,
+     100,
+     "d9b1e9bf31aa9971483049e2829acccb7d3f790aaaab2d2a69bceac2efe8891c"
+    ],
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/config/AsyncConfig.java",
+     34,
+     43,
+     "f291293a9fa99f99c7987e1926765210e8f2143c0b8f8ae54e3a0bbff227fc89"
+    ]
+   ],
+   "code_sha256": "1cb62e9dabed932b55dea5824579eb46fb0cc980d3a6c64b2674e60490b0ebcb",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 0.8,
+      "n": {
+       "identifiers": 2,
+       "values": 3,
+       "terms": 5
+      }
+     },
+     "restatement": "`PasswordResetServiceImpl.requestReset` est annotée `@Async(\"passwordResetExecutor\")` et `@Transactional`, donc la demande de réinitialisation s'exécute en asynchrone sur ce pool. Le bean `passwordResetExecutor` a un core de 2 threads, un max de 4, une file de 100 et le préfixe de thread `pwd-reset-`. Le code ne montre pas de politique de rejet explicite.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "batch.details.md",
+     "row": 5
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-18T16:25:29Z"
   }
  ],
  "comment_facts": [
@@ -1905,57 +1805,73 @@
    "code_file": "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportPurgeScheduler.java",
    "invalid": false,
    "cache_digest": "fb5ab443c28b30107c8a90837ad6a093545e652c20cbf026c1eba38e208d6093",
+   "reused": true,
+   "reused_from": "2026-11-18T16:25:29Z",
+   "cited_by": [
+    "batch:rules:4"
+   ],
+   "structure_rows_removed": []
+  },
+  {
+   "id": "batch/e41545f9a57c55d3-1",
+   "verdict": "unverifiable",
+   "code_says": "",
+   "code_line_start": 0,
+   "code_line_end": 0,
+   "code_evidence": "",
+   "evidence_check": null,
+   "code_file": "",
+   "invalid": false,
+   "cache_digest": "57540a6da485d2937d811ff80336e643aa10413930e119fb7d02d90dc790f10f",
+   "reused": true,
+   "reused_from": "2026-11-18T16:25:29Z",
    "cited_by": [
     "batch:rules:8"
    ],
    "structure_rows_removed": []
   },
   {
-   "id": "batch/e41545f9a57c55d3-1",
+   "id": "integrations/b84ecc560bc2eb6d-1",
    "verdict": "confirmed",
-   "code_says": "Le champ passwordResetService est injecté par @Autowired, sans @MockBean sur ce type (les seuls @MockBean sont UserRepository, PasswordResetTokenRepository et EmailService), donc le bean Spring réel est utilisé. Le porteur de @Async se trouve dans l'implémentation hors de ce fichier, non lue.",
-   "code_line_start": 60,
+   "code_says": "Le champ passwordResetService est injecté par @Autowired, sans @MockitoBean ni mock, donc le bean Spring réel (proxifié) est utilisé. Les autres dépendances (UserRepository, PasswordResetTokenRepository, EmailService) sont, elles, déclarées avec @MockitoBean.",
+   "code_line_start": 61,
    "code_line_end": 62,
    "code_evidence": "private PasswordResetService passwordResetService;",
    "evidence_check": null,
    "code_file": "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ForgotPasswordAsyncTest.java",
    "invalid": false,
-   "cache_digest": "2033649064c963ec3c369b78aedf7babfc3b2b5d788f77e020022704f918a4ab",
+   "cache_digest": "70f4b51db537840de12bb4f5ef081eb7fa548ec582e3cbb04e1407cffe8cf9dc",
    "cited_by": [
-    "batch:rules:11"
+    "batch:rules:8"
    ],
    "structure_rows_removed": []
   }
  ],
  "facts_validated": [
-  "batch/cebb04ed84733eef-1",
-  "batch/31adec434d6b04c0-1",
-  "batch/8c0af7c8fb9efde8-2",
-  "batch/12b6799eaf5bd99b-1",
+  "batch/27110603918edb71-1",
   "batch/12b6799eaf5bd99b-2",
   "batch/0b16217c50dbabb3-1",
-  "batch/30f78007217e46da-1",
-  "batch/cebb04ed84733eef-3",
-  "batch/cebb04ed84733eef-2",
-  "batch/10f3525a1962c7b1-1",
-  "batch/96832c023d97aa46-1",
+  "batch/f15732d31ea166fa-1",
   "batch/e9bc5986e153aab5-1",
-  "batch/e41545f9a57c55d3-1",
-  "batch/a30bdab607e005e7-1",
+  "batch/96832c023d97aa46-1",
+  "batch/cebb04ed84733eef-1",
+  "batch/31adec434d6b04c0-1",
+  "batch/1c6c381999d571b0-2",
   "batch/b50470acdd691e30-1",
-  "batch/2476578c8ac84af6-1",
-  "batch/5dd507c53997f001-1",
-  "batch/e9b8732b8a56d766-1"
+  "batch/44e804e9277ae7fe-1",
+  "batch/d105cdff3ecccfc0-1",
+  "batch/c8adfcfac47fe93a-1",
+  "batch/2476578c8ac84af6-1"
  ],
  "counts": {
-  "units": 19,
-  "admit": 17,
-  "annex": 1,
+  "units": 18,
+  "admit": 13,
+  "annex": 5,
   "drop": 0,
-  "hold": 1,
+  "hold": 0,
   "pending": 0,
-  "consigne_before_unsupported": 1,
-  "consigne_after_dropped": 1,
+  "consigne_before_unsupported": 0,
+  "consigne_after_dropped": 0,
   "structure_rows_removed": 0,
   "framework": 0,
   "guarded_elsewhere": 0,
@@ -1964,7 +1880,7 @@
   "counterexample": 0,
   "promoted": 0,
   "kept_for": {
-   "rediscovered": 6
+   "rediscovered": 4
   },
   "pointers_removed": 0,
   "restored_alerts": 0,
@@ -1973,26 +1889,17 @@
  "answers": [],
  "budget_cut": [],
  "structure_rows_removed": [],
- "notes": [
-  "batch:rules:4 : unité annex dont la ligne n'est plus dans l'annexe, non reportée",
-  "batch:rules:8 : unité annex dont la ligne n'est plus dans l'annexe, non reportée",
-  "batch:rules:9 : unité annex dont la ligne n'est plus dans l'annexe, non reportée",
-  "batch:tests:2 : unité annex dont la ligne n'est plus dans l'annexe, non reportée",
-  "batch:tests:3 : unité annex dont la ligne n'est plus dans l'annexe, non reportée",
-  "batch:tests:3#2 : unité annex dont la ligne n'est plus dans l'annexe, non reportée",
-  "batch:tests:3#3 : unité annex dont la ligne n'est plus dans l'annexe, non reportée",
-  "batch:alerts:1 : unité annex dont la ligne n'est plus dans l'annexe, non reportée"
- ],
- "base_sha256_after": "0911ea017ccb74ad55d67ca4228340f2655178ee6c4801f241cd78244bf52e4a",
+ "notes": [],
+ "base_sha256_after": "362045e6a2042ec5e5b4b1975cb19b0ca11225b01474c9908ac71899fb44e0c9",
  "bases_touched": {
   "batch": {
-   "fingerprint": "e334cb782a0fe7c5780af8df51a701b921ad71aa61181c3bbf1ca4b113f8ab74",
-   "sha256_after": "0911ea017ccb74ad55d67ca4228340f2655178ee6c4801f241cd78244bf52e4a"
+   "fingerprint": "e5b761d54175a43b8b346f0051c19d8fd36094198e2a1170f1501d781c49f41c",
+   "sha256_after": "362045e6a2042ec5e5b4b1975cb19b0ca11225b01474c9908ac71899fb44e0c9"
   }
  },
  "lint": {
   "ok": true,
   "errors": 0,
-  "warnings": 0
+  "warnings": 1
  }
 }

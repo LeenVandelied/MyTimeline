@@ -284,6 +284,7 @@
   "mytimeline:frontend/src/components/categories/CategoryDrawer.test.tsx": "UserEntity",
   "mytimeline:frontend/src/components/categories/CategoryDrawer.tsx": "UserEntity",
   "mytimeline:frontend/src/components/dashboard/ProductCarousel.tsx": "UserEntity",
+  "mytimeline:frontend/src/components/dashboard/ProductList.test.tsx": "UserEntity",
   "mytimeline:frontend/src/components/dashboard/ProductList.tsx": "UserEntity",
   "mytimeline:frontend/src/components/events/EventCategoryField.test.tsx": "UserEntity",
   "mytimeline:frontend/src/components/events/EventCategoryField.tsx": "UserEntity",
@@ -337,6 +338,7 @@
   "mytimeline:frontend/src/components/timeline/RecurrenceMarks.tsx": "UserEntity",
   "mytimeline:frontend/src/components/timeline/TimelineActionSheet.tsx": "UserEntity",
   "mytimeline:frontend/src/components/timeline/TimelineBottomSheet.tsx": "UserEntity",
+  "mytimeline:frontend/src/components/timeline/TimelineEditHost.forbidden.test.tsx": "UserEntity",
   "mytimeline:frontend/src/components/timeline/TimelineEditHost.test.tsx": "UserEntity",
   "mytimeline:frontend/src/components/timeline/TimelineEditHost.tsx": "UserEntity",
   "mytimeline:frontend/src/components/timeline/TimelineGroupHead.test.tsx": "UserEntity",
@@ -674,6 +676,7 @@
   "mytimeline:frontend/src/components/categories/CategoryDrawer.test.tsx": "name",
   "mytimeline:frontend/src/components/categories/CategoryDrawer.tsx": "name",
   "mytimeline:frontend/src/components/dashboard/ProductCarousel.tsx": "name",
+  "mytimeline:frontend/src/components/dashboard/ProductList.test.tsx": "name",
   "mytimeline:frontend/src/components/dashboard/ProductList.tsx": "name",
   "mytimeline:frontend/src/components/events/EventCategoryField.test.tsx": "name",
   "mytimeline:frontend/src/components/events/EventCategoryField.tsx": "name",
@@ -727,6 +730,7 @@
   "mytimeline:frontend/src/components/timeline/RecurrenceMarks.tsx": "name",
   "mytimeline:frontend/src/components/timeline/TimelineActionSheet.tsx": "name",
   "mytimeline:frontend/src/components/timeline/TimelineBottomSheet.tsx": "name",
+  "mytimeline:frontend/src/components/timeline/TimelineEditHost.forbidden.test.tsx": "name",
   "mytimeline:frontend/src/components/timeline/TimelineEditHost.test.tsx": "name",
   "mytimeline:frontend/src/components/timeline/TimelineEditHost.tsx": "name",
   "mytimeline:frontend/src/components/timeline/TimelineGroupHead.test.tsx": "name",
@@ -944,13 +948,13 @@
     "UserEntity"
    ],
    "seed_folders": [],
-   "n_files": 388,
-   "bytes": 2646598,
+   "n_files": 390,
+   "bytes": 2695937,
    "by_repo": {
-    "mytimeline": 388
+    "mytimeline": 390
    },
    "by_layer": {
-    "mytimeline/resources": 160,
+    "mytimeline/resources": 162,
     "mytimeline/infrastructure": 94,
     "mytimeline/domain": 61,
     "mytimeline/application": 60,
@@ -1017,13 +1021,13 @@
     "mytimeline:domain.ports.services"
    ],
    "overlay_hits": {
-    "integrations": 531,
+    "integrations": 538,
     "batch": 55,
-    "authorization": 204,
+    "authorization": 205,
     "state-machine": 131
    },
    "how": {
-    "name": 347,
+    "name": 349,
     "fanin": 18,
     "imports": 23
    },
@@ -1263,6 +1267,7 @@
     "mytimeline:frontend/src/components/categories/CategoryDrawer.test.tsx",
     "mytimeline:frontend/src/components/categories/CategoryDrawer.tsx",
     "mytimeline:frontend/src/components/dashboard/ProductCarousel.tsx",
+    "mytimeline:frontend/src/components/dashboard/ProductList.test.tsx",
     "mytimeline:frontend/src/components/dashboard/ProductList.tsx",
     "mytimeline:frontend/src/components/events/EventCategoryField.test.tsx",
     "mytimeline:frontend/src/components/events/EventCategoryField.tsx",
@@ -1316,6 +1321,7 @@
     "mytimeline:frontend/src/components/timeline/RecurrenceMarks.tsx",
     "mytimeline:frontend/src/components/timeline/TimelineActionSheet.tsx",
     "mytimeline:frontend/src/components/timeline/TimelineBottomSheet.tsx",
+    "mytimeline:frontend/src/components/timeline/TimelineEditHost.forbidden.test.tsx",
     "mytimeline:frontend/src/components/timeline/TimelineEditHost.test.tsx",
     "mytimeline:frontend/src/components/timeline/TimelineEditHost.tsx",
     "mytimeline:frontend/src/components/timeline/TimelineGroupHead.test.tsx",
@@ -1451,7 +1457,7 @@
   },
   {
    "id": "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoHealthIndicator.java",
-   "bytes": 2089,
+   "bytes": 2097,
    "layer": "mytimeline/infrastructure",
    "test": false,
    "fanin_groups": [],
@@ -1533,6 +1539,22 @@
    "candidates": null
   },
   {
+   "id": "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/config/JpaSharedEntityManagerConfig.java",
+   "bytes": 1699,
+   "layer": "mytimeline/infrastructure",
+   "test": false,
+   "fanin_groups": [],
+   "overlay": {},
+   "tokens": [
+    "jpa",
+    "shared",
+    "entity",
+    "manager",
+    "config"
+   ],
+   "candidates": null
+  },
+  {
    "id": "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/config/ProdConfigStartupLogger.java",
    "bytes": 3227,
    "layer": "mytimeline/infrastructure",
@@ -1594,12 +1616,12 @@
   },
   {
    "id": "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/RateLimitingFilter.java",
-   "bytes": 38385,
+   "bytes": 40962,
    "layer": "mytimeline/infrastructure",
    "test": false,
    "fanin_groups": [],
    "overlay": {
-    "authorization": 9
+    "authorization": 10
    },
    "tokens": [
     "rate",
@@ -1657,7 +1679,7 @@
   },
   {
    "id": "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AccountDeletionIntegrationTest.java",
-   "bytes": 11133,
+   "bytes": 11128,
    "layer": "mytimeline/infrastructure",
    "test": true,
    "fanin_groups": [],
@@ -1679,7 +1701,7 @@
   },
   {
    "id": "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/RegisterLoginIntegrationTest.java",
-   "bytes": 8284,
+   "bytes": 8279,
    "layer": "mytimeline/infrastructure",
    "test": true,
    "fanin_groups": [],
@@ -1697,7 +1719,7 @@
   },
   {
    "id": "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailServiceLocaleTest.java",
-   "bytes": 6557,
+   "bytes": 6553,
    "layer": "mytimeline/infrastructure",
    "test": true,
    "fanin_groups": [],
@@ -1715,7 +1737,7 @@
   },
   {
    "id": "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoHealthIndicatorTest.java",
-   "bytes": 1724,
+   "bytes": 1732,
    "layer": "mytimeline/infrastructure",
    "test": true,
    "fanin_groups": [],
@@ -1852,7 +1874,7 @@
   },
   {
    "id": "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/RateLimitDefaultCeilingsIntegrationTest.java",
-   "bytes": 4741,
+   "bytes": 4736,
    "layer": "mytimeline/infrastructure",
    "test": true,
    "fanin_groups": [],
@@ -1871,7 +1893,7 @@
   },
   {
    "id": "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/RateLimitE2eProfileIntegrationTest.java",
-   "bytes": 4930,
+   "bytes": 4925,
    "layer": "mytimeline/infrastructure",
    "test": true,
    "fanin_groups": [],
@@ -1909,7 +1931,7 @@
   },
   {
    "id": "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/RateLimitingAndHeadersIntegrationTest.java",
-   "bytes": 29595,
+   "bytes": 35409,
    "layer": "mytimeline/infrastructure",
    "test": true,
    "fanin_groups": [],
@@ -1928,7 +1950,7 @@
   },
   {
    "id": "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/RateLimitingDisabledIntegrationTest.java",
-   "bytes": 2484,
+   "bytes": 2479,
    "layer": "mytimeline/infrastructure",
    "test": true,
    "fanin_groups": [],
@@ -1946,7 +1968,7 @@
   },
   {
    "id": "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/SecurityConfigWriteJsonErrorTest.java",
-   "bytes": 2692,
+   "bytes": 2680,
    "layer": "mytimeline/infrastructure",
    "test": true,
    "fanin_groups": [],
@@ -2082,7 +2104,7 @@
   },
   {
    "id": "mytimeline:backend/src/test/java/com/matimeline/eventmanager/build/BomDriftTest.java",
-   "bytes": 7656,
+   "bytes": 8408,
    "layer": "mytimeline/build",
    "test": true,
    "fanin_groups": [],
@@ -2374,7 +2396,7 @@
   },
   {
    "id": "mytimeline:frontend/app/[locale]/layout.tsx",
-   "bytes": 4305,
+   "bytes": 5996,
    "layer": "mytimeline/resources",
    "test": false,
    "fanin_groups": [],
@@ -2386,7 +2408,7 @@
   },
   {
    "id": "mytimeline:frontend/app/[locale]/login/page.test.tsx",
-   "bytes": 4333,
+   "bytes": 4341,
    "layer": "mytimeline/resources",
    "test": false,
    "fanin_groups": [],
@@ -2506,7 +2528,7 @@
   },
   {
    "id": "mytimeline:frontend/app/global-error.test.tsx",
-   "bytes": 5786,
+   "bytes": 6299,
    "layer": "mytimeline/resources",
    "test": false,
    "fanin_groups": [],
@@ -2532,7 +2554,7 @@
   },
   {
    "id": "mytimeline:frontend/app/global-not-found-screen.tsx",
-   "bytes": 8303,
+   "bytes": 8340,
    "layer": "mytimeline/resources",
    "test": false,
    "fanin_groups": [],
@@ -2547,7 +2569,7 @@
   },
   {
    "id": "mytimeline:frontend/app/global-not-found.test.tsx",
-   "bytes": 7242,
+   "bytes": 7514,
    "layer": "mytimeline/resources",
    "test": false,
    "fanin_groups": [],
@@ -2642,7 +2664,7 @@
   },
   {
    "id": "mytimeline:frontend/src/__tests__/e2e-rate-limit-budget.test.ts",
-   "bytes": 72380,
+   "bytes": 86184,
    "layer": "mytimeline/resources",
    "test": false,
    "fanin_groups": [],
@@ -2782,7 +2804,7 @@
   },
   {
    "id": "mytimeline:frontend/src/components/dashboard/DensityRibbon.tsx",
-   "bytes": 17009,
+   "bytes": 17022,
    "layer": "mytimeline/resources",
    "test": false,
    "fanin_groups": [],
@@ -2849,7 +2871,7 @@
   },
   {
    "id": "mytimeline:frontend/src/components/dashboard/MobileDrawer.tsx",
-   "bytes": 4147,
+   "bytes": 4507,
    "layer": "mytimeline/resources",
    "test": false,
    "fanin_groups": [],
@@ -3067,7 +3089,7 @@
   },
   {
    "id": "mytimeline:frontend/src/components/landing/CtaSection.tsx",
-   "bytes": 2969,
+   "bytes": 3518,
    "layer": "mytimeline/resources",
    "test": false,
    "fanin_groups": [],
@@ -3119,7 +3141,7 @@
   },
   {
    "id": "mytimeline:frontend/src/components/landing/HeaderSection.tsx",
-   "bytes": 22661,
+   "bytes": 23837,
    "layer": "mytimeline/resources",
    "test": false,
    "fanin_groups": [],
@@ -3174,7 +3196,7 @@
   },
   {
    "id": "mytimeline:frontend/src/components/landing/HowItWorksSection.test.tsx",
-   "bytes": 5929,
+   "bytes": 6409,
    "layer": "mytimeline/resources",
    "test": false,
    "fanin_groups": [],
@@ -3189,7 +3211,7 @@
   },
   {
    "id": "mytimeline:frontend/src/components/landing/HowItWorksSection.tsx",
-   "bytes": 6084,
+   "bytes": 6307,
    "layer": "mytimeline/resources",
    "test": false,
    "fanin_groups": [],
@@ -3258,7 +3280,7 @@
   },
   {
    "id": "mytimeline:frontend/src/components/layout/AppShell.tsx",
-   "bytes": 22062,
+   "bytes": 21986,
    "layer": "mytimeline/resources",
    "test": false,
    "fanin_groups": [],
@@ -3339,7 +3361,7 @@
   },
   {
    "id": "mytimeline:frontend/src/components/pages/HomePage.tsx",
-   "bytes": 1983,
+   "bytes": 2866,
    "layer": "mytimeline/resources",
    "test": false,
    "fanin_groups": [],
@@ -3352,7 +3374,7 @@
   },
   {
    "id": "mytimeline:frontend/src/components/settings/AccountSection.test.tsx",
-   "bytes": 3629,
+   "bytes": 5689,
    "layer": "mytimeline/resources",
    "test": false,
    "fanin_groups": [],
@@ -3391,7 +3413,7 @@
   },
   {
    "id": "mytimeline:frontend/src/components/settings/DeleteAccountSteps.tsx",
-   "bytes": 4270,
+   "bytes": 4543,
    "layer": "mytimeline/resources",
    "test": false,
    "fanin_groups": [],
@@ -3457,7 +3479,7 @@
   },
   {
    "id": "mytimeline:frontend/src/components/settings/SecuritySection.tsx",
-   "bytes": 6996,
+   "bytes": 7037,
    "layer": "mytimeline/resources",
    "test": false,
    "fanin_groups": [],
@@ -3509,7 +3531,7 @@
   },
   {
    "id": "mytimeline:frontend/src/components/settings/mobile/BottomSheet.tsx",
-   "bytes": 8573,
+   "bytes": 8799,
    "layer": "mytimeline/resources",
    "test": false,
    "fanin_groups": [],
@@ -3613,6 +3635,23 @@
    "candidates": null
   },
   {
+   "id": "mytimeline:frontend/src/components/shared/DeleteConfirmDialog.forbidden.test.tsx",
+   "bytes": 10674,
+   "layer": "mytimeline/resources",
+   "test": false,
+   "fanin_groups": [],
+   "overlay": {
+    "integrations": 4
+   },
+   "tokens": [
+    "delete",
+    "confirm",
+    "dialog",
+    "forbidden"
+   ],
+   "candidates": null
+  },
+  {
    "id": "mytimeline:frontend/src/components/shared/DeleteConfirmDialog.intl.test.tsx",
    "bytes": 6259,
    "layer": "mytimeline/resources",
@@ -3643,7 +3682,7 @@
   },
   {
    "id": "mytimeline:frontend/src/components/shared/DeleteConfirmDialog.tsx",
-   "bytes": 13421,
+   "bytes": 14164,
    "layer": "mytimeline/resources",
    "test": false,
    "fanin_groups": [],
@@ -3696,7 +3735,7 @@
   },
   {
    "id": "mytimeline:frontend/src/components/shared/EphemerisLeaf.tsx",
-   "bytes": 3938,
+   "bytes": 4669,
    "layer": "mytimeline/resources",
    "test": false,
    "fanin_groups": [],
@@ -3917,7 +3956,7 @@
   },
   {
    "id": "mytimeline:frontend/src/components/timeline/label-reserve.test.ts",
-   "bytes": 10090,
+   "bytes": 14444,
    "layer": "mytimeline/resources",
    "test": false,
    "fanin_groups": [],
@@ -3930,7 +3969,7 @@
   },
   {
    "id": "mytimeline:frontend/src/components/timeline/label-reserve.ts",
-   "bytes": 6462,
+   "bytes": 8851,
    "layer": "mytimeline/resources",
    "test": false,
    "fanin_groups": [],
@@ -4035,8 +4074,22 @@
    "candidates": null
   },
   {
+   "id": "mytimeline:frontend/src/components/timeline/useFocusTrap.test.tsx",
+   "bytes": 5299,
+   "layer": "mytimeline/resources",
+   "test": false,
+   "fanin_groups": [],
+   "overlay": {},
+   "tokens": [
+    "use",
+    "focu",
+    "trap"
+   ],
+   "candidates": null
+  },
+  {
    "id": "mytimeline:frontend/src/components/timeline/useFocusTrap.ts",
-   "bytes": 2918,
+   "bytes": 4412,
    "layer": "mytimeline/resources",
    "test": false,
    "fanin_groups": [],
@@ -4087,7 +4140,7 @@
   },
   {
    "id": "mytimeline:frontend/src/components/timeline/zoom.test.ts",
-   "bytes": 16114,
+   "bytes": 23982,
    "layer": "mytimeline/resources",
    "test": false,
    "fanin_groups": [],
@@ -4099,7 +4152,7 @@
   },
   {
    "id": "mytimeline:frontend/src/components/timeline/zoom.ts",
-   "bytes": 21613,
+   "bytes": 23575,
    "layer": "mytimeline/resources",
    "test": false,
    "fanin_groups": [],
@@ -4275,7 +4328,7 @@
   },
   {
    "id": "mytimeline:frontend/src/components/ui/dialog.tsx",
-   "bytes": 7456,
+   "bytes": 8143,
    "layer": "mytimeline/resources",
    "test": false,
    "fanin_groups": [],
@@ -4313,7 +4366,7 @@
   },
   {
    "id": "mytimeline:frontend/src/components/ui/form.tsx",
-   "bytes": 4272,
+   "bytes": 4330,
    "layer": "mytimeline/resources",
    "test": false,
    "fanin_groups": [],
@@ -4609,8 +4662,20 @@
    "candidates": null
   },
   {
+   "id": "mytimeline:frontend/src/components/ui/tabs.test.tsx",
+   "bytes": 5469,
+   "layer": "mytimeline/resources",
+   "test": false,
+   "fanin_groups": [],
+   "overlay": {},
+   "tokens": [
+    "tab"
+   ],
+   "candidates": null
+  },
+  {
    "id": "mytimeline:frontend/src/components/ui/tabs.tsx",
-   "bytes": 2567,
+   "bytes": 3591,
    "layer": "mytimeline/resources",
    "test": false,
    "fanin_groups": [],
@@ -4709,7 +4774,7 @@
   },
   {
    "id": "mytimeline:frontend/src/components/ui/toaster.tsx",
-   "bytes": 18335,
+   "bytes": 18806,
    "layer": "mytimeline/resources",
    "test": false,
    "fanin_groups": [],
@@ -4799,8 +4864,8 @@
    "candidates": null
   },
   {
-   "id": "mytimeline:frontend/src/hooks/useDensity.ts",
-   "bytes": 1493,
+   "id": "mytimeline:frontend/src/hooks/useDensity.test.tsx",
+   "bytes": 3361,
    "layer": "mytimeline/resources",
    "test": false,
    "fanin_groups": [],
@@ -4812,8 +4877,34 @@
    "candidates": null
   },
   {
+   "id": "mytimeline:frontend/src/hooks/useDensity.ts",
+   "bytes": 2440,
+   "layer": "mytimeline/resources",
+   "test": false,
+   "fanin_groups": [],
+   "overlay": {},
+   "tokens": [
+    "use",
+    "density"
+   ],
+   "candidates": null
+  },
+  {
+   "id": "mytimeline:frontend/src/hooks/useHydrated.ts",
+   "bytes": 945,
+   "layer": "mytimeline/resources",
+   "test": false,
+   "fanin_groups": [],
+   "overlay": {},
+   "tokens": [
+    "use",
+    "hydrated"
+   ],
+   "candidates": null
+  },
+  {
    "id": "mytimeline:frontend/src/hooks/useMediaQuery.ts",
-   "bytes": 1509,
+   "bytes": 1832,
    "layer": "mytimeline/resources",
    "test": false,
    "fanin_groups": [],
@@ -4841,7 +4932,7 @@
   },
   {
    "id": "mytimeline:frontend/src/hooks/useMobileKeyboard.ts",
-   "bytes": 7376,
+   "bytes": 7523,
    "layer": "mytimeline/resources",
    "test": false,
    "fanin_groups": [],
@@ -4850,6 +4941,34 @@
     "use",
     "mobile",
     "keyboard"
+   ],
+   "candidates": null
+  },
+  {
+   "id": "mytimeline:frontend/src/hooks/useReturnFocus.test.tsx",
+   "bytes": 4015,
+   "layer": "mytimeline/resources",
+   "test": false,
+   "fanin_groups": [],
+   "overlay": {},
+   "tokens": [
+    "use",
+    "return",
+    "focu"
+   ],
+   "candidates": null
+  },
+  {
+   "id": "mytimeline:frontend/src/hooks/useReturnFocus.ts",
+   "bytes": 3119,
+   "layer": "mytimeline/resources",
+   "test": false,
+   "fanin_groups": [],
+   "overlay": {},
+   "tokens": [
+    "use",
+    "return",
+    "focu"
    ],
    "candidates": null
   },
@@ -4896,7 +5015,7 @@
   },
   {
    "id": "mytimeline:frontend/src/i18n/locales.test.ts",
-   "bytes": 1125,
+   "bytes": 1120,
    "layer": "mytimeline/resources",
    "test": false,
    "fanin_groups": [],
@@ -4908,7 +5027,7 @@
   },
   {
    "id": "mytimeline:frontend/src/i18n/locales.ts",
-   "bytes": 1141,
+   "bytes": 1162,
    "layer": "mytimeline/resources",
    "test": false,
    "fanin_groups": [],
@@ -4920,7 +5039,7 @@
   },
   {
    "id": "mytimeline:frontend/src/lib/canonical-host.test.ts",
-   "bytes": 14221,
+   "bytes": 14216,
    "layer": "mytimeline/resources",
    "test": false,
    "fanin_groups": [],
@@ -4933,7 +5052,7 @@
   },
   {
    "id": "mytimeline:frontend/src/lib/canonical-host.ts",
-   "bytes": 15332,
+   "bytes": 15327,
    "layer": "mytimeline/resources",
    "test": false,
    "fanin_groups": [],
@@ -4993,6 +5112,30 @@
    "tokens": [
     "date",
     "iso"
+   ],
+   "candidates": null
+  },
+  {
+   "id": "mytimeline:frontend/src/lib/density.test.ts",
+   "bytes": 2755,
+   "layer": "mytimeline/resources",
+   "test": false,
+   "fanin_groups": [],
+   "overlay": {},
+   "tokens": [
+    "density"
+   ],
+   "candidates": null
+  },
+  {
+   "id": "mytimeline:frontend/src/lib/density.ts",
+   "bytes": 2243,
+   "layer": "mytimeline/resources",
+   "test": false,
+   "fanin_groups": [],
+   "overlay": {},
+   "tokens": [
+    "density"
    ],
    "candidates": null
   },
@@ -5223,7 +5366,7 @@
   },
   {
    "id": "mytimeline:frontend/src/services/apiClient.test.ts",
-   "bytes": 17139,
+   "bytes": 20490,
    "layer": "mytimeline/resources",
    "test": false,
    "fanin_groups": [],
@@ -5236,7 +5379,7 @@
   },
   {
    "id": "mytimeline:frontend/src/services/apiClient.ts",
-   "bytes": 12938,
+   "bytes": 13937,
    "layer": "mytimeline/resources",
    "test": false,
    "fanin_groups": [],
@@ -5291,7 +5434,7 @@
   },
   {
    "id": "mytimeline:frontend/src/services/inlineErrorHandling.ts",
-   "bytes": 3378,
+   "bytes": 4003,
    "layer": "mytimeline/resources",
    "test": false,
    "fanin_groups": [],
@@ -5318,7 +5461,7 @@
   },
   {
    "id": "mytimeline:frontend/src/styles/__tests__/base-layer.test.ts",
-   "bytes": 27356,
+   "bytes": 27553,
    "layer": "mytimeline/resources",
    "test": false,
    "fanin_groups": [],
@@ -5443,7 +5586,7 @@
   },
   {
    "id": "mytimeline:frontend/src/types/settings.ts",
-   "bytes": 2470,
+   "bytes": 2430,
    "layer": "mytimeline/resources",
    "test": false,
    "fanin_groups": [],
@@ -5470,7 +5613,7 @@
  "overlays": {
   "authorization": {
    "n_files": 35,
-   "n_files_10plus": 7,
+   "n_files_10plus": 8,
    "top": [
     {
      "id": "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/SecurityConfig.java",
@@ -5488,6 +5631,11 @@
      "group": "UserEntity"
     },
     {
+     "id": "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/UserRateLimitingFilter.java",
+     "hits": 11,
+     "group": "UserEntity"
+    },
+    {
      "id": "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtFilter.java",
      "hits": 11,
      "group": "UserEntity"
@@ -5498,9 +5646,9 @@
      "group": "UserEntity"
     },
     {
-     "id": "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/UserRateLimitingFilter.java",
+     "id": "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/RateLimitingFilter.java",
      "hits": 10,
-     "group": "UserEntity"
+     "group": "(tech/non rattaché)"
     },
     {
      "id": "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java",
@@ -5511,11 +5659,6 @@
      "id": "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/CallerResolverTest.java",
      "hits": 9,
      "group": "UserEntity"
-    },
-    {
-     "id": "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/RateLimitingFilter.java",
-     "hits": 9,
-     "group": "(tech/non rattaché)"
     },
     {
      "id": "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/ExportTokenService.java",
@@ -5729,7 +5872,7 @@
    }
   },
   "integrations": {
-   "n_files": 85,
+   "n_files": 87,
    "n_files_10plus": 8,
    "top": [
     {
@@ -5823,6 +5966,11 @@
      "group": "UserEntity"
     },
     {
+     "id": "mytimeline:frontend/src/components/timeline/TimelineEditHost.forbidden.test.tsx",
+     "hits": 7,
+     "group": "UserEntity"
+    },
+    {
      "id": "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/RegisterLoginIntegrationTest.java",
      "hits": 7,
      "group": "(tech/non rattaché)"
@@ -5851,16 +5999,11 @@
      "id": "mytimeline:frontend/src/contexts/AuthContext.themeSaveToast.test.tsx",
      "hits": 6,
      "group": "UserEntity"
-    },
-    {
-     "id": "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/PreferencesUserRateLimitPathVariantsIntegrationTest.java",
-     "hits": 5,
-     "group": "UserEntity"
     }
    ],
    "by_group": {
-    "UserEntity": 74,
-    "(tech/non rattaché)": 11
+    "UserEntity": 75,
+    "(tech/non rattaché)": 12
    }
   },
   "batch": {
@@ -5945,10 +6088,10 @@
   }
  },
  "metrics": {
-  "files": 688,
-  "bytes": 4473123,
+  "files": 700,
+  "bytes": 4622028,
   "by_repo": {
-   "mytimeline": 688
+   "mytimeline": 700
   },
   "entities": 7,
   "seeds": 7,
@@ -5959,18 +6102,18 @@
   "folders_on_entity_seeds": [],
   "groups": 1,
   "groups_with_files": 1,
-  "labelled": 388,
+  "labelled": 390,
   "by_how": {
-   "name": 347,
+   "name": 349,
    "fanin": 18,
    "imports": 23
   },
-  "tech": 33,
+  "tech": 34,
   "transversal_home": 1,
   "ambiguous": 0,
-  "unassigned": 266,
-  "unassigned_rate": 0.3866,
-  "unassigned_bytes_rate": 0.3479,
+  "unassigned": 275,
+  "unassigned_rate": 0.3929,
+  "unassigned_bytes_rate": 0.3561,
   "edges_source": "regex",
   "file_edges": 627,
   "graphify": {},
@@ -5981,7 +6124,7 @@
    "state-machine"
   ],
   "notes": [],
-  "duration_s": 0.28
+  "duration_s": 0.32
  },
  "aliases": [
   {

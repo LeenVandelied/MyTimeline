@@ -4,79 +4,65 @@
 
 | Fichier | Faits | Sortes |
 |---|---|---|
-| `mytimeline:backend/src/main/resources/db/migration/V16__user_theme_preference.sql` | 5 | convention 5 |
-| `mytimeline:backend/src/main/resources/db/migration/V4__reconcile_events_constraints.sql` | 5 | convention 4, config 1 |
-| `mytimeline:backend/src/main/resources/db/migration/V10__create_sessions.sql` | 4 | config 1, convention 1, other 1 |
+| `mytimeline:backend/src/main/resources/db/migration/V10__create_sessions.sql` | 5 | convention 5 |
+| `mytimeline:backend/src/main/resources/db/migration/V16__user_theme_preference.sql` | 5 | convention 4, other 1 |
+| `mytimeline:backend/src/main/resources/db/migration/V4__reconcile_events_constraints.sql` | 3 | convention 3 |
+| `mytimeline:backend/src/main/resources/db/migration/V9__neutralize_invalid_recurrence_unit.sql` | 3 | suspicious 2, convention 1 |
 | `mytimeline:backend/src/main/resources/db/migration/V11__events_conditional_check_constraints.sql` | 2 | convention 2 |
-| `mytimeline:backend/src/main/resources/db/migration/V12__users_role_not_null_check.sql` | 2 | convention 1, other 1 |
+| `mytimeline:backend/src/main/resources/db/migration/V12__users_role_not_null_check.sql` | 2 | convention 1, suspicious 1 |
 | `mytimeline:backend/src/main/resources/db/migration/V13__export_jobs.sql` | 2 | convention 2 |
-| `mytimeline:backend/src/main/resources/db/migration/V1__baseline.sql` | 2 | convention 2 |
-| `mytimeline:backend/src/main/resources/db/migration/V2__unique_constraints.sql` | 2 | convention 2 |
-| `mytimeline:backend/src/main/resources/db/migration/V6__create_password_reset_tokens.sql` | 2 | convention 2 |
+| `mytimeline:backend/src/main/resources/db/migration/V3__add_audit_columns.sql` | 2 | convention 2 |
 | `mytimeline:backend/src/main/resources/db/migration/V8__category_ownership.sql` | 2 | convention 1, suspicious 1 |
-| `mytimeline:backend/src/main/resources/db/migration/V9__neutralize_invalid_recurrence_unit.sql` | 2 | convention 1, suspicious 1 |
-| `mytimeline:backend/src/main/resources/db/migration/V14__idx_export_jobs_expires_at.sql` | 1 | convention 1 |
+| `mytimeline:backend/src/main/resources/db/migration/V14__idx_export_jobs_expires_at.sql` | 1 | other 1 |
 | `mytimeline:backend/src/main/resources/db/migration/V15__password_reset_tokens_version.sql` | 1 | convention 1 |
-| `mytimeline:backend/src/main/resources/db/migration/V3__add_audit_columns.sql` | 1 | convention 1 |
+| `mytimeline:backend/src/main/resources/db/migration/V1__baseline.sql` | 1 | convention 1 |
+| `mytimeline:backend/src/main/resources/db/migration/V2__unique_constraints.sql` | 1 | convention 1 |
 | `mytimeline:backend/src/main/resources/db/migration/V5__fk_indexes.sql` | 1 | convention 1 |
-
-## Lignes hors budget {#t-cut_lines}
-
-| Section | Ligne |
-|---|---|
-| rules | - Selon le commentaire de V2, chaque fichier s'ouvre par un en-tête avec nom, titre et numéro d'issue [#40eb238b512fd73b-1]. |
-| rules | - V16 pose lock_timeout à 5 secondes en tête et regroupe ses opérations dans un seul ALTER TABLE rejouable. Les autres migrations ne le font pas [#58bbdf47e30dcfc8-1] [#61b42db9757c6a8e-2] [#333e76b9ff028bb8-1]. |
-| rules | - Les migrations à partir de V4 se terminent par un ROLLBACK manuel commenté, pas V1 à V3 [#b8094cb25528839b-1]. |
+| `mytimeline:backend/src/main/resources/db/migration/V6__create_password_reset_tokens.sql` | 1 | convention 1 |
 
 ## Lignes rétrogradées {#t-demoted_lines}
 
 | Section | Ligne | Motif |
 |---|---|---|
-| rules | - Les CHECK sont toujours nommés ck_table_colonne, car selon le commentaire de V16 un CHECK anonyme reçoit un nom automatique que drop constraint if exists ne retire pas [#61b42db9757c6a8e-1] [#333e76b9ff028bb8-1]. | deducible |
+| rules | - Avant un durcissement, un bloc do $$ compte les lignes non conformes et lève une exception actionnable, sans coercition silencieuse. [#a3f563bc2f9587a4-1] | deducible |
+| rules | - Une entité @Version a une colonne version integer not null default 0. [#d3007a27b545f1b8-1] | deducible |
 
 ## Faits suspects {#t-suspicious}
 
 | Pointeur | Énoncé | Fait |
 |---|---|---|
-| `mytimeline:backend/src/main/resources/db/migration/V10__create_sessions.sql:30` | Le commentaire réserve V11 pour #78 alors que V11__events_conditional_check_constraints.sql existe dans le lot, le commentaire est donc périmé. | [#ae627bc6d9b7fdcd-1] |
-| `mytimeline:backend/src/main/resources/db/migration/V8__category_ownership.sql:37-39` | La clé étrangère owner_id est déclarée sans on delete, donc RESTRICT par défaut, alors que les FK vers users des autres tables du lot utilisent on delete cascade. | [#dbca7a316c0c1c8c-1] |
-| `mytimeline:backend/src/main/resources/db/migration/V9__neutralize_invalid_recurrence_unit.sql:28` | Le commentaire réserve V10 (#158) alors que V10__create_sessions.sql existe dans le lot, le commentaire est donc périmé. Le fichier contient un texte de réservation de numéro de migration. | [#dbd260bc254e104d-1] |
-
-## Configuration {#t-config}
-
-| Pointeur | Énoncé | Fait |
-|---|---|---|
-| `mytimeline:backend/src/main/resources/db/migration/V10__create_sessions.sql:10` | Commentaire : Le schéma est déclaré comme miroir exact de l'entité JPA, avec ddl-auto=validate sur dev, test et prod, de sorte qu'un écart casse le démarrage. | [#3123c3d1981e2538-1] |
-| `mytimeline:backend/src/main/resources/db/migration/V4__reconcile_events_constraints.sql:33` | Commentaire : Le fichier indique que spring.flyway.baseline-on-migrate vaut true, ce qui fait que les migrations s'appliquent aussi à la base dev et à la future prod. | [#1a952d5c5bf6fad7-1] |
+| `mytimeline:backend/src/main/resources/db/migration/V12__users_role_not_null_check.sql:30-32` | Le commentaire signale un piège : cette migration ne doit pas être exécutée contre une base de production sans décision humaine, et n'est validée que par Testcontainers ou une base de test. | [#6a8051ac54db4ae0-1] |
+| `mytimeline:backend/src/main/resources/db/migration/V8__category_ownership.sql:43` | Cet index utilise le préfixe ix_ alors que les autres index du lot utilisent idx_ pour un index simple, ce qui fait deux nommages différents pour le même type d'objet. | [#930e9c69d71916bc-1] |
+| `mytimeline:backend/src/main/resources/db/migration/V9__neutralize_invalid_recurrence_unit.sql:28` | Le commentaire d'en-tête interdit de créer une V10 et la dit réservée à #158, alors que V10__create_sessions.sql existe dans le lot, donc le commentaire est périmé. | [#dbd260bc254e104d-1] |
+| `mytimeline:backend/src/main/resources/db/migration/V9__neutralize_invalid_recurrence_unit.sql:68` | Les valeurs d'enum en majuscules de ce check (WEEK, MONTH, YEAR) diffèrent de la casse minuscule des check de V4 (weeks, months, years) et de ceux de V11 (duration, single), donc la casse des valeurs n'est pas uniforme dans le lot. | [#29933d39a46bb560-1] |
 
 ## Conventions {#t-convention}
 
 | Pointeur | Énoncé | Fait |
 |---|---|---|
-| `mytimeline:backend/src/main/resources/db/migration/V10__create_sessions.sql:46-47` | Un identifiant de recherche unique est porté par un index unique nommé uq_<table>_<colonne>, créé avec create unique index. | [#dabdaea8fe1fb4ca-1] |
-| `mytimeline:backend/src/main/resources/db/migration/V11__events_conditional_check_constraints.sql:55-64` | Avant d'ajouter un CHECK, les lignes incohérentes sont neutralisées par UPDATE ciblés, ce qui rend la migration sans effet sur une base propre. | [#6d2386c8809cdfd6-1] |
-| `mytimeline:backend/src/main/resources/db/migration/V11__events_conditional_check_constraints.sql:75-80` | Un CHECK conditionnel est nommé ck_<table>_<colonne>_required et compare avec is not true pour traiter NULL comme absence de condition. | [#b835f993630cd219-1] |
-| `mytimeline:backend/src/main/resources/db/migration/V12__users_role_not_null_check.sql:35-52` | Une colonne durcie est d'abord assainie par UPDATE vers la valeur de moindre privilège ROLE_USER, puis passe en set not null, puis reçoit un CHECK nommé ck_<table>_<colonne>. | [#1c7402a0f5b734f9-1] |
-| `mytimeline:backend/src/main/resources/db/migration/V13__export_jobs.sql:27-44` | Les clés étrangères et les CHECK d'une table sont déclarés dans create table sous forme de constraint nommé fk_<table>_<reference> ou ck_<table>_<colonne>. | [#9a99540b375d30ed-1] |
-| `mytimeline:backend/src/main/resources/db/migration/V13__export_jobs.sql:41` | Une colonne d'énumération est un varchar de longueur fixe, not null, dont les valeurs sont bornées par un CHECK in (...) listant les valeurs en majuscules. | [#145dc0442b68f3c1-1] |
-| `mytimeline:backend/src/main/resources/db/migration/V14__idx_export_jobs_expires_at.sql:18` | Un index dédié à une colonne de purge temporelle est nommé idx_<table>_<colonne> et créé par create index simple. | [#e7d8e73c2ca02741-1] |
-| `mytimeline:backend/src/main/resources/db/migration/V15__password_reset_tokens_version.sql:28-29` | La colonne de verrou optimiste version est en integer not null default 0 et correspond à un champ @Version de type Integer. | [#d3007a27b545f1b8-1] |
-| `mytimeline:backend/src/main/resources/db/migration/V16__user_theme_preference.sql:9-14` | Commentaire : Une colonne ajoutée à une table peuplée est nullable, sans DEFAULT et sans backfill, et l'en-tête du fichier documente ce choix. | [#14f284dd9bda2ed0-1] |
-| `mytimeline:backend/src/main/resources/db/migration/V16__user_theme_preference.sql:17-19` | Commentaire : La colonne est mappée par UserEntity.themePreference avec un ThemePreferenceConverter entre l'enum domaine et les valeurs en minuscules, avec @Column(name = "theme_preference", length = 16). | [#081c93026e52e9f2-1] |
-| `mytimeline:backend/src/main/resources/db/migration/V16__user_theme_preference.sql:21-23` | Commentaire : Les CHECK sont toujours nommés, car un CHECK anonyme reçoit un nom automatique que drop constraint if exists ne retire pas, et NULL satisfait le CHECK. | [#61b42db9757c6a8e-1] |
-| `mytimeline:backend/src/main/resources/db/migration/V16__user_theme_preference.sql:35` | Une migration sur une table peuplée pose set local lock_timeout à 5 secondes en tête, pour échouer vite plutôt que bloquer les lectures. | [#58bbdf47e30dcfc8-1] |
-| `mytimeline:backend/src/main/resources/db/migration/V16__user_theme_preference.sql:37-41` | Plusieurs opérations sur une même table sont regroupées dans un seul ALTER TABLE, avec add column if not exists, drop constraint if exists puis add constraint nommé. | [#61b42db9757c6a8e-2] |
-| `mytimeline:backend/src/main/resources/db/migration/V1__baseline.sql:8-13` | Commentaire : Le baseline ne pose pas les UNIQUE générées par Hibernate, elles sont créées avec un nom stable dans V2 pour que Flyway reste la seule source des contraintes nommées. | [#211589e73053149d-1] |
-| `mytimeline:backend/src/main/resources/db/migration/V1__baseline.sql:19-23` | Les tables sont créées avec create table, une colonne id uuid not null et primary key (id) en fin de définition, les String en varchar(255) et les LocalDateTime en timestamp. | [#cfec8c62cdded2b8-1] |
-| `mytimeline:backend/src/main/resources/db/migration/V2__unique_constraints.sql:1-2` | Commentaire : Chaque fichier de migration commence par un bloc de commentaires encadré de lignes de signes égal, qui donne le nom du fichier, un titre suivi du numéro d'issue, puis le contexte. | [#40eb238b512fd73b-1] |
-| `mytimeline:backend/src/main/resources/db/migration/V2__unique_constraints.sql:13-17` | Les contraintes UNIQUE sont posées après coup par ALTER TABLE ADD CONSTRAINT avec un nom stable de la forme uq_<table>_<colonne>. | [#c40a4f8b041c44a5-1] |
-| `mytimeline:backend/src/main/resources/db/migration/V3__add_audit_columns.sql:16-19` | Les colonnes d'audit sont ajoutées par ALTER TABLE avec created_at et updated_at en timestamp not null default now(), mappées @CreatedDate et @LastModifiedDate. | [#87c989e06096a13a-1] |
-| `mytimeline:backend/src/main/resources/db/migration/V4__reconcile_events_constraints.sql:28` | Commentaire : Une migration déjà appliquée n'est jamais éditée : chaque changement passe par un nouveau fichier VN__description.sql qui ne touche que sa propre version. | [#ad7b571da89bac44-1] |
-| `mytimeline:backend/src/main/resources/db/migration/V4__reconcile_events_constraints.sql:54` | Sur une base peuplée, un bloc DO compte les lignes non conformes puis lève raise exception using message avant tout ALTER, sans coercition silencieuse des données. | [#a3f563bc2f9587a4-1] |
-| `mytimeline:backend/src/main/resources/db/migration/V4__reconcile_events_constraints.sql:83-88` | Un CHECK est rejoué de façon idempotente par drop constraint if exists suivi de add constraint, avec un nom ck_<table>_<colonne>. | [#333e76b9ff028bb8-1] |
-| `mytimeline:backend/src/main/resources/db/migration/V4__reconcile_events_constraints.sql:88` | Un CHECK d'énumération sur une colonne nullable accepte NULL par la clause is null or placée devant le IN. | [#333e76b9ff028bb8-2] |
-| `mytimeline:backend/src/main/resources/db/migration/V5__fk_indexes.sql:25-29` | Chaque colonne de clé étrangère reçoit un index nommé idx_<table>_<colonne>, créé avec create index if not exists pour rester rejouable. | [#b3fc78ae062be38b-1] |
-| `mytimeline:backend/src/main/resources/db/migration/V6__create_password_reset_tokens.sql:40-42` | Une clé étrangère vers users est nommée fk_<table>_<reference> et déclare on delete cascade lorsque les lignes dépendent du compte. | [#565bd4a0b8a73ce3-1] |
-| `mytimeline:backend/src/main/resources/db/migration/V6__create_password_reset_tokens.sql:46-53` | Commentaire : Chaque migration se termine par un bloc de commentaires ROLLBACK manuel, qui précise que Flyway Community ne rejoue pas les undo, avec les drop if exists commentés. | [#b8094cb25528839b-1] |
-| `mytimeline:backend/src/main/resources/db/migration/V8__category_ownership.sql:52` | Une unicité par propriétaire est posée comme UNIQUE composite (owner_id, name) avec un nom uq_<table>_<colonne>_<colonne>. | [#a8c81be131bb88ff-1] |
-| `mytimeline:backend/src/main/resources/db/migration/V9__neutralize_invalid_recurrence_unit.sql:31-68` | Une normalisation de données suit l'ordre drop check, UPDATE avec CASE sur lower(trim()) vers la valeur d'enum, neutralisation à NULL du reste, puis add constraint. | [#0049acf39aaa5953-1] |
+| `mytimeline:backend/src/main/resources/db/migration/V10__create_sessions.sql:10-11` | Commentaire : Le DDL d'une migration reflète exactement l'entité JPA correspondante, car ddl-auto=validate fait échouer le démarrage à tout écart entre entité et DDL. | [#3123c3d1981e2538-1] |
+| `mytimeline:backend/src/main/resources/db/migration/V10__create_sessions.sql:29` | Commentaire : Une nouvelle migration porte le numéro suivant et n'édite jamais une migration déjà appliquée (V1 à V9 ici), car Flyway détecterait un checksum modifié. | [#7d7f55ca4eff580f-1] |
+| `mytimeline:backend/src/main/resources/db/migration/V10__create_sessions.sql:33-44` | Les tables se créent avec une clé primaire uuid nommée id, déclarée en primary key (id) en fin de create table, et les colonnes temporelles sont en timestamp. | [#1db02bb72eb663ff-1] |
+| `mytimeline:backend/src/main/resources/db/migration/V10__create_sessions.sql:46-53` | Les index suivent le nommage uq_ pour un index unique et idx_ pour un index simple, et chaque colonne de clé étrangère reçoit son propre index idx_ explicite. | [#dabdaea8fe1fb4ca-1] |
+| `mytimeline:backend/src/main/resources/db/migration/V10__create_sessions.sql:56-62` | Commentaire : Chaque migration se termine par un bloc de commentaire ROLLBACK manuel, listant les instructions drop if exists inverses, car Flyway Community ne rejoue pas les undo. | [#6d459d14ec7f191d-1] |
+| `mytimeline:backend/src/main/resources/db/migration/V11__events_conditional_check_constraints.sql:55-59` | Commentaire : Une neutralisation défensive de données (update ... where ...) précède l'ajout d'un constraint, et est conçue pour ne rien toucher sur une base propre. | [#6d2386c8809cdfd6-1] |
+| `mytimeline:backend/src/main/resources/db/migration/V11__events_conditional_check_constraints.sql:78-80` | Un check conditionnel sur une colonne booléenne nullable s'écrit avec is not true, pour n'exiger la valeur que lorsque la condition vaut strictement TRUE. | [#b835f993630cd219-1] |
+| `mytimeline:backend/src/main/resources/db/migration/V12__users_role_not_null_check.sql:46-52` | Un durcissement de colonne suit l'ordre update d'assainissement, puis set not null, puis drop constraint if exists suivi de add constraint ck_<table>_<colonne>. | [#3605201ef7021a79-1] |
+| `mytimeline:backend/src/main/resources/db/migration/V13__export_jobs.sql:27-44` | Une table créée avec des contraintes déclare dans le create table les clés et contraintes nommées par le mot clé constraint (fk_, ck_), sans alter table séparé. | [#9a99540b375d30ed-1] |
+| `mytimeline:backend/src/main/resources/db/migration/V13__export_jobs.sql:40-43` | Les colonnes à valeurs fixes sont des varchar contrôlées par un check (col in (...)) nommé ck_<table>_<colonne>, dont les valeurs suivent l'enum du domaine. | [#0d35a3f07d65299e-1] |
+| `mytimeline:backend/src/main/resources/db/migration/V15__password_reset_tokens_version.sql:28-29` | Une entité annotée @Version reçoit une colonne version integer not null default 0, ce qui doit correspondre exactement au mapping JPA. | [#d3007a27b545f1b8-1] |
+| `mytimeline:backend/src/main/resources/db/migration/V16__user_theme_preference.sql:21` | Commentaire : Un CHECK est toujours nommé, jamais anonyme, afin de pouvoir le retirer avec drop constraint if exists. | [#61b42db9757c6a8e-1] |
+| `mytimeline:backend/src/main/resources/db/migration/V16__user_theme_preference.sql:32-35` | Une migration qui modifie une table peuplée pose set local lock_timeout avant l'ALTER, pour échouer vite plutôt que de bloquer les lectures. | [#58bbdf47e30dcfc8-1] |
+| `mytimeline:backend/src/main/resources/db/migration/V16__user_theme_preference.sql:32-34` | Commentaire : Plusieurs changements sur une même table se regroupent dans un seul alter table, pour ne prendre qu'un verrou. | [#cfe9ab975c506d34-1] |
+| `mytimeline:backend/src/main/resources/db/migration/V16__user_theme_preference.sql:37-41` | L'ajout d'une colonne et de sa contrainte se fait avec add column if not exists suivi de drop constraint if exists puis add constraint dans le même alter table. | [#61b42db9757c6a8e-2] |
+| `mytimeline:backend/src/main/resources/db/migration/V1__baseline.sql:4-6` | Commentaire : La migration baseline reflète le schéma généré depuis les métadonnées Hibernate, en tables create table avec uuid pour les PK et FK, varchar(255) pour les String et timestamp pour les dates. | [#4440982ba6d3d214-1] |
+| `mytimeline:backend/src/main/resources/db/migration/V2__unique_constraints.sql:13-17` | Les contraintes uniques sont nommées de façon stable dans une migration dédiée (alter table ... add constraint uq_... unique), et non laissées au nom automatique généré par Hibernate. | [#c40a4f8b041c44a5-1] |
+| `mytimeline:backend/src/main/resources/db/migration/V3__add_audit_columns.sql:5-7` | Commentaire : Les tables auditées reçoivent created_at et updated_at en timestamp not null default now(), et version en integer not null default 0, mappés par les annotations d'audit JPA. | [#26663bf301806f87-1] |
+| `mytimeline:backend/src/main/resources/db/migration/V3__add_audit_columns.sql:16-19` | L'ajout de plusieurs colonnes d'audit se fait en un seul alter table avec des add column séparés par des virgules. | [#87c989e06096a13a-1] |
+| `mytimeline:backend/src/main/resources/db/migration/V4__reconcile_events_constraints.sql:18-21` | Commentaire : Les valeurs d'enum des CHECK sont reprises du code applicatif et non devinées, avec la liste indiquée en commentaire de l'en-tête. | [#2ba364275f766ca5-1] |
+| `mytimeline:backend/src/main/resources/db/migration/V4__reconcile_events_constraints.sql:23-24` | Commentaire : Une migration de réconciliation rejouable fait drop constraint if exists puis add constraint pour le même nom, afin de ne pas échouer sur une contrainte déjà présente. | [#5bf5a7c95c5d2f4e-1] |
+| `mytimeline:backend/src/main/resources/db/migration/V4__reconcile_events_constraints.sql:40-64` | Avant un durcissement sur base peuplée, un bloc do $$ compte les lignes non conformes et lève une exception avec un message actionnable, sans coercition silencieuse des données. | [#a3f563bc2f9587a4-1] |
+| `mytimeline:backend/src/main/resources/db/migration/V5__fk_indexes.sql:25-29` | Les index sur clés étrangères s'écrivent create index if not exists idx_<table>_<colonne> on <table> (<colonne>) pour rester rejouables. | [#b3fc78ae062be38b-1] |
+| `mytimeline:backend/src/main/resources/db/migration/V6__create_password_reset_tokens.sql:28-44` | Les clés étrangères se déclarent par alter table add constraint fk_<table>_<cible> foreign key ... references ... on delete cascade pour les données qui appartiennent à un utilisateur. | [#42402699aca2e855-1] |
+| `mytimeline:backend/src/main/resources/db/migration/V8__category_ownership.sql:37-39` | Une clé étrangère vers users sans propagation de suppression se déclare sans on delete cascade, la base gardant son comportement RESTRICT par défaut. | [#dbca7a316c0c1c8c-1] |
+| `mytimeline:backend/src/main/resources/db/migration/V9__neutralize_invalid_recurrence_unit.sql:31-32` | Commentaire : Pour réécrire des données sous contrainte, la migration retire d'abord le check, réécrit les valeurs, puis le repose aligné sur l'enum. | [#0049acf39aaa5953-1] |

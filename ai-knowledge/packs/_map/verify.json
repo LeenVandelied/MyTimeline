@@ -2,36 +2,36 @@
  "mode": "rejeu",
  "errors": [],
  "warnings": [
-  "hypothèse A1 : decision 'un seul pack domain timeline, pivot UserEntity' n'est pas un pack",
-  "hypothèse A2 : decision 'fondu dans timeline' n'est pas un pack",
-  "hypothèse A3 : decision 'fondu dans timeline' n'est pas un pack",
-  "hypothèse A4 : decision 'les composants nommés timeline, event, product, category, auth, theme ou conflict vont à timeline par alias, le reste (ui, layout, styles, lib générique) reste au socle frontend' n'est pas un pack",
-  "hypothèse A5 : decision 'oui, pack transversal batch' n'est pas un pack",
-  "hypothèse A6 : decision 'revendiqués par le transversal state-machine via path_rules, sans retirer leur propriétaire' n'est pas un pack",
-  "hypothèse A7 : decision \"nombre de fichiers du motif ou de la couche tel que donné, 0 ko tant que la taille n'est pas mesurée\" n'est pas un pack",
-  "hypothèse A8 : decision 'trois packs techniques par règle de chemin : backend-socle, frontend-socle, migrations' n'est pas un pack"
+  "hypothèse A1 : decision 'un seul pack domain timeline, pivot UserEntity' n'a aucune des trois formes admises (le slug d'un pack du catalogue, « non créé : <slug> », « état courant ») ; l'explication va dans rule",
+  "hypothèse A2 : decision 'fondu dans timeline' n'a aucune des trois formes admises (le slug d'un pack du catalogue, « non créé : <slug> », « état courant ») ; l'explication va dans rule",
+  "hypothèse A3 : decision 'fondu dans timeline' n'a aucune des trois formes admises (le slug d'un pack du catalogue, « non créé : <slug> », « état courant ») ; l'explication va dans rule",
+  "hypothèse A4 : decision 'les composants nommés timeline, event, product, category, auth, theme ou conflict vont à timeline par alias, le reste (ui, layout, styles, lib générique) reste au socle frontend' n'a aucune des trois formes admises (le slug d'un pack du catalogue, « non créé : <slug> », « état courant ») ; l'explication va dans rule",
+  "hypothèse A5 : decision 'oui, pack transversal batch' n'a aucune des trois formes admises (le slug d'un pack du catalogue, « non créé : <slug> », « état courant ») ; l'explication va dans rule",
+  "hypothèse A6 : decision 'revendiqués par le transversal state-machine via path_rules, sans retirer leur propriétaire' n'a aucune des trois formes admises (le slug d'un pack du catalogue, « non créé : <slug> », « état courant ») ; l'explication va dans rule",
+  "hypothèse A7 : decision \"nombre de fichiers du motif ou de la couche tel que donné, 0 ko tant que la taille n'est pas mesurée\" n'a aucune des trois formes admises (le slug d'un pack du catalogue, « non créé : <slug> », « état courant ») ; l'explication va dans rule",
+  "hypothèse A8 : decision 'trois packs techniques par règle de chemin : backend-socle, frontend-socle, migrations' n'a aucune des trois formes admises (le slug d'un pack du catalogue, « non créé : <slug> », « état courant ») ; l'explication va dans rule"
  ],
  "invented": {},
  "leftover": [],
  "leftover_rate": 0.0,
- "assigned": 688,
- "total": 688,
+ "assigned": 700,
+ "total": 700,
  "sizes": {
   "timeline": {
-   "files": 388,
-   "kb": 2584
+   "files": 390,
+   "kb": 2632
   },
   "frontend-socle": {
-   "files": 257,
-   "kb": 1480
+   "files": 266,
+   "kb": 1567
   },
   "authorization": {
    "files": 15,
-   "kb": 141
+   "kb": 150
   },
   "backend-socle": {
-   "files": 16,
-   "kb": 132
+   "files": 17,
+   "kb": 134
   },
   "integrations": {
    "files": 4,
@@ -52,7 +52,7 @@
  },
  "small_domain_packs_R7": {},
  "giant_domain_packs_R8": {},
- "median_domain_kb": 2585,
+ "median_domain_kb": 2633,
  "overlay_claims": {
   "batch": 5,
   "integrations": 14,
@@ -60,10 +60,12 @@
   "authorization": 25
  },
  "by_how": {
-  "seed": 388,
-  "path_rule": 300
+  "seed": 390,
+  "path_rule": 310
  },
  "assumptions": {
-  "open": 8
+  "undecidable": 5,
+  "confirmed": 2,
+  "open": 1
  }
 }

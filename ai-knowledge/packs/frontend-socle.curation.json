@@ -1,20 +1,20 @@
 {
  "pack": "frontend-socle",
  "schema": 1,
- "curated_at": "2026-11-18T14:30:00Z",
+ "curated_at": "2026-11-18T16:25:37Z",
  "curator": "curate/1",
- "base_sha256": "91e9615691b8ead0a29e7eab9fb9497a7874cdfcc57d4fd2fc8cb3fced34509a",
- "pack_sha256_before": "3df4e185626f35cdec47defc4ad0aeda7829552a12af60cbac289fe8dcdedf60",
- "pack_sha256_after": "d8cb6ed41e8a316052eaa1e5f0ff3e40451ad7bbf3138d2c12005a2be2f80f3f",
+ "base_sha256": "d41c53d3446d688bd20abc7c90a05b5d0ea92d6ff11606ac002565ebab4a3b7d",
+ "pack_sha256_before": "8468588da6ae0c252f728bc9f1afaef6380e69ab727b45690e8217755291e926",
+ "pack_sha256_after": "ce722eb9b69ea3b4a23a7cc7a3e3e95b1e3c0d8f13f47191072a75f6c5984783",
  "criteria_sha256": "48e0e20f086c5b11deecfecdc547ba1d6115faee1597a5aaf682f6c699e92423",
  "models": {
   "measure": "haiku",
   "refute": "sonnet"
  },
- "base_fingerprint": "126ede90106c356a0c4586ee2e9bef715e99fb1564a2aae646c04f6596172516",
+ "base_fingerprint": "f717f1c1a0004cf09a145d861219107a70b1edd117e1378f8cd174e4dc62777d",
  "bytes": {
-  "before": 6874,
-  "after": 6556,
+  "before": 8010,
+  "after": 7423,
   "by_section": {
    "activate": {
     "before": 147,
@@ -25,40 +25,40 @@
     "after": 78
    },
    "rules": {
-    "before": 2015,
-    "after": 1625
+    "before": 2283,
+    "after": 2069
    },
    "structure": {
     "before": 82,
     "after": 82
    },
    "surface": {
-    "before": 525,
-    "after": 525
+    "before": 282,
+    "after": 282
    },
    "files": {
-    "before": 1231,
-    "after": 1231
+    "before": 1189,
+    "after": 1189
    },
    "relations": {
-    "before": 326,
-    "after": 326
+    "before": 328,
+    "after": 328
    },
    "tests": {
-    "before": 1226,
-    "after": 1226
+    "before": 1553,
+    "after": 1180
    },
    "questions": {
-    "before": 91,
-    "after": 91
+    "before": 343,
+    "after": 343
    },
    "alerts": {
-    "before": 78,
-    "after": 78
+    "before": 570,
+    "after": 570
    },
    "coverage": {
-    "before": 740,
-    "after": 740
+    "before": 746,
+    "after": 746
    }
   }
  },
@@ -67,85 +67,85 @@
    "id": "frontend-socle:rules:1",
    "section": "rules",
    "rank": 1,
-   "text": "- Les locales supportées sont déclarées une seule fois, la locale par défaut est fr (`mytimeline:frontend/src/i18n/locales.ts:16-20`). [#81956d761fae945d-1] [#2681e154ca18518c-1]",
-   "fact_text": "Les locales supportées sont déclarées une seule fois, la locale par défaut est fr (locales.ts)",
+   "text": "- Les constantes partagées restent définies dans `@/lib` ou `@/i18n/locales`, et `types/settings.ts` les réexporte sans les redéfinir. [#f7edf638060ead2e-1] [#c5e0cc829ec13d64-1]",
+   "fact_text": "Les constantes partagées restent définies dans `@/lib` ou `@/i18n/locales`, et `types/settings.ts` les réexporte sans les redéfinir",
    "consigne": null,
    "consigne_dropped": false,
    "cites": [
-    "frontend-socle/81956d761fae945d-1",
-    "frontend-socle/2681e154ca18518c-1"
+    "frontend-socle/f7edf638060ead2e-1",
+    "frontend-socle/c5e0cc829ec13d64-1"
    ],
    "files": [
-    "mytimeline:frontend/src/i18n/locales.ts"
+    "mytimeline:frontend/src/types/settings.ts"
    ],
    "ranges": [
     [
-     "mytimeline:frontend/src/i18n/locales.ts",
-     16,
-     16,
-     "5b1eb93eea67a5c2722bb00eff059906fa89455612f7eb0c49c64ebf7db7349b"
+     "mytimeline:frontend/src/types/settings.ts",
+     48,
+     48,
+     "c0aeedd83b98dbbc3b4787268636a2235c3deb748322c95ed98363d6cb516f2e"
     ],
     [
-     "mytimeline:frontend/src/i18n/locales.ts",
-     20,
-     20,
-     "b7c53772db5f29008a289dd167db74e83b8c28ca5222946177d6eb484ca4dedc"
+     "mytimeline:frontend/src/types/settings.ts",
+     52,
+     52,
+     "5aba8343e9f374d58022538931323f9ada4bb3c7a5fcef6ba70253af7a0491c6"
     ]
    ],
-   "code_sha256": "f8b2a89327cc996e9765ed0a67df2b11b6bcfea4530a1671580225bf6a3d166b",
+   "code_sha256": "ffb8288dbc01af65ab378dad42cee12494670ff947d8b5c20b886bb3208f23e9",
    "verdict": "admit",
-   "reason": "admitted",
+   "reason": "restricted",
    "final": true,
    "measures": {
     "fidelity": null,
     "deduce": {
      "covered": false,
      "overlap": {
-      "identifiers": 0.0,
-      "values": null,
-      "terms": 0.5,
+      "identifiers": 0.5,
+      "values": 0.667,
+      "terms": 0.25,
       "n": {
-       "identifiers": 1,
-       "values": 0,
-       "terms": 6
+       "identifiers": 2,
+       "values": 3,
+       "terms": 8
       }
      },
-     "restatement": "SUPPORTED_LOCALES est déclaré comme tuple readonly as const ['fr','en','es','de'], et DEFAULT_LOCALE, typé Locale, vaut 'fr'.",
-     "confidence": "high",
-     "files_read_missing": true
+     "restatement": "Le fichier `types/settings.ts` sert de point de réexport : il republie `DENSITY_OPTIONS`, `DENSITY_STORAGE_KEY` et `DEFAULT_DENSITY` depuis `@/lib/density`, et expose `LOCALE_OPTIONS` comme alias direct de `SUPPORTED_LOCALES`. Le code ne montre aucune logique propre, seulement la source des valeurs.",
+     "confidence": "high"
     },
     "rediscover": {
      "found": true,
      "cost": 8,
      "within_budget": false,
-     "covered": false,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/packs-0-10-bfb23b/frontend/src/i18n/locales.ts",
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/packs-0-10-bfb23b/frontend/src/types/settings.ts",
      "file_ok": true,
      "overlap": {
-      "identifiers": 0.0,
-      "values": null,
-      "terms": 0.667,
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 0.875,
       "n": {
-       "identifiers": 1,
-       "values": 0,
-       "terms": 6
+       "identifiers": 2,
+       "values": 3,
+       "terms": 8
       }
      },
-     "job": "frontend-socle:rediscover:mytimeline_frontend_app_locale_app_products_productId_loading.test.tsx:1"
+     "job": "frontend-socle:rediscover:mytimeline_frontend_src_types_settings.ts:2",
+     "rank_in_lot": 1
     },
     "comment": [],
     "refute": {
      "votes": 3,
-     "refuted": 0,
+     "refuted": 1,
      "refute_unproven": 0,
      "reasons": [
-      "locales.ts L16 et L20 déclarent SUPPORTED_LOCALES et DEFAULT_LOCALE='fr'. Aucune autre déclaration de liste de locales hors tests n'a été trouvée.",
-      "locales.ts L16 et L20 déclarent SUPPORTED_LOCALES et DEFAULT_LOCALE='fr' ; middleware.ts les importe et aucune autre déclaration de production dans le frontend.",
-      "locales.ts L16 et L20 déclarent SUPPORTED_LOCALES et DEFAULT_LOCALE='fr'. Aucune autre déclaration de liste ailleurs. Language-selector n'a que des libellés d'affichage."
+      "THEME_OPTIONS est défini directement dans types/settings.ts l.43, pas réexporté depuis @/lib ou @/i18n/locales.",
+      "THEME_OPTIONS est défini directement dans types/settings.ts l.43 et THEME_STORAGE_KEY dans hooks/useThemeChoice.ts l.63, hors @/lib ou @/i18n/locales.",
+      "Les réexports L48 et L52 sont corrects, mais THEME_OPTIONS est défini dans types/settings.ts L43 (pas réexporté), ce qui contredit la généralité."
      ],
      "evidence": [
-      "",
-      "",
+      "export const THEME_OPTIONS = ['light', 'dark', 'system'] as const",
+      "export const THEME_OPTIONS = ['light', 'dark', 'system'] as const",
       ""
      ],
      "consigne_verdict": "n/a",
@@ -153,42 +153,62 @@
      "searched": true,
      "search": {
       "check": "scope",
-      "outcome": null,
+      "outcome": "counterexample",
       "votes": 3,
-      "supporters": 0,
-      "budget": 30,
+      "supporters": 3,
+      "budget": 18,
       "searches": [
        [
         {
          "tool": "Grep",
-         "target": "['\"]fr['\"]\\s*,\\s*['\"]en['\"]|defaultLocale\\s*=|locales\\s*=\\s*\\[ dans frontend/src",
-         "found": "Seule déclaration non-test : locales.ts L16. Les autres occurrences sont des tests."
+         "target": "définitions de DENSITY_OPTIONS, SUPPORTED_LOCALES, THEME_OPTIONS dans frontend/src",
+         "found": "densité dans lib/density.ts, locales dans i18n/locales.ts, THEME_OPTIONS défini dans types/settings.ts"
         }
        ],
        [
         {
          "tool": "Grep",
-         "target": "locales: [ / defaultLocale / DEFAULT_LOCALE = dans frontend",
-         "found": "seul middleware.ts les consomme depuis locales.ts ; les autres occurrences sont des tests et e2e"
+         "target": "export const *_OPTIONS|_KEY|DEFAULT_* dans frontend/src",
+         "found": "THEME_OPTIONS défini dans types/settings.ts, THEME_STORAGE_KEY dans un hook"
         }
        ],
        [
         {
          "tool": "Grep",
-         "target": "SUPPORTED_LOCALES\\s*=|DEFAULT_LOCALE\\s*=|locales\\s*= dans frontend/src",
-         "found": "Seule déclaration dans locales.ts L16, sans autre liste concurrente."
+         "target": "export const *_OPTIONS dans types/settings.ts",
+         "found": "THEME_OPTIONS défini en local L43 avec as const."
         }
        ]
       ],
       "untraced": 0,
       "over_budget": 0,
-      "unproven": 0
+      "unproven": 0,
+      "evidence": [
+       {
+        "file": "mytimeline:frontend/src/types/settings.ts",
+        "line_start": 43,
+        "line_end": 43,
+        "evidence": "export const THEME_OPTIONS = ['light', 'dark', 'system'] as const",
+        "evidence_check": "exact"
+       }
+      ],
+      "restated": "Les constantes de densité et de locales sont définies dans @/lib et @/i18n/locales et réexportées par types/settings.ts, mais THEME_OPTIONS y est défini."
      }
     }
    },
    "contrary": null,
    "check": "scope",
    "general": "pattern_pack",
+   "counter_examples": [
+    {
+     "file": "mytimeline:frontend/src/types/settings.ts",
+     "line_start": 43,
+     "line_end": 43,
+     "evidence": "export const THEME_OPTIONS = ['light', 'dark', 'system'] as const",
+     "evidence_check": "exact"
+    }
+   ],
+   "restated": "Les constantes de densité et de locales sont définies dans @/lib et @/i18n/locales et réexportées par types/settings.ts, mais THEME_OPTIONS y est défini.",
    "placed": {
     "pack_line": 30,
     "annex_table": null
@@ -199,25 +219,25 @@
    "id": "frontend-socle:rules:2",
    "section": "rules",
    "rank": 2,
-   "text": "- Selon la javadoc, le module de locales reste pur, sans dépendance Node, pour être importé par le middleware. [#8ccfe3ce2ea826e6-1]",
-   "fact_text": "Selon la javadoc, le module de locales reste pur, sans dépendance Node, pour être importé par le middleware",
+   "text": "- Selon la javadoc, les champs nullables du contrat backend s'écrivent `.nullable()` et jamais `.nullish()`. [#be17905ecee25a30-1]",
+   "fact_text": "Selon la javadoc, les champs nullables du contrat backend s'écrivent `.nullable()` et jamais `.nullish()`",
    "consigne": null,
    "consigne_dropped": false,
    "cites": [
-    "frontend-socle/8ccfe3ce2ea826e6-1"
+    "frontend-socle/be17905ecee25a30-1"
    ],
    "files": [
-    "mytimeline:frontend/src/i18n/locales.ts"
+    "mytimeline:frontend/src/lib/schemas/export.ts"
    ],
    "ranges": [
     [
-     "mytimeline:frontend/src/i18n/locales.ts",
+     "mytimeline:frontend/src/lib/schemas/export.ts",
      11,
      11,
-     "c09fc94c39fcd060d8bbfdee71b2fac9cbad975b49fc0831a1958a4c1dd0e3e9"
+     "62b3b49bc3adcf02c95e999087cce9c8170ea7e340d25aca2428998a318d8bbe"
     ]
    ],
-   "code_sha256": "c09fc94c39fcd060d8bbfdee71b2fac9cbad975b49fc0831a1958a4c1dd0e3e9",
+   "code_sha256": "62b3b49bc3adcf02c95e999087cce9c8170ea7e340d25aca2428998a318d8bbe",
    "verdict": "admit",
    "reason": "admitted",
    "final": true,
@@ -227,7 +247,7 @@
     "rediscover": null,
     "comment": [
      {
-      "id": "frontend-socle/8ccfe3ce2ea826e6-1",
+      "id": "frontend-socle/be17905ecee25a30-1",
       "verdict": "confirmed"
      }
     ],
@@ -236,9 +256,9 @@
      "refuted": 0,
      "refute_unproven": 0,
      "reasons": [
-      "La ligne cite la javadoc (locales.ts L11, module PUR). Le grep sur src/i18n ne trouve aucun import Node ni next-intl dans les fichiers concernés.",
-      "Ligne formulée « selon la javadoc » ; le commentaire de locales.ts L11 dit bien PURE sans dépendance Node, et aucun import n'apparaît dans le fichier.",
-      "Le commentaire de locales.ts dit bien que la constante est PURE sans dépendance Node. La ligne est attribuée à la javadoc."
+      "La ligne rapporte la javadoc (export.ts L11), qui la dit bien. Aucun .nullish() n'existe dans le code, seulement dans des commentaires.",
+      "La ligne rapporte la javadoc (export.ts L11) et d'autres commentaires disent la même chose. Aucun .nullish() dans le code.",
+      "La ligne est attribuée à la javadoc et le commentaire en cause (export.ts L11) dit bien `.nullable()` (jamais `.nullish()`). Aucun `.nullish()` n'est appelé dans frontend/src, seulement des commentaires qui l'interdisent."
      ],
      "evidence": [
       "",
@@ -258,270 +278,22 @@
        [
         {
          "tool": "Grep",
-         "target": "imports node:/fs/path/next-intl dans frontend/src/i18n",
-         "found": "Aucun résultat."
+         "target": "nullish\\(\\) dans frontend/src",
+         "found": "3 occurrences, toutes dans des commentaires qui disent de ne pas l'utiliser"
         }
        ],
        [
         {
          "tool": "Grep",
-         "target": "imports node/fs/path dans locales.ts",
-         "found": "aucune correspondance"
-        }
-       ],
-       [
-        {
-         "tool": "Read",
-         "target": "excerpt.txt",
-         "found": "Le commentaire L11 affirme la pureté."
-        }
-       ]
-      ],
-      "untraced": 0,
-      "over_budget": 0,
-      "unproven": 0
-     }
-    }
-   },
-   "contrary": null,
-   "check": "scope",
-   "general": "pattern_pack",
-   "placed": {
-    "pack_line": 31,
-    "annex_table": null
-   },
-   "uses": 0
-  },
-  {
-   "id": "frontend-socle:rules:3",
-   "section": "rules",
-   "rank": 3,
-   "text": "- Selon la javadoc, l'ordre des providers du layout racine est Theme, puis Auth, puis Query. [#aeab71ba3df29aba-1]",
-   "fact_text": "Selon la javadoc, l'ordre des providers du layout racine est Theme, puis Auth, puis Query",
-   "consigne": null,
-   "consigne_dropped": false,
-   "cites": [
-    "frontend-socle/aeab71ba3df29aba-1"
-   ],
-   "files": [
-    "mytimeline:frontend/src/components/theme-provider.tsx"
-   ],
-   "ranges": [
-    [
-     "mytimeline:frontend/src/components/theme-provider.tsx",
-     15,
-     15,
-     "99c9b5c754ddb8f0d743b0ed933ad69e3e23842294b333e3e399ecd05edab364"
-    ]
-   ],
-   "code_sha256": "99c9b5c754ddb8f0d743b0ed933ad69e3e23842294b333e3e399ecd05edab364",
-   "verdict": "admit",
-   "reason": "admitted",
-   "final": true,
-   "measures": {
-    "fidelity": null,
-    "deduce": null,
-    "rediscover": null,
-    "comment": [
-     {
-      "id": "frontend-socle/aeab71ba3df29aba-1",
-      "verdict": "unverifiable"
-     }
-    ],
-    "refute": {
-     "votes": 3,
-     "refuted": 0,
-     "refute_unproven": 0,
-     "reasons": [
-      "La ligne dit selon la javadoc, et theme-provider.tsx L15 affirme bien Theme > Auth > Query.",
-      "La ligne est attribuée à la javadoc, et theme-provider.tsx L15 affirme bien l'ordre Theme > Auth > Query.",
-      "La ligne dit « selon la javadoc » et le commentaire de theme-provider.tsx L15 l'affirme bien."
-     ],
-     "evidence": [
-      "",
-      "",
-      ""
-     ],
-     "consigne_verdict": "n/a",
-     "question_verdict": "n/a",
-     "searched": true,
-     "search": {
-      "check": "scope",
-      "outcome": null,
-      "votes": 3,
-      "supporters": 0,
-      "budget": 30,
-      "searches": [
-       [
-        {
-         "tool": "Read",
-         "target": "excerpt unité rules:3",
-         "found": "Javadoc de ThemeProvider L15 confirme l'ordre."
-        }
-       ],
-       [
-        {
-         "tool": "Read",
-         "target": "excerpt theme-provider.tsx L15",
-         "found": "Javadoc ordre Theme > Auth > Query"
-        }
-       ],
-       []
-      ],
-      "untraced": 0,
-      "over_budget": 0,
-      "unproven": 0
-     }
-    }
-   },
-   "contrary": null,
-   "check": "scope",
-   "general": "pattern_pack",
-   "placed": {
-    "pack_line": 32,
-    "annex_table": null
-   },
-   "uses": 0
-  },
-  {
-   "id": "frontend-socle:rules:4",
-   "section": "rules",
-   "rank": 4,
-   "text": "- Selon la javadoc, une erreur n'est jamais journalisée brute, on passe par safeErrorMessage, qui préfixe le statut HTTP s'il existe. [#8bf24c9c5c97faf3-1] [#8bf24c9c5c97faf3-2]",
-   "fact_text": "Selon la javadoc, une erreur n'est jamais journalisée brute, on passe par safeErrorMessage, qui préfixe le statut HTTP s'il existe",
-   "consigne": null,
-   "consigne_dropped": false,
-   "cites": [
-    "frontend-socle/8bf24c9c5c97faf3-1",
-    "frontend-socle/8bf24c9c5c97faf3-2"
-   ],
-   "files": [
-    "mytimeline:frontend/src/lib/safe-error.ts"
-   ],
-   "ranges": [
-    [
-     "mytimeline:frontend/src/lib/safe-error.ts",
-     4,
-     4,
-     "3b414604f4264263a54daa722704559ba1828207531828962f6806ae0d509996"
-    ],
-    [
-     "mytimeline:frontend/src/lib/safe-error.ts",
-     22,
-     22,
-     "5e8d2866ac9588735bb4564c10de37c6afeb68e72709cc2a436ff77e8b4a29e9"
-    ]
-   ],
-   "code_sha256": "6fcf61e6b87e841974f2d415065f7d75560760350eb8004d2f97d64ab5b05a92",
-   "verdict": "admit",
-   "reason": "admitted",
-   "final": true,
-   "measures": {
-    "fidelity": null,
-    "deduce": {
-     "covered": false,
-     "overlap": {
-      "identifiers": 0.5,
-      "values": null,
-      "terms": 0.125,
-      "n": {
-       "identifiers": 2,
-       "values": 0,
-       "terms": 8
-      }
-     },
-     "restatement": "Le commentaire de safeErrorMessage interdit de logger l'objet error brut, car error.config.data porte le corps de la requête. La ligne 22 renvoie `[${status}] ${message}` si le status est défini, sinon le message seul.",
-     "confidence": "high",
-     "files_read_missing": true
-    },
-    "rediscover": {
-     "found": false,
-     "cost": 24,
-     "within_budget": false,
-     "covered": false,
-     "file": "",
-     "file_ok": false,
-     "overlap": {
-      "identifiers": 0.0,
-      "values": null,
-      "terms": 0.0,
-      "n": {
-       "identifiers": 2,
-       "values": 0,
-       "terms": 8
-      }
-     },
-     "job": "frontend-socle:rediscover:mytimeline_frontend_app_locale_app_products_productId_loading.test.tsx:1"
-    },
-    "comment": [
-     {
-      "id": "frontend-socle/8bf24c9c5c97faf3-1",
-      "verdict": "confirmed"
-     }
-    ],
-    "refute": {
-     "votes": 3,
-     "refuted": 0,
-     "refute_unproven": 0,
-     "reasons": [
-      "La ligne est attribuée à la javadoc, donc l'exception d'apiClient.ts L250 ne la réfute pas. Ce console.error logge un objet restreint (url, method, data), pas l'erreur brute. La formulation 'jamais' reste fidèle au commentaire de safe-error.ts L4. Le préfixe de statut est confirmé à L22.",
-      "Ligne « selon la javadoc » (safe-error.ts L4) ; safeErrorMessage préfixe [status] (L22). Les console.error de la portée passent par safeErrorMessage ; apiClient L250 logue des métadonnées, pas l'objet erreur brut.",
-      "La ligne rapporte la javadoc. Les console.error des services passent par safeErrorMessage. apiClient.ts L250 logue url, method et data de la réponse, pas l'objet erreur brut. La règle tient."
-     ],
-     "evidence": [
-      "",
-      "",
-      ""
-     ],
-     "consigne_verdict": "n/a",
-     "question_verdict": "n/a",
-     "searched": true,
-     "search": {
-      "check": "scope",
-      "outcome": null,
-      "votes": 3,
-      "supporters": 0,
-      "budget": 30,
-      "searches": [
-       [
-        {
-         "tool": "Grep",
-         "target": "console.(error|warn|log)( dans frontend/src",
-         "found": "Presque tous les appels passent par safeErrorMessage(error). Exception : apiClient.ts L250, objet filtré sans l'erreur brute."
-        },
-        {
-         "tool": "Read",
-         "target": "frontend/src/services/apiClient.ts L244-260",
-         "found": "Log de {url, method, data}, avec commentaire qui interdit le log de config.headers."
+         "target": "nullish\\(\\) dans frontend/src",
+         "found": "3 occurrences, toutes dans des commentaires qui l'interdisent"
         }
        ],
        [
         {
          "tool": "Grep",
-         "target": "console.(error|warn|log)( dans frontend/src",
-         "found": "tous les appels avec erreur utilisent safeErrorMessage ; un test console-error-guard existe"
-        },
-        {
-         "tool": "Read",
-         "target": "apiClient.ts L244-258",
-         "found": "log d'un objet {url, method, data}, pas l'erreur brute, headers exclus volontairement"
-        }
-       ],
-       [
-        {
-         "tool": "Grep",
-         "target": "console.(error|warn|log)( dans frontend/src",
-         "found": "Presque tous les appels utilisent safeErrorMessage(error)."
-        },
-        {
-         "tool": "Read",
-         "target": "frontend/src/services/apiClient.ts L244-260",
-         "found": "Log de métadonnées sans l'objet erreur, ni les headers."
-        },
-        {
-         "tool": "Read",
-         "target": "frontend/src/hooks/useEventEditConflict.ts L130-140",
-         "found": "Message statique, sans erreur."
+         "target": "\\.nullish\\(\\) dans frontend/src",
+         "found": "3 occurrences, toutes dans des commentaires qui interdisent nullish (user.ts, event.ts, export.ts)"
         }
        ]
       ],
@@ -535,6 +307,367 @@
    "check": "scope",
    "general": "words:jamais",
    "placed": {
+    "pack_line": 31,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "frontend-socle:rules:3",
+   "section": "rules",
+   "rank": 3,
+   "text": "- Un hook de requête construit sa clé avec `queryKeys`, délègue la `queryFn` à un service de `@/services/` et reste désactivé sans identifiant utilisateur. [#b485fe301f167807-2] [#b485fe301f167807-3] [#b485fe301f167807-4]",
+   "fact_text": "Un hook de requête construit sa clé avec `queryKeys`, délègue la `queryFn` à un service de `@/services/` et reste désactivé sans identifiant utilisateur",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-socle/b485fe301f167807-2",
+    "frontend-socle/b485fe301f167807-3",
+    "frontend-socle/b485fe301f167807-4"
+   ],
+   "files": [
+    "mytimeline:frontend/src/hooks/useArchivedProducts.ts"
+   ],
+   "ranges": [
+    [
+     "mytimeline:frontend/src/hooks/useArchivedProducts.ts",
+     15,
+     21,
+     "1c95025c6cc6bb3b45b567446f0b0aa9ff844e3b7957dfbca5b8da3b5aea4157"
+    ],
+    [
+     "mytimeline:frontend/src/hooks/useArchivedProducts.ts",
+     18,
+     18,
+     "38c4f1e54e44d2793955f54b43e84730fbb318f0c00c144fe5b4611d5d00f852"
+    ],
+    [
+     "mytimeline:frontend/src/hooks/useArchivedProducts.ts",
+     19,
+     19,
+     "4e202074055639717a853c65bc76a4b2e612aebd4a22968857386dbd7a1aaee2"
+    ]
+   ],
+   "code_sha256": "9f36c56f9e1d2576dbbc04e32532cb18e42630116cd886ec5ec4e87a9c7dd472",
+   "verdict": "drop",
+   "reason": "counterexample",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 0.0,
+      "terms": 0.2,
+      "n": {
+       "identifiers": 2,
+       "values": 1,
+       "terms": 10
+      }
+     },
+     "restatement": "useArchivedProducts désactive la requête TanStack Query (`enabled: Boolean(userId)`) quand userId est undefined ou vide, et utilise `userId ?? ''` comme partie de la clé `queryKeys.products.archived`, avec un cast `as string` dans queryFn.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 18,
+     "within_budget": false,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/packs-0-10-bfb23b/frontend/src/hooks/useProductsWithEvents.ts",
+     "file_ok": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 0.8,
+      "n": {
+       "identifiers": 2,
+       "values": 1,
+       "terms": 10
+      }
+     },
+     "job": "frontend-socle:rediscover:mytimeline_frontend_app_locale_app_products_productId_loading.test.tsx:1"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Fidèle pour useArchivedProducts (L15-21), mais la règle est trop générale : d'autres hooks de requête n'ont pas de garde sur l'identifiant utilisateur.",
+      "Vrai pour les hooks paramétrés par userId, mais useCategories et useSessionManager n'ont ni identifiant ni enabled : la règle est à restreindre.",
+      "Le motif tient pour les hooks par utilisateur (useArchivedProducts L16-19, useProductsWithEvents), mais la généralité est fausse : useCategories (L20-24) et useSessionManager n'ont pas d'identifiant utilisateur."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "scope",
+      "outcome": "counterexample",
+      "votes": 3,
+      "supporters": 3,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "useQuery( dans frontend/src hors tests",
+         "found": "7 hooks : useCurrentUser, useExportFlow, useCategories, useRecurrencePreview, useArchivedProducts, useProductsWithEvents, useSessionManager"
+        },
+        {
+         "tool": "Grep",
+         "target": "queryKey|enabled|queryFn dans ces hooks",
+         "found": "useCategories est activé par un paramètre enabled, useSessionManager n'a pas d'enabled, useCurrentUser a une queryFn locale et enabled: !loading, useExportFlow a enabled sur jobId"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "useQuery|queryKey|queryFn|enabled: dans frontend/src/hooks",
+         "found": "useCategories (queryFn: getCategories) et useSessionManager (queryFn: getActiveSessions) sans enabled ni userId; useCurrentUser enabled: !loading; useExportFlow enabled sur jobId"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "useQuery|queryKey|queryFn|enabled: dans frontend/src/hooks",
+         "found": "useCategories prend un flag enabled sans userId ; useSessionManager sans enabled ; useCurrentUser enabled: !loading ; useExportFlow enabled sur jobId et phase"
+        },
+        {
+         "tool": "Read",
+         "target": "frontend/src/hooks/useCategories.ts L14-28",
+         "found": "enabled = true par défaut, queryKey queryKeys.categories.all, aucun userId"
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0,
+      "evidence": [
+       {
+        "file": "mytimeline:frontend/src/hooks/useCurrentUser.ts",
+        "line_start": 31,
+        "line_end": 36,
+        "evidence": "queryFn: () => Promise.resolve(user),",
+        "evidence_check": "exact"
+       },
+       {
+        "file": "mytimeline:frontend/src/hooks/useCategories.ts",
+        "line_start": 19,
+        "line_end": 23,
+        "evidence": "export function useCategories(enabled = true) {",
+        "evidence_check": "exact"
+       }
+      ],
+      "restated_rejected": [
+       "éléments absents de l'original : userId",
+       "éléments absents de l'original : userId",
+       "éléments absents de l'original : userId"
+      ]
+     }
+    }
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "counter_examples": [
+    {
+     "file": "mytimeline:frontend/src/hooks/useCurrentUser.ts",
+     "line_start": 31,
+     "line_end": 36,
+     "evidence": "queryFn: () => Promise.resolve(user),",
+     "evidence_check": "exact"
+    },
+    {
+     "file": "mytimeline:frontend/src/hooks/useCategories.ts",
+     "line_start": 19,
+     "line_end": 23,
+     "evidence": "export function useCategories(enabled = true) {",
+     "evidence_check": "exact"
+    }
+   ],
+   "placed": {
+    "pack_line": null,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "frontend-socle:rules:4",
+   "section": "rules",
+   "rank": 4,
+   "text": "- Une mutation s'écrit avec `useMutation` en forme objet, invalide les clés `queryKeys` par préfixe dans `onSuccess` et ne masque pas l'erreur. [#216aef023951fc3c-2] [#48cc57b65f950043-1] [#9c1a4893d224818b-1]",
+   "fact_text": "Une mutation s'écrit avec `useMutation` en forme objet, invalide les clés `queryKeys` par préfixe dans `onSuccess` et ne masque pas l'erreur",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-socle/216aef023951fc3c-2",
+    "frontend-socle/48cc57b65f950043-1",
+    "frontend-socle/9c1a4893d224818b-1"
+   ],
+   "files": [
+    "mytimeline:frontend/src/hooks/useDeleteCategory.ts",
+    "mytimeline:frontend/src/hooks/useCreateCategory.ts"
+   ],
+   "ranges": [
+    [
+     "mytimeline:frontend/src/hooks/useDeleteCategory.ts",
+     29,
+     39,
+     "0ac23494b0c6221d551b1a845e1b6028d90e2feafcc9a58f75c0b0923b1d7f16"
+    ],
+    [
+     "mytimeline:frontend/src/hooks/useCreateCategory.ts",
+     25,
+     27,
+     "148bb90bfe1012a18981b0492a2da121533bd950e974bb728703a1f9a8697738"
+    ],
+    [
+     "mytimeline:frontend/src/hooks/useDeleteCategory.ts",
+     35,
+     36,
+     "63f96153d94f3a0efda13976117637c192fb93ab89c6c7b7fb30c5186c940c95"
+    ]
+   ],
+   "code_sha256": "4fe883874b174231c2e0c266affeba8c6b90928d997f5e7d4c93fceb037543bc",
+   "verdict": "admit",
+   "reason": "restricted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.333,
+      "values": null,
+      "terms": 0.111,
+      "n": {
+       "identifiers": 3,
+       "values": 0,
+       "terms": 9
+      }
+     },
+     "restatement": "useDeleteCategory appelle deleteCategory(id, reassignToCategoryId, options) et, en cas de succès, invalide à la fois queryKeys.categories.all et queryKeys.products.all, alors que useCreateCategory n'invalide que les catégories. La suppression rafraîchit donc aussi les produits.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 4,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/packs-0-10-bfb23b/frontend/src/hooks/useArchiveProduct.ts",
+     "file_ok": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.778,
+      "n": {
+       "identifiers": 3,
+       "values": 0,
+       "terms": 9
+      }
+     },
+     "job": "frontend-socle:rediscover:mytimeline_frontend_app_locale_app_products_productId_loading.test.tsx:1"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Vrai pour useDeleteCategory et useCreateCategory, mais certaines mutations n'invalident aucune clé queryKeys et d'autres ont un onError.",
+      "Les mutations de données (useDeleteCategory, useCreateCategory, useUpdateCategory...) suivent la règle. useExportFlow n'invalide rien mais ne modifie pas de données en cache : exception jugée trop faible pour restreindre.",
+      "Les mutations de cache (useDeleteCategory L32-38, useCreateCategory, useUpdateCategory) suivent le motif, mais les trois useMutation de useExportFlow (L66, L79, L123) n'invalident aucune clé queryKeys."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "scope",
+      "outcome": "counterexample",
+      "votes": 3,
+      "supporters": 2,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "useMutation dans frontend/src",
+         "found": "22 occurrences dans 12 hooks"
+        },
+        {
+         "tool": "Grep",
+         "target": "onSuccess|onError|useMutation dans useSettings, useSessionManager, useExportFlow, useArchiveProduct, useCreateEvent",
+         "found": "changePasswordMutation sans onSuccess, mutations d'export sans invalidation et avec onError"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "useMutation dans frontend/src",
+         "found": "useExportFlow a 3 useMutation sans invalidation, onError posant un état d'erreur"
+        },
+        {
+         "tool": "Read",
+         "target": "useExportFlow.ts L55-155",
+         "found": "onSuccess déclenche un téléchargement, pas d'invalidation"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "useMutation dans frontend/src",
+         "found": "Environ 20 usages, tous en forme objet, la plupart avec invalidateQueries par préfixe ; useExportFlow sans invalidation"
+        },
+        {
+         "tool": "Read",
+         "target": "frontend/src/hooks/useExportFlow.ts L62-132",
+         "found": "Mutations qui déclenchent un téléchargement et changent la phase, sans invalidateQueries"
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0,
+      "evidence": [
+       {
+        "file": "mytimeline:frontend/src/hooks/useExportFlow.ts",
+        "line_start": 66,
+        "line_end": 72,
+        "evidence": "const inlineMutation = useMutation({",
+        "evidence_check": "exact"
+       }
+      ],
+      "restated": "Les mutations qui modifient des données en cache (par exemple les catégories) s'écrivent avec useMutation en forme objet et invalident les clés queryKeys dans onSuccess. Les mutations d'export et de changement de mot de passe n'invalident rien."
+     }
+    }
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "counter_examples": [
+    {
+     "file": "mytimeline:frontend/src/hooks/useExportFlow.ts",
+     "line_start": 66,
+     "line_end": 72,
+     "evidence": "const inlineMutation = useMutation({",
+     "evidence_check": "exact"
+    }
+   ],
+   "restated": "Les mutations qui modifient des données en cache (par exemple les catégories) s'écrivent avec useMutation en forme objet et invalident les clés queryKeys dans onSuccess. Les mutations d'export et de changement de mot de passe n'invalident rien.",
+   "placed": {
     "pack_line": 33,
     "annex_table": null
    },
@@ -544,32 +677,32 @@
    "id": "frontend-socle:rules:5",
    "section": "rules",
    "rank": 5,
-   "text": "- Le pont d'erreurs se monte sous le fournisseur next-intl selon la javadoc, et son cleanup remet le registre à null. [#3d7ba2b79879606f-1] [#3d7ba2b79879606f-3]",
-   "fact_text": "Le pont d'erreurs se monte sous le fournisseur next-intl selon la javadoc, et son cleanup remet le registre à null",
+   "text": "- Seuls les statuts 403 et 500 se traitent en ligne, via des options `InlineErrorOptions` passées par l'appelant au service. [#81c4bd53a93413ba-1] [#90dcea2b3d20a21f-1]",
+   "fact_text": "Seuls les statuts 403 et 500 se traitent en ligne, via des options `InlineErrorOptions` passées par l'appelant au service",
    "consigne": null,
    "consigne_dropped": false,
    "cites": [
-    "frontend-socle/3d7ba2b79879606f-1",
-    "frontend-socle/3d7ba2b79879606f-3"
+    "frontend-socle/81c4bd53a93413ba-1",
+    "frontend-socle/90dcea2b3d20a21f-1"
    ],
    "files": [
-    "mytimeline:frontend/src/services/ApiErrorTranslatorBridge.tsx"
+    "mytimeline:frontend/src/services/inlineErrorHandling.ts"
    ],
    "ranges": [
     [
-     "mytimeline:frontend/src/services/ApiErrorTranslatorBridge.tsx",
-     12,
-     12,
-     "a5389536a2077ff937f1eaa9494336e8c1505bae80c234626433cbd49ed064a6"
+     "mytimeline:frontend/src/services/inlineErrorHandling.ts",
+     33,
+     33,
+     "6d7d8a9c2d7ac590abcbbbe38afa83971f7a4a5f0165d7191488d5b7901c165b"
     ],
     [
-     "mytimeline:frontend/src/services/ApiErrorTranslatorBridge.tsx",
-     26,
-     26,
-     "cb529d355251b607704f0fba4582d132625c218e02deada26a17813c4d7bed6b"
+     "mytimeline:frontend/src/services/inlineErrorHandling.ts",
+     53,
+     55,
+     "247e9a1806860efddd478e59671e054792bff018244b29374e7144fa604cd9b5"
     ]
    ],
-   "code_sha256": "e49861491ca35d1af993705c72c5c4c57b137c0d801233fe71df371cf0c70c26",
+   "code_sha256": "02d12617c89d619709d7f3c6ad609755de3c25fef74628ad3beafcd257013294",
    "verdict": "admit",
    "reason": "admitted",
    "final": true,
@@ -578,52 +711,46 @@
     "deduce": {
      "covered": false,
      "overlap": {
-      "identifiers": null,
-      "values": null,
-      "terms": 0.182,
+      "identifiers": 0.0,
+      "values": 1.0,
+      "terms": 0.286,
       "n": {
-       "identifiers": 0,
-       "values": 0,
-       "terms": 11
+       "identifiers": 1,
+       "values": 2,
+       "terms": 7
       }
      },
-     "restatement": "Le commentaire indique que ApiErrorTranslatorBridge doit être monté sous le NextIntlClientProvider de app/[locale]/layout.tsx. Au démontage, son effet appelle setApiErrorTranslator(null) via la fonction de nettoyage. L'appel d'enregistrement du traducteur n'est pas visible dans l'extrait.",
-     "confidence": "medium",
-     "files_read_missing": true
+     "restatement": "Le type `InlineHandledStatus` restreint les statuts gérables en ligne à `403 | 500`. La constante `HANDLES_FORBIDDEN_INLINE`, gelée avec `Object.freeze`, ne déclare que `inlineHandledStatuses: [403]`, donc seule l'erreur 403 est traitée en ligne par ce préréglage, pas le 500.",
+     "confidence": "high"
     },
     "rediscover": {
      "found": true,
-     "cost": 17,
+     "cost": 7,
      "within_budget": false,
      "covered": false,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/packs-0-10-bfb23b/frontend/src/services/ApiErrorTranslatorBridge.tsx",
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/packs-0-10-bfb23b/frontend/src/services/inlineErrorHandling.ts",
      "file_ok": true,
      "overlap": {
-      "identifiers": null,
-      "values": null,
-      "terms": 0.182,
+      "identifiers": 0.0,
+      "values": 1.0,
+      "terms": 1.0,
       "n": {
-       "identifiers": 0,
-       "values": 0,
-       "terms": 11
+       "identifiers": 1,
+       "values": 2,
+       "terms": 7
       }
      },
      "job": "frontend-socle:rediscover:mytimeline_frontend_app_locale_app_products_productId_loading.test.tsx:1"
     },
-    "comment": [
-     {
-      "id": "frontend-socle/3d7ba2b79879606f-1",
-      "verdict": "unverifiable"
-     }
-    ],
+    "comment": [],
     "refute": {
      "votes": 3,
      "refuted": 0,
      "refute_unproven": 0,
      "reasons": [
-      "La ligne cite la javadoc (L12, monté SOUS NextIntlClientProvider). Le cleanup de L26 est setApiErrorTranslator(null), ce qui correspond à la ligne.",
-      "Ligne « selon la javadoc » ; ApiErrorTranslatorBridge.tsx L12 le dit et L26 le cleanup fait setApiErrorTranslator(null).",
-      "ApiErrorTranslatorBridge.tsx L12 (javadoc) dit monté sous le NextIntlClientProvider. Le cleanup L26 fait setApiErrorTranslator(null)."
+      "InlineHandledStatus = 403 | 500 (inlineErrorHandling.ts L33), et HANDLES_FORBIDDEN_INLINE est une option InlineErrorOptions (L53-55).",
+      "InlineHandledStatus = 403 | 500 et HANDLES_FORBIDDEN_INLINE de type InlineErrorOptions confirment la ligne. Pas de contre-exemple trouvé dans le budget.",
+      "InlineHandledStatus = 403 | 500 (inlineErrorHandling.ts L33), HANDLES_FORBIDDEN_INLINE et HANDLES_SERVER_ERROR_INLINE sont des options InlineErrorOptions que les appelants passent aux services. Aucun autre statut n'est géré en ligne."
      ],
      "evidence": [
       "",
@@ -640,13 +767,25 @@
       "supporters": 0,
       "budget": 30,
       "searches": [
-       [],
-       [],
        [
         {
          "tool": "Read",
-         "target": "excerpt.txt",
-         "found": "Cleanup retourne setApiErrorTranslator(null)."
+         "target": "extrait inlineErrorHandling.ts L33 et L53-55",
+         "found": "type 403 | 500 et options figées passées par l'appelant"
+        }
+       ],
+       [
+        {
+         "tool": "Read",
+         "target": "extrait inlineErrorHandling.ts L33 et L53-55",
+         "found": "type 403 | 500 et options figées pour 403"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "InlineHandledStatus|inlineHandledStatuses dans frontend/src",
+         "found": "Type limité à 403 | 500, constantes figées, tests apiClient qui confirment que 401 et 503 gardent leur traitement"
         }
        ]
       ],
@@ -669,33 +808,357 @@
    "id": "frontend-socle:rules:6",
    "section": "rules",
    "rank": 6,
-   "text": "- Un hook de requête lit sa clé dans queryKeys et se désactive sans userId, et la mutation invalide le préfixe de clés de sa ressource. [#b485fe301f167807-2] [#434468f4e9a0a882-2]",
-   "fact_text": "Un hook de requête lit sa clé dans queryKeys et se désactive sans userId, et la mutation invalide le préfixe de clés de sa ressource",
+   "text": "- Une réponse de service est validée par `.parse` d'un schéma Zod avant d'être retournée. [#03037b579b39b673-1]",
+   "fact_text": "Une réponse de service est validée par `.parse` d'un schéma Zod avant d'être retournée",
    "consigne": null,
    "consigne_dropped": false,
    "cites": [
-    "frontend-socle/b485fe301f167807-2",
-    "frontend-socle/434468f4e9a0a882-2"
+    "frontend-socle/03037b579b39b673-1"
    ],
    "files": [
-    "mytimeline:frontend/src/hooks/useArchivedProducts.ts",
-    "mytimeline:frontend/src/hooks/useCreateCategory.ts"
+    "mytimeline:frontend/src/services/sessionService.ts"
    ],
    "ranges": [
     [
-     "mytimeline:frontend/src/hooks/useArchivedProducts.ts",
+     "mytimeline:frontend/src/services/sessionService.ts",
+     14,
      17,
-     17,
-     "b82f24af0b64b97e82e9e18726412bd7f4bed975955b549fbc6b6edfeb55bc18"
-    ],
-    [
-     "mytimeline:frontend/src/hooks/useCreateCategory.ts",
-     23,
-     28,
-     "5dc569ce5817d8b057a94f2266834fa32bac5b4c39567d81e17a908c9b25728a"
+     "2a5ec76fcd1b95e9bc7f705fac80368e7eb3a79aa33a4735fd7b67dbdd0c785a"
     ]
    ],
-   "code_sha256": "8886d9d8c77a10b614eed553ba2e4a058510abb5197bb37f10767115a2f7b071",
+   "code_sha256": "2a5ec76fcd1b95e9bc7f705fac80368e7eb3a79aa33a4735fd7b67dbdd0c785a",
+   "verdict": "admit",
+   "reason": "restricted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": null,
+      "values": 1.0,
+      "terms": 0.333,
+      "n": {
+       "identifiers": 0,
+       "values": 1,
+       "terms": 6
+      }
+     },
+     "restatement": "La fonction `getActiveSessions` envoie un GET sur `/sessions` via `apiClient`, puis valide `response.data` avec `SessionListSchema.parse`. Une réponse qui ne respecte pas le schéma lève une erreur Zod au lieu d'être passée telle quelle.",
+     "confidence": "high"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 13,
+     "within_budget": false,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/packs-0-10-bfb23b/frontend/src/services/categoryService.ts",
+     "file_ok": false,
+     "overlap": {
+      "identifiers": null,
+      "values": 1.0,
+      "terms": 0.667,
+      "n": {
+       "identifiers": 0,
+       "values": 1,
+       "terms": 6
+      }
+     },
+     "job": "frontend-socle:rediscover:mytimeline_frontend_app_locale_app_products_productId_loading.test.tsx:1"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 1,
+     "reasons": [
+      "eventService.ts: createEvent (l.53-54) et getEventsByProductId (l.63-64) retournent response.data sans .parse ; seule previewRecurrence valide.",
+      "Vrai pour getActiveSessions mais productService.ts (getProducts l.9, createProduct l.40) retourne response.data sans parse.",
+      "Le constat est vrai pour sessionService L14-17, mais productService retourne response.data sans parse (L9, L40, L67, L111), donc la généralité est fausse."
+     ],
+     "evidence": [
+      "return response.data",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "scope",
+      "outcome": "counterexample",
+      "votes": 3,
+      "supporters": 3,
+      "budget": 18,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "\\.parse\\(|safeParse\\( dans frontend/src/services",
+         "found": "8 fichiers, dont eventService avec 1 seul parse"
+        },
+        {
+         "tool": "Read",
+         "target": "frontend/src/services/eventService.ts",
+         "found": "createEvent et getEventsByProductId retournent response.data brut"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": ".parse( / .safeParse( dans frontend/src/services",
+         "found": "8 fichiers, productService absent"
+        },
+        {
+         "tool": "Read",
+         "target": "frontend/src/services/productService.ts",
+         "found": "getProducts retourne response.data sans parse"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "response.data dans services/*Service.ts",
+         "found": "Plusieurs services parsent, mais productService, authService (L11, L52, L61) et eventService (L54, L64) retournent response.data brut."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0,
+      "evidence": [
+       {
+        "file": "mytimeline:frontend/src/services/eventService.ts",
+        "line_start": 61,
+        "line_end": 65,
+        "evidence": "const response = await apiClient.get(`/users/${userId}/products/${productId}/events`) return response.data",
+        "evidence_check": "exact"
+       }
+      ],
+      "restated": "Certaines réponses de service (sessions, aperçu de récurrence) sont validées par .parse d'un schéma Zod, mais d'autres services retournent response.data sans validation."
+     }
+    }
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "counter_examples": [
+    {
+     "file": "mytimeline:frontend/src/services/eventService.ts",
+     "line_start": 61,
+     "line_end": 65,
+     "evidence": "const response = await apiClient.get(`/users/${userId}/products/${productId}/events`) return response.data",
+     "evidence_check": "exact"
+    }
+   ],
+   "restated": "Certaines réponses de service (sessions, aperçu de récurrence) sont validées par .parse d'un schéma Zod, mais d'autres services retournent response.data sans validation.",
+   "placed": {
+    "pack_line": 35,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "frontend-socle:rules:7",
+   "section": "rules",
+   "rank": 7,
+   "text": "- Les schémas sont nommés `XxxSchema`, les valeurs fermées sont en `as const` puis `z.enum`, et le type vient de `z.infer`. [#49092e99d4e57a9f-1] [#0a33c3d6ce264b3c-1] [#9f87d5dc2b08a194-1]",
+   "fact_text": "Les schémas sont nommés `XxxSchema`, les valeurs fermées sont en `as const` puis `z.enum`, et le type vient de `z.infer`",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-socle/49092e99d4e57a9f-1",
+    "frontend-socle/0a33c3d6ce264b3c-1",
+    "frontend-socle/9f87d5dc2b08a194-1"
+   ],
+   "files": [
+    "mytimeline:frontend/src/types/settings.ts",
+    "mytimeline:frontend/src/lib/schemas/export.ts"
+   ],
+   "ranges": [
+    [
+     "mytimeline:frontend/src/types/settings.ts",
+     21,
+     30,
+     "d879ef8d02df65365a949592d734e04e1aba4812a2eb9133996e0ba42eff907c"
+    ],
+    [
+     "mytimeline:frontend/src/lib/schemas/export.ts",
+     21,
+     22,
+     "5e61f94693efa2efa75a302bcfdaa6fb3a2ddf89a1616d0415a6b1611f4e917d"
+    ],
+    [
+     "mytimeline:frontend/src/types/settings.ts",
+     43,
+     43,
+     "24e43e1b73eeb64e95eb87db2feece88891e60178af245689d8820f415f1a5df"
+    ]
+   ],
+   "code_sha256": "32442932ece1271a1b0c00f4bd864f8e9869910f26adc5503df6a23df795ace6",
+   "verdict": "drop",
+   "reason": "counterexample",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.333,
+      "values": 0.0,
+      "terms": 0.286,
+      "n": {
+       "identifiers": 3,
+       "values": 1,
+       "terms": 7
+      }
+     },
+     "restatement": "Le schéma Zod `SessionSchema` définit une session avec `id` au format guid, `deviceInfo` et `ipAddress` nullables, `lastActivity` et `createdAt` en chaînes, et `current` booléen, et le type `Session` en est inféré. L'extrait contient aussi `exportFormatSchema`, un `z.enum` sur `EXPORT_FORMATS` (JSON, MARKDOWN, ZIP, CSV), et `THEME_OPTIONS` (light, dark, system), mais la session est la règle principale.",
+     "confidence": "high"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 6,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/packs-0-10-bfb23b/frontend/src/types/event.ts",
+     "file_ok": false,
+     "overlap": {
+      "identifiers": 0.667,
+      "values": 1.0,
+      "terms": 0.714,
+      "n": {
+       "identifiers": 3,
+       "values": 1,
+       "terms": 7
+      }
+     },
+     "job": "frontend-socle:rediscover:mytimeline_frontend_src_types_settings.ts:2"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 1,
+     "reasons": [
+      "types/event.ts l.14 et l.91 utilisent z.enum avec littéraux inline sans as const, et recurrenceUnitEnum n'est pas nommé XxxSchema.",
+      "Plusieurs schémas sont nommés en minuscule (productSchema, eventSchema, exportFormatSchema) et des z.enum sont inline sans as const (recurrenceUnitEnum, exportJobStatusSchema).",
+      "Le motif tient pour export.ts, mais event.ts définit des z.enum inline sans as const (L14, L17, L91) et categorySchema est en minuscule initiale, donc la règle n'est pas générale."
+     ],
+     "evidence": [
+      "export const recurrenceUnitEnum = z.enum(['WEEK', 'MONTH', 'YEAR'])",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "scope",
+      "outcome": "counterexample",
+      "votes": 3,
+      "supporters": 3,
+      "budget": 18,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "z\\.enum\\( dans frontend/src",
+         "found": "plusieurs z.enum avec littéraux inline dans types/event.ts, nommage Enum et exportJobStatusSchema inline"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "z.enum([ / export const xxxSchema dans frontend/src",
+         "found": "noms en lowerCamel et z.enum avec tableau littéral inline"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "z.enum([ et z.object( dans frontend/src hors tests",
+         "found": "recurrenceUnitEnum, durationUnitEnum avec tableau littéral inline, schémas nommés categorySchema, productSchema, eventSchema en camelCase."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0,
+      "evidence": [
+       {
+        "file": "mytimeline:frontend/src/types/event.ts",
+        "line_start": 14,
+        "line_end": 14,
+        "evidence": "export const recurrenceUnitEnum = z.enum(['WEEK', 'MONTH', 'YEAR'])",
+        "evidence_check": "exact"
+       }
+      ],
+      "restated_rejected": [
+       "éléments absents de l'original : SessionSchema",
+       "éléments absents de l'original : lowerCamel, productSchema, exportFormatSchema",
+       "éléments absents de l'original : export.ts, settings.ts"
+      ]
+     }
+    }
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "counter_examples": [
+    {
+     "file": "mytimeline:frontend/src/types/event.ts",
+     "line_start": 14,
+     "line_end": 14,
+     "evidence": "export const recurrenceUnitEnum = z.enum(['WEEK', 'MONTH', 'YEAR'])",
+     "evidence_check": "exact"
+    }
+   ],
+   "placed": {
+    "pack_line": null,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "frontend-socle:rules:8",
+   "section": "rules",
+   "rank": 8,
+   "text": "- Un hook qui lit le navigateur est SSR-safe : valeur par défaut au rendu serveur, valeur persistée lue seulement après `useHydrated()`. [#23d1084a3d27aa15-1] [#c5d8ae93173501ee-1] [#22280d8552c204d5-1]",
+   "fact_text": "Un hook qui lit le navigateur est SSR-safe : valeur par défaut au rendu serveur, valeur persistée lue seulement après `useHydrated()`",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-socle/23d1084a3d27aa15-1",
+    "frontend-socle/c5d8ae93173501ee-1",
+    "frontend-socle/22280d8552c204d5-1"
+   ],
+   "files": [
+    "mytimeline:frontend/src/hooks/useDensity.ts",
+    "mytimeline:frontend/src/hooks/useHydrated.ts",
+    "mytimeline:frontend/src/hooks/useMediaQuery.ts"
+   ],
+   "ranges": [
+    [
+     "mytimeline:frontend/src/hooks/useDensity.ts",
+     38,
+     38,
+     "12286842cadaf3b8d765322fd3e18406862c159192730963d1c72b012bba1f13"
+    ],
+    [
+     "mytimeline:frontend/src/hooks/useHydrated.ts",
+     13,
+     15,
+     "6c100430f11084fe79d15ce2fe891c70721d61275aab514c5beda935fcf47163"
+    ],
+    [
+     "mytimeline:frontend/src/hooks/useMediaQuery.ts",
+     38,
+     38,
+     "61cc603c7882bec8267b591df3d77caac0fa77ee842e1edd7bb47f96753ba828"
+    ]
+   ],
+   "code_sha256": "4144f89e945c183d077510ad803f22482bb9ea7acc42cedc3538dcb997431127",
    "verdict": "admit",
    "reason": "admitted",
    "final": true,
@@ -705,32 +1168,32 @@
      "covered": false,
      "overlap": {
       "identifiers": 1.0,
-      "values": null,
-      "terms": 0.25,
+      "values": 0.0,
+      "terms": 0.0,
       "n": {
        "identifiers": 2,
-       "values": 0,
+       "values": 1,
        "terms": 8
       }
      },
-     "restatement": "useArchivedProducts utilise la queryKey queryKeys.products.archived(userId ?? ''), donc sans userId la clé reçoit une chaîne vide. useCreateCategory est une mutation dont onSuccess invalide queryKeys.categories.all.",
+     "restatement": "useDensity lit son état d'hydratation via useHydrated, qui encapsule useSyncExternalStore avec subscribeNever, clientSnapshot et serverSnapshot. useMediaQuery utilise aussi useSyncExternalStore avec subscribe, getSnapshot et serverSnapshot, ce qui évite les écarts d'hydratation SSR.",
      "confidence": "high",
      "files_read_missing": true
     },
     "rediscover": {
      "found": true,
-     "cost": 13,
+     "cost": 9,
      "within_budget": false,
      "covered": true,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/packs-0-10-bfb23b/frontend/src/hooks/useArchivedProducts.ts",
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/packs-0-10-bfb23b/frontend/src/hooks/useHydrated.ts",
      "file_ok": true,
      "overlap": {
       "identifiers": 1.0,
-      "values": null,
+      "values": 1.0,
       "terms": 0.5,
       "n": {
        "identifiers": 2,
-       "values": 0,
+       "values": 1,
        "terms": 8
       }
      },
@@ -741,125 +1204,11 @@
     "refute": {
      "votes": 3,
      "refuted": 0,
-     "refute_unproven": 1,
-     "reasons": [
-      "Tous les hooks de requête ne se désactivent pas sans userId : useCurrentUser utilise enabled: !loading et useCategories n'a aucun enabled.",
-      "useArchivedProducts et useProductsWithEvents utilisent enabled: Boolean(userId), mais useCurrentUser s'active sur !loading sans userId.",
-      "Des hooks de requête s'activent sur d'autres conditions que userId (useCurrentUser enabled: !loading, useExportFlow sur jobId et phase)."
-     ],
-     "evidence": [
-      "enabled: !loading,",
-      "",
-      ""
-     ],
-     "consigne_verdict": "n/a",
-     "question_verdict": "n/a",
-     "searched": true,
-     "search": {
-      "check": "scope",
-      "outcome": null,
-      "votes": 3,
-      "supporters": 0,
-      "budget": 30,
-      "searches": [
-       [
-        {
-         "tool": "Grep",
-         "target": "useQuery|enabled: dans src/hooks",
-         "found": "useArchivedProducts et useProductsWithEvents enabled: Boolean(userId) ; useCurrentUser enabled: !loading ; useCategories sans enabled."
-        }
-       ],
-       [
-        {
-         "tool": "Grep",
-         "target": "enabled: in hooks",
-         "found": "enabled Boolean(userId) dans deux hooks, !loading dans useCurrentUser, jobId dans useExportFlow"
-        },
-        {
-         "tool": "Read",
-         "target": "hooks/useCurrentUser.ts",
-         "found": "queryKey queryKeys.auth.me, enabled: !loading"
-        }
-       ],
-       [
-        {
-         "tool": "Grep",
-         "target": "enabled: dans src/hooks",
-         "found": "useArchivedProducts et useProductsWithEvents sur userId, mais useCurrentUser sur !loading et useExportFlow sur jobId."
-        }
-       ]
-      ],
-      "untraced": 0,
-      "over_budget": 0,
-      "unproven": 3
-     }
-    }
-   },
-   "contrary": null,
-   "check": "scope",
-   "general": "pattern_pack",
-   "placed": {
-    "pack_line": 36,
-    "annex_table": null
-   },
-   "uses": 0
-  },
-  {
-   "id": "frontend-socle:rules:7",
-   "section": "rules",
-   "rank": 7,
-   "text": "- Selon la javadoc, TanStack Query v5 s'écrit en forme objet avec gcTime, et l'erreur d'une mutation remonte au composant. [#e688fe2a35b9cc5c-1] [#434468f4e9a0a882-1]",
-   "fact_text": "Selon la javadoc, TanStack Query v5 s'écrit en forme objet avec gcTime, et l'erreur d'une mutation remonte au composant",
-   "consigne": null,
-   "consigne_dropped": false,
-   "cites": [
-    "frontend-socle/e688fe2a35b9cc5c-1",
-    "frontend-socle/434468f4e9a0a882-1"
-   ],
-   "files": [
-    "mytimeline:frontend/src/hooks/useCategories.ts",
-    "mytimeline:frontend/src/hooks/useCreateCategory.ts"
-   ],
-   "ranges": [
-    [
-     "mytimeline:frontend/src/hooks/useCategories.ts",
-     14,
-     14,
-     "1b6ef14045f26bbd330b9f2c88c0cc22c72e81554b1bf3a1584a45b376c85b44"
-    ],
-    [
-     "mytimeline:frontend/src/hooks/useCreateCategory.ts",
-     16,
-     17,
-     "335c2518728205808722c5ef0aa038ef2baac767e422f4b72b9be8656e965137"
-    ]
-   ],
-   "code_sha256": "4d8763aa8ba986c35eb086ecf41f34fc043a87695682cffb7d713620702b0fa5",
-   "verdict": "admit",
-   "reason": "admitted",
-   "final": true,
-   "measures": {
-    "fidelity": null,
-    "deduce": null,
-    "rediscover": null,
-    "comment": [
-     {
-      "id": "frontend-socle/e688fe2a35b9cc5c-1",
-      "verdict": "unverifiable"
-     },
-     {
-      "id": "frontend-socle/434468f4e9a0a882-1",
-      "verdict": "confirmed"
-     }
-    ],
-    "refute": {
-     "votes": 3,
-     "refuted": 0,
      "refute_unproven": 0,
      "reasons": [
-      "La ligne est attribuée à la javadoc, qui dit bien forme objet v5, gcTime et erreur non avalée (useCategories L14, useCreateCategory L16-17).",
-      "Ligne attribuée à la javadoc : useCategories L14 mentionne gcTime et useCreateCategory L16-17 dit que l'erreur n'est pas avalée.",
-      "La ligne dit « selon la javadoc » et les commentaires de useCategories (L14) et useCreateCategory (L16-17) l'affirment bien."
+      "useDensity utilise useHydrated (L38). useMediaQuery est SSR-safe par un serverSnapshot et ne lit pas de valeur persistée, donc ce n'est pas un contre-exemple net.",
+      "useDensity utilise useHydrated. useMediaQuery et useThemeChoice utilisent useSyncExternalStore avec un snapshot serveur, équivalent SSR-safe : pas de contradiction nette.",
+      "useDensity utilise useHydrated (L38) et useMediaQuery passe par useSyncExternalStore avec un serverSnapshot (L38). Aucun contre-exemple clair sur une valeur persistée lue sans useHydrated."
      ],
      "evidence": [
       "",
@@ -878,19 +1227,30 @@
       "searches": [
        [
         {
-         "tool": "Read",
-         "target": "excerpt unité rules:7",
-         "found": "Javadocs confirment gcTime et erreur axios remontée au composant."
+         "tool": "Grep",
+         "target": "localStorage|sessionStorage|window. dans frontend/src/hooks",
+         "found": "useDensity lit localStorage après hydratation. useMediaQuery protège window par typeof et un serverSnapshot. useThemeChoice lit localStorage, sans vérification faite de son usage de useHydrated"
         }
        ],
        [
         {
-         "tool": "Read",
-         "target": "excerpt useCategories / useCreateCategory javadoc",
-         "found": "Javadoc confirme forme objet v5 gcTime et erreur remontée"
+         "tool": "Grep",
+         "target": "useHydrated|window.|localStorage dans useThemeChoice.ts et useMobileKeyboard.ts",
+         "found": "useThemeChoice a son propre mounted via useSyncExternalStore, useMobileKeyboard lit window dans un effet"
         }
        ],
-       []
+       [
+        {
+         "tool": "Grep",
+         "target": "useHydrated|useSyncExternalStore|localStorage|window\\. dans frontend/src/hooks",
+         "found": "6 fichiers ; useThemeChoice et useMobileKeyboard examinés, aucun ne lit une valeur persistée sans garde d'hydratation"
+        },
+        {
+         "tool": "Grep",
+         "target": "useThemeChoice.ts : useHydrated|localStorage",
+         "found": "Commentaire sur l'instantané client (useHydrated) et lecture de localStorage L103 à l'intérieur de ce cadre"
+        }
+       ]
       ],
       "untraced": 0,
       "over_budget": 0,
@@ -908,206 +1268,46 @@
    "uses": 0
   },
   {
-   "id": "frontend-socle:rules:8",
-   "section": "rules",
-   "rank": 8,
-   "text": "- Une réponse de service est validée par parse d'un schéma Zod, et le type vient de z.infer. [#03037b579b39b673-1] [#b0cbae33933771ad-1]",
-   "fact_text": "Une réponse de service est validée par parse d'un schéma Zod, et le type vient de z.infer",
-   "consigne": null,
-   "consigne_dropped": false,
-   "cites": [
-    "frontend-socle/03037b579b39b673-1",
-    "frontend-socle/b0cbae33933771ad-1"
-   ],
-   "files": [
-    "mytimeline:frontend/src/services/sessionService.ts",
-    "mytimeline:frontend/src/types/user.ts"
-   ],
-   "ranges": [
-    [
-     "mytimeline:frontend/src/services/sessionService.ts",
-     16,
-     16,
-     "f2887728086393e8327338b1387f050540e5d0f06597c39ac21cb4085aa373e6"
-    ],
-    [
-     "mytimeline:frontend/src/types/user.ts",
-     20,
-     20,
-     "a9b7c879e499a1a7de1c649e505caa803d0df6303b8176f5bb0760538e41f65e"
-    ]
-   ],
-   "code_sha256": "34b23ffa13fefdbb872b4dd208d9379876d4fd687438536f1d8a3e2054206d2c",
-   "verdict": "drop",
-   "reason": "counterexample",
-   "final": true,
-   "measures": {
-    "fidelity": null,
-    "deduce": {
-     "covered": false,
-     "overlap": {
-      "identifiers": 1.0,
-      "values": null,
-      "terms": 0.429,
-      "n": {
-       "identifiers": 1,
-       "values": 0,
-       "terms": 7
-      }
-     },
-     "restatement": "getActiveSessions renvoie SessionListSchema.parse(response.data), donc la réponse est validée par Zod et une donnée non conforme lève une erreur au lieu d'être typée sans contrôle. Le type User est inféré de UserSchema via z.infer.",
-     "confidence": "high",
-     "files_read_missing": true
-    },
-    "rediscover": {
-     "found": true,
-     "cost": 21,
-     "within_budget": false,
-     "covered": true,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/packs-0-10-bfb23b/frontend/src/types/user.ts",
-     "file_ok": true,
-     "overlap": {
-      "identifiers": 1.0,
-      "values": null,
-      "terms": 0.571,
-      "n": {
-       "identifiers": 1,
-       "values": 0,
-       "terms": 7
-      }
-     },
-     "job": "frontend-socle:rediscover:mytimeline_frontend_app_locale_app_products_productId_loading.test.tsx:1",
-     "rank_in_lot": 3
-    },
-    "comment": [],
-    "refute": {
-     "votes": 3,
-     "refuted": 0,
-     "refute_unproven": 0,
-     "reasons": [
-      "sessionService.ts L16 fait SessionListSchema.parse et user.ts L20 définit User = z.infer. Cependant la règle est trop générale : productService.getProducts renvoie response.data sans parse, avec un type écrit à la main. Réfutation écartée car au doute on garde, mais la portée est à restreindre.",
-      "sessionService L16 fait SessionListSchema.parse et user.ts L20 utilise z.infer ; aucun service ne retourne response.data sans parse, sauf les Blob d'export (binaires, hors JSON).",
-      "sessionService.ts L16 fait SessionListSchema.parse(response.data) et user.ts L20 définit User via z.infer. Le Grep montre des parse dans plusieurs services. La ligne reste un motif, sans contre-exemple lu."
-     ],
-     "evidence": [
-      "",
-      "",
-      ""
-     ],
-     "consigne_verdict": "n/a",
-     "question_verdict": "n/a",
-     "searched": true,
-     "search": {
-      "check": "scope",
-      "outcome": "counterexample",
-      "votes": 3,
-      "supporters": 1,
-      "budget": 30,
-      "searches": [
-       [
-        {
-         "tool": "Grep",
-         "target": ".parse(|z.infer dans frontend/src/services",
-         "found": "16 occurrences dans 8 fichiers seulement (authService, categoryService, eventService, exportService, sessionService, userService)."
-        },
-        {
-         "tool": "Read",
-         "target": "frontend/src/services/productService.ts L1-20",
-         "found": "getProducts retourne response.data sans validation Zod, type importé de @/types/product."
-        }
-       ],
-       [
-        {
-         "tool": "Grep",
-         "target": "response.data as X / return response.data dans services",
-         "found": "seulement exportService L58 et L107 qui castent un Blob"
-        }
-       ],
-       [
-        {
-         "tool": "Grep",
-         "target": ".parse(|z.infer|safeParse dans frontend/src/services",
-         "found": "Occurrences dans userService, sessionService, exportService, eventService, categoryService et authService."
-        }
-       ]
-      ],
-      "untraced": 0,
-      "over_budget": 0,
-      "unproven": 0,
-      "evidence": [
-       {
-        "file": "mytimeline:frontend/src/services/productService.ts",
-        "line_start": 6,
-        "line_end": 9,
-        "evidence": "const response = await apiClient.get(`/users/${userId}/products`)",
-        "evidence_check": "exact"
-       }
-      ],
-      "restated_rejected": [
-       "éléments absents de l'original : response.data"
-      ]
-     }
-    }
-   },
-   "contrary": null,
-   "check": "scope",
-   "general": "pattern_pack",
-   "counter_examples": [
-    {
-     "file": "mytimeline:frontend/src/services/productService.ts",
-     "line_start": 6,
-     "line_end": 9,
-     "evidence": "const response = await apiClient.get(`/users/${userId}/products`)",
-     "evidence_check": "exact"
-    }
-   ],
-   "placed": {
-    "pack_line": null,
-    "annex_table": null
-   },
-   "uses": 0
-  },
-  {
    "id": "frontend-socle:rules:9",
    "section": "rules",
    "rank": 9,
-   "text": "- Une page de route est async et attend params, la racine redirige vers fr et la route legacy utilise une redirection permanente. [#2325b843f28a7d18-2] [#43b4bb8adb5cf7f6-1] [#cba7431c31861d84-1]",
-   "fact_text": "Une page de route est async et attend params, la racine redirige vers fr et la route legacy utilise une redirection permanente",
+   "text": "- Les redirections portent le préfixe de locale, avec `fr` comme locale par défaut codée en dur. [#57451dc7f855c0e1-1] [#43b4bb8adb5cf7f6-1] [#af18ef06baf5402d-2]",
+   "fact_text": "Les redirections portent le préfixe de locale, avec `fr` comme locale par défaut codée en dur",
    "consigne": null,
    "consigne_dropped": false,
    "cites": [
-    "frontend-socle/2325b843f28a7d18-2",
+    "frontend-socle/57451dc7f855c0e1-1",
     "frontend-socle/43b4bb8adb5cf7f6-1",
-    "frontend-socle/cba7431c31861d84-1"
+    "frontend-socle/af18ef06baf5402d-2"
    ],
    "files": [
-    "mytimeline:frontend/app/[locale]/page.tsx",
+    "mytimeline:frontend/src/hooks/useAuthGuard.ts",
     "mytimeline:frontend/app/page.tsx",
-    "mytimeline:frontend/app/[locale]/home/page.tsx"
+    "mytimeline:frontend/src/components/pages/HomePage.tsx"
    ],
    "ranges": [
     [
-     "mytimeline:frontend/app/[locale]/page.tsx",
-     15,
-     19,
-     "14036851c04eea81c51ed82d2f459b2874c6d1771e26db34bf1b4eab6bf580a8"
+     "mytimeline:frontend/src/hooks/useAuthGuard.ts",
+     31,
+     31,
+     "ae1c6301ac4c2e3fe0e26ce719fdf87e176470321759f1120a6e5942300cc138"
     ],
     [
      "mytimeline:frontend/app/page.tsx",
+     1,
      7,
-     7,
-     "f6288a63fd451f3b946934351b52f5a4891d373d6b120feff15eaf22d345a98b"
+     "d3286122ac77db7c251e644c9a2ad0f4c221edfc0ad58d3b0727a0ad454eb5f2"
     ],
     [
-     "mytimeline:frontend/app/[locale]/home/page.tsx",
-     14,
-     17,
-     "127a33d4a41f285e1a6315f2fce771797e09e71677014e1a576879527ff1cb12"
+     "mytimeline:frontend/src/components/pages/HomePage.tsx",
+     47,
+     47,
+     "a60d5c6b8b27b923c53a20080a3510b8b6db3cc55fd2e0c73a8a3768111085c4"
     ]
    ],
-   "code_sha256": "3886103ea2a5470cebf70e244b4c0962f5293b2d9de15514d59de815fb7f234a",
-   "verdict": "drop",
-   "reason": "counterexample",
+   "code_sha256": "0a3328f855628ea6715eb5655aa9b7b04120c8104fa4518dc266e7fdd40e65c0",
+   "verdict": "admit",
+   "reason": "rediscovered",
    "final": true,
    "measures": {
     "fidelity": null,
@@ -1115,118 +1315,47 @@
      "covered": false,
      "overlap": {
       "identifiers": null,
-      "values": null,
-      "terms": 0.455,
+      "values": 1.0,
+      "terms": 0.333,
       "n": {
        "identifiers": 0,
-       "values": 0,
-       "terms": 11
+       "values": 1,
+       "terms": 6
       }
      },
-     "restatement": "La page localisée Page attend params (Promise) puis rend HomePage avec le locale. Les blocs voisins montrent que la racine app/page.tsx redirige vers /fr (RootPage) et que app/[locale]/home/page.tsx fait un permanentRedirect vers /${locale} (Home).",
-     "confidence": "high",
+     "restatement": "useAuthGuard redirige vers `/${locale}/login` via router.push, donc la redirection d'authentification garde la locale courante. La page racine RootPage redirige sans saut supplémentaire vers `/fr`, route canonique de la landing (ADR-006). La condition déclenchant la redirection du guard n'apparaît pas dans l'extrait.",
+     "confidence": "medium",
      "files_read_missing": true
     },
     "rediscover": {
      "found": true,
-     "cost": 20,
-     "within_budget": false,
+     "cost": 12,
+     "within_budget": true,
      "covered": true,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/packs-0-10-bfb23b/frontend/app/[locale]/home/page.tsx",
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/packs-0-10-bfb23b/frontend/app/page.tsx",
      "file_ok": true,
      "overlap": {
       "identifiers": null,
-      "values": null,
-      "terms": 0.636,
+      "values": 1.0,
+      "terms": 0.5,
       "n": {
        "identifiers": 0,
-       "values": 0,
-       "terms": 11
+       "values": 1,
+       "terms": 6
       }
      },
      "job": "frontend-socle:rediscover:mytimeline_frontend_app_locale_app_products_productId_loading.test.tsx:1",
      "rank_in_lot": 2
     },
     "comment": [],
-    "refute": {
-     "votes": 3,
-     "refuted": 1,
-     "refute_unproven": 0,
-     "reasons": [
-      "La règle généralise : plusieurs pages de route ne sont pas async (RootPage dans frontend/app/page.tsx L6, Dashboard, LoginPage).",
-      "Page async avec await params (page.tsx L15-16), RootPage redirect('/fr'), home/page.tsx utilise permanentRedirect ; les autres pages async confirment.",
-      "Pas de réfutation de la ligne elle-même, mais la généralité est fausse : des pages de route ne sont pas async (login, register, dashboard)."
-     ],
-     "evidence": [
-      "export default function RootPage() {",
-      "",
-      ""
-     ],
-     "consigne_verdict": "n/a",
-     "question_verdict": "n/a",
-     "searched": true,
-     "search": {
-      "check": "scope",
-      "outcome": "counterexample",
-      "votes": 3,
-      "supporters": 2,
-      "budget": 30,
-      "searches": [
-       [
-        {
-         "tool": "Grep",
-         "target": "export default (async )?function|redirect\\( dans app/**/page.tsx",
-         "found": "Plusieurs pages non async (login, register, dashboard, settings, RootPage) ; async seulement pour locale, home, terms, privacy."
-        }
-       ],
-       [
-        {
-         "tool": "Grep",
-         "target": "permanentRedirect|redirect\\(|export default async function in app/**/page.tsx",
-         "found": "Toutes les pages sont async avec params Promise, racine redirect('/fr'), home permanentRedirect"
-        }
-       ],
-       [
-        {
-         "tool": "Grep",
-         "target": "export default (async )?function dans frontend/app/**/page.tsx",
-         "found": "Plusieurs pages sans async : register, login, reset-password, forgot-password, dashboard, settings, timeline, products, RootPage."
-        }
-       ]
-      ],
-      "untraced": 0,
-      "over_budget": 0,
-      "unproven": 0,
-      "evidence": [
-       {
-        "file": "mytimeline:frontend/app/[locale]/login/page.tsx",
-        "line_start": 27,
-        "line_end": 27,
-        "evidence": "export default function LoginPage({ params }: { params: Promise<{ locale: string }> }) {",
-        "evidence_check": "exact"
-       }
-      ],
-      "restated_rejected": [
-       "éléments absents de l'original : permanentRedirect",
-       "éléments absents de l'original : permanentRedirect"
-      ]
-     }
-    }
+    "refute": null
    },
    "contrary": null,
    "check": "scope",
    "general": "pattern_pack",
-   "counter_examples": [
-    {
-     "file": "mytimeline:frontend/app/[locale]/login/page.tsx",
-     "line_start": 27,
-     "line_end": 27,
-     "evidence": "export default function LoginPage({ params }: { params: Promise<{ locale: string }> }) {",
-     "evidence_check": "exact"
-    }
-   ],
+   "kept_for": "rediscovered",
    "placed": {
-    "pack_line": null,
+    "pack_line": 38,
     "annex_table": null
    },
    "uses": 0
@@ -1235,20 +1364,26 @@
    "id": "frontend-socle:rules:10",
    "section": "rules",
    "rank": 10,
-   "text": "- Un composant UI est un forwardRef avec displayName, et fusionne className par cn après les classes de base. [#9ada093f42c5012f-1] [#60c29c7e21afaf68-1] [#602974f8c6e4d014-2]",
-   "fact_text": "Un composant UI est un forwardRef avec displayName, et fusionne className par cn après les classes de base",
+   "text": "- Les classes se fusionnent avec `cn` (clsx puis twMerge), et les composants UI sont des `forwardRef` avec `displayName`. [#7088e14a0226bdfe-1] [#9ada093f42c5012f-1] [#60c29c7e21afaf68-1]",
+   "fact_text": "Les classes se fusionnent avec `cn` (clsx puis twMerge), et les composants UI sont des `forwardRef` avec `displayName`",
    "consigne": null,
    "consigne_dropped": false,
    "cites": [
+    "frontend-socle/7088e14a0226bdfe-1",
     "frontend-socle/9ada093f42c5012f-1",
-    "frontend-socle/60c29c7e21afaf68-1",
-    "frontend-socle/602974f8c6e4d014-2"
+    "frontend-socle/60c29c7e21afaf68-1"
    ],
    "files": [
-    "mytimeline:frontend/src/components/ui/avatar.tsx",
-    "mytimeline:frontend/src/components/ui/table.tsx"
+    "mytimeline:frontend/src/lib/utils.ts",
+    "mytimeline:frontend/src/components/ui/avatar.tsx"
    ],
    "ranges": [
+    [
+     "mytimeline:frontend/src/lib/utils.ts",
+     4,
+     6,
+     "a7a45facf3002d6c38922ba4e8b3f8ab7d72b1ea1da89ccf52c19c2d86984c76"
+    ],
     [
      "mytimeline:frontend/src/components/ui/avatar.tsx",
      17,
@@ -1260,311 +1395,9 @@
      41,
      41,
      "bea2c25b0222f8fcd75e7b2462eef99b77b6510592e82b33ab3931d22819a36d"
-    ],
-    [
-     "mytimeline:frontend/src/components/ui/table.tsx",
-     11,
-     13,
-     "99b949bddd41cf6816786ce562283e85ad3dbceacbdf1b6a8578f0fc94146064"
     ]
    ],
-   "code_sha256": "6bd6dce65ca659a57817f49f04ce0bb914a939097378d4744c1cd913b4244e2c",
-   "verdict": "admit",
-   "reason": "restricted",
-   "final": true,
-   "measures": {
-    "fidelity": null,
-    "deduce": {
-     "covered": false,
-     "overlap": {
-      "identifiers": 1.0,
-      "values": null,
-      "terms": 0.25,
-      "n": {
-       "identifiers": 3,
-       "values": 0,
-       "terms": 4
-      }
-     },
-     "restatement": "Avatar est un composant React.forwardRef vers HTMLSpanElement avec displayName fixé à 'Avatar'. Table est un forwardRef vers HTMLTableElement qui applique cn('mt-table', className) puis transmet le reste des props à la balise table.",
-     "confidence": "high",
-     "files_read_missing": true
-    },
-    "rediscover": {
-     "found": true,
-     "cost": 19,
-     "within_budget": false,
-     "covered": true,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/packs-0-10-bfb23b/frontend/src/components/ui/card.tsx",
-     "file_ok": false,
-     "overlap": {
-      "identifiers": 0.667,
-      "values": null,
-      "terms": 1.0,
-      "n": {
-       "identifiers": 3,
-       "values": 0,
-       "terms": 4
-      }
-     },
-     "job": "frontend-socle:rediscover:mytimeline_frontend_app_locale_app_products_productId_loading.test.tsx:1"
-    },
-    "comment": [],
-    "refute": {
-     "votes": 3,
-     "refuted": 0,
-     "refute_unproven": 0,
-     "reasons": [
-      "Tous les composants vérifiés utilisent forwardRef/displayName (21 fichiers) et Table fusionne cn('mt-table', className) ; aucun contre-exemple trouvé.",
-      "Tooltip n'est pas un forwardRef (displayName seul), mais la ligne décrit le motif dominant ; contre-exemple relevé sans réfuter.",
-      "Plusieurs composants de ui ne sont pas des forwardRef (DialogHeader, DialogFooter, Tooltip, AppFooter), la règle est trop générale."
-     ],
-     "evidence": [
-      "",
-      "",
-      ""
-     ],
-     "consigne_verdict": "n/a",
-     "question_verdict": "n/a",
-     "searched": true,
-     "search": {
-      "check": "scope",
-      "outcome": "counterexample",
-      "votes": 3,
-      "supporters": 2,
-      "budget": 30,
-      "searches": [
-       [
-        {
-         "tool": "Grep",
-         "target": "forwardRef|displayName dans components/ui",
-         "found": "Présents dans les 21 fichiers, y compris tooltip avec displayName."
-        }
-       ],
-       [
-        {
-         "tool": "Grep",
-         "target": "forwardRef|displayName in components/ui",
-         "found": "21 fichiers, tooltip.tsx n'a qu'une occurrence"
-        },
-        {
-         "tool": "Read",
-         "target": "components/ui/tooltip.tsx",
-         "found": "Composant fléché sans forwardRef, displayName défini, cn('mt-tooltip', className)"
-        }
-       ],
-       [
-        {
-         "tool": "Grep",
-         "target": "forwardRef dans components/ui",
-         "found": "20 fichiers sur 53 en contiennent."
-        },
-        {
-         "tool": "Grep",
-         "target": "displayName et composants fonctionnels simples dans components/ui",
-         "found": "DialogHeader, DialogFooter et Tooltip sont des fonctions fléchées sans forwardRef, avec displayName pour certains."
-        }
-       ]
-      ],
-      "untraced": 0,
-      "over_budget": 0,
-      "unproven": 0,
-      "evidence": [
-       {
-        "file": "mytimeline:frontend/src/components/ui/tooltip.tsx",
-        "line_start": 18,
-        "line_end": 31,
-        "evidence": "const Tooltip = ({ content, children, className }: TooltipProps) => {",
-        "evidence_check": "exact"
-       }
-      ],
-      "restated": "La plupart des composants UI (bouton, avatar, table et autres) sont des forwardRef avec displayName et cn pour className, mais le composant Tooltip est une fonction simple sans forwardRef."
-     }
-    }
-   },
-   "contrary": null,
-   "check": "scope",
-   "general": "pattern_pack",
-   "counter_examples": [
-    {
-     "file": "mytimeline:frontend/src/components/ui/tooltip.tsx",
-     "line_start": 18,
-     "line_end": 31,
-     "evidence": "const Tooltip = ({ content, children, className }: TooltipProps) => {",
-     "evidence_check": "exact"
-    }
-   ],
-   "restated": "La plupart des composants UI (bouton, avatar, table et autres) sont des forwardRef avec displayName et cn pour className, mais le composant Tooltip est une fonction simple sans forwardRef.",
-   "placed": {
-    "pack_line": 39,
-    "annex_table": null
-   },
-   "uses": 0
-  },
-  {
-   "id": "frontend-socle:rules:11",
-   "section": "rules",
-   "rank": 11,
-   "text": "- Un barrel réexporte chaque composant puis son type de props par une ligne distincte. [#1ea1cef586e27163-1] [#4c4a6ad8222ac4ce-1]",
-   "fact_text": "Un barrel réexporte chaque composant puis son type de props par une ligne distincte",
-   "consigne": null,
-   "consigne_dropped": false,
-   "cites": [
-    "frontend-socle/1ea1cef586e27163-1",
-    "frontend-socle/4c4a6ad8222ac4ce-1"
-   ],
-   "files": [
-    "mytimeline:frontend/src/components/dashboard/index.ts",
-    "mytimeline:frontend/src/components/layout/index.ts"
-   ],
-   "ranges": [
-    [
-     "mytimeline:frontend/src/components/dashboard/index.ts",
-     6,
-     7,
-     "9c83f2b877091217e4bf7ca768fcd81aa2777a3ad4fe1975d3deb933a09d2a99"
-    ],
-    [
-     "mytimeline:frontend/src/components/layout/index.ts",
-     4,
-     5,
-     "cdfc56393d1ce17e9624126bf1cca4684769218dfd1c70f8723deacf5af46d4d"
-    ]
-   ],
-   "code_sha256": "40b4b52e9c1e52ac13b66479be0f794c09723f535e12a75a8842806cb045d229",
-   "verdict": "admit",
-   "reason": "admitted",
-   "final": true,
-   "measures": {
-    "fidelity": null,
-    "deduce": {
-     "covered": false,
-     "overlap": {
-      "identifiers": null,
-      "values": null,
-      "terms": 0.286,
-      "n": {
-       "identifiers": 0,
-       "values": 0,
-       "terms": 7
-      }
-     },
-     "restatement": "Ce sont des fichiers de barrel qui réexportent GreetingHeader, timeOfDayKey et le type GreetingHeaderProps, puis AppShell et le type AppShellProps. Aucun comportement n'est visible dans cet extrait.",
-     "confidence": "high",
-     "files_read_missing": true
-    },
-    "rediscover": {
-     "found": false,
-     "cost": 24,
-     "within_budget": false,
-     "covered": false,
-     "file": "",
-     "file_ok": false,
-     "overlap": {
-      "identifiers": null,
-      "values": null,
-      "terms": 0.0,
-      "n": {
-       "identifiers": 0,
-       "values": 0,
-       "terms": 7
-      }
-     },
-     "job": "frontend-socle:rediscover:mytimeline_frontend_app_locale_app_products_productId_loading.test.tsx:1"
-    },
-    "comment": [],
-    "refute": {
-     "votes": 3,
-     "refuted": 0,
-     "refute_unproven": 0,
-     "reasons": [
-      "Les barrels components/dashboard, layout et timeline (index.ts) réexportent chaque composant par une ligne `export { X }` puis son type de props par une ligne `export type { XProps }`. Les écarts (`export * from './lib'`, hook useFocusTrap sans type) ne concernent pas des composants.",
-      "Dans les barrels components (dashboard, layout, timeline), chaque composant a une ligne `export { X }` suivie d'une ligne `export type { XProps }`. Les écarts (`export * from './lib'`, hooks sans type) ne concernent pas des composants.",
-      "Dans les barrels de components (dashboard/index.ts L6-23, layout/index.ts L4-5, timeline/index.ts), chaque composant est réexporté par une ligne `export { X }` suivie d'une ligne `export type { XProps }` distincte. Les écarts (`export * from './lib'`, le hook useFocusTrap sans type) ne sont pas des composants."
-     ],
-     "evidence": [
-      "",
-      "",
-      ""
-     ],
-     "consigne_verdict": "n/a",
-     "question_verdict": "n/a",
-     "searched": true,
-     "search": {
-      "check": "scope",
-      "outcome": null,
-      "votes": 3,
-      "supporters": 0,
-      "budget": 6,
-      "searches": [
-       [
-        {
-         "tool": "Grep",
-         "target": "^export dans components/**/index.ts",
-         "found": "Les barrels dashboard, layout et timeline alternent export de composant puis export type des props, sur deux lignes distinctes. Seuls des hooks ou des export * s'écartent du motif."
-        }
-       ],
-       [
-        {
-         "tool": "Grep",
-         "target": "^export dans frontend/src/components/**/index.ts",
-         "found": "Tous les composants des barrels timeline, dashboard et layout suivent le motif export puis export type sur une ligne distincte. Seuls des hooks ou des `export *` s'en écartent."
-        }
-       ],
-       [
-        {
-         "tool": "Grep",
-         "target": "^export dans components/**/index.ts",
-         "found": "Seuls timeline, layout et dashboard ont un index.ts. Tous les composants y ont une ligne de valeur puis une ligne `export type` séparée. Les exceptions sont des `export *` et des hooks."
-        }
-       ]
-      ],
-      "untraced": 0,
-      "over_budget": 0,
-      "unproven": 0
-     }
-    }
-   },
-   "contrary": null,
-   "check": "scope",
-   "general": "words:chaque",
-   "placed": {
-    "pack_line": 41,
-    "annex_table": null
-   },
-   "uses": 0
-  },
-  {
-   "id": "frontend-socle:rules:12",
-   "section": "rules",
-   "rank": 12,
-   "text": "- Les stories déclarent meta avec satisfies Meta, et les dates y sont fixes. [#65c51a62d2eb1c32-1] [#4b86dd770a00ef4c-1]",
-   "fact_text": "Les stories déclarent meta avec satisfies Meta, et les dates y sont fixes",
-   "consigne": null,
-   "consigne_dropped": false,
-   "cites": [
-    "frontend-socle/65c51a62d2eb1c32-1",
-    "frontend-socle/4b86dd770a00ef4c-1"
-   ],
-   "files": [
-    "mytimeline:frontend/src/components/timeline/Cursor.stories.tsx",
-    "mytimeline:frontend/src/components/timeline/DateStamp.stories.tsx"
-   ],
-   "ranges": [
-    [
-     "mytimeline:frontend/src/components/timeline/Cursor.stories.tsx",
-     8,
-     25,
-     "e64b25d7c1f3f7d3a1d0e69f47211e849331289d48ca71ef6f89f9ced640b3b8"
-    ],
-    [
-     "mytimeline:frontend/src/components/timeline/DateStamp.stories.tsx",
-     9,
-     9,
-     "0865f8e6ab4a079551c93732a4b5013a8f5c2dfa4da04c1647c25b63d8fd61cc"
-    ]
-   ],
-   "code_sha256": "20b4ad7b1614400844102d6946e6e8dbed483c11a2dc58571973a2fcc395480a",
+   "code_sha256": "b827bee995630b31263f715d1f525229ae3d4daa8214b859b4dd8488896c1da4",
    "verdict": "annex",
    "reason": "deducible",
    "final": true,
@@ -1573,18 +1406,17 @@
     "deduce": {
      "covered": true,
      "overlap": {
-      "identifiers": null,
-      "values": null,
-      "terms": 0.5,
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 0.75,
       "n": {
-       "identifiers": 0,
-       "values": 0,
-       "terms": 6
+       "identifiers": 3,
+       "values": 1,
+       "terms": 4
       }
      },
-     "restatement": "Le Cursor.stories.tsx définit un meta Storybook avec title Timeline/Cursor, tag autodocs, un décorateur div de classe min-w-[600px] et args positionPercent 40. Le DateStamp.stories.tsx fixe la date à new Date(2026, 6, 3), soit le 3 juillet 2026 (mois indexé à partir de 0).",
-     "confidence": "high",
-     "files_read_missing": true
+     "restatement": "La fonction utilitaire `cn(...inputs)` combine les classes CSS via `twMerge(clsx(inputs))`, donc les classes Tailwind en conflit sont dédupliquées et la dernière gagne. Les extraits de `Avatar` (`React.forwardRef<HTMLSpanElement, AvatarProps>`, `displayName = 'Avatar'`) montrent seulement la déclaration du composant, sans logique visible.",
+     "confidence": "medium"
     },
     "rediscover": null,
     "comment": [],
@@ -1603,11 +1435,475 @@
    "uses": 0
   },
   {
+   "id": "frontend-socle:rules:11",
+   "section": "rules",
+   "rank": 11,
+   "text": "- Les textes passent par `useTranslations` avec des clés complètes depuis la racine. [#6304b75e00c66e75-1] [#80fa1ea1da348b99-1]",
+   "fact_text": "Les textes passent par `useTranslations` avec des clés complètes depuis la racine",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-socle/6304b75e00c66e75-1",
+    "frontend-socle/80fa1ea1da348b99-1"
+   ],
+   "files": [
+    "mytimeline:frontend/src/components/landing/CtaSection.tsx"
+   ],
+   "ranges": [
+    [
+     "mytimeline:frontend/src/components/landing/CtaSection.tsx",
+     4,
+     4,
+     "7720981c6329db063f05c11a81bc2884361e3a096ad8b3afbc7f821a494ab3fc"
+    ],
+    [
+     "mytimeline:frontend/src/components/landing/CtaSection.tsx",
+     52,
+     52,
+     "28638c604ef625e31b9b21190612d0ebb97f80ca7612d478d3955da4624069a4"
+    ]
+   ],
+   "code_sha256": "11a6b365d97ddac23fb4ad2f3eace5ef53d74330ad72cfd7fbac12924f4a1d45",
+   "verdict": "admit",
+   "reason": "restricted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
+      "terms": 0.2,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 5
+      }
+     },
+     "restatement": "CtaSection importe useTranslames de next-intl et affiche le titre via t('common.landing.cta.title'), donc le texte vient d'une clé de traduction et non d'une chaîne en dur. L'extrait ne montre que l'import et cet appel.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 15,
+     "within_budget": false,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/packs-0-10-bfb23b/frontend/src/components/products/RestoreProductDialog.tsx",
+     "file_ok": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.6,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 5
+      }
+     },
+     "job": "frontend-socle:rediscover:mytimeline_frontend_app_locale_app_products_productId_loading.test.tsx:1"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 1,
+     "reasons": [
+      "Règle fausse en général : CompactAgenda.tsx ligne 68 appelle useTranslations avec un namespace, donc les clés ne sont pas toutes complètes depuis la racine (CtaSection, lui, utilise la racine).",
+      "La règle des clés complètes depuis la racine est fausse en général: EventEditForm.tsx:230 appelle useTranslations avec un namespace, et de nombreux autres composants font de même (seul CtaSection utilise la racine).",
+      "Règle trop générale : de nombreux composants passent un namespace à useTranslations, par exemple CompactRail.tsx L75, seule la forme racine utilise des clés complètes."
+     ],
+     "evidence": [
+      "",
+      "useTranslations('products.add.event.form')",
+      "const t = useTranslations('dashboard.landscape.rail')"
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "scope",
+      "outcome": "counterexample",
+      "votes": 3,
+      "supporters": 3,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "useTranslations\\( dans frontend/src",
+         "found": "Nombreux appels avec namespace (dashboard, settings, products, ui) à côté d'appels sans argument."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "useTranslations\\( dans frontend/src",
+         "found": "majorité d'appels avec namespace (settings, dashboard.*, products.*), quelques appels racine (landing, ProfileSection tRoot)"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "useTranslations\\(['\"][^'\"]+['\"]\\) dans frontend/src",
+         "found": "80 occurrences dans 54 fichiers avec un namespace"
+        },
+        {
+         "tool": "Grep",
+         "target": "useTranslations() sans argument",
+         "found": "footer-app.tsx L8 utilise la forme racine"
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0,
+      "evidence": [
+       {
+        "file": "mytimeline:frontend/src/components/dashboard/CompactAgenda.tsx",
+        "line_start": 68,
+        "line_end": 68,
+        "evidence": "const t = useTranslations('dashboard.mobile.compactAgenda')",
+        "evidence_check": "exact"
+       }
+      ],
+      "restated_rejected": [
+       "plus longue que l'originale"
+      ],
+      "restated": "Dans les composants de la landing (et certains schémas), useTranslations() est appelé sans namespace avec des clés complètes depuis la racine, les autres composants utilisent un namespace."
+     }
+    }
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "counter_examples": [
+    {
+     "file": "mytimeline:frontend/src/components/dashboard/CompactAgenda.tsx",
+     "line_start": 68,
+     "line_end": 68,
+     "evidence": "const t = useTranslations('dashboard.mobile.compactAgenda')",
+     "evidence_check": "exact"
+    }
+   ],
+   "restated": "Dans les composants de la landing (et certains schémas), useTranslations() est appelé sans namespace avec des clés complètes depuis la racine, les autres composants utilisent un namespace.",
+   "placed": {
+    "pack_line": 40,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "frontend-socle:rules:12",
+   "section": "rules",
+   "rank": 12,
+   "text": "- Les éléments testables portent un `data-testid` nommé pour les tests E2E. [#6304b75e00c66e75-5] [#aa086b7fd21197d3-2]",
+   "fact_text": "Les éléments testables portent un `data-testid` nommé pour les tests E2E",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-socle/6304b75e00c66e75-5",
+    "frontend-socle/aa086b7fd21197d3-2"
+   ],
+   "files": [
+    "mytimeline:frontend/src/components/landing/CtaSection.tsx",
+    "mytimeline:frontend/src/components/legal/legal-disclaimer.tsx"
+   ],
+   "ranges": [
+    [
+     "mytimeline:frontend/src/components/landing/CtaSection.tsx",
+     61,
+     61,
+     "ff79ceb8640107334c78281060712e4c78c0cbc041d02ebc07342f244ee5f773"
+    ],
+    [
+     "mytimeline:frontend/src/components/legal/legal-disclaimer.tsx",
+     12,
+     15,
+     "e6a8d2399a5228e9c30d33fed445b13357010e9ff71da86f4316fcf039fca8b0"
+    ]
+   ],
+   "code_sha256": "a43c747ddb632c8500a244ffe4a82d2cf113abd23eabbe2ebda9d17d4dd761cf",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": 1.0,
+      "terms": 0.286,
+      "n": {
+       "identifiers": 1,
+       "values": 1,
+       "terms": 7
+      }
+     },
+     "restatement": "Le lien final de CtaSection pointe vers `/${locale}/register` et porte le data-testid `landing-final-cta-register`, donc la destination dépend de la locale courante.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 11,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/packs-0-10-bfb23b/frontend/src/components/products/RestoreProductDialog.tsx",
+     "file_ok": false,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": 1.0,
+      "terms": 0.714,
+      "n": {
+       "identifiers": 1,
+       "values": 1,
+       "terms": 7
+      }
+     },
+     "job": "frontend-socle:rediscover:mytimeline_frontend_app_locale_app_products_productId_loading.test.tsx:1"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Aucun contre-exemple net : data-testid est présent sur les éléments cités. Les primitives ui génériques en sont souvent dépourvues, mais la règle vise les éléments testables et reste ambiguë.",
+      "Règle vague sur les éléments testables, les extraits (CtaSection:61, legal-disclaimer:14) la confirment, aucun contre-exemple lu.",
+      "Les extraits montrent data-testid sur les éléments cités (CtaSection L61, LegalDisclaimer L14), aucun contre-exemple cherché ne contredit la formulation non absolue."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "scope",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "data-testid dans components/ui (count)",
+         "found": "Seulement 5 fichiers sur 54 en portent, surtout des primitives génériques sans testid, pas un contre-exemple net."
+        }
+       ],
+       [],
+       [
+        {
+         "tool": "Read",
+         "target": "extrait CtaSection L61 et legal-disclaimer L14",
+         "found": "data-testid présents"
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     }
+    }
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "placed": {
+    "pack_line": 41,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "frontend-socle:rules:13",
+   "section": "rules",
+   "rank": 13,
+   "text": "- Les stories utilisent `satisfies Meta<typeof X>` avec `tags: ['autodocs']`. [#9e9de04ddcb3f998-1] [#9e9de04ddcb3f998-2]",
+   "fact_text": "Les stories utilisent `satisfies Meta<typeof X>` avec `tags: ['autodocs']`",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-socle/9e9de04ddcb3f998-1",
+    "frontend-socle/9e9de04ddcb3f998-2"
+   ],
+   "files": [
+    "mytimeline:frontend/src/components/ui/switch.stories.tsx"
+   ],
+   "ranges": [
+    [
+     "mytimeline:frontend/src/components/ui/switch.stories.tsx",
+     1,
+     11,
+     "55b72786db52a52b361df88161ebbaea72e8624060062b3f5999cbddfe8fac66"
+    ],
+    [
+     "mytimeline:frontend/src/components/ui/switch.stories.tsx",
+     4,
+     8,
+     "ebac733710507442e002a9b119da8f9602e2e604135874d8cb7fde1f828920d1"
+    ]
+   ],
+   "code_sha256": "8f092c9ef2e214f5974b30b771315033ed23903c75e097d8c7439633d7a81479",
+   "verdict": "admit",
+   "reason": "restricted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": null,
+      "values": 0.0,
+      "terms": 0.714,
+      "n": {
+       "identifiers": 0,
+       "values": 2,
+       "terms": 7
+      }
+     },
+     "restatement": "Le fichier de stories Storybook déclare la meta du composant Switch avec le titre 'UI/Switch', le tag 'autodocs' et le typage `satisfies Meta<typeof Switch>`, puis exporte un type Story dérivé de cette meta. Aucune story concrète n'apparaît dans l'extrait.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 10,
+     "within_budget": false,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/packs-0-10-bfb23b/frontend/src/components/ui/badge.stories.tsx",
+     "file_ok": false,
+     "overlap": {
+      "identifiers": null,
+      "values": 0.5,
+      "terms": 1.0,
+      "n": {
+       "identifiers": 0,
+       "values": 2,
+       "terms": 7
+      }
+     },
+     "job": "frontend-socle:rediscover:mytimeline_frontend_app_locale_app_products_productId_loading.test.tsx:1"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 1,
+     "reasons": [
+      "TimelineView.perf.stories.tsx L93-99 utilise satisfies Meta mais sans tags: ['autodocs'] (banc de mesure), donc la règle n'est pas générale.",
+      "TimelineView.perf.stories.tsx utilise satisfies Meta (ligne 99) sans tags autodocs (23 fichiers autodocs contre 24 satisfies Meta).",
+      "Sur 24 fichiers stories, 24 utilisent satisfies Meta mais 23 seulement ont tags. TimelineView.perf.stories.tsx a satisfies Meta (L99) sans tags (grep sur tags ne trouve rien)."
+     ],
+     "evidence": [
+      "",
+      "} satisfies Meta<typeof PerfHarness>",
+      "} satisfies Meta<typeof PerfHarness>"
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "scope",
+      "outcome": "counterexample",
+      "votes": 3,
+      "supporters": 3,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "satisfies Meta|tags: dans *.stories.tsx",
+         "found": "Deux occurrences par fichier sauf TimelineView.perf.stories.tsx qui n'en a qu'une."
+        },
+        {
+         "tool": "Read",
+         "target": "TimelineView.perf.stories.tsx L92-100",
+         "found": "Meta sans tags."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "satisfies Meta",
+         "found": "24 fichiers"
+        },
+        {
+         "tool": "Grep",
+         "target": "autodocs",
+         "found": "23 fichiers, TimelineView.perf.stories.tsx absent"
+        },
+        {
+         "tool": "Grep",
+         "target": "tags: dans TimelineView.perf.stories.tsx",
+         "found": "aucun tags"
+        }
+       ],
+       [
+        {
+         "tool": "Glob",
+         "target": "frontend/src/**/*.stories.tsx",
+         "found": "24 fichiers"
+        },
+        {
+         "tool": "Grep",
+         "target": "tags: \\[ dans *.stories.tsx",
+         "found": "23 fichiers, perf.stories absent"
+        },
+        {
+         "tool": "Grep",
+         "target": "satisfies Meta|tags|const meta dans TimelineView.perf.stories.tsx",
+         "found": "const meta L93, satisfies L99, aucun tags"
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0,
+      "evidence": [
+       {
+        "file": "mytimeline:frontend/src/components/timeline/TimelineView.perf.stories.tsx",
+        "line_start": 93,
+        "line_end": 99,
+        "evidence": "} satisfies Meta<typeof PerfHarness>",
+        "evidence_check": "exact"
+       }
+      ],
+      "restated": "Les stories de composants (ui et frise) utilisent satisfies Meta avec tags: ['autodocs'], sauf le banc de mesure de performance de la frise qui n'a pas de tags."
+     }
+    }
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "counter_examples": [
+    {
+     "file": "mytimeline:frontend/src/components/timeline/TimelineView.perf.stories.tsx",
+     "line_start": 93,
+     "line_end": 99,
+     "evidence": "} satisfies Meta<typeof PerfHarness>",
+     "evidence_check": "exact"
+    }
+   ],
+   "restated": "Les stories de composants (ui et frise) utilisent satisfies Meta avec tags: ['autodocs'], sauf le banc de mesure de performance de la frise qui n'a pas de tags.",
+   "placed": {
+    "pack_line": 42,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
    "id": "frontend-socle:surface:1",
    "section": "surface",
    "rank": 1,
-   "text": "- Les services appellent `apiClient` avec un chemin relatif sans préfixe `/api`, comme pour la liste des sessions actives, donc n'ajoutez pas ce préfixe dans un nouveau service. [#c8e7542069dbe36c-1]",
-   "fact_text": "Les services appellent `apiClient` avec un chemin relatif sans préfixe `/api`, comme pour la liste des sessions actives, donc n'ajoutez pas ce préfixe dans un nouveau service",
+   "text": "- Les services frontend appellent l'instance `apiClient` importée de `@/services/apiClient` avec des chemins relatifs comme `/sessions`, par exemple dans `mytimeline:frontend/src/services/sessionService.ts:14-17` [#c8e7542069dbe36c-1].",
+   "fact_text": "Les services frontend appellent l'instance `apiClient` importée de `@/services/apiClient` avec des chemins relatifs comme `/sessions`, par exemple dans sessionService.ts",
    "consigne": null,
    "consigne_dropped": false,
    "cites": [
@@ -1626,96 +1922,7 @@
    ],
    "code_sha256": "2a5ec76fcd1b95e9bc7f705fac80368e7eb3a79aa33a4735fd7b67dbdd0c785a",
    "verdict": "admit",
-   "reason": "admitted",
-   "final": true,
-   "measures": {
-    "fidelity": null,
-    "deduce": {
-     "covered": false,
-     "overlap": {
-      "identifiers": 1.0,
-      "values": 0.0,
-      "terms": 0.091,
-      "n": {
-       "identifiers": 1,
-       "values": 1,
-       "terms": 11
-      }
-     },
-     "restatement": "getActiveSessions est une fonction async sans paramètre qui retourne Promise<Session[]>. Elle appelle apiClient.get('/sessions') puis valide la réponse avec SessionListSchema.parse.",
-     "confidence": "high",
-     "files_read_missing": true
-    },
-    "rediscover": {
-     "found": true,
-     "cost": 12,
-     "within_budget": false,
-     "covered": false,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/packs-0-10-bfb23b/frontend/src/services/sessionService.ts",
-     "file_ok": true,
-     "overlap": {
-      "identifiers": 1.0,
-      "values": 1.0,
-      "terms": 0.455,
-      "n": {
-       "identifiers": 1,
-       "values": 1,
-       "terms": 11
-      }
-     },
-     "job": "frontend-socle:rediscover:mytimeline_frontend_app_locale_app_products_productId_loading.test.tsx:1"
-    },
-    "comment": [],
-    "refute": {
-     "votes": 3,
-     "refuted": 0,
-     "refute_unproven": 0,
-     "reasons": [
-      "sessionService.ts L15 : apiClient.get('/sessions') sans préfixe /api, conforme. La consigne est cohérente avec ce chemin relatif.",
-      "sessionService.ts L15 : apiClient.get('/sessions') sans préfixe /api, conforme.",
-      "sessionService.ts L15 : apiClient.get('/sessions') sans préfixe /api, conforme."
-     ],
-     "evidence": [
-      "",
-      "",
-      ""
-     ],
-     "consigne_verdict": "supported",
-     "question_verdict": "n/a"
-    }
-   },
-   "contrary": null,
-   "placed": {
-    "pack_line": 49,
-    "annex_table": null
-   },
-   "uses": 0
-  },
-  {
-   "id": "frontend-socle:surface:2",
-   "section": "surface",
-   "rank": 2,
-   "text": "- Un service de suppression renvoie une promesse vide et n'exploite pas la réponse HTTP, comme la révocation d'une session dans `mytimeline:frontend/src/services/sessionService.ts:19-25`. Le code appelant ne doit donc pas attendre de données en retour. [#094f62dfc66d6733-1]",
-   "fact_text": "Un service de suppression renvoie une promesse vide et n'exploite pas la réponse HTTP, comme la révocation d'une session dans sessionService.ts. Le code appelant ne doit donc pas attendre de données en retour",
-   "consigne": null,
-   "consigne_dropped": false,
-   "cites": [
-    "frontend-socle/094f62dfc66d6733-1"
-   ],
-   "files": [
-    "mytimeline:frontend/src/services/sessionService.ts"
-   ],
-   "ranges": [
-    [
-     "mytimeline:frontend/src/services/sessionService.ts",
-     19,
-     25,
-     "ad1eea57ac403383313f51266b7c15422a0c59ae287190bca4b820baeb9f9a2b"
-    ]
-   ],
-   "code_sha256": "ad1eea57ac403383313f51266b7c15422a0c59ae287190bca4b820baeb9f9a2b",
-   "verdict": "admit",
-   "reason": "admitted",
+   "reason": "rediscovered",
    "final": true,
    "measures": {
     "fidelity": null,
@@ -1723,57 +1930,46 @@
      "covered": false,
      "overlap": {
       "identifiers": 0.5,
-      "values": null,
-      "terms": 0.143,
+      "values": 0.5,
+      "terms": 0.111,
       "n": {
        "identifiers": 2,
-       "values": 0,
-       "terms": 14
+       "values": 2,
+       "terms": 9
       }
      },
-     "restatement": "Deux fonctions asynchrones de `sessionService.ts` appellent l'API par `apiClient.delete` : `revokeSession(id)` supprime la session `/sessions/${id}`, et `revokeOtherSessions()` supprime `/sessions/others`. Elles renvoient `Promise<void>`, sans traitement d'erreur ni valeur de retour dans l'extrait.",
+     "restatement": "La fonction exportée getActiveSessions, asynchrone, ne prend aucun paramètre et renvoie une Promise de Session[]. Elle fait un GET sur '/sessions' via apiClient et passe la réponse à SessionListSchema.parse, qui valide le format avant le retour.",
      "confidence": "high",
-     "files_read_missing": true
+     "reused": true,
+     "reused_from": "2026-11-18T16:25:29Z"
     },
     "rediscover": {
      "found": true,
-     "cost": 12,
-     "within_budget": false,
-     "covered": false,
+     "cost": 10,
+     "within_budget": true,
+     "covered": true,
      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/packs-0-10-bfb23b/frontend/src/services/sessionService.ts",
      "file_ok": true,
      "overlap": {
-      "identifiers": 0.0,
-      "values": null,
-      "terms": 0.5,
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 0.556,
       "n": {
        "identifiers": 2,
-       "values": 0,
-       "terms": 14
+       "values": 2,
+       "terms": 9
       }
      },
-     "job": "frontend-socle:rediscover:mytimeline_frontend_app_locale_app_products_productId_loading.test.tsx:1"
+     "job": "frontend-socle:rediscover:mytimeline_frontend_app_locale_page.tsx:1",
+     "rank_in_lot": 2,
+     "reused": true,
+     "reused_from": "2026-11-18T16:25:29Z"
     },
     "comment": [],
-    "refute": {
-     "votes": 3,
-     "refuted": 0,
-     "refute_unproven": 0,
-     "reasons": [
-      "sessionService.ts L19-25 : revokeSession renvoie Promise<void> et ignore la réponse du delete, conforme.",
-      "sessionService.ts L19-21 : revokeSession renvoie Promise<void> et ignore la réponse du delete.",
-      "sessionService.ts L19-21 : revokeSession renvoie Promise<void> et ignore la réponse du delete."
-     ],
-     "evidence": [
-      "",
-      "",
-      ""
-     ],
-     "consigne_verdict": "supported",
-     "question_verdict": "n/a"
-    }
+    "refute": null
    },
    "contrary": null,
+   "kept_for": "rediscovered",
    "placed": {
     "pack_line": 50,
     "annex_table": null
@@ -1784,25 +1980,25 @@
    "id": "frontend-socle:tests:1",
    "section": "tests",
    "rank": 1,
-   "text": "- Les tests de composant mockent `next-intl` avec `vi.mock`, et le mock renvoie la clé préfixée par son namespace, sous la forme `namespace.key`, comme dans `mytimeline:frontend/app/[locale]/(app)/products/[productId]/loading.test.tsx:7-9` [#3215d3bea2e69c04-1].",
-   "fact_text": "Les tests de composant mockent `next-intl` avec `vi.mock`, et le mock renvoie la clé préfixée par son namespace, sous la forme `namespace.key`, comme dans loading.test.tsx",
+   "text": "- Les tests de hooks TanStack créent un QueryClient par test, avec retry désactivé et un MutationCache aux erreurs silencieuses, puis rendent via renderHook dans un QueryClientProvider (`mytimeline:frontend/src/hooks/useDeleteCategory.test.tsx:20-31`) [#4c814ff13ceadfce-1]",
+   "fact_text": "Les tests de hooks TanStack créent un QueryClient par test, avec retry désactivé et un MutationCache aux erreurs silencieuses, puis rendent via renderHook dans un QueryClientProvider (useDeleteCategory.test.tsx)",
    "consigne": null,
    "consigne_dropped": false,
    "cites": [
-    "frontend-socle/3215d3bea2e69c04-1"
+    "frontend-socle/4c814ff13ceadfce-1"
    ],
    "files": [
-    "mytimeline:frontend/app/[locale]/(app)/products/[productId]/loading.test.tsx"
+    "mytimeline:frontend/src/hooks/useDeleteCategory.test.tsx"
    ],
    "ranges": [
     [
-     "mytimeline:frontend/app/[locale]/(app)/products/[productId]/loading.test.tsx",
-     7,
-     9,
-     "97c15b4a6ecc64e232a25668c4ef5a1a950b63b3a2c0ce8bf84aff61ab8b56bd"
+     "mytimeline:frontend/src/hooks/useDeleteCategory.test.tsx",
+     20,
+     31,
+     "818e5a01ae387b2dcfcd6fc12613ecf07099cd3fa5a01b8bd5ddaeb1751d3733"
     ]
    ],
-   "code_sha256": "97c15b4a6ecc64e232a25668c4ef5a1a950b63b3a2c0ce8bf84aff61ab8b56bd",
+   "code_sha256": "818e5a01ae387b2dcfcd6fc12613ecf07099cd3fa5a01b8bd5ddaeb1751d3733",
    "verdict": "admit",
    "reason": "admitted",
    "final": true,
@@ -1811,34 +2007,34 @@
     "deduce": {
      "covered": false,
      "overlap": {
-      "identifiers": 0.0,
-      "values": 1.0,
-      "terms": 0.6,
+      "identifiers": 0.5,
+      "values": null,
+      "terms": 0.25,
       "n": {
-       "identifiers": 3,
-       "values": 1,
-       "terms": 10
+       "identifiers": 6,
+       "values": 0,
+       "terms": 8
       }
      },
-     "restatement": "Le test mocke next-intl en remplaçant useTranslations par une fonction qui renvoie `${namespace}.${key}`, donc les textes rendus correspondent aux clés de traduction et non aux libellés réels.",
+     "restatement": "La fabrique makeClient crée un QueryClient avec un MutationCache dont onError est vide, des queries en retry false et gcTime 0, et des mutations en retry false, ce qui isole les tests des relances et du cache. makeWrapper fournit ce client via QueryClientProvider.",
      "confidence": "high",
      "files_read_missing": true
     },
     "rediscover": {
      "found": true,
-     "cost": 4,
+     "cost": 5,
      "within_budget": true,
-     "covered": false,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/packs-0-10-bfb23b/frontend/src/components/events/EventPreviewTimeline.test.tsx",
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/packs-0-10-bfb23b/frontend/src/hooks/useArchiveProduct.test.tsx",
      "file_ok": false,
      "overlap": {
-      "identifiers": 0.333,
-      "values": 1.0,
-      "terms": 0.5,
+      "identifiers": 0.667,
+      "values": null,
+      "terms": 0.75,
       "n": {
-       "identifiers": 3,
-       "values": 1,
-       "terms": 10
+       "identifiers": 6,
+       "values": 0,
+       "terms": 8
       }
      },
      "job": "frontend-socle:rediscover:mytimeline_frontend_app_locale_app_products_productId_loading.test.tsx:1"
@@ -1849,9 +2045,9 @@
      "refuted": 0,
      "refute_unproven": 0,
      "reasons": [
-      "loading.test.tsx L7-9 : vi.mock('next-intl') renvoie `${namespace}.${key}`, conforme.",
-      "loading.test.tsx L7-9 : vi.mock('next-intl') avec useTranslations renvoyant `${namespace}.${key}`, conforme.",
-      "loading.test.tsx L7-9 : vi.mock('next-intl') renvoie `${namespace}.${key}`, conforme."
+      "makeClient (L20-25) crée un QueryClient avec MutationCache onError vide et retry:false ; makeWrapper fournit QueryClientProvider.",
+      "makeClient (L20-25) : QueryClient avec retry false et MutationCache onError vide ; makeWrapper L27-31 et renderHook L40 confirment.",
+      "makeClient (L20-25) : retry false, MutationCache onError vide ; renderHook avec QueryClientProvider (L27-31, L40)."
      ],
      "evidence": [
       "",
@@ -1873,25 +2069,25 @@
    "id": "frontend-socle:tests:2",
    "section": "tests",
    "rank": 2,
-   "text": "- Les tests de rendu utilisent `render` et `screen` de Testing Library, localisent les éléments par `data-testid` et vérifient le rôle `status`, voir `mytimeline:frontend/app/[locale]/(app)/products/[productId]/loading.test.tsx:13-19` [#3215d3bea2e69c04-2].",
-   "fact_text": "Les tests de rendu utilisent `render` et `screen` de Testing Library, localisent les éléments par `data-testid` et vérifient le rôle `status`, voir loading.test.tsx",
+   "text": "- Les tests fixent que l'invalidation du cache s'observe par vi.spyOn sur client.invalidateQueries, avec un appel attendu sous la forme { queryKey } [#2ddd82a4eeddddda-2]",
+   "fact_text": "Les tests fixent que l'invalidation du cache s'observe par vi.spyOn sur client.invalidateQueries, avec un appel attendu sous la forme { queryKey }",
    "consigne": null,
    "consigne_dropped": false,
    "cites": [
-    "frontend-socle/3215d3bea2e69c04-2"
+    "frontend-socle/2ddd82a4eeddddda-2"
    ],
    "files": [
-    "mytimeline:frontend/app/[locale]/(app)/products/[productId]/loading.test.tsx"
+    "mytimeline:frontend/src/hooks/useDeleteCategory.test.tsx"
    ],
    "ranges": [
     [
-     "mytimeline:frontend/app/[locale]/(app)/products/[productId]/loading.test.tsx",
-     13,
-     19,
-     "b9153ebc877164dc7135b98a334ee4a55d50532cf2b0a7ff91df7902510e4f45"
+     "mytimeline:frontend/src/hooks/useDeleteCategory.test.tsx",
+     62,
+     62,
+     "4c5dc5267eeb8d4ad528199e2a6d0d713ed297d7fae3d48e0f66eec336602acc"
     ]
    ],
-   "code_sha256": "b9153ebc877164dc7135b98a334ee4a55d50532cf2b0a7ff91df7902510e4f45",
+   "code_sha256": "4c5dc5267eeb8d4ad528199e2a6d0d713ed297d7fae3d48e0f66eec336602acc",
    "verdict": "admit",
    "reason": "admitted",
    "final": true,
@@ -1900,34 +2096,34 @@
     "deduce": {
      "covered": false,
      "overlap": {
-      "identifiers": 0.0,
-      "values": 0.5,
-      "terms": 0.429,
+      "identifiers": 0.667,
+      "values": null,
+      "terms": 0.222,
       "n": {
-       "identifiers": 1,
-       "values": 4,
-       "terms": 14
+       "identifiers": 3,
+       "values": 0,
+       "terms": 9
       }
      },
-     "restatement": "Le test de ProductDetailLoading attend un élément data-testid product-detail-loading-skeleton avec role=status, le texte products.detail.loading, exactement 3 éléments loading-skeleton-item, chacun ayant un style.height égal à var(--lane-height).",
+     "restatement": "Le test espionne la méthode invalidateQueries du client via vi.spyOn pour vérifier quelles clés sont invalidées après la mutation. L'assertion elle-même n'est pas dans l'extrait.",
      "confidence": "high",
      "files_read_missing": true
     },
     "rediscover": {
      "found": true,
-     "cost": 23,
-     "within_budget": false,
-     "covered": false,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/packs-0-10-bfb23b/frontend/src/components/layout/AppShell.test.tsx",
+     "cost": 5,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/packs-0-10-bfb23b/frontend/src/hooks/useArchiveProduct.test.tsx",
      "file_ok": false,
      "overlap": {
-      "identifiers": 0.0,
-      "values": 1.0,
-      "terms": 0.714,
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.778,
       "n": {
-       "identifiers": 1,
-       "values": 4,
-       "terms": 14
+       "identifiers": 3,
+       "values": 0,
+       "terms": 9
       }
      },
      "job": "frontend-socle:rediscover:mytimeline_frontend_app_locale_app_products_productId_loading.test.tsx:1"
@@ -1938,9 +2134,9 @@
      "refuted": 0,
      "refute_unproven": 0,
      "reasons": [
-      "L13-19 : render/screen, getByTestId et role status vérifiés, conforme.",
-      "loading.test.tsx L13-19 : render/screen, getByTestId et role 'status' vérifiés, conforme.",
-      "L13-19 : render/screen, getByTestId et role 'status' vérifiés, conforme."
+      "L62 vi.spyOn(client, 'invalidateQueries') ; useSetEventArchived.test L66 attend { queryKey: ... }.",
+      "L62 vi.spyOn(client, 'invalidateQueries') et L67-68 toHaveBeenCalledWith({ queryKey: ... }) confirment.",
+      "L62 vi.spyOn(client,'invalidateQueries') et L67 toHaveBeenCalledWith({ queryKey: ... })."
      ],
      "evidence": [
       "",
@@ -1962,25 +2158,25 @@
    "id": "frontend-socle:tests:3",
    "section": "tests",
    "rank": 3,
-   "text": "- Les tests fixent l'acceptation ou le rejet d'une liste de locales avec `it.each`, avec un `describe` par export, dans `mytimeline:frontend/src/i18n/locales.test.ts:11-29` [#742de7bd9572fb14-1].",
-   "fact_text": "Les tests fixent l'acceptation ou le rejet d'une liste de locales avec `it.each`, avec un `describe` par export, dans locales.test.ts",
+   "text": "- Les cas d'erreur de useSetEventArchived sont déclenchés avec mutate et non mutateAsync, puis attendus par waitFor sur isError ou sur l'invalidation [#ca3795aa1c7a0a68-2]",
+   "fact_text": "Les cas d'erreur de useSetEventArchived sont déclenchés avec mutate et non mutateAsync, puis attendus par waitFor sur isError ou sur l'invalidation",
    "consigne": null,
    "consigne_dropped": false,
    "cites": [
-    "frontend-socle/742de7bd9572fb14-1"
+    "frontend-socle/ca3795aa1c7a0a68-2"
    ],
    "files": [
-    "mytimeline:frontend/src/i18n/locales.test.ts"
+    "mytimeline:frontend/src/hooks/useSetEventArchived.test.tsx"
    ],
    "ranges": [
     [
-     "mytimeline:frontend/src/i18n/locales.test.ts",
-     11,
-     29,
-     "799ab15717e5ca98e93c38fd9c2916a0f55cd481d075c96ae8f1dd4f3f4aa6cf"
+     "mytimeline:frontend/src/hooks/useSetEventArchived.test.tsx",
+     75,
+     75,
+     "ee33be8724c69ca46065d7ad653a9155904d2a7866aef267d3956b0ce57f5346"
     ]
    ],
-   "code_sha256": "799ab15717e5ca98e93c38fd9c2916a0f55cd481d075c96ae8f1dd4f3f4aa6cf",
+   "code_sha256": "ee33be8724c69ca46065d7ad653a9155904d2a7866aef267d3956b0ce57f5346",
    "verdict": "admit",
    "reason": "admitted",
    "final": true,
@@ -1990,33 +2186,33 @@
      "covered": false,
      "overlap": {
       "identifiers": 0.0,
-      "values": 0.0,
-      "terms": 0.25,
+      "values": null,
+      "terms": 0.2,
       "n": {
-       "identifiers": 2,
-       "values": 1,
-       "terms": 8
+       "identifiers": 4,
+       "values": 0,
+       "terms": 5
       }
      },
-     "restatement": "Le test vérifie que SUPPORTED_LOCALES vaut exactement ['fr','en','es','de'] et que DEFAULT_LOCALE vaut 'fr' et appartient à la liste. Il vérifie aussi que isSupportedLocale accepte ces quatre codes et rejette it, pt, EN (sensible à la casse), la chaîne vide, es-ES et xx.",
+     "restatement": "Le test appelle result.current.mutate avec id 'evt-1', archived false et version 1, pour tester la mutation d'archivage d'un événement. Les assertions ne figurent pas dans l'extrait.",
      "confidence": "high",
      "files_read_missing": true
     },
     "rediscover": {
      "found": true,
-     "cost": 6,
+     "cost": 5,
      "within_budget": true,
-     "covered": false,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/packs-0-10-bfb23b/frontend/src/__tests__/i18n-request-config.test.ts",
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/packs-0-10-bfb23b/frontend/src/hooks/useArchiveProduct.test.tsx",
      "file_ok": false,
      "overlap": {
-      "identifiers": 0.0,
-      "values": 1.0,
-      "terms": 0.5,
+      "identifiers": 0.75,
+      "values": null,
+      "terms": 0.8,
       "n": {
-       "identifiers": 2,
-       "values": 1,
-       "terms": 8
+       "identifiers": 4,
+       "values": 0,
+       "terms": 5
       }
      },
      "job": "frontend-socle:rediscover:mytimeline_frontend_app_locale_app_products_productId_loading.test.tsx:1"
@@ -2027,9 +2223,9 @@
      "refuted": 0,
      "refute_unproven": 0,
      "reasons": [
-      "locales.test.ts L22-29 : it.each pour accepter/rejeter des locales, un describe par export (SUPPORTED_LOCALES, isSupportedLocale), conforme pour l'essentiel.",
-      "locales.test.ts L23-28 : it.each pour acceptation et rejet, describe par export (SUPPORTED_LOCALES, isSupportedLocale).",
-      "locales.test.ts L23-27 : it.each pour accepter ou rejeter des locales, describe séparés par symbole. Le raccourci est acceptable."
+      "Cas d'erreur L75 et L88 utilisent mutate, puis waitFor sur invalidateSpy ou isError (L77, L90) ; le commentaire L20-22 le confirme.",
+      "L75 et L88 utilisent mutate pour les cas d'erreur, attendus par waitFor sur invalidateSpy (L77) et isError (L90).",
+      "useSetEventArchived.test.tsx L75 et L88 utilisent mutate, puis waitFor sur invalidateSpy (L77) ou isError (L90) ; le commentaire L21-22 le motive."
      ],
      "evidence": [
       "",
@@ -2051,25 +2247,96 @@
    "id": "frontend-socle:tests:4",
    "section": "tests",
    "rank": 4,
-   "text": "- Le test de `isForbiddenError` suit la convention d'un `describe` par fonction, de titres de `it` en français et d'assertions booléennes strictes, dans `mytimeline:frontend/src/lib/state-errors.test.ts:6-8` [#6ade1bc0ef00f313-1].",
-   "fact_text": "Le test de `isForbiddenError` suit la convention d'un `describe` par fonction, de titres de `it` en français et d'assertions booléennes strictes, dans state-errors.test.ts",
+   "text": "- Selon une note du fichier, le rejet de mutation n'est pas testé sous renderHook et la couverture passe par les tests de bout en bout [#2ddd82a4eeddddda-3]",
+   "fact_text": "Selon une note du fichier, le rejet de mutation n'est pas testé sous renderHook et la couverture passe par les tests de bout en bout",
    "consigne": null,
    "consigne_dropped": false,
    "cites": [
-    "frontend-socle/6ade1bc0ef00f313-1"
+    "frontend-socle/2ddd82a4eeddddda-3"
    ],
    "files": [
-    "mytimeline:frontend/src/lib/state-errors.test.ts"
+    "mytimeline:frontend/src/hooks/useDeleteCategory.test.tsx"
    ],
    "ranges": [
     [
-     "mytimeline:frontend/src/lib/state-errors.test.ts",
-     6,
-     8,
-     "3ad7762ab7b6ed1a2d44379a0a3547147429e1fcaac14ee93473f63b3272f226"
+     "mytimeline:frontend/src/hooks/useDeleteCategory.test.tsx",
+     71,
+     74,
+     "175547826fde68282f2d7cb5535d82385efd9a64e24202a4084d26f5beb52100"
     ]
    ],
-   "code_sha256": "3ad7762ab7b6ed1a2d44379a0a3547147429e1fcaac14ee93473f63b3272f226",
+   "code_sha256": "175547826fde68282f2d7cb5535d82385efd9a64e24202a4084d26f5beb52100",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.556,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 9
+      }
+     },
+     "restatement": "Un commentaire indique que le rejet de mutation avec un 409 lisible en ligne n'est pas testé en isolation sous renderHook/jsdom, car TanStack Query v5 provoque une unhandled rejection. Cette couverture est reportée aux tests end-to-end de CategoryDrawer, CategoriesView et E2E. Le bloc ne contient que ce commentaire.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": null,
+    "comment": [
+     {
+      "id": "frontend-socle/2ddd82a4eeddddda-3",
+      "verdict": "confirmed"
+     }
+    ],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "frontend-socle.details.md",
+     "row": 2
+    }
+   },
+   "uses": 0
+  },
+  {
+   "id": "frontend-socle:tests:5",
+   "section": "tests",
+   "rank": 5,
+   "text": "- Un test de hook mocke le service avec vi.mock sur le chemin alias @/services/..., en déléguant à un vi.fn nommé xxxMock [#2ddd82a4eeddddda-1], recréé dans beforeEach plutôt que réinitialisé [#ca3795aa1c7a0a68-1]",
+   "fact_text": "Un test de hook mocke le service avec vi.mock sur le chemin alias @/services/..., en déléguant à un vi.fn nommé xxxMock, recréé dans beforeEach plutôt que réinitialisé",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-socle/2ddd82a4eeddddda-1",
+    "frontend-socle/ca3795aa1c7a0a68-1"
+   ],
+   "files": [
+    "mytimeline:frontend/src/hooks/useDeleteCategory.test.tsx",
+    "mytimeline:frontend/src/hooks/useSetEventArchived.test.tsx"
+   ],
+   "ranges": [
+    [
+     "mytimeline:frontend/src/hooks/useDeleteCategory.test.tsx",
+     14,
+     18,
+     "f5f5111255f6dcd935643eae054790f561f48f96660c70be21b2f3b7f2f98b39"
+    ],
+    [
+     "mytimeline:frontend/src/hooks/useSetEventArchived.test.tsx",
+     44,
+     46,
+     "478f0fb506baaab7ac28bd4260425dcc8aff307bbb9cd82b596be5aa75531313"
+    ]
+   ],
+   "code_sha256": "a6157dc0f2bed89c5d288d2af296ca5653918e18dc71aee2a7279659a0233252",
    "verdict": "admit",
    "reason": "admitted",
    "final": true,
@@ -2079,33 +2346,33 @@
      "covered": false,
      "overlap": {
       "identifiers": 0.5,
-      "values": 0.0,
-      "terms": 0.1,
+      "values": null,
+      "terms": 0.417,
       "n": {
-       "identifiers": 2,
-       "values": 2,
-       "terms": 10
+       "identifiers": 4,
+       "values": 0,
+       "terms": 12
       }
      },
-     "restatement": "Le test isForbiddenError commence par le cas où null ou undefined renvoie false. Le reste des cas n'est pas visible dans l'extrait.",
+     "restatement": "Le test remplace le service categoryService par un mock où deleteCategory délègue à deleteCategoryMock, une fonction vi.fn déclarée au niveau du module. Le fichier useSetEventArchived.test réinitialise setEventArchivedMock avec un nouveau vi.fn dans beforeEach.",
      "confidence": "high",
      "files_read_missing": true
     },
     "rediscover": {
-     "found": false,
-     "cost": 24,
-     "within_budget": false,
-     "covered": false,
-     "file": "",
+     "found": true,
+     "cost": 5,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/packs-0-10-bfb23b/frontend/src/hooks/useArchiveProduct.test.tsx",
      "file_ok": false,
      "overlap": {
-      "identifiers": 0.0,
-      "values": 0.0,
-      "terms": 0.0,
+      "identifiers": 0.75,
+      "values": null,
+      "terms": 0.583,
       "n": {
-       "identifiers": 2,
-       "values": 2,
-       "terms": 10
+       "identifiers": 4,
+       "values": 0,
+       "terms": 12
       }
      },
      "job": "frontend-socle:rediscover:mytimeline_frontend_app_locale_app_products_productId_loading.test.tsx:1"
@@ -2113,17 +2380,17 @@
     "comment": [],
     "refute": {
      "votes": 3,
-     "refuted": 0,
+     "refuted": 1,
      "refute_unproven": 0,
      "reasons": [
-      "state-errors.test.ts L6-8 : describe('isForbiddenError'), titre d'it en français, toBe(false) strict, conforme.",
-      "state-errors.test.ts L6-8 : describe('isForbiddenError'), titre en français, toBe(false) strict.",
-      "state-errors.test.ts L6-8 : un describe('isForbiddenError'), titres en français, toBe(false) strict."
+      "vi.mock('@/services/categoryService') délègue à deleteCategoryMock (L14-18) ; useSetEventArchived.test recrée setEventArchivedMock dans beforeEach (L44-46).",
+      "useSetEventArchived.test.tsx L26-28 et L44-46 recréent setEventArchivedMock en beforeEach ; useDeleteCategory (L34) utilise mockReset, nuance mais la ligne vise un test de hook précis et la convention est documentée L19-20.",
+      "Vrai pour useSetEventArchived (L45 recréation du vi.fn), mais useDeleteCategory.test.tsx L14 et L34 garde un const vi.fn() réinitialisé par mockReset en beforeEach : la règle générale 'plutôt que réinitialisé' a un contre-exemple."
      ],
      "evidence": [
       "",
       "",
-      ""
+      "beforeEach(() => deleteCategoryMock.mockReset())"
      ],
      "consigne_verdict": "n/a",
      "question_verdict": "n/a"
@@ -2137,28 +2404,86 @@
    "uses": 0
   },
   {
-   "id": "frontend-socle:tests:5",
+   "id": "frontend-socle:tests:6",
    "section": "tests",
-   "rank": 5,
-   "text": "- Le test de smoke Vitest vérifie que le rendu d'un élément se retrouve par rôle et nom accessible, ce qui valide l'infrastructure de test frontend, dans `mytimeline:frontend/src/__tests__/smoke.test.tsx:8-12` [#a7d742cf53c50dd9-1].",
-   "fact_text": "Le test de smoke Vitest vérifie que le rendu d'un élément se retrouve par rôle et nom accessible, ce qui valide l'infrastructure de test frontend, dans smoke.test.tsx",
+   "rank": 6,
+   "text": "- Un test de composant mocke next-intl pour que useTranslations renvoie la clé sous la forme namespace.key (`mytimeline:frontend/app/[locale]/(app)/products/[productId]/loading.test.tsx:7-9`) [#3215d3bea2e69c04-1]",
+   "fact_text": "Un test de composant mocke next-intl pour que useTranslations renvoie la clé sous la forme namespace.key (loading.test.tsx)",
    "consigne": null,
    "consigne_dropped": false,
    "cites": [
-    "frontend-socle/a7d742cf53c50dd9-1"
+    "frontend-socle/3215d3bea2e69c04-1"
    ],
    "files": [
-    "mytimeline:frontend/src/__tests__/smoke.test.tsx"
+    "mytimeline:frontend/app/[locale]/(app)/products/[productId]/loading.test.tsx"
    ],
    "ranges": [
     [
-     "mytimeline:frontend/src/__tests__/smoke.test.tsx",
-     8,
-     12,
-     "884b6c7924428050e50f505244b1b2267d31c39819898ad11e36e513d2819d7e"
+     "mytimeline:frontend/app/[locale]/(app)/products/[productId]/loading.test.tsx",
+     7,
+     9,
+     "97c15b4a6ecc64e232a25668c4ef5a1a950b63b3a2c0ce8bf84aff61ab8b56bd"
     ]
    ],
-   "code_sha256": "884b6c7924428050e50f505244b1b2267d31c39819898ad11e36e513d2819d7e",
+   "code_sha256": "97c15b4a6ecc64e232a25668c4ef5a1a950b63b3a2c0ce8bf84aff61ab8b56bd",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 0.667,
+      "values": null,
+      "terms": 0.714,
+      "n": {
+       "identifiers": 3,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "restatement": "Le test mocke le module next-intl, dont useTranslations renvoie une fonction qui concatène le namespace et la clé en `namespace.key`, ce qui permet d'asserter les libellés sans catalogue de traductions réel.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "frontend-socle.details.md",
+     "row": 3
+    }
+   },
+   "uses": 0
+  },
+  {
+   "id": "frontend-socle:tests:7",
+   "section": "tests",
+   "rank": 7,
+   "text": "- Le test d'un composant importe le fichier co-localisé et cible les nœuds par getByTestId [#3215d3bea2e69c04-2]",
+   "fact_text": "Le test d'un composant importe le fichier co-localisé et cible les nœuds par getByTestId",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-socle/3215d3bea2e69c04-2"
+   ],
+   "files": [
+    "mytimeline:frontend/app/[locale]/(app)/products/[productId]/loading.test.tsx"
+   ],
+   "ranges": [
+    [
+     "mytimeline:frontend/app/[locale]/(app)/products/[productId]/loading.test.tsx",
+     11,
+     25,
+     "a5cf3bf95f62bf4a05927202822550a8fa4ba884eab7ccae2ba85926c16f4357"
+    ]
+   ],
+   "code_sha256": "a5cf3bf95f62bf4a05927202822550a8fa4ba884eab7ccae2ba85926c16f4357",
    "verdict": "admit",
    "reason": "admitted",
    "final": true,
@@ -2169,32 +2494,32 @@
      "overlap": {
       "identifiers": 0.0,
       "values": null,
-      "terms": 0.167,
+      "terms": 0.143,
       "n": {
        "identifiers": 1,
        "values": 0,
-       "terms": 12
+       "terms": 7
       }
      },
-     "restatement": "Le test de fumée rend un bouton type=button au libellé ping et vérifie qu'il est trouvable par getByRole('button') avec le nom ping dans le DOM.",
+     "restatement": "Le test vérifie que ProductDetailLoading rend le squelette `product-detail-loading-skeleton` avec role=\"status\", le libellé `products.detail.loading`, exactement 3 éléments `loading-skeleton-item` dont la hauteur vaut `var(--lane-height)`, et l'absence de `products-loading-skeleton` (le squelette de la liste).",
      "confidence": "high",
      "files_read_missing": true
     },
     "rediscover": {
      "found": true,
-     "cost": 5,
-     "within_budget": true,
-     "covered": false,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/packs-0-10-bfb23b/frontend/src/__tests__/smoke.test.tsx",
-     "file_ok": true,
+     "cost": 16,
+     "within_budget": false,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/packs-0-10-bfb23b/frontend/src/components/products/RestoreProductDialog.test.tsx",
+     "file_ok": false,
      "overlap": {
       "identifiers": 1.0,
       "values": null,
-      "terms": 0.333,
+      "terms": 0.857,
       "n": {
        "identifiers": 1,
        "values": 0,
-       "terms": 12
+       "terms": 7
       }
      },
      "job": "frontend-socle:rediscover:mytimeline_frontend_app_locale_app_products_productId_loading.test.tsx:1"
@@ -2205,9 +2530,9 @@
      "refuted": 0,
      "refute_unproven": 0,
      "reasons": [
-      "smoke.test.tsx L10-11 : rend un bouton et le retrouve par getByRole avec name, conforme.",
-      "smoke.test.tsx L10-11 : rend un bouton et le retrouve par getByRole avec name 'ping'.",
-      "smoke.test.tsx L10-11 : rend un bouton et le trouve par getByRole avec name 'ping'."
+      "loading.test.tsx L4 importe './loading' et L14/L17 utilisent getByTestId ; getByText est aussi utilisé (L16) mais cela ne contredit pas la ligne.",
+      "loading.test.tsx L14 et L17 utilisent getByTestId/getAllByTestId (getByText aussi en L16, simple nuance) ; l'import co-localisé n'est pas contredit.",
+      "loading.test.tsx L4 importe './loading' et L14/L17 utilisent getByTestId/getAllByTestId."
      ],
      "evidence": [
       "",
@@ -2224,136 +2549,365 @@
     "annex_table": null
    },
    "uses": 0
+  },
+  {
+   "id": "frontend-socle:tests:8",
+   "section": "tests",
+   "rank": 8,
+   "text": "- Les cas répétitifs s'écrivent avec it.each [#742de7bd9572fb14-1] et les tests se groupent par fonction dans un describe, avec des intitulés de cas en français [#6ade1bc0ef00f313-1]",
+   "fact_text": "Les cas répétitifs s'écrivent avec it.each et les tests se groupent par fonction dans un describe, avec des intitulés de cas en français",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-socle/742de7bd9572fb14-1",
+    "frontend-socle/6ade1bc0ef00f313-1"
+   ],
+   "files": [
+    "mytimeline:frontend/src/i18n/locales.test.ts",
+    "mytimeline:frontend/src/lib/state-errors.test.ts"
+   ],
+   "ranges": [
+    [
+     "mytimeline:frontend/src/i18n/locales.test.ts",
+     22,
+     25,
+     "60c911ae6bbeaeafa84c83310a71e00a44c29f8de16e5103af4d34706f46daad"
+    ],
+    [
+     "mytimeline:frontend/src/lib/state-errors.test.ts",
+     6,
+     33,
+     "221737e68628bf03a5d88ca01e47aeaaa89bc8f16dccecd68aa941d2114a3a90"
+    ]
+   ],
+   "code_sha256": "ab7e9d8ba464713bbd5dac215dc931791438b5136c1bbe8446ea39be01ae43ce",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
+      "terms": 0.125,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 8
+      }
+     },
+     "restatement": "Les tests de locales vérifient que isSupportedLocale accepte fr, en, es et de. Les tests de state-errors vérifient que isForbiddenError renvoie false pour null, undefined et les erreurs génériques, true si le message contient 403 ou le mot forbidden sans tenir compte de la casse, true si le digest commence par 'forbidden:', et false pour 4030 grâce au \\b.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 17,
+     "within_budget": false,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/packs-0-10-bfb23b/frontend/src/hooks/useEventEditConflict.test.tsx",
+     "file_ok": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.875,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 8
+      }
+     },
+     "job": "frontend-socle:rediscover:mytimeline_frontend_app_locale_app_products_productId_loading.test.tsx:1"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "locales.test.ts L23 utilise it.each, state-errors.test.ts groupe par fonction dans describe avec intitulés français.",
+      "locales.test.ts L23 it.each, state-errors.test.ts describe par fonction avec intitulés français ; cohérent avec l'extrait.",
+      "locales.test.ts L23 utilise it.each, state-errors.test.ts groupe en describe('isForbiddenError') avec intitulés français."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 88,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "frontend-socle:questions:1",
+   "section": "questions",
+   "rank": 1,
+   "text": "- Le composant Input doit-il migrer vers les classes `mt-*` du design system ? La base montre qu'il écrit ses styles en classes utilitaires shadcn (`mytimeline:frontend/src/components/ui/input.tsx:14`) alors que IconButton, Radio, Switch, Tag, Table et Textarea utilisent `mt-*` [#50a18af8ee3d9a53-1].",
+   "fact_text": "Le composant Input doit-il migrer vers les classes `mt-*` du design system ? La base montre qu'il écrit ses styles en classes utilitaires shadcn (input.tsx) alors que IconButton, Radio, Switch, Tag, Table et Textarea utilisent `mt-*`",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-socle/50a18af8ee3d9a53-1"
+   ],
+   "files": [
+    "mytimeline:frontend/src/components/ui/input.tsx"
+   ],
+   "ranges": [
+    [
+     "mytimeline:frontend/src/components/ui/input.tsx",
+     14,
+     14,
+     "8bf6bfc2771aa6b470e68a5eb78f66bd407f1d070e14b903d213f9246fe02c60"
+    ]
+   ],
+   "code_sha256": "8bf6bfc2771aa6b470e68a5eb78f66bd407f1d070e14b903d213f9246fe02c60",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Le code constate l'écart (input.tsx utilise des classes shadcn, switch et textarea utilisent mt-*) mais ne dit pas si Input doit migrer : c'est une décision de conception.",
+      "Le code montre l'état actuel (input.tsx utilise des classes utilitaires) mais la décision de migrer reste ouverte.",
+      "Input.tsx L13-14 utilise cn() avec des classes shadcn (border-input, text-muted-foreground), ce que dit le constat. La décision de migrer est une question de conception que le code ne tranche pas."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "open",
+     "searched": true,
+     "search": {
+      "check": "answer",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "mt-[a-z] dans ui/{input,textarea,switch}.tsx",
+         "found": "mt-* présent dans switch.tsx et textarea.tsx, absent de input.tsx."
+        },
+        {
+         "tool": "Read",
+         "target": "input.tsx",
+         "found": "Classes utilitaires shadcn avec un commentaire sur le choix de hauteur mobile, aucune trace de décision de migration."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "mt-|className dans input.tsx",
+         "found": "aucune classe mt-*, seulement className et cn"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "mt-|cn\\( dans input.tsx",
+         "found": "seul cn( L13, aucune classe mt-*"
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     }
+    }
+   },
+   "contrary": null,
+   "check": "answer",
+   "placed": {
+    "pack_line": 92,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "frontend-socle:alerts:1",
+   "section": "alerts",
+   "rank": 1,
+   "text": "- La garde de `useFormField` ne peut jamais être vraie, car le contexte a une valeur par défaut `{}` typée par cast, donc l'erreur « utilisé hors de FormField » n'est jamais levée (`mytimeline:frontend/src/components/ui/form.tsx:46-52`) [#be9ed670f209392b-1]. Un champ utilisé hors de `<FormField>` ne échoue pas explicitement et se comporte avec un contexte vide. Ne pas compter sur cette erreur pour détecter un mauvais usage, et tester la présence réelle du contexte (par exemple son nom de champ) si une garde est nécessaire.",
+   "fact_text": "La garde de `useFormField` ne peut jamais être vraie, car le contexte a une valeur par défaut `{}` typée par cast, donc l'erreur « utilisé hors de FormField » n'est jamais levée (form.tsx). Un champ utilisé hors de `<FormField>` ne échoue pas explicitement et se comporte avec un contexte vide. Ne pas compter sur cette erreur pour détecter un mauvais usage, et tester la présence réelle du contexte (par exemple son nom de champ) si une garde est nécessaire",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-socle/be9ed670f209392b-1"
+   ],
+   "files": [
+    "mytimeline:frontend/src/components/ui/form.tsx"
+   ],
+   "ranges": [
+    [
+     "mytimeline:frontend/src/components/ui/form.tsx",
+     46,
+     52,
+     "c1e76988763df84b8a2465fcc39e84ea1d77ceddbfc332e37ccea9fe4e971429"
+    ]
+   ],
+   "code_sha256": "c1e76988763df84b8a2465fcc39e84ea1d77ceddbfc332e37ccea9fe4e971429",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "form.tsx L27 : createContext({} as FormFieldContextValue) donne un objet toujours truthy, donc le test `!fieldContext` (L50) ne se déclenche jamais. useFormField n'est utilisé que dans form.tsx, aucune autre garde.",
+      "form.tsx:27 crée le contexte avec {} par défaut et la ligne 50 teste !fieldContext, toujours faux: l'alerte est exacte.",
+      "form.tsx L27 crée le contexte avec {} casté et L50 teste !fieldContext, jamais vrai. Aucun garde-fou ailleurs : les quatre appelants (L89, 106, 124, 141) appellent useFormField sans vérification."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "guards",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "useFormField|FormFieldContext dans frontend/src",
+         "found": "Un seul fichier, form.tsx, donc aucun appelant ne garde le contexte."
+        },
+        {
+         "tool": "Read",
+         "target": "form.tsx",
+         "found": "Contexte par défaut {} typé par cast, garde L50 inatteignable."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "useFormField|createContext dans form.tsx",
+         "found": "createContext<FormFieldContextValue>({} as FormFieldContextValue) ligne 27, garde ligne 50-51"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "useFormField|FormFieldContext dans form.tsx",
+         "found": "contexte par défaut {} L27, garde L50, appelants L89/106/124/141"
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     }
+    }
+   },
+   "contrary": null,
+   "check": "guards",
+   "placed": {
+    "pack_line": 96,
+    "annex_table": null
+   },
+   "uses": 0
   }
  ],
  "comment_facts": [
   {
-   "id": "frontend-socle/8ccfe3ce2ea826e6-1",
+   "id": "frontend-socle/be17905ecee25a30-1",
    "verdict": "confirmed",
-   "code_says": "Le fichier n'a aucun import. Il déclare SUPPORTED_LOCALES = ['fr', 'en', 'es', 'de'] as const, le type Locale, DEFAULT_LOCALE et isSupportedLocale, sans appel à Node fs ou path.",
-   "code_line_start": 16,
-   "code_line_end": 16,
-   "code_evidence": "export const SUPPORTED_LOCALES = ['fr', 'en', 'es', 'de'] as const",
+   "code_says": "Le schéma exportJobResponseSchema déclare downloadUrl et expiresAt avec .nullable() (z.string().nullable()), et le fichier ne contient aucun .nullish(). Le DTO backend ExportJobResponse.java n'étant pas listé ni lisible ici, la correspondance avec le DTO n'est pas vérifiée.",
+   "code_line_start": 42,
+   "code_line_end": 48,
+   "code_evidence": "downloadUrl: z.string().nullable(),",
    "evidence_check": null,
-   "code_file": "mytimeline:frontend/src/i18n/locales.ts",
+   "code_file": "mytimeline:frontend/src/lib/schemas/export.ts",
    "invalid": false,
-   "cache_digest": "88235aa3b1d4d7e41631aa68b6e61665a25917875efe0010982463e612a6fcf7",
+   "cache_digest": "6f267887747fd4f816030f4ae371bd45e71702db8047c830146a4f5676e0e369",
    "cited_by": [
     "frontend-socle:rules:2"
    ],
    "structure_rows_removed": []
   },
   {
-   "id": "frontend-socle/aeab71ba3df29aba-1",
-   "verdict": "unverifiable",
-   "code_says": "",
-   "code_line_start": 0,
-   "code_line_end": 0,
-   "code_evidence": "",
-   "evidence_check": null,
-   "code_file": "",
-   "invalid": false,
-   "cache_digest": "9726998b73faf29bb3b789283af0329f93e7b1f7d82a2644b5bacff1a9661359",
-   "cited_by": [
-    "frontend-socle:rules:3"
-   ],
-   "structure_rows_removed": []
-  },
-  {
-   "id": "frontend-socle/8bf24c9c5c97faf3-1",
+   "id": "frontend-socle/2ddd82a4eeddddda-3",
    "verdict": "confirmed",
-   "code_says": "safeErrorMessage lit le status HTTP de error.response quand il existe, puis renvoie '[status] message' ou le seul message (ou 'unknown error' si l'erreur n'est pas une Error). Aucun autre champ de l'erreur n'est repris.",
-   "code_line_start": 21,
-   "code_line_end": 22,
-   "code_evidence": "return status !== undefined ? `[${status}] ${message}` : message",
+   "code_says": "Le fichier contient trois tests (succès avec réassignation, transmission des options 403, invalidation sur succès), tous sur le chemin de succès. Aucun test ne fait rejeter la mutation, donc le rejet n'est pas testé ici avec renderHook. La partie sur la couverture end-to-end n'est pas vérifiable depuis ce fichier.",
+   "code_line_start": 37,
+   "code_line_end": 69,
+   "code_evidence": "it('invalide categories.all + products.all sur succès', async () => {",
    "evidence_check": null,
-   "code_file": "mytimeline:frontend/src/lib/safe-error.ts",
+   "code_file": "mytimeline:frontend/src/hooks/useDeleteCategory.test.tsx",
    "invalid": false,
-   "cache_digest": "2ae1ef7d64179c002d5ee51fc221e26b60973c25a87c1975817343771be39519",
+   "cache_digest": "79ff24a207e571accbe145ff4c21fd7110eedcddae5dab121a8c6e9e701be967",
    "cited_by": [
-    "frontend-socle:rules:4"
-   ],
-   "structure_rows_removed": []
-  },
-  {
-   "id": "frontend-socle/3d7ba2b79879606f-1",
-   "verdict": "unverifiable",
-   "code_says": "",
-   "code_line_start": 0,
-   "code_line_end": 0,
-   "code_evidence": "",
-   "evidence_check": null,
-   "code_file": "",
-   "invalid": false,
-   "cache_digest": "628200d4e88669fb8245362dcf044ca2958db98ba0b6f8d36213718d406cb7f2",
-   "cited_by": [
-    "frontend-socle:rules:5"
-   ],
-   "structure_rows_removed": []
-  },
-  {
-   "id": "frontend-socle/e688fe2a35b9cc5c-1",
-   "verdict": "unverifiable",
-   "code_says": "Le hook useCategories appelle useQuery avec la forme objet ({ queryKey, queryFn, enabled }) sans fixer gcTime ni cacheTime, donc les valeurs par défaut de TanStack Query s'appliquent.",
-   "code_line_start": 0,
-   "code_line_end": 0,
-   "code_evidence": "",
-   "evidence_check": null,
-   "code_file": "",
-   "invalid": false,
-   "cache_digest": "5a8c98d1388fe6034a129f285f266f1eeca27407f5081087df026aba28c603fb",
-   "cited_by": [
-    "frontend-socle:rules:7"
-   ],
-   "structure_rows_removed": []
-  },
-  {
-   "id": "frontend-socle/434468f4e9a0a882-1",
-   "verdict": "confirmed",
-   "code_says": "Le hook useCreateCategory transmet directement createCategory(data, options) dans mutationFn, sans try/catch ni onError, donc l'erreur de la mutation n'est pas capturée par le hook et remonte à l'appelant ; seul onSuccess invalide queryKeys.categories.all.",
-   "code_line_start": 23,
-   "code_line_end": 28,
-   "code_evidence": "mutationFn: (data: CategoryCreate) => createCategory(data, options),",
-   "evidence_check": null,
-   "code_file": "mytimeline:frontend/src/hooks/useCreateCategory.ts",
-   "invalid": false,
-   "cache_digest": "849ee49923d903dd80b12101a0e0280494391c7319a3369115259f9ba79a6e1d",
-   "cited_by": [
-    "frontend-socle:rules:7"
+    "frontend-socle:tests:4"
    ],
    "structure_rows_removed": []
   }
  ],
  "facts_validated": [
-  "frontend-socle/81956d761fae945d-1",
-  "frontend-socle/2681e154ca18518c-1",
-  "frontend-socle/8ccfe3ce2ea826e6-1",
-  "frontend-socle/aeab71ba3df29aba-1",
-  "frontend-socle/8bf24c9c5c97faf3-1",
-  "frontend-socle/8bf24c9c5c97faf3-2",
-  "frontend-socle/3d7ba2b79879606f-1",
-  "frontend-socle/3d7ba2b79879606f-3",
-  "frontend-socle/b485fe301f167807-2",
-  "frontend-socle/434468f4e9a0a882-2",
-  "frontend-socle/e688fe2a35b9cc5c-1",
-  "frontend-socle/434468f4e9a0a882-1",
-  "frontend-socle/9ada093f42c5012f-1",
-  "frontend-socle/60c29c7e21afaf68-1",
-  "frontend-socle/602974f8c6e4d014-2",
-  "frontend-socle/1ea1cef586e27163-1",
-  "frontend-socle/4c4a6ad8222ac4ce-1",
-  "frontend-socle/c8e7542069dbe36c-1",
-  "frontend-socle/094f62dfc66d6733-1",
-  "frontend-socle/3215d3bea2e69c04-1",
+  "frontend-socle/f7edf638060ead2e-1",
+  "frontend-socle/c5e0cc829ec13d64-1",
+  "frontend-socle/be17905ecee25a30-1",
+  "frontend-socle/216aef023951fc3c-2",
+  "frontend-socle/48cc57b65f950043-1",
+  "frontend-socle/9c1a4893d224818b-1",
+  "frontend-socle/81c4bd53a93413ba-1",
+  "frontend-socle/90dcea2b3d20a21f-1",
+  "frontend-socle/03037b579b39b673-1",
+  "frontend-socle/23d1084a3d27aa15-1",
+  "frontend-socle/c5d8ae93173501ee-1",
+  "frontend-socle/22280d8552c204d5-1",
+  "frontend-socle/6304b75e00c66e75-1",
+  "frontend-socle/80fa1ea1da348b99-1",
+  "frontend-socle/6304b75e00c66e75-5",
+  "frontend-socle/aa086b7fd21197d3-2",
+  "frontend-socle/9e9de04ddcb3f998-1",
+  "frontend-socle/9e9de04ddcb3f998-2",
+  "frontend-socle/4c814ff13ceadfce-1",
+  "frontend-socle/2ddd82a4eeddddda-2",
+  "frontend-socle/ca3795aa1c7a0a68-2",
+  "frontend-socle/2ddd82a4eeddddda-1",
+  "frontend-socle/ca3795aa1c7a0a68-1",
   "frontend-socle/3215d3bea2e69c04-2",
   "frontend-socle/742de7bd9572fb14-1",
   "frontend-socle/6ade1bc0ef00f313-1",
-  "frontend-socle/a7d742cf53c50dd9-1"
+  "frontend-socle/50a18af8ee3d9a53-1",
+  "frontend-socle/be9ed670f209392b-1"
  ],
  "counts": {
-  "units": 19,
-  "admit": 16,
-  "annex": 1,
+  "units": 24,
+  "admit": 19,
+  "annex": 3,
   "drop": 2,
   "hold": 0,
   "pending": 0,
@@ -2363,10 +2917,12 @@
   "framework": 0,
   "guarded_elsewhere": 0,
   "resolved": 0,
-  "restricted": 1,
+  "restricted": 5,
   "counterexample": 2,
   "promoted": 0,
-  "kept_for": {},
+  "kept_for": {
+   "rediscovered": 2
+  },
   "pointers_removed": 0,
   "restored_alerts": 0,
   "budget_cut": 0
@@ -2375,28 +2931,22 @@
  "budget_cut": [],
  "structure_rows_removed": [],
  "notes": [
-  "frontend-socle:rules:3 : unité annex dont la ligne n'est plus dans l'annexe, non reportée",
-  "frontend-socle:rules:4 : unité annex dont la ligne n'est plus dans l'annexe, non reportée",
+  "frontend-socle:rules:5 : unité annex dont la ligne n'est plus dans l'annexe, non reportée",
   "frontend-socle:rules:6 : unité annex dont la ligne n'est plus dans l'annexe, non reportée",
-  "frontend-socle:rules:7 : unité annex dont la ligne n'est plus dans l'annexe, non reportée",
   "frontend-socle:rules:8 : unité annex dont la ligne n'est plus dans l'annexe, non reportée",
-  "frontend-socle:rules:9 : unité annex dont la ligne n'est plus dans l'annexe, non reportée",
-  "frontend-socle:rules:10 : unité annex dont la ligne n'est plus dans l'annexe, non reportée",
   "frontend-socle:rules:12 : unité annex dont la ligne n'est plus dans l'annexe, non reportée",
-  "frontend-socle:rules:13 : unité annex dont la ligne n'est plus dans l'annexe, non reportée",
-  "frontend-socle:surface:1 : unité annex dont la ligne n'est plus dans l'annexe, non reportée",
-  "frontend-socle:tests:5 : unité annex dont la ligne n'est plus dans l'annexe, non reportée"
+  "frontend-socle:rules:13 : unité annex dont la ligne n'est plus dans l'annexe, non reportée"
  ],
- "base_sha256_after": "1c664bdc5212a84a7f7e1a7a41657293da01620e1756ef58a63401c177b577a5",
+ "base_sha256_after": "8de52e1402e26879cf2a2954da366a922326c0cbc2abbf0dab8f527cd720b415",
  "bases_touched": {
   "frontend-socle": {
-   "fingerprint": "126ede90106c356a0c4586ee2e9bef715e99fb1564a2aae646c04f6596172516",
-   "sha256_after": "1c664bdc5212a84a7f7e1a7a41657293da01620e1756ef58a63401c177b577a5"
+   "fingerprint": "f717f1c1a0004cf09a145d861219107a70b1edd117e1378f8cd174e4dc62777d",
+   "sha256_after": "8de52e1402e26879cf2a2954da366a922326c0cbc2abbf0dab8f527cd720b415"
   }
  },
  "lint": {
   "ok": true,
   "errors": 0,
-  "warnings": 0
+  "warnings": 1
  }
 }

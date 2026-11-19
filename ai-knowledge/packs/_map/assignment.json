@@ -567,6 +567,10 @@
 "pack": "backend-socle",
 "how": "path_rule:tech"
 },
+"mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/config/JpaSharedEntityManagerConfig.java": {
+"pack": "backend-socle",
+"how": "path_rule:tech"
+},
 "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/config/ProdConfigStartupLogger.java": {
 "pack": "backend-socle",
 "how": "path_rule:tech"
@@ -1343,6 +1347,10 @@
 "pack": "timeline",
 "how": "seed"
 },
+"mytimeline:frontend/src/components/dashboard/ProductList.test.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
 "mytimeline:frontend/src/components/dashboard/ProductList.tsx": {
 "pack": "timeline",
 "how": "seed"
@@ -1747,6 +1755,10 @@
 "pack": "timeline",
 "how": "seed"
 },
+"mytimeline:frontend/src/components/shared/DeleteConfirmDialog.forbidden.test.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
 "mytimeline:frontend/src/components/shared/DeleteConfirmDialog.intl.test.tsx": {
 "pack": "frontend-socle",
 "how": "path_rule:unassigned"
@@ -1864,6 +1876,10 @@
 "how": "seed"
 },
 "mytimeline:frontend/src/components/timeline/TimelineBottomSheet.tsx": {
+"pack": "timeline",
+"how": "seed"
+},
+"mytimeline:frontend/src/components/timeline/TimelineEditHost.forbidden.test.tsx": {
 "pack": "timeline",
 "how": "seed"
 },
@@ -2008,6 +2024,10 @@
 "how": "seed"
 },
 "mytimeline:frontend/src/components/timeline/stress-fixtures.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/components/timeline/useFocusTrap.test.tsx": {
 "pack": "frontend-socle",
 "how": "path_rule:unassigned"
 },
@@ -2211,6 +2231,10 @@
 "pack": "frontend-socle",
 "how": "path_rule:unassigned"
 },
+"mytimeline:frontend/src/components/ui/tabs.test.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
 "mytimeline:frontend/src/components/ui/tabs.tsx": {
 "pack": "frontend-socle",
 "how": "path_rule:unassigned"
@@ -2355,6 +2379,10 @@
 "pack": "timeline",
 "how": "seed"
 },
+"mytimeline:frontend/src/hooks/useDensity.test.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
 "mytimeline:frontend/src/hooks/useDensity.ts": {
 "pack": "frontend-socle",
 "how": "path_rule:unassigned"
@@ -2374,6 +2402,10 @@
 "mytimeline:frontend/src/hooks/useExportFlow.ts": {
 "pack": "timeline",
 "how": "seed"
+},
+"mytimeline:frontend/src/hooks/useHydrated.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
 },
 "mytimeline:frontend/src/hooks/useMediaQuery.ts": {
 "pack": "frontend-socle",
@@ -2406,6 +2438,14 @@
 "mytimeline:frontend/src/hooks/useRestoreProduct.ts": {
 "pack": "timeline",
 "how": "seed"
+},
+"mytimeline:frontend/src/hooks/useReturnFocus.test.tsx": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/hooks/useReturnFocus.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
 },
 "mytimeline:frontend/src/hooks/useSectionAnimation.test.ts": {
 "pack": "frontend-socle",
@@ -2508,6 +2548,14 @@
 "how": "path_rule:unassigned"
 },
 "mytimeline:frontend/src/lib/date-iso.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/lib/density.test.ts": {
+"pack": "frontend-socle",
+"how": "path_rule:unassigned"
+},
+"mytimeline:frontend/src/lib/density.ts": {
 "pack": "frontend-socle",
 "how": "path_rule:unassigned"
 },
