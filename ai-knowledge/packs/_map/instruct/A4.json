@@ -1,21 +1,16 @@
 {
  "id": "A4",
- "question": "Les fichiers frontend non rattachés vont-ils au pack timeline (par alias) ou au socle frontend ?",
- "decision": "les composants nommés timeline, event, product, category, auth, theme ou conflict vont à timeline par alias, le reste (ui, layout, styles, lib générique) reste au socle frontend",
- "rule": "R3 aucun import mesuré (arêtes de groupe vides), décision par noms de fichiers",
- "confidence": "low",
+ "question": "PasswordReset : user ou pack propre ?",
+ "decision": "user",
+ "rule": "R3 satellite fondu dans user (22 fichiers, 13 liens sur 14), sous la taille de séparation",
+ "confidence": "medium",
  "seeds": [
-  "EventEntity",
-  "CategoryEntity",
-  "ProductEntity"
+  "PasswordReset",
+  "PasswordResetTokenEntity"
  ],
- "evidence": [
-  "mytimeline:frontend/src/components/timeline/TimelineView.tsx",
-  "mytimeline:frontend/src/components/layout/AppShell.tsx",
-  "mytimeline:frontend/src/components/ui/toaster.tsx"
- ],
- "falsified_if": "un ticket sur un composant de timeline ou d'événement ne charge pas le pack timeline, ou un composant d'ui générique y est rattaché à tort",
+ "evidence": [],
+ "falsified_if": "un ticket de réinitialisation de mot de passe ne touche jamais le profil utilisateur",
  "status": "open",
- "opened": "2026-11-17",
+ "opened": "2026-11-19",
  "touched_by": []
 }

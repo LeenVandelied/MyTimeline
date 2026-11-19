@@ -1,27 +1,35 @@
 {
-  "UserEntity": [
-    "user",
-    "utilisateur",
-    "event",
-    "événement",
-    "evenement",
-    "category",
-    "catégorie",
-    "categorie",
-    "product",
-    "produit",
-    "session",
-    "export",
-    "password",
-    "mot de passe",
-    "timeline",
-    "chronologie",
-    "recurrence",
-    "récurrence",
-    "auth",
-    "theme",
-    "thème",
-    "conflict",
-    "conflit"
-  ]
+ "User": [
+  "user",
+  "password",
+  "avatar",
+  "register",
+  "forgot"
+ ],
+ "Event": [
+  "timeline",
+  "recurrence",
+  "preview",
+  "lane",
+  "zoom",
+  "viewport"
+ ],
+ "Product": [
+  "product",
+  "produit"
+ ],
+ "Category": [
+  "category",
+  "categorie",
+  "catégorie"
+ ],
+ "ExportJob": [
+  "export",
+  "exporter"
+ ],
+ "Session": [
+  "session",
+  "jwks",
+  "jwt"
+ ]
 }

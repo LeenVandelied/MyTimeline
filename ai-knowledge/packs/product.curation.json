@@ -1,0 +1,4930 @@
+{
+ "pack": "product",
+ "schema": 1,
+ "curated_at": "2026-11-19T10:32:37Z",
+ "curator": "curate/1",
+ "base_sha256": "4e28a63f6e6c575773f3d4ece8dce1187c39eaac0063106dbf5bec5af1749028",
+ "pack_sha256_before": "1e3bdc3753baeed1608afbff85a2e8a1502b7604089feea6b41f14b21a13f582",
+ "pack_sha256_after": "2bd1fc11de5135be57f9da51684ef894a3b9b119fef7c454153e72c9fc174966",
+ "criteria_sha256": "48e0e20f086c5b11deecfecdc547ba1d6115faee1597a5aaf682f6c699e92423",
+ "models": {
+  "measure": "haiku",
+  "refute": "sonnet"
+ },
+ "base_fingerprint": "3843c657fa8a079a78b9d59d356792408a28879c7895acbe87e4c617334eb54a",
+ "bytes": {
+  "before": 20657,
+  "after": 18922,
+  "by_section": {
+   "activate": {
+    "before": 170,
+    "after": 170
+   },
+   "lexicon": {
+    "before": 1102,
+    "after": 1102
+   },
+   "rules": {
+    "before": 2934,
+    "after": 3155
+   },
+   "structure": {
+    "before": 7531,
+    "after": 7531
+   },
+   "surface": {
+    "before": 2020,
+    "after": 1861
+   },
+   "files": {
+    "before": 1862,
+    "after": 1862
+   },
+   "relations": {
+    "before": 289,
+    "after": 289
+   },
+   "tests": {
+    "before": 1061,
+    "after": 675
+   },
+   "questions": {
+    "before": 646,
+    "after": 247
+   },
+   "alerts": {
+    "before": 2052,
+    "after": 1041
+   },
+   "coverage": {
+    "before": 617,
+    "after": 617
+   }
+  }
+ },
+ "units": [
+  {
+   "id": "product:lexicon:1",
+   "section": "lexicon",
+   "rank": 1,
+   "text": "| Produit | Regroupe une catégorie et une liste d'événements, avec une couleur facultative côté frontend. Côté base, les événements sont supprimés avec lui (cascade et orphelins). | [#cb9cd539bc6aefc5-1] [#f9764289451941b1-1] |",
+   "fact_text": "Produit : Regroupe une catégorie et une liste d'événements, avec une couleur facultative côté frontend. Côté base, les événements sont supprimés avec lui (cascade et orphelins)",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "product/cb9cd539bc6aefc5-1",
+    "product/f9764289451941b1-1"
+   ],
+   "files": [
+    "mytimeline:frontend/src/types/product.ts",
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/ProductEntity.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:frontend/src/types/product.ts",
+     26,
+     36,
+     "c9ad2b23c7697e8e618584434c77fca7ba378f6980ad6cd3fd0aac0a421395c9"
+    ],
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/ProductEntity.java",
+     46,
+     48,
+     "f0b5132535e5aa4a75d2c394e31306b72ad3d2597a0d626941c2ef8fe9897d7c"
+    ]
+   ],
+   "code_sha256": "1f2780a8d2bdef63723125e793bbde097f9a228a25a10ffd0dcafe28e450aed3",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "productSchema a color nullable, events en cascade ALL avec orphanRemoval (L46).",
+      "productSchema : color nullable, category et events ; ProductEntity.events a cascade ALL et orphanRemoval (L46).",
+      "La couleur est nullable dans productSchema et les événements ont cascade ALL et orphanRemoval (ProductEntity L46)."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 28,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:lexicon:2",
+   "section": "lexicon",
+   "rank": 2,
+   "text": "| Archivé | Indicateur booléen non nul, faux par défaut. Archiver un produit affiche un toast de succès dédié. | [#3cf28ed77eb574bb-1] [#9cc65799cbc6def7-1] |",
+   "fact_text": "Archivé : Indicateur booléen non nul, faux par défaut. Archiver un produit affiche un toast de succès dédié",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "product/3cf28ed77eb574bb-1",
+    "product/9cc65799cbc6def7-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/ProductEntity.java",
+    "mytimeline:frontend/src/components/products/ProductsListView.tsx"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/ProductEntity.java",
+     33,
+     34,
+     "1bed6ea9e2b061d139bd530fc1bfa8465998acc2e50fc26f076d60afe36c65d5"
+    ],
+    [
+     "mytimeline:frontend/src/components/products/ProductsListView.tsx",
+     217,
+     217,
+     "67959040d0e14f83a6e40001d181b458755c31116646a248e73695b59d4d654b"
+    ]
+   ],
+   "code_sha256": "a23b837d53e5dd06c33eb3124d5cc13c326fd29fc878eb6ae8535ec90380816c",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "ProductEntity L33-34 boolean non nul défaut false, toast productArchived L217.",
+      "ProductEntity.archived est boolean non nul défaut false (L33-34), toast productArchived L217.",
+      "ProductEntity L33-34 : colonne non nulle, false par défaut. Toast productArchived L217."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 29,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:lexicon:3",
+   "section": "lexicon",
+   "rank": 3,
+   "text": "| Frise | Nom français de la vue chronologique, ouverte depuis le lien de la densité du tableau de bord (clé openTimeline). | [#4e9437e462e8c665-1] [#676746658e0bc721-1] |",
+   "fact_text": "Frise : Nom français de la vue chronologique, ouverte depuis le lien de la densité du tableau de bord (clé openTimeline)",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "product/4e9437e462e8c665-1",
+    "product/676746658e0bc721-1"
+   ],
+   "files": [
+    "mytimeline:frontend/src/components/dashboard/DensityRibbon.intl.test.tsx",
+    "mytimeline:frontend/src/components/dashboard/DensityRibbon.tsx"
+   ],
+   "ranges": [
+    [
+     "mytimeline:frontend/src/components/dashboard/DensityRibbon.intl.test.tsx",
+     75,
+     75,
+     "e81eaa1e7c8e9c0fdb63aa185fd8d0022d07f53347db9294f8e5b445dca7df20"
+    ],
+    [
+     "mytimeline:frontend/src/components/dashboard/DensityRibbon.tsx",
+     275,
+     275,
+     "6c157c426a2141ed588c7c0696285e541019c9d275e09ab002b75c35f69fdb50"
+    ]
+   ],
+   "code_sha256": "1d75b62f0234bde48f2b30fcc52b09f6279a8e83b45f33697fb3bcdac71634ff",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Libellé 'Ouvrir la frise' et clé openTimeline dans DensityRibbon.",
+      "DensityRibbon L275 utilise la clé openTimeline, libellé fr 'Ouvrir la frise'.",
+      "Le libellé fr 'Ouvrir la frise' et la clé openTimeline sont dans DensityRibbon."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 30,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:lexicon:4",
+   "section": "lexicon",
+   "rank": 4,
+   "text": "| Densité (ruban) | Repère temporel du tableau de bord dont le jour 0 affiche Aujourd'hui, les autres jours une date courte. | [#8201be6af3b41edb-1] |",
+   "fact_text": "Densité (ruban) : Repère temporel du tableau de bord dont le jour 0 affiche Aujourd'hui, les autres jours une date courte",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "product/8201be6af3b41edb-1"
+   ],
+   "files": [
+    "mytimeline:frontend/src/components/dashboard/DensityRibbon.tsx"
+   ],
+   "ranges": [
+    [
+     "mytimeline:frontend/src/components/dashboard/DensityRibbon.tsx",
+     222,
+     222,
+     "c217e9d9116f26b225520c142bd159dbb43691dc922b0287f0b724ffa722a289"
+    ]
+   ],
+   "code_sha256": "c217e9d9116f26b225520c142bd159dbb43691dc922b0287f0b724ffa722a289",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "L222 : jour 0 affiche t('today'), sinon date formatée.",
+      "DensityRibbon L222 : jour 0 affiche t('today'), sinon une date formatée.",
+      "DensityRibbon L222 affiche today pour le jour 0 et une date courte sinon."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 31,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:lexicon:5",
+   "section": "lexicon",
+   "rank": 5,
+   "text": "| KPI du tableau de bord | Cinq métriques agrégées du tableau de bord, dont une partie récurrente de la semaine et la catégorie la plus chargée. | [#c730773888727d2d-1] [#99b2ca01d45a7db5-1] |",
+   "fact_text": "KPI du tableau de bord : Cinq métriques agrégées du tableau de bord, dont une partie récurrente de la semaine et la catégorie la plus chargée",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "product/c730773888727d2d-1",
+    "product/99b2ca01d45a7db5-1"
+   ],
+   "files": [
+    "mytimeline:frontend/src/components/dashboard/kpis.ts",
+    "mytimeline:frontend/src/components/dashboard/KpiMarginalia.tsx"
+   ],
+   "ranges": [
+    [
+     "mytimeline:frontend/src/components/dashboard/kpis.ts",
+     17,
+     28,
+     "b0f7dc29867dba12d98760a41db003805e15ae5e8c19eaeeceb276e4d2e4baa9"
+    ],
+    [
+     "mytimeline:frontend/src/components/dashboard/KpiMarginalia.tsx",
+     42,
+     42,
+     "a6d9b60af689de523c9104929c576723b201ccd084d56837531020665d1c290f"
+    ]
+   ],
+   "code_sha256": "7a844aeeb65d99699925c0ba83487d1b0d18a8d245d674bb8c768e57d5206967",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "DashboardKpis expose 5 champs dont weekRecurring et busiestCategory.",
+      "DashboardKpis a cinq champs dont weekRecurring et busiestCategory.",
+      "DashboardKpis compte cinq champs, dont weekRecurring et busiestCategory."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 32,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:lexicon:6",
+   "section": "lexicon",
+   "rank": 6,
+   "text": "| Version | Champ de verrouillage optimiste du produit, non nul. | [#529d47becb68ce40-1] |",
+   "fact_text": "Version : Champ de verrouillage optimiste du produit, non nul",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "product/529d47becb68ce40-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/ProductEntity.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/ProductEntity.java",
+     58,
+     60,
+     "0e7a3696a91f6172abb7ef45cc96cbeb56b3bffe2ff23091d7b974993d3e8eca"
+    ]
+   ],
+   "code_sha256": "0e7a3696a91f6172abb7ef45cc96cbeb56b3bffe2ff23091d7b974993d3e8eca",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "@Version et nullable=false sur Integer version, L58-60.",
+      "@Version @Column(nullable=false) Integer version, L58-60.",
+      "@Version avec nullable=false sur version (L58-60)."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 33,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:rules:1",
+   "section": "rules",
+   "rank": 1,
+   "text": "- L'archivage backend passe archived à true et sauvegarde, sans suppression physique. [#6a2517a951787033-1]",
+   "fact_text": "L'archivage backend passe archived à true et sauvegarde, sans suppression physique",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "product/6a2517a951787033-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+     173,
+     179,
+     "5fc34c0ab209ccdfd690f2daab73be07d863bffcb7b4f9d5c44187c0761905b4"
+    ]
+   ],
+   "code_sha256": "5fc34c0ab209ccdfd690f2daab73be07d863bffcb7b4f9d5c44187c0761905b4",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 0.75,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 8
+      }
+     },
+     "restatement": "ProductServiceImpl.archiveById charge le produit par id via findDomainProductById, lève ProductNotFoundException si absent, puis passe archived à true et sauvegarde. C'est un soft delete, sans suppression physique.",
+     "confidence": "high"
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "product.details.md",
+     "row": 1
+    }
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:rules:2",
+   "section": "rules",
+   "rank": 2,
+   "text": "- Toute lecture Hibernate de ProductEntity ajoute archived = false, donc un produit archivé disparaît de tous les chargements, y compris findById. [#ed1e9d0b02832172-1]",
+   "fact_text": "Toute lecture Hibernate de ProductEntity ajoute archived = false, donc un produit archivé disparaît de tous les chargements, y compris findById",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "product/ed1e9d0b02832172-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/ProductEntity.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/ProductEntity.java",
+     25,
+     25,
+     "6a796775801ccd697887c61676c987226892386e9be4474d9cbe91716ece8254"
+    ]
+   ],
+   "code_sha256": "6a796775801ccd697887c61676c987226892386e9be4474d9cbe91716ece8254",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": null,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 10
+      }
+     },
+     "restatement": "ProductEntity porte @SQLRestriction(\"archived = false\") au niveau classe, ce qui filtre les produits archivés dans les requêtes JPA/HQL sur l'entité. Piège : les requêtes natives comme findArchivedByUserId ne passent pas par ce filtre, qui est une règle de Hibernate que l'extrait ne démontre pas directement.",
+     "confidence": "medium"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 5,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:\\Users\\ldelaforcade\\Documents\\Personnel\\My Timeline\\MyTimeline\\backend\\src\\main\\java\\com\\matimeline\\eventmanager\\infrastructure\\entities\\ProductEntity.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.6,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 10
+      }
+     },
+     "job": "product:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_dtos_ProductCreationRequest.java:1",
+     "rank_in_lot": 5
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "words:tous,toute",
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 38,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:rules:3",
+   "section": "rules",
+   "rank": 3,
+   "text": "- La restauration est un UPDATE natif filtré sur id, utilisateur et état archivé, et lève ProductNotFoundException si aucune ligne n'est touchée. [#b3cdac12863fa666-1] [#886190a156eb7d0d-1]",
+   "fact_text": "La restauration est un UPDATE natif filtré sur id, utilisateur et état archivé, et lève ProductNotFoundException si aucune ligne n'est touchée",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "product/b3cdac12863fa666-1",
+    "product/886190a156eb7d0d-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+     195,
+     200,
+     "3f25a92a8d550bced0cf57b7bb33a4b939a13c6dd76df1c7f5d3f96c040a93f9"
+    ],
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+     197,
+     198,
+     "93741610babe0c48147c7bb1641fb9603ad2acb906ac0039c2292ad513ebe291"
+    ]
+   ],
+   "code_sha256": "b20f59e93e369a50770e1a43723bd769e378a5feed8645e5dbd5d2380e2febfc",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": null,
+      "terms": 0.222,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 9
+      }
+     },
+     "restatement": "ProductServiceImpl.restoreProduct appelle restoreArchivedByIdAndUserId(productId, userId) et lève ProductNotFoundException si le retour vaut 0. La requête de restauration elle-même n'est pas dans l'extrait, donc le sens exact du compteur reste une lecture de la condition.",
+     "confidence": "high"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 4,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:\\Users\\ldelaforcade\\Documents\\Personnel\\My Timeline\\MyTimeline\\backend\\src\\main\\java\\com\\matimeline\\eventmanager\\infrastructure\\adapters\\repositories\\jpa\\ProductRepositoryJpaImpl.java",
+     "file_ok": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.556,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 9
+      }
+     },
+     "job": "product:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_dtos_ProductCreationRequest.java:1"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "ProductRepositoryJpaImpl.restoreArchivedByIdAndUserId utilise un UPDATE natif avec WHERE id = :id AND user_id = :uid AND archived = true, et restoreProduct lève ProductNotFoundException si 0 ligne. Aucun autre chemin de restauration trouvé.",
+      "restoreArchivedByIdAndUserId est un UPDATE natif avec WHERE id, user_id et archived = true, et restoreProduct lève ProductNotFoundException si restored == 0. Aucun autre chemin de restauration trouvé.",
+      "ProductRepositoryJpaImpl L253-254 exécute un UPDATE natif avec WHERE id, user_id et archived = true, et ProductServiceImpl L197-198 lève ProductNotFoundException quand restored vaut 0. La ligne est exacte."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "scope",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "restoreArchivedByIdAndUserId",
+         "found": "Seul chemin de restauration, UPDATE natif filtré sur id, user_id, archived = true ; service lève 404 si 0."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "restoreArchivedByIdAndUserId|restore dans backend/src/main/java",
+         "found": "Une seule implémentation (ProductRepositoryJpaImpl L250-258) et un seul appelant, ProductServiceImpl.restoreProduct."
+        },
+        {
+         "tool": "Read",
+         "target": "ProductRepositoryJpaImpl.java L225-262",
+         "found": "Requête native avec WHERE id = :id AND user_id = :uid AND archived = true."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "restoreArchivedByIdAndUserId",
+         "found": "Port, service et adaptateur JPA. Le WHERE de l'UPDATE natif filtre bien sur id, user_id et archived."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     }
+    }
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "words:aucune",
+   "placed": {
+    "pack_line": 39,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:rules:4",
+   "section": "rules",
+   "rank": 4,
+   "text": "- Côté front, archiver sans userId ou sans produit lève une erreur avant tout appel. [#489818ded7d0ce9d-1] [#2a25f62a0b7cc915-1]",
+   "fact_text": "Côté front, archiver sans userId ou sans produit lève une erreur avant tout appel",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "product/489818ded7d0ce9d-1",
+    "product/2a25f62a0b7cc915-1"
+   ],
+   "files": [
+    "mytimeline:frontend/src/components/products/ProductDetailView.tsx",
+    "mytimeline:frontend/src/hooks/useArchiveProduct.ts"
+   ],
+   "ranges": [
+    [
+     "mytimeline:frontend/src/components/products/ProductDetailView.tsx",
+     253,
+     253,
+     "1c5625d11f1979f18e1ffa5f895733725e04c4da29f4f93e7fbc4474206ab21b"
+    ],
+    [
+     "mytimeline:frontend/src/hooks/useArchiveProduct.ts",
+     62,
+     64,
+     "32af2c19fe7b38e80ede48f5a16a2f43830a618d66264f7dd921a35bdd28a5da"
+    ]
+   ],
+   "code_sha256": "685182a8afe31868c7512fbb1bb9a41ace9d4ce1eb6ecfb2f4df3552889321d7",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.286,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "restatement": "ProductDetailView.handleArchiveConfirm lève une Error « userId/produit manquant » si userId ou product est absent. Le hook useArchiveProduct, lui, n'exécute pas la requête et rejette une Promise avec Error « userId manquant » quand userId est absent. Les deux gardes sont différentes : l'une lève une exception synchrone dans le handler, l'autre renvoie un rejet de Promise.",
+     "confidence": "high"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 9,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:\\Users\\ldelaforcade\\Documents\\Personnel\\My Timeline\\MyTimeline\\frontend\\src\\hooks\\useArchiveProduct.ts",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.286,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "job": "product:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_dtos_ProductCreationRequest.java:1"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Les trois points d'entrée de l'archivage garantissent le cas : useArchiveProduct (L62-64), ProductDetailView.handleArchiveConfirm (L253), ProductsListView (L215) et ProductDrawer (L265). Aucun contre-exemple trouvé.",
+      "Les points d'archivage produit (useArchiveProduct L62-64, ProductDetailView L253, ProductsListView L215) vérifient userId avant tout appel, sans contre-exemple trouvé.",
+      "Les deux points d'archivage du front (ProductDetailView L253, ProductsListView L215 et le hook useArchiveProduct L62-64) lèvent une erreur ou rejettent avant tout appel si userId ou produit manque."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "scope",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "archive dans frontend/src (ts, tsx)",
+         "found": "40 fichiers, les appelants sont ProductDrawer, ProductDetailView, ProductsListView"
+        },
+        {
+         "tool": "Grep",
+         "target": "useArchiveProduct|archiveProduct hors tests",
+         "found": "3 composants appellent useArchiveProduct"
+        },
+        {
+         "tool": "Grep",
+         "target": "archiveMutation dans ProductDrawer.tsx",
+         "found": "L265 : if (!userId || !product) throw new Error('userId/produit manquant')"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "archiveProduct|useArchiveProduct|deleteProduct( dans frontend/src",
+         "found": "consommateurs ProductDetailView, ProductDrawer, ProductsListView, tous via useArchiveProduct qui rejette sans userId"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "archiveProduct|deleteProduct( dans frontend/src hors tests",
+         "found": "Appelants : useArchiveProduct (rejet si !userId), ProductsListView L215 et ProductDetailView L253 (throw si !userId || !produit)."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     }
+    }
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "words:tout",
+   "placed": {
+    "pack_line": 40,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:rules:5",
+   "section": "rules",
+   "rank": 5,
+   "text": "- Après un archivage réussi, le produit sort du cache withEvents et les préfixes products.all et categories.all sont invalidés. [#4bd10885e9cd21a4-1] [#4bd10885e9cd21a4-2]",
+   "fact_text": "Après un archivage réussi, le produit sort du cache withEvents et les préfixes products.all et categories.all sont invalidés",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "product/4bd10885e9cd21a4-1",
+    "product/4bd10885e9cd21a4-2"
+   ],
+   "files": [
+    "mytimeline:frontend/src/hooks/useArchiveProduct.ts"
+   ],
+   "ranges": [
+    [
+     "mytimeline:frontend/src/hooks/useArchiveProduct.ts",
+     69,
+     71,
+     "353e200056711d94dd0cd874094b3fc8d53a5a14e95e65dc317eafba85608078"
+    ],
+    [
+     "mytimeline:frontend/src/hooks/useArchiveProduct.ts",
+     73,
+     74,
+     "02e7179c581769748e83421f753462cf8cecb4755c38e79b8f12d1458f3c4c78"
+    ]
+   ],
+   "code_sha256": "4c3b1ce880c112aef8dc6b8b06b73556e395bd4ba37832a6617aaf6c1901a11d",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.429,
+      "n": {
+       "identifiers": 3,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "restatement": "Après l'archivage d'un produit, `useArchiveProduct` retire immédiatement le produit (par `product.id !== productId`) de la liste `queryKeys.products.withEvents(userId)` via `setQueryData`, puis invalide `queryKeys.products.all` et `queryKeys.categories.all`.",
+     "confidence": "high"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 5,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/hooks/useArchiveProduct.ts",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.571,
+      "n": {
+       "identifiers": 3,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "job": "product:rediscover:mytimeline_frontend_src_components_products_ProductDetailView.tsx:2",
+     "rank_in_lot": 1
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 41,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:rules:6",
+   "section": "rules",
+   "rank": 6,
+   "text": "- Une fiche archivée depuis sa propre vue reste affichée avec la dernière valeur vue. [#36a9604e04113a4f-1]",
+   "fact_text": "Une fiche archivée depuis sa propre vue reste affichée avec la dernière valeur vue",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "product/36a9604e04113a4f-1"
+   ],
+   "files": [
+    "mytimeline:frontend/src/components/products/ProductDetailView.tsx"
+   ],
+   "ranges": [
+    [
+     "mytimeline:frontend/src/components/products/ProductDetailView.tsx",
+     123,
+     123,
+     "840eb2f1e059638b58639fd95bda720718fc2198125c4383760e39a81f7cd73a"
+    ]
+   ],
+   "code_sha256": "840eb2f1e059638b58639fd95bda720718fc2198125c4383760e39a81f7cd73a",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 0.429,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "restatement": "Dans ProductDetailView, la variable product vaut liveProduct si elle existe, sinon lastProduct uniquement quand archivedHere est vrai, et null dans les autres cas. Un produit archivé depuis cet écran reste donc affiché avec sa dernière valeur connue, tandis qu'un produit absent ailleurs n'est pas affiché.",
+     "confidence": "high"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 14,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:\\Users\\ldelaforcade\\Documents\\Personnel\\My Timeline\\MyTimeline\\frontend\\src\\components\\products\\ProductDetailView.tsx",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 0.571,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "job": "product:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_dtos_ProductCreationRequest.java:1",
+     "rank_in_lot": 8
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 42,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:rules:7",
+   "section": "rules",
+   "rank": 7,
+   "text": "- Une restauration en échec 404 invalide la liste des archivés, et le dialog affiche notFound pour ce statut, generic sinon. [#9d28ca967e35fb4c-2] [#3fc3ae8dc472fb2e-1]",
+   "fact_text": "Une restauration en échec 404 invalide la liste des archivés, et le dialog affiche notFound pour ce statut, generic sinon",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "product/9d28ca967e35fb4c-2",
+    "product/3fc3ae8dc472fb2e-1"
+   ],
+   "files": [
+    "mytimeline:frontend/src/hooks/useRestoreProduct.ts",
+    "mytimeline:frontend/src/components/products/RestoreProductDialog.tsx"
+   ],
+   "ranges": [
+    [
+     "mytimeline:frontend/src/hooks/useRestoreProduct.ts",
+     64,
+     68,
+     "ff048ce8e5926f0025bd10c4da596e580dcc8ed1f3d3d5d605ed60cf0803182b"
+    ],
+    [
+     "mytimeline:frontend/src/components/products/RestoreProductDialog.tsx",
+     77,
+     88,
+     "e2aaf30258a218e9d8937546fbea33e67ee7c1f35f4b4ac427753947fceff8e0"
+    ]
+   ],
+   "code_sha256": "c7923b8b76a9546141df1158e514c868880ae9713d739d7c307779dbac0f6230",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 0.222,
+      "n": {
+       "identifiers": 1,
+       "values": 1,
+       "terms": 9
+      }
+     },
+     "restatement": "Dans `useRestoreProduct`, `onError` n'invalide la requête `queryKeys.products.archived(userId)` que si `httpStatusOf(error)` vaut 404 et que `userId` est défini. Dans `RestoreProductDialog.handleConfirm`, une erreur 404 positionne `error` à `'notFound'`, toute autre erreur à `'generic'`, et `pending` repasse à false dans `finally`. Le dialogue ne se ferme (`onOpenChange(false)`) qu'en cas de succès.",
+     "confidence": "high"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 7,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/components/products/RestoreProductDialog.tsx",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 0.556,
+      "n": {
+       "identifiers": 1,
+       "values": 1,
+       "terms": 9
+      }
+     },
+     "job": "product:rediscover:mytimeline_frontend_src_components_products_ProductDetailView.tsx:2",
+     "rank_in_lot": 2
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 43,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:rules:8",
+   "section": "rules",
+   "rank": 8,
+   "text": "- Le userId du chemin remplace celui du corps, et un utilisateur inconnu lève UserNotFoundException. [#cf90f9c9f863d556-1] [#d037acd2b97aa575-1]",
+   "fact_text": "Le userId du chemin remplace celui du corps, et un utilisateur inconnu lève UserNotFoundException",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "product/cf90f9c9f863d556-1",
+    "product/d037acd2b97aa575-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java",
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java",
+     62,
+     63,
+     "327a687835f05d8d9f338811c5e0cfab35d25aa33e8085bdbc642b056173398e"
+    ],
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+     49,
+     50,
+     "2eb0c8bcd88b5dbd4f124c9cf81f99d4f389f19c73540cd6cfaacaf491a9af33"
+    ]
+   ],
+   "code_sha256": "da9de1adfe4587e72c570e796444eb107a023b3974dd53cab274a1242ddec034",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": null,
+      "terms": 0.333,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 6
+      }
+     },
+     "restatement": "Le contrôleur ProductController.createProduct écrase le userId du body avec celui du chemin (request.setUserId(userId), L63), conformément à BR-PRO-004. Le chemin fait donc autorité sur le corps de la requête.",
+     "confidence": "high"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 3,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:\\Users\\ldelaforcade\\Documents\\Personnel\\My Timeline\\MyTimeline\\backend\\src\\main\\java\\com\\matimeline\\eventmanager\\application\\services\\ProductServiceImpl.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.667,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 6
+      }
+     },
+     "job": "product:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_dtos_ProductCreationRequest.java:1",
+     "rank_in_lot": 1
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 45,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:rules:9",
+   "section": "rules",
+   "rank": 9,
+   "text": "- Le nom est obligatoire, non blanc, de 1 à 100 caractères, et la catégorie est obligatoire. [#cd88dd2cf3309f34-1] [#cd88dd2cf3309f34-2] [#f063ecb315e67a4a-1]",
+   "fact_text": "Le nom est obligatoire, non blanc, de 1 à 100 caractères, et la catégorie est obligatoire",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "product/cd88dd2cf3309f34-1",
+    "product/cd88dd2cf3309f34-2",
+    "product/f063ecb315e67a4a-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/ProductCreationRequest.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/ProductCreationRequest.java",
+     12,
+     12,
+     "c8911ce2fb5877d19b6408588644b21c5a7ff1cb5a6ca99c4c66ba1331a7568c"
+    ],
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/ProductCreationRequest.java",
+     13,
+     13,
+     "f0db603abe1ed9f00ee9a0ce92d7da5db99db7410fd9d3b3374997fd3682c17b"
+    ],
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/ProductCreationRequest.java",
+     16,
+     16,
+     "839d5a5939e778083318f80ed749f0c2cd041c30940a836d6fdd1ba6137d071f"
+    ]
+   ],
+   "code_sha256": "98fcc8d76e6f0c16f0393e63a582159a3a81df69c6ea01f2ab64e16b063fb845",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": null,
+      "values": 1.0,
+      "terms": 0.75,
+      "n": {
+       "identifiers": 0,
+       "values": 2,
+       "terms": 4
+      }
+     },
+     "restatement": "Le DTO ProductCreationRequest impose que name soit non blanc (@NotBlank, message « Name is required ») et de 1 à 100 caractères (@Size min 1, max 100). Le champ category est aussi obligatoire (@NotNull, L16).",
+     "confidence": "high"
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "product.details.md",
+     "row": 2
+    }
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:rules:10",
+   "section": "rules",
+   "rank": 10,
+   "text": "- Une couleur fournie doit respecter le format #RRGGBB, côté API comme côté schéma front. [#543d5111ef963789-1] [#cc79bb18430a4b6d-1] [#485f8b3b418aef7b-1]",
+   "fact_text": "Une couleur fournie doit respecter le format #RRGGBB, côté API comme côté schéma front",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "product/543d5111ef963789-1",
+    "product/cc79bb18430a4b6d-1",
+    "product/485f8b3b418aef7b-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/ProductCreationRequest.java",
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/ProductUpdateRequest.java",
+    "mytimeline:frontend/src/types/product.ts"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/ProductCreationRequest.java",
+     29,
+     29,
+     "01160560f364d7af102ce53650622513d26902732a544dad6d9d60d415794b17"
+    ],
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/ProductUpdateRequest.java",
+     36,
+     36,
+     "b3e0f23b2537287ff64f02293232e711e3995fb842b6fced98a634567c6d60b6"
+    ],
+    [
+     "mytimeline:frontend/src/types/product.ts",
+     9,
+     11,
+     "a0063c5e5edeb84f7a8f621907ad618fdf45f2684b9b06c1f57dc6497e1ab095"
+    ]
+   ],
+   "code_sha256": "128fece92a259efdbb1b161eca9cb68d7d7214575c2ada320758314df27de0b7",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": null,
+      "terms": 0.571,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "restatement": "La couleur doit respecter le motif ^#[0-9a-fA-F]{6}$ (format #RRGGBB) côté backend, sur ProductCreationRequest.color (L29) et ProductUpdateRequest.color (L36), et côté frontend via hexColorSchema (Zod, regex identique, message en français).",
+     "confidence": "high"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 6,
+     "within_budget": true,
+     "covered": false,
+     "file": "C:\\Users\\ldelaforcade\\Documents\\Personnel\\My Timeline\\MyTimeline\\backend\\src\\main\\java\\com\\matimeline\\eventmanager\\application\\dtos\\ProductCreationRequest.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": null,
+      "terms": 0.286,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "job": "product:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_dtos_ProductCreationRequest.java:1"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Même regex #RRGGBB dans ProductCreationRequest L29, ProductUpdateRequest L36 et hexColorSchema L9-11.",
+      "@Pattern ^#[0-9a-fA-F]{6}$ dans ProductCreationRequest L29, ProductUpdateRequest L36 et hexColorSchema front L11.",
+      "Même regex #RRGGBB dans ProductCreationRequest L29, ProductUpdateRequest L36 et hexColorSchema L11."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 46,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:rules:11",
+   "section": "rules",
+   "rank": 11,
+   "text": "- Un produit peut naître sans événement, et la date d'un événement absente vaut la date du jour. [#b9e90088400e813c-1] [#b9e90088400e813c-2]",
+   "fact_text": "Un produit peut naître sans événement, et la date d'un événement absente vaut la date du jour",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "product/b9e90088400e813c-1",
+    "product/b9e90088400e813c-2"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+     66,
+     69,
+     "58e103f0fbdce75f5a9dfb7ecaeb85f0aa44f5b357fd1bf6058cf77df28bfd31"
+    ],
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+     70,
+     70,
+     "635950e51f57b1125d8b9c4b64d65701db28cb896915fd92a6cc228af93ccc5b"
+    ]
+   ],
+   "code_sha256": "f38c78cdeb3d3d2fe4b1fdaaa561ce66c2cbf6f66234e8b0d5d36143785802be",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 0.571,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "restatement": "ProductServiceImpl.createProduct accepte un getEvents() null : Optional.ofNullable(...).orElseGet(List::of) le traite comme une liste vide, ce qui évite une NPE et crée un produit sans événement. Pour chaque événement sans date, la date de début vaut LocalDate.now() (L70).",
+     "confidence": "high"
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "product.details.md",
+     "row": 3
+    }
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:rules:12",
+   "section": "rules",
+   "rank": 12,
+   "text": "- Le drawer ajoute un événement single au nom du produit seulement si une date de premier événement est saisie, et n'envoie color que si une surcharge existe. [#551bcc200cf8e8da-5] [#551bcc200cf8e8da-4]",
+   "fact_text": "Le drawer ajoute un événement single au nom du produit seulement si une date de premier événement est saisie, et n'envoie color que si une surcharge existe",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "product/551bcc200cf8e8da-5",
+    "product/551bcc200cf8e8da-4"
+   ],
+   "files": [
+    "mytimeline:frontend/src/components/products/ProductDrawer.tsx"
+   ],
+   "ranges": [
+    [
+     "mytimeline:frontend/src/components/products/ProductDrawer.tsx",
+     240,
+     243,
+     "66624b19d6b5deecdcfdbc76193382f7a8c334f90f33d32b68cd90aa2fbd74c9"
+    ],
+    [
+     "mytimeline:frontend/src/components/products/ProductDrawer.tsx",
+     231,
+     231,
+     "da19fc767f33557dc8496062e3bcecf00c94a7068297e2a116ddf78060ae264e"
+    ]
+   ],
+   "code_sha256": "98d83c6cc83a14c726448fe5efb82a8be4c25c205ec63daa99fad2bfb0d0371c",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 0.333,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 12
+      }
+     },
+     "restatement": "Dans ProductDrawer.onSubmit, si la date firstEventDate est renseignée, le payload reçoit un seul événement de type single, nommé comme le produit, à la date new Date(firstEventDate). Si colorOverride n'est pas null, payload.color prend cette valeur. Une valeur null n'est pas envoyée.",
+     "confidence": "high"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 10,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/components/products/ProductDrawer.tsx",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 0.333,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 12
+      }
+     },
+     "job": "product:rediscover:mytimeline_frontend_src_components_products_ProductDetailView.tsx:2"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "L240-243 événement single conditionné à firstEventDate, L231 color seulement si colorOverride non nul.",
+      "ProductDrawer L240-243 ajoute l'événement single si firstEventDate, L231 color seulement si colorOverride !== null.",
+      "ProductDrawer L240-243 conditionne l'événement single à firstEventDate, et L231 conditionne color à colorOverride !== null."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 47,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:rules:13",
+   "section": "rules",
+   "rank": 13,
+   "text": "- Le nom n'est modifié que s'il est fourni, et un categoryId fourni est validé contre le propriétaire du produit. [#f60876188a14193e-1] [#f60876188a14193e-2]",
+   "fact_text": "Le nom n'est modifié que s'il est fourni, et un categoryId fourni est validé contre le propriétaire du produit",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "product/f60876188a14193e-1",
+    "product/f60876188a14193e-2"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+     126,
+     128,
+     "394c97083b293d9efe14b1c0d1b95b80c1e67ba83f76625da0b52aac55e0dc46"
+    ],
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+     130,
+     136,
+     "b4a2aad11e5c38c5dc5115a50e21b7c26b36d73a318f829331b829efd8044bd7"
+    ]
+   ],
+   "code_sha256": "2d27a2499aaaa7a91d0ebed3cd4295409cbd0bb6141a82d115127e29ac7f4798",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.6,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 5
+      }
+     },
+     "restatement": "Dans updateProduct, le nom n'est modifié que si request.getName() n'est pas null. Une categoryId non nulle est résolue par resolveAssignableCategory contre l'identifiant du propriétaire du produit chargé, avant affectation.",
+     "confidence": "high"
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "product.details.md",
+     "row": 4
+    }
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:rules:14",
+   "section": "rules",
+   "rank": 14,
+   "text": "- Pour la couleur, clearColor prime sur color, et un color null laisse la valeur inchangée. [#f60876188a14193e-3]",
+   "fact_text": "Pour la couleur, clearColor prime sur color, et un color null laisse la valeur inchangée",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "product/f60876188a14193e-3"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+     140,
+     144,
+     "6e445a0271cb514d026f4f9717fc9121a818b6d576a42c16548fbbf311fa50b3"
+    ]
+   ],
+   "code_sha256": "6e445a0271cb514d026f4f9717fc9121a818b6d576a42c16548fbbf311fa50b3",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
+      "terms": 0.571,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "restatement": "Dans updateProduct, isClearColor() prime : si vrai, la couleur passe à null. Sinon, une couleur non nulle est affectée. Sans l'un ni l'autre, la couleur existante reste inchangée.",
+     "confidence": "high"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 3,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:\\Users\\ldelaforcade\\Documents\\Personnel\\My Timeline\\MyTimeline\\backend\\src\\main\\java\\com\\matimeline\\eventmanager\\application\\services\\ProductServiceImpl.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.857,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "job": "product:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_dtos_ProductCreationRequest.java:1",
+     "rank_in_lot": 2
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 49,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:rules:15",
+   "section": "rules",
+   "rank": 15,
+   "text": "- Le patch du drawer ne contient que les champs modifiés, et sans aucun changement le drawer se ferme sans appel. [#551bcc200cf8e8da-1] [#551bcc200cf8e8da-3]",
+   "fact_text": "Le patch du drawer ne contient que les champs modifiés, et sans aucun changement le drawer se ferme sans appel",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "product/551bcc200cf8e8da-1",
+    "product/551bcc200cf8e8da-3"
+   ],
+   "files": [
+    "mytimeline:frontend/src/components/products/ProductDrawer.tsx"
+   ],
+   "ranges": [
+    [
+     "mytimeline:frontend/src/components/products/ProductDrawer.tsx",
+     203,
+     205,
+     "431a08d749bc9e307bff32027806b1ca9e034dcc7361b5e9816fe2304bfe009a"
+    ],
+    [
+     "mytimeline:frontend/src/components/products/ProductDrawer.tsx",
+     214,
+     222,
+     "2ead28a7b73b62e8d02e0bdd82a532d9a26fbd71d152ee9edc39204ccdc2c779"
+    ]
+   ],
+   "code_sha256": "10266d1846cd9d4774036148243d10a1f83ad44f040feef373726179680a2ca1",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 0.625,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 8
+      }
+     },
+     "restatement": "Dans ProductDrawer.onSubmit, le patch n'inclut name que s'il diffère du produit courant, et categoryId que si la catégorie choisie diffère de product.category.id. Si aucun champ (name, categoryId, color, clearColor) n'est défini dans patch, le drawer se ferme via onOpenChange(false) et la fonction s'arrête sans appel de mise à jour.",
+     "confidence": "high"
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "words:aucun",
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "product.details.md",
+     "row": 5
+    }
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:rules:16",
+   "section": "rules",
+   "rank": 16,
+   "text": "- productUpdateSchema exige au moins un champ parmi name, categoryId, color et clearColor. [#ad62633669322fcc-1]",
+   "fact_text": "productUpdateSchema exige au moins un champ parmi name, categoryId, color et clearColor",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "product/ad62633669322fcc-1"
+   ],
+   "files": [
+    "mytimeline:frontend/src/types/product.ts"
+   ],
+   "ranges": [
+    [
+     "mytimeline:frontend/src/types/product.ts",
+     88,
+     102,
+     "c006011d112eccd71776f1ff382206d69499e8f9a68816f20df7e140ca1713a8"
+    ]
+   ],
+   "code_sha256": "c006011d112eccd71776f1ff382206d69499e8f9a68816f20df7e140ca1713a8",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.75,
+      "n": {
+       "identifiers": 3,
+       "values": 0,
+       "terms": 4
+      }
+     },
+     "restatement": "`productUpdateSchema` (Zod) accepte `name` (1 à 100 caractères), `categoryId` (GUID), `color` (`hexColorSchema`) et `clearColor` (littéral `true`), tous optionnels. Un `refine` rejette l'objet vide avec le message 'Au moins un champ doit être fourni', c'est-à-dire si aucun de ces champs n'est fourni.",
+     "confidence": "high"
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "product.details.md",
+     "row": 6
+    }
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:rules:17",
+   "section": "rules",
+   "rank": 17,
+   "text": "- La couleur d'un produit vaut la sienne, à défaut celle de sa catégorie, à défaut une variable CSS de repli. [#70495bd2de08589a-1] [#da1ac8c8ad5823cf-1]",
+   "fact_text": "La couleur d'un produit vaut la sienne, à défaut celle de sa catégorie, à défaut une variable CSS de repli",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "product/70495bd2de08589a-1",
+    "product/da1ac8c8ad5823cf-1"
+   ],
+   "files": [
+    "mytimeline:frontend/src/components/dashboard/ProductCarousel.tsx",
+    "mytimeline:frontend/src/components/dashboard/ProductList.tsx"
+   ],
+   "ranges": [
+    [
+     "mytimeline:frontend/src/components/dashboard/ProductCarousel.tsx",
+     91,
+     91,
+     "707e00b5dda5b33ab601b06669fc0932f962c3f398bfa53b84f541f9cf2bdfe5"
+    ],
+    [
+     "mytimeline:frontend/src/components/dashboard/ProductList.tsx",
+     78,
+     78,
+     "94751ed4ce71e44507c329255be1c206f66c71f848b851c6fc8b197fa299889d"
+    ]
+   ],
+   "code_sha256": "4e352129e2ee3b29f18ac0b07ac368f2bbaaeebcabb4a5f6ce840e31f26313ed",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.625,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 8
+      }
+     },
+     "restatement": "Dans ProductCarousel et ProductList, la couleur d'un produit est calculée par une chaîne de repli : product.color, puis product.category.color, puis la variable CSS var(--color-rule-strong). Le premier opérande non null (opérateur ??) est retenu, la couleur de la catégorie ne sert donc que si le produit n'a pas de couleur propre.",
+     "confidence": "high"
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "product.details.md",
+     "row": 7
+    }
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:rules:18",
+   "section": "rules",
+   "rank": 18,
+   "text": "- Le tri par prochain événement place les produits sans échéance en fin, puis départage par nom. [#b72e1924704841ba-2]",
+   "fact_text": "Le tri par prochain événement place les produits sans échéance en fin, puis départage par nom",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "product/b72e1924704841ba-2"
+   ],
+   "files": [
+    "mytimeline:frontend/src/components/products/ProductsListView.tsx"
+   ],
+   "ranges": [
+    [
+     "mytimeline:frontend/src/components/products/ProductsListView.tsx",
+     166,
+     175,
+     "3ac95b6881c12dbd7e47a4d62cd13c062b34a37a36c0b9e43eb51f19a0ffb228"
+    ]
+   ],
+   "code_sha256": "3ac95b6881c12dbd7e47a4d62cd13c062b34a37a36c0b9e43eb51f19a0ffb228",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 0.833,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 6
+      }
+     },
+     "restatement": "Le tri nextEvent de ProductsListView place en fin de liste les produits sans prochaine échéance. Deux produits sans échéance sont triés par nom. Pour des échéances différentes, la comparaison se fait sur start au format YYYY-MM-DD, donc par ordre lexical, et à date égale le départage se fait par nom.",
+     "confidence": "high"
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "product.details.md",
+     "row": 8
+    }
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:rules:19",
+   "section": "rules",
+   "rank": 19,
+   "text": "- Un échec de soumission affiche un message distinct pour 409, 404 et 403, et generic sinon. [#551bcc200cf8e8da-7]",
+   "fact_text": "Un échec de soumission affiche un message distinct pour 409, 404 et 403, et generic sinon",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "product/551bcc200cf8e8da-7"
+   ],
+   "files": [
+    "mytimeline:frontend/src/components/products/ProductDrawer.tsx"
+   ],
+   "ranges": [
+    [
+     "mytimeline:frontend/src/components/products/ProductDrawer.tsx",
+     252,
+     256,
+     "92b4738380559d97d9e95079889513483d32b18995073b6c1efe2ffa02cd099f"
+    ]
+   ],
+   "code_sha256": "92b4738380559d97d9e95079889513483d32b18995073b6c1efe2ffa02cd099f",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": null,
+      "values": 1.0,
+      "terms": 0.333,
+      "n": {
+       "identifiers": 0,
+       "values": 3,
+       "terms": 6
+      }
+     },
+     "restatement": "Dans ProductDrawer.onSubmit, une erreur est traduite en message selon son statut HTTP : 409 donne errors.conflict, 404 donne errors.notFound, 403 donne errors.forbidden, et tout autre statut donne errors.generic.",
+     "confidence": "high"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 10,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/components/products/ProductDrawer.tsx",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": null,
+      "values": 1.0,
+      "terms": 0.333,
+      "n": {
+       "identifiers": 0,
+       "values": 3,
+       "terms": 6
+      }
+     },
+     "job": "product:rediscover:mytimeline_frontend_src_components_products_ProductDetailView.tsx:2"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "L252-256 distingue 409, 404, 403, generic sinon.",
+      "ProductDrawer L253-256 : 409, 404, 403 distincts, generic sinon.",
+      "ProductDrawer L253-256 distingue 409, 404 et 403, et generic sinon."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 51,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:surface:1",
+   "section": "surface",
+   "rank": 1,
+   "text": "- Les routes produit sont dans `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java:50-236` [#a45ab87714125d89-1], l'écran principal côté front est `mytimeline:frontend/src/components/products/ProductsListView.tsx:84-92` [#d44fc22f2b25162b-1].",
+   "fact_text": "Les routes produit sont dans ProductController.java, l'écran principal côté front est ProductsListView.tsx",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "product/a45ab87714125d89-1",
+    "product/d44fc22f2b25162b-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java",
+    "mytimeline:frontend/src/components/products/ProductsListView.tsx"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java",
+     50,
+     66,
+     "c2822d4c30ec9d266e106e149682b2a1ab46db6863041b62136711e0280fe436"
+    ],
+    [
+     "mytimeline:frontend/src/components/products/ProductsListView.tsx",
+     84,
+     92,
+     "81c3b76d42e98079f870141e2820d060b03250619d34724511d9aad8b4a8afb6"
+    ]
+   ],
+   "code_sha256": "337a9dbd2cb19b501391c61ec70d76474cd4c9bd7e5741f4f77e59f9056929c5",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.167,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 6
+      }
+     },
+     "restatement": "ProductController.createProduct (POST /users/{userId}/products) renvoie 401 si aucun appelant n'est résolu, 403 si l'id de l'appelant diffère du userId du chemin, puis crée le produit et répond 201 CREATED. Les lignes frontend (ProductsListView L84-92) ne montrent que la déclaration du composant et les hooks récupérant l'utilisateur.",
+     "confidence": "high"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 15,
+     "within_budget": false,
+     "covered": true,
+     "file": "C:\\Users\\ldelaforcade\\Documents\\Personnel\\My Timeline\\MyTimeline\\frontend\\src\\components\\layout\\AppShell.tsx",
+     "file_ok": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 1.0,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 6
+      }
+     },
+     "job": "product:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_dtos_ProductCreationRequest.java:1"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "ProductController porte les routes, ProductsListView est l'écran de liste.",
+      "ProductController porte les routes produit (L50, L183) et ProductsListView est l'écran liste.",
+      "ProductController porte les routes, ProductsListView est l'écran liste."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 123,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:surface:2",
+   "section": "surface",
+   "rank": 2,
+   "text": "- Les routes avec productId répondent aussi 403 quand le produit n'appartient pas au userId, et un produit sans utilisateur est refusé [#2d4b45fa3cccfbe6-1] [#08ae0ae3e5becd01-1] [#ba3896e449e1946e-1].",
+   "fact_text": "Les routes avec productId répondent aussi 403 quand le produit n'appartient pas au userId, et un produit sans utilisateur est refusé",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "product/2d4b45fa3cccfbe6-1",
+    "product/08ae0ae3e5becd01-1",
+    "product/ba3896e449e1946e-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java",
+     134,
+     154,
+     "a05aa3886fc9ae9d343283e3539b852584c7f09eddc3ece2335918e6e6920910"
+    ],
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java",
+     150,
+     152,
+     "b2caf10e4a47ba3b84d5c51746b1ac867a96e51f92dcba16bd4c1b027d8e1efe"
+    ],
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java",
+     242,
+     246,
+     "e3ba10162417c39d29545d8a211f51466bef26737e2182a33b3e515f440196a1"
+    ]
+   ],
+   "code_sha256": "8d72e7f1435d9e7ee195cf8b7bb2e355ff92c3239bffbf85ff8af83706821afc",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 0.167,
+      "n": {
+       "identifiers": 2,
+       "values": 1,
+       "terms": 6
+      }
+     },
+     "restatement": "ProductController.getProductById (GET /users/{userId}/products/{productId}) renvoie 401 sans appelant, 403 si l'appelant n'est pas le userId du chemin, 404 si le produit est introuvable, 403 si productBelongsToUser est faux, sinon 200 avec ProductResponse.",
+     "confidence": "high"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 8,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:\\Users\\ldelaforcade\\Documents\\Personnel\\My Timeline\\MyTimeline\\backend\\src\\main\\java\\com\\matimeline\\eventmanager\\infrastructure\\adapters\\controllers\\ProductController.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 0.667,
+      "n": {
+       "identifiers": 2,
+       "values": 1,
+       "terms": 6
+      }
+     },
+     "job": "product:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_dtos_ProductCreationRequest.java:1",
+     "rank_in_lot": 6
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 124,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:surface:3",
+   "section": "surface",
+   "rank": 3,
+   "text": "- DELETE archive le produit sans suppression physique, donc un produit supprimé reste en base et se retrouve par la route archived [#d1e3766cca0d7a1c-1] [#14e94e9251725880-1].",
+   "fact_text": "DELETE archive le produit sans suppression physique, donc un produit supprimé reste en base et se retrouve par la route archived",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "product/d1e3766cca0d7a1c-1",
+    "product/14e94e9251725880-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java",
+     183,
+     206,
+     "5ffd2b94273c4a9b4a590dd5a8e010eda43c2f55610ced2c1bd24d9e0a3faaa2"
+    ],
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java",
+     92,
+     106,
+     "9676a1bf09d88b260c5daa5eb629f4aa11330142c4a59df127415737e8bceee3"
+    ]
+   ],
+   "code_sha256": "a91b95986f758345b4d75c532a29c61357e78a0747c0d99cb1b79b1754249505",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.1,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 10
+      }
+     },
+     "restatement": "ProductController.deleteProduct renvoie 401 sans appelant, 403 si l'appelant n'est pas le propriétaire du chemin, 404 si le produit est absent, 403 s'il n'appartient pas à l'utilisateur, puis appelle archiveById (soft delete, BR-PRO-007) et répond 204 No Content.",
+     "confidence": "high"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 8,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:\\Users\\ldelaforcade\\Documents\\Personnel\\My Timeline\\MyTimeline\\backend\\src\\main\\java\\com\\matimeline\\eventmanager\\infrastructure\\adapters\\controllers\\ProductController.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.4,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 10
+      }
+     },
+     "job": "product:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_dtos_ProductCreationRequest.java:1"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "deleteProduct appelle archiveById (L204), soft delete, et la route /archived existe L92.",
+      "deleteProduct L204 appelle archiveById (soft delete, BR-PRO-007) et la route GET /products/archived existe L92.",
+      "deleteProduct appelle archiveById (L204, soft delete) et la route /products/archived existe (L92)."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 125,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:surface:4",
+   "section": "surface",
+   "rank": 4,
+   "text": "- Une catégorie d'un autre utilisateur lève la même CategoryNotFoundException qu'une catégorie inexistante, seules les catégories système ou propres à l'appelant sont assignables [#a712e9e45d53dc59-1] [#ec4e3fd3227d38b3-1].",
+   "fact_text": "Une catégorie d'un autre utilisateur lève la même CategoryNotFoundException qu'une catégorie inexistante, seules les catégories système ou propres à l'appelant sont assignables",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "product/a712e9e45d53dc59-1",
+    "product/ec4e3fd3227d38b3-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+     159,
+     162,
+     "4c0b7e33772ef3111db8bea4db0ebd56a3a4d34e6106a4b07da3aed2668a7268"
+    ],
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+     52,
+     54,
+     "145c7fe28fc9ed61eeb7e0e94231fb3d2095360872ad84eeda680cc3fe5cfbba"
+    ]
+   ],
+   "code_sha256": "0e0b89ceb953b7baa00cab20d55658a6f4c204fc9ce7f80cc9e9c5dec40e05e7",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.444,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 9
+      }
+     },
+     "restatement": "resolveAssignableCategory lève CategoryNotFoundException (anti-énumération) si la catégorie a un ownerId non null différent de callerId. Une catégorie système (ownerId null) reste donc accessible à tous. Le même contrôle est appelé dans createProduct (L54).",
+     "confidence": "high"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 3,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:\\Users\\ldelaforcade\\Documents\\Personnel\\My Timeline\\MyTimeline\\backend\\src\\main\\java\\com\\matimeline\\eventmanager\\application\\services\\ProductServiceImpl.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.889,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 9
+      }
+     },
+     "job": "product:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_dtos_ProductCreationRequest.java:1",
+     "rank_in_lot": 3
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 126,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:surface:5",
+   "section": "surface",
+   "rank": 5,
+   "text": "- La liste archivée est triée par updated_at décroissant et ses produits sont mappés sans événements, alors que la liste normale charge les événements en jointure [#ac65747e16965f1e-1] [#317d1ef1ca19b818-1].",
+   "fact_text": "La liste archivée est triée par updated_at décroissant et ses produits sont mappés sans événements, alors que la liste normale charge les événements en jointure",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "product/ac65747e16965f1e-1",
+    "product/317d1ef1ca19b818-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ProductRepositoryJpaImpl.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ProductRepositoryJpaImpl.java",
+     214,
+     225,
+     "3ed33a9ca18cd87d3c4a84f1a8ad44a46c92f8fcf186889813b2abece5a3e4be"
+    ],
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ProductRepositoryJpaImpl.java",
+     71,
+     82,
+     "b49e0f0a0273bbd7ab9bcfff7f74a6be798952dd8c6f7486e642a2730af4d0d8"
+    ]
+   ],
+   "code_sha256": "89e88880d826974de17be064f33e2d96e90dcbaef20fd821603bae24dad615d5",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.2,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 10
+      }
+     },
+     "restatement": "ProductRepositoryJpaImpl.findArchivedByUserId exécute une requête native SQL (SELECT * FROM products WHERE user_id = :uid AND archived = true, ORDER BY updated_at DESC, id) et mappe les lignes sans événements. findByUserId, en JPQL avec LEFT JOIN FETCH p.events, n'est pas un filtre sur archived dans l'extrait.",
+     "confidence": "high"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 4,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:\\Users\\ldelaforcade\\Documents\\Personnel\\My Timeline\\MyTimeline\\backend\\src\\main\\java\\com\\matimeline\\eventmanager\\infrastructure\\adapters\\repositories\\jpa\\ProductRepositoryJpaImpl.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 10
+      }
+     },
+     "job": "product:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_dtos_ProductCreationRequest.java:1",
+     "rank_in_lot": 4
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 127,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:surface:6",
+   "section": "surface",
+   "rank": 6,
+   "text": "- Les requêtes par catégorie et la purge par utilisateur comptent ou suppriment les produits archivés inclus, contrairement à findAllProducts qui les masque [#326ff59e03dce0b8-1] [#7f9be5fdb738e55f-1] [#cbf7e3080a18d38f-1].",
+   "fact_text": "Les requêtes par catégorie et la purge par utilisateur comptent ou suppriment les produits archivés inclus, contrairement à findAllProducts qui les masque",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "product/326ff59e03dce0b8-1",
+    "product/7f9be5fdb738e55f-1",
+    "product/cbf7e3080a18d38f-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ProductRepositoryJpaImpl.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ProductRepositoryJpaImpl.java",
+     139,
+     145,
+     "0d67765ad67a8e39ffedcd958c34a5f0cb87a779e61388495899fde283f9e2a2"
+    ],
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ProductRepositoryJpaImpl.java",
+     201,
+     207,
+     "77a6b275c566cfc766166a9c9bcb9bd11ed22a479e7478a73b9aa46dbfbffd42"
+    ],
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ProductRepositoryJpaImpl.java",
+     57,
+     59,
+     "0dc994d6d943bc3c2072caf489ed7e120496d9e33b618ccb7d6158b6958d2c9d"
+    ]
+   ],
+   "code_sha256": "022d94fbeec779daa3a03b983fd9e098540e958ff3432438c8b96965f4af6673",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
+      "terms": 0.182,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 11
+      }
+     },
+     "restatement": "ProductRepositoryJpaImpl.deleteAllByUserId exécute un DELETE FROM products WHERE user_id = :uid natif et renvoie le nombre de lignes supprimées. C'est une suppression physique, contrairement au soft delete de archiveById. countByCategoryId, également natif, compte les produits par category_id.",
+     "confidence": "high"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 4,
+     "within_budget": true,
+     "covered": false,
+     "file": "C:\\Users\\ldelaforcade\\Documents\\Personnel\\My Timeline\\MyTimeline\\backend\\src\\main\\java\\com\\matimeline\\eventmanager\\infrastructure\\adapters\\repositories\\jpa\\ProductRepositoryJpaImpl.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
+      "terms": 0.545,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 11
+      }
+     },
+     "job": "product:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_dtos_ProductCreationRequest.java:1"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "countByCategoryId et deleteAllByUserId sont en SQL natif sans filtre archived, alors que @SQLRestriction masque les archivés pour findAll.",
+      "countByCategoryId et deleteAllByUserId sont en SQL natif sans filtre archived (L141, L204), alors que findAllProducts passe par findAll masqué par @SQLRestriction('archived = false') (ProductEntity L25).",
+      "countByCategoryId et deleteAllByUserId sont des requêtes natives sans filtre archived, et findAll est masqué par @SQLRestriction(\"archived = false\") sur ProductEntity L25."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 128,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:surface:7",
+   "section": "surface",
+   "rank": 7,
+   "text": "- L'archivage depuis la liste passe HANDLES_FORBIDDEN_INLINE, donc un 403 n'y déclenche pas le toast global [#fcc6e5d8ad133351-1].",
+   "fact_text": "L'archivage depuis la liste passe HANDLES_FORBIDDEN_INLINE, donc un 403 n'y déclenche pas le toast global",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "product/fcc6e5d8ad133351-1"
+   ],
+   "files": [
+    "mytimeline:frontend/src/components/products/ProductsListView.tsx"
+   ],
+   "ranges": [
+    [
+     "mytimeline:frontend/src/components/products/ProductsListView.tsx",
+     143,
+     143,
+     "4228d7e1e63776710d13a0a73926c17b6be26f8a2794992bb5b751c3f09f4996"
+    ]
+   ],
+   "code_sha256": "4228d7e1e63776710d13a0a73926c17b6be26f8a2794992bb5b751c3f09f4996",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 0.0,
+      "terms": 0.0,
+      "n": {
+       "identifiers": 1,
+       "values": 1,
+       "terms": 6
+      }
+     },
+     "restatement": "ProductsListView instancie archiveMutation avec useArchiveProduct(userId, HANDLES_FORBIDDEN_INLINE). L'extrait ne montre que cet appel, sans le corps de HANDLES_FORBIDDEN_INLINE ni la gestion de l'erreur, donc le comportement exact du drapeau reste inconnu.",
+     "confidence": "low"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 9,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/components/products/ProductsListView.tsx",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 1,
+       "values": 1,
+       "terms": 6
+      }
+     },
+     "job": "product:rediscover:mytimeline_frontend_src_components_products_ProductDetailView.tsx:2",
+     "rank_in_lot": 4
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 129,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:surface:8",
+   "section": "surface",
+   "rank": 8,
+   "text": "- Sans produit, la liste propose la création, mais sans résultat de recherche le CTA efface seulement le filtre [#d44fc22f2b25162b-2] [#d44fc22f2b25162b-3].",
+   "fact_text": "Sans produit, la liste propose la création, mais sans résultat de recherche le CTA efface seulement le filtre",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "product/d44fc22f2b25162b-2",
+    "product/d44fc22f2b25162b-3"
+   ],
+   "files": [
+    "mytimeline:frontend/src/components/products/ProductsListView.tsx"
+   ],
+   "ranges": [
+    [
+     "mytimeline:frontend/src/components/products/ProductsListView.tsx",
+     292,
+     312,
+     "aa54d351d846c2d6bfe464e0d4e21eaf1ed22bf695f6858fce920cb7142f7384"
+    ],
+    [
+     "mytimeline:frontend/src/components/products/ProductsListView.tsx",
+     313,
+     333,
+     "4f050d1f635fd74ab27a0ee8bf8380b0ce33c5630f2e3d23c4487e85ac2f4e1f"
+    ]
+   ],
+   "code_sha256": "4eac86dd892a44380a876bbab86f54d7398c3e9d2272db4092784d7a2ed5ef7d",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 8
+      }
+     },
+     "restatement": "ProductsListView affiche un EmptyState avec un bouton products-empty-cta qui ouvre le drawer de création, quand la liste de produits est vide. Quand des produits existent mais qu'aucun n'est visible après filtre, il affiche products-empty-search avec un bouton products-empty-search-cta qui appelle handleClearSearch, sans bouton de création.",
+     "confidence": "high"
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "product.details.md",
+     "row": 9
+    }
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:surface:9",
+   "section": "surface",
+   "rank": 9,
+   "text": "- Sur la fiche produit, le bouton de création d'événement n'apparaît que dans le shell, et un produit introuvable après chargement affiche le message notFound [#39baf5adb23b61d1-4] [#39baf5adb23b61d1-3].",
+   "fact_text": "Sur la fiche produit, le bouton de création d'événement n'apparaît que dans le shell, et un produit introuvable après chargement affiche le message notFound",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "product/39baf5adb23b61d1-4",
+    "product/39baf5adb23b61d1-3"
+   ],
+   "files": [
+    "mytimeline:frontend/src/components/products/ProductDetailView.tsx"
+   ],
+   "ranges": [
+    [
+     "mytimeline:frontend/src/components/products/ProductDetailView.tsx",
+     326,
+     340,
+     "5acd6ccf7856c13964a3c3176ec674b0a78b5ef8c4a0293a5fcd4740800aff23"
+    ],
+    [
+     "mytimeline:frontend/src/components/products/ProductDetailView.tsx",
+     291,
+     300,
+     "22a2ba22db683ee35c6fa80057e2a527771f253e412686dee2c292dba2dc0ae6"
+    ]
+   ],
+   "code_sha256": "9af5313c98a67e8df5818de473d941396dd60e2197d5a58249f42da3ba45a314",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.273,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 11
+      }
+     },
+     "restatement": "ProductDetailView affiche le bouton data-testid product-detail-new-event seulement si openCreateEvent est défini. Son clic appelle openCreateEvent avec productId égal à l'id du produit. Si product est null, le composant rend un bloc role alert data-testid product-detail-not-found avec le libellé notFound, à la place du détail.",
+     "confidence": "high"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 13,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/components/products/ProductDetailView.tsx",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.727,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 11
+      }
+     },
+     "job": "product:rediscover:mytimeline_frontend_src_components_products_ProductDetailView.tsx:2",
+     "rank_in_lot": 5
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 130,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:surface:10",
+   "section": "surface",
+   "rank": 10,
+   "text": "- RestoreProductDialog traite overlay et Échap comme une annulation via handleCancel [#e23fbeab5c44091f-2].",
+   "fact_text": "RestoreProductDialog traite overlay et Échap comme une annulation via handleCancel",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "product/e23fbeab5c44091f-2"
+   ],
+   "files": [
+    "mytimeline:frontend/src/components/products/RestoreProductDialog.tsx"
+   ],
+   "ranges": [
+    [
+     "mytimeline:frontend/src/components/products/RestoreProductDialog.tsx",
+     96,
+     96,
+     "e34c2f9f26d05d275a9483dcbc23d93a14e9bbcd0853d1d7d151614198372e64"
+    ]
+   ],
+   "code_sha256": "e34c2f9f26d05d275a9483dcbc23d93a14e9bbcd0853d1d7d151614198372e64",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.25,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 4
+      }
+     },
+     "restatement": "Dans RestoreProductDialog, le gestionnaire onOpenChange ne fait rien lorsque la boîte de dialogue demande l'ouverture (next vrai). Toute demande de fermeture (next faux) appelle handleCancel, donc la fermeture par Échap ou clic extérieur annule l'opération.",
+     "confidence": "high"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 8,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/components/products/RestoreProductDialog.tsx",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 4
+      }
+     },
+     "job": "product:rediscover:mytimeline_frontend_src_components_products_ProductDetailView.tsx:2",
+     "rank_in_lot": 3
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 131,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:tests:1",
+   "section": "tests",
+   "rank": 1,
+   "text": "- Les tests fixent qu'un produit d'autrui donne 403 en GET, PATCH et DELETE sans écriture, et qu'un caller absent donne 401 [#11290ed1e7cdc863-1] [#3867990124be7804-1] [#e0b8ccf1c62e4f80-1] [#1f47760feddb9444-1].",
+   "fact_text": "Les tests fixent qu'un produit d'autrui donne 403 en GET, PATCH et DELETE sans écriture, et qu'un caller absent donne 401",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "product/11290ed1e7cdc863-1",
+    "product/3867990124be7804-1",
+    "product/e0b8ccf1c62e4f80-1",
+    "product/1f47760feddb9444-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductControllerOwnershipTest.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductControllerOwnershipTest.java",
+     73,
+     86,
+     "3b5a3ae276a04a8e062f5adae6f423dd5aaf5f618d19d7072906599f74461dfe"
+    ],
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductControllerOwnershipTest.java",
+     88,
+     101,
+     "310409c3da09e4d43d1f47c5321b6d7cf448d1f24fbe976636297693cb9c2417"
+    ],
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductControllerOwnershipTest.java",
+     253,
+     268,
+     "5fff23678f7c61b1429f3d29e1dfd9ba9849f3c4316c975f189d8b9b015458f9"
+    ],
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductControllerOwnershipTest.java",
+     110,
+     118,
+     "5040c894876597737ed3e45a7bd66376a555a5b3e77c897119743c597da193f2"
+    ]
+   ],
+   "code_sha256": "db56e55100c9ded9f32cbec71d4b99e273ac820d3eda643149f393867115981e",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 0.25,
+      "n": {
+       "identifiers": 3,
+       "values": 2,
+       "terms": 8
+      }
+     },
+     "restatement": "Les tests de ProductControllerOwnershipTest vérifient qu'un produit appartenant à un autre utilisateur renvoie 403 sur GET, DELETE et PATCH (même quand l'userId du chemin correspond à l'appelant), et que DELETE n'appelle pas productService.archiveById ni PATCH n'appelle updateProduct. Le dernier test vérifie qu'un GET sans utilisateur authentifié renvoie 401 et n'appelle pas getProductsWithEvents.",
+     "confidence": "high"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 11,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:\\Users\\ldelaforcade\\Documents\\Personnel\\My Timeline\\MyTimeline\\backend\\src\\test\\java\\com\\matimeline\\eventmanager\\infrastructure\\adapters\\controllers\\ProductControllerOwnershipTest.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 0.625,
+      "n": {
+       "identifiers": 3,
+       "values": 2,
+       "terms": 8
+      }
+     },
+     "job": "product:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_dtos_ProductCreationRequest.java:1",
+     "rank_in_lot": 7
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 163,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:tests:2",
+   "section": "tests",
+   "rank": 2,
+   "text": "- Les tests fixent qu'une catégorie d'un autre utilisateur lève CategoryNotFoundException à la création et au PATCH sans save, et qu'une catégorie système ou celle de l'appelant passe [#16b8dd187d80edb9-1] [#fffd1d9642eaa076-1] [#aa5109733cf7f78a-1] [#5e6820bd0759ed38-1].",
+   "fact_text": "Les tests fixent qu'une catégorie d'un autre utilisateur lève CategoryNotFoundException à la création et au PATCH sans save, et qu'une catégorie système ou celle de l'appelant passe",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "product/16b8dd187d80edb9-1",
+    "product/fffd1d9642eaa076-1",
+    "product/aa5109733cf7f78a-1",
+    "product/5e6820bd0759ed38-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/ProductServiceImplTest.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/ProductServiceImplTest.java",
+     85,
+     97,
+     "566ce0d7cc41028db089fb7ecc57cb276e2eb3b20553cc46f9e90e36a5b68caa"
+    ],
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/ProductServiceImplTest.java",
+     201,
+     217,
+     "2840521c041eb3f6fc78d0b64de376fffb045b7489f3839958b547632aa111b0"
+    ],
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/ProductServiceImplTest.java",
+     100,
+     113,
+     "4305405283c23a7f0fb0b7564e472dbe2829a28b43b20caf365d29949643209a"
+    ],
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/ProductServiceImplTest.java",
+     241,
+     257,
+     "cd31b8120f965198d1757e8e3f73f58960b6ab9913647363b293d38358e17b5c"
+    ]
+   ],
+   "code_sha256": "afa2e46a6db45c8bf98838349dd8e07fca71b8de79da2a1d6bca7debb56e39b7",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": null,
+      "terms": 0.6,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 10
+      }
+     },
+     "restatement": "Le test createProduct_categoryOwnedByAnotherUser_throwsCategoryNotFound_andDoesNotSave attend qu'un produit créé avec une catégorie appartenant à un autre utilisateur lève CategoryNotFoundException, sans appeler productRepository.save. Le bloc montre aussi le cas symétrique en update (updateProduct_categoryOwnedByAnotherUser) où le produit garde sa catégorie d'origine et n'est pas sauvegardé, ainsi que deux cas positifs : une catégorie système (owner null) est acceptée, et une catégorie du même utilisateur est acceptée en update avec save appelé.",
+     "confidence": "high"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 12,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:\\Users\\ldelaforcade\\Documents\\Personnel\\My Timeline\\MyTimeline\\backend\\src\\test\\java\\com\\matimeline\\eventmanager\\application\\services\\ProductServiceImplTest.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": null,
+      "terms": 0.7,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 10
+      }
+     },
+     "job": "product:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_dtos_ProductCreationRequest.java:1"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Tests L87, L201, L101, L241 couvrent exactement ces cas.",
+      "Tests L87, L201 (CategoryNotFoundException, jamais de save), L101 catégorie système et L241 catégorie propre passent.",
+      "Les tests de création et de mise à jour attendent CategoryNotFoundException sans save, et les cas système et propre passent."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 164,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:tests:3",
+   "section": "tests",
+   "rank": 3,
+   "text": "- Les tests fixent que DELETE est un soft delete, ligne conservée avec archived à true et masquée des lectures [#7248ace78914a68a-1] [#26fdcefec56af0bd-1] [#faec18edf7eeaa19-1] [#c0036cdc5ea05d09-1].",
+   "fact_text": "Les tests fixent que DELETE est un soft delete, ligne conservée avec archived à true et masquée des lectures",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "product/7248ace78914a68a-1",
+    "product/26fdcefec56af0bd-1",
+    "product/faec18edf7eeaa19-1",
+    "product/c0036cdc5ea05d09-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/ProductArchivedFilterIntegrationTest.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/ProductArchivedFilterIntegrationTest.java",
+     200,
+     222,
+     "b323b18d3b3504d94540eeb52f7f303e576f165c976a4668f14326087d1425af"
+    ],
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/ProductArchivedFilterIntegrationTest.java",
+     156,
+     168,
+     "bfd1f6f145ec6af666f64b716d07806a737f6009730089418850e99c61320c30"
+    ],
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/ProductArchivedFilterIntegrationTest.java",
+     171,
+     185,
+     "32076a0cd6541522055731f89709219ff7c92cf2139aa5c8754107c038dab471"
+    ],
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/ProductArchivedFilterIntegrationTest.java",
+     188,
+     197,
+     "ccb5516269b2be0df0add572952b7589476133f8a819f50c2aa1383d6a1c7dd6"
+    ]
+   ],
+   "code_sha256": "152bab2d83a36903a2c5d69b9fc8fe6d2903c9a427f5f52b9ac543f87bda4bb2",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.556,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 9
+      }
+     },
+     "restatement": "Les tests d'intégration ProductArchivedFilterIntegrationTest montrent que archiveById fait un soft delete : la ligne reste en base avec archived à true, mais findDomainProductById la renvoie vide. findByUserId et findAllProducts excluent les produits archived, tandis que le produit actif reste présent. Le test archivedProduct_isHiddenFromFindById confirme que findDomainProductById ne retourne pas un produit archivé.",
+     "confidence": "high"
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "product.details.md",
+     "row": 10
+    }
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:tests:4",
+   "section": "tests",
+   "rank": 4,
+   "text": "- Les tests fixent qu'un archivage réussi invalide products.all et categories.all, et qu'un échec n'invalide rien [#377d4c3da562cc23-3] [#377d4c3da562cc23-4] [#377d4c3da562cc23-5].",
+   "fact_text": "Les tests fixent qu'un archivage réussi invalide products.all et categories.all, et qu'un échec n'invalide rien",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "product/377d4c3da562cc23-3",
+    "product/377d4c3da562cc23-4",
+    "product/377d4c3da562cc23-5"
+   ],
+   "files": [
+    "mytimeline:frontend/src/hooks/useArchiveProduct.test.tsx"
+   ],
+   "ranges": [
+    [
+     "mytimeline:frontend/src/hooks/useArchiveProduct.test.tsx",
+     85,
+     100,
+     "e44a56b97314e0eeec43c9ba8b9866ac8fe6b3a21786d3d0c6be23996d8a77dc"
+    ],
+    [
+     "mytimeline:frontend/src/hooks/useArchiveProduct.test.tsx",
+     109,
+     122,
+     "cf10f6aaf9f2ef7dc983003b6e07b566c42aa232cd0050c9f2f84b1d9430aa16"
+    ],
+    [
+     "mytimeline:frontend/src/hooks/useArchiveProduct.test.tsx",
+     124,
+     141,
+     "7e41dfa36396cd22dcb5b4c43a287a4b407f8a71c8319af0e2e6a28a8c075aac"
+    ]
+   ],
+   "code_sha256": "03520285835216ce1fc5005439eeb1912aa7144da82da82a42de2c8dfd4b1658",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 6
+      }
+     },
+     "restatement": "Les tests de useArchiveProduct montrent qu'en cas de succès, la mutation invalide products.all et retire le produit archivé de la liste en cache, et invalide aussi categories.all (ticket #695, compteurs de carte). En cas d'échec serveur, l'erreur est exposée telle quelle, sans invalidation et avec le cache inchangé.",
+     "confidence": "high"
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "product.details.md",
+     "row": 11
+    }
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:tests:5",
+   "section": "tests",
+   "rank": 5,
+   "text": "- Les tests fixent qu'un désarchivage en 404 invalide les archivés seuls, et qu'un 500 n'invalide rien [#25b83a2183e60a2b-3] [#25b83a2183e60a2b-4].",
+   "fact_text": "Les tests fixent qu'un désarchivage en 404 invalide les archivés seuls, et qu'un 500 n'invalide rien",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "product/25b83a2183e60a2b-3",
+    "product/25b83a2183e60a2b-4"
+   ],
+   "files": [
+    "mytimeline:frontend/src/hooks/useRestoreProduct.test.tsx"
+   ],
+   "ranges": [
+    [
+     "mytimeline:frontend/src/hooks/useRestoreProduct.test.tsx",
+     90,
+     107,
+     "805f8b4b5c7e78a5fe4a3b44698ac49f7deddf263686e2b0bf50393f6f3df652"
+    ],
+    [
+     "mytimeline:frontend/src/hooks/useRestoreProduct.test.tsx",
+     109,
+     122,
+     "600b3a6eeaf742966632ea19f2759f9efc1c5b60897aa2827b833b52f538c5e7"
+    ]
+   ],
+   "code_sha256": "11c3f12030e3911b63b5df9054a8e2ed40f115f9daa11ac8a7b02afc1e1b1126",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": null,
+      "values": 0.5,
+      "terms": 0.4,
+      "n": {
+       "identifiers": 0,
+       "values": 2,
+       "terms": 5
+      }
+     },
+     "restatement": "Ce test vérifie que, sur une réponse 404 de restauration, `useRestoreProduct` expose l'erreur telle quelle (`result.current.error` identique au rejet), marque `ARCHIVED_KEY` comme invalidé sans modifier ses données (`p-1` reste présent), et ne touche pas à `LIST_KEY` (non invalidé, liste `p-3` intacte).",
+     "confidence": "high"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 6,
+     "within_budget": true,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/hooks/useRestoreProduct.test.tsx",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": null,
+      "values": 1.0,
+      "terms": 0.4,
+      "n": {
+       "identifiers": 0,
+       "values": 2,
+       "terms": 5
+      }
+     },
+     "job": "product:rediscover:mytimeline_frontend_src_components_products_ProductDetailView.tsx:2"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Test 404 : archivés invalidés, liste intacte. Test 500 : invalidateQueries non appelé.",
+      "useRestoreProduct.test L105-106 (404 invalide archivés seuls) et L121 (500, aucune invalidation).",
+      "Les tests L90-122 : 404 invalide les archivés seuls (liste active non invalidée), et 500 n'appelle pas invalidateQueries."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 165,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:questions:1",
+   "section": "questions",
+   "rank": 1,
+   "text": "- Les événements sont-ils créés avec un id produit encore null dans createProduct ? Le fait signale que product.getId() est null à cette étape, sans autre fait qui tranche. [#fc5fea0dc91f12cf-2]",
+   "fact_text": "Les événements sont-ils créés avec un id produit encore null dans createProduct ? Le fait signale que product.getId() est null à cette étape, sans autre fait qui tranche",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "product/fc5fea0dc91f12cf-2"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+     86,
+     87,
+     "a4ee153119c5352edc851587db82a575e506802360f172b8a178642d8e9af44b"
+    ]
+   ],
+   "code_sha256": "a4ee153119c5352edc851587db82a575e506802360f172b8a178642d8e9af44b",
+   "verdict": "drop",
+   "reason": "resolved",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Le code tranche : createProduct construit Product avec id null (L62), donc product.getId() vaut null à L87 quand les événements sont créés.",
+      "Le code tranche : createProduct construit le produit avec un id null (L62) et ne le persiste qu'à la fin (L93). product.getId() vaut donc null pour les événements. Le commentaire L76 le confirme et précise que le lien passe par ProductMapper.toEntity.",
+      "Le code tranche. createProduct construit Product avec un id null (L62) et Product n'a aucun setter d'id, donc product.getId() vaut null à L87. Le commentaire L76 le confirme et précise que le lien passe par ProductMapper.toEntity."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "resolved",
+     "searched": true,
+     "search": {
+      "check": "answer",
+      "outcome": "resolved",
+      "votes": 3,
+      "supporters": 2,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Read",
+         "target": "ProductServiceImpl.java",
+         "found": "Product créé avec id null L62, product.getId() passé à Event L87, commentaire L76 confirme null."
+        }
+       ],
+       [
+        {
+         "tool": "Read",
+         "target": "ProductServiceImpl.java",
+         "found": "L62 new Product(null, ...), L87 product.getId() passé à Event, L93 save après la boucle."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "new Product\\(",
+         "found": "ProductServiceImpl L62 construit le produit avec un id null."
+        },
+        {
+         "tool": "Read",
+         "target": "Product.java",
+         "found": "Aucun setId, getId renvoie le champ initialisé à null."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0,
+      "contradicted": 2,
+      "evidence": [
+       {
+        "file": "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+        "line_start": 62,
+        "line_end": 87,
+        "evidence": "Product product = new Product(null, request.getName(), category, user, new ArrayList<>());",
+        "evidence_check": "exact"
+       }
+      ],
+      "promote": {
+       "text": "Dans ProductServiceImpl.createProduct, product.getId() est null au moment de construire les Event ; le lien passe par ProductMapper.toEntity.",
+       "file": "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+       "line_start": 62,
+       "line_end": 87,
+       "evidence": "Product product = new Product(null, request.getName(), category, user, new ArrayList<>());",
+       "cites": [
+        "product/b9e90088400e813c-1",
+        "product/fc5fea0dc91f12cf-1",
+        "product/b9e90088400e813c-2"
+       ]
+      }
+     }
+    }
+   },
+   "contrary": null,
+   "check": "answer",
+   "answer": [
+    {
+     "file": "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+     "line_start": 62,
+     "line_end": 87,
+     "evidence": "Product product = new Product(null, request.getName(), category, user, new ArrayList<>());",
+     "evidence_check": "exact"
+    }
+   ],
+   "promote": {
+    "text": "Dans ProductServiceImpl.createProduct, product.getId() est null au moment de construire les Event ; le lien passe par ProductMapper.toEntity.",
+    "file": "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+    "line_start": 62,
+    "line_end": 87,
+    "evidence": "Product product = new Product(null, request.getName(), category, user, new ArrayList<>());",
+    "cites": [
+     "product/b9e90088400e813c-1",
+     "product/fc5fea0dc91f12cf-1",
+     "product/b9e90088400e813c-2"
+    ]
+   },
+   "placed": {
+    "pack_line": null,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:questions:2",
+   "section": "questions",
+   "rank": 2,
+   "text": "- Le libellé de plage de DensityRibbon en mode scrollable couvre-t-il rangeDays plus un jours à dessein ? Les barres couvrent rangeDays jours et buildDensityBuckets n'a pas été lu. [#fe8823be27d22b73-1]",
+   "fact_text": "Le libellé de plage de DensityRibbon en mode scrollable couvre-t-il rangeDays plus un jours à dessein ? Les barres couvrent rangeDays jours et buildDensityBuckets n'a pas été lu",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "product/fe8823be27d22b73-1"
+   ],
+   "files": [
+    "mytimeline:frontend/src/components/dashboard/DensityRibbon.tsx"
+   ],
+   "ranges": [
+    [
+     "mytimeline:frontend/src/components/dashboard/DensityRibbon.tsx",
+     160,
+     162,
+     "e5499233d5ff0f0ec4603ee74af09f5546fa9592e6cdfd6cfe4bf21956935b47"
+    ]
+   ],
+   "code_sha256": "e5499233d5ff0f0ec4603ee74af09f5546fa9592e6cdfd6cfe4bf21956935b47",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "buildDensityBuckets prend days de getDaysRange(from, rangeDays), non lu. formatDays(0, rangeDays) couvre de from à from+rangeDays. Le code ne dit pas si le jour de plus est voulu.",
+      "buildDensityBuckets (lib.ts) n'a pas été lu, donc l'intention du libellé rangeDays reste non tranchée.",
+      "buildDensityBuckets produit days.length barres via getDaysRange(from, rangeDays), dont la définition n'a pas été lue. Le caractère intentionnel du libellé formatDays(0, rangeDays) reste indécidable par le code."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "open",
+     "searched": true,
+     "search": {
+      "check": "answer",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "rangeDays|buildDensityBuckets|scrollable dans DensityRibbon.tsx",
+         "found": "shownRange = formatDays(0, rangeDays) en scrollable, sans commentaire sur l'intention"
+        },
+        {
+         "tool": "Grep",
+         "target": "export function buildDensityBuckets dans timeline",
+         "found": "lib.ts L365, days vient de getDaysRange(from, rangeDays), dont la longueur n'est pas lue"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "rangeDays|buildDensityBuckets dans DensityRibbon.tsx",
+         "found": "shownRange scrollable = formatDays(0, rangeDays), buckets via buildDensityBuckets(events, from, from, rangeDays), implémentation non lue"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "export function buildDensityBuckets dans components/timeline",
+         "found": "Défini dans lib.ts L365, utilise getDaysRange(from, rangeDays) pour la taille."
+        },
+        {
+         "tool": "Grep",
+         "target": "buildDensityBuckets|rangeDays dans frontend/src",
+         "found": "DensityRibbon appelle buildDensityBuckets(events, from, from, rangeDays) ; aucun commentaire ne tranche l'intention du +1."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     }
+    }
+   },
+   "contrary": null,
+   "check": "answer",
+   "placed": {
+    "pack_line": 169,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:questions:3",
+   "section": "questions",
+   "rank": 3,
+   "text": "- Le package webmvc.test.autoconfigure de ProductRestoreIntegrationTest est-il cohérent avec Spring Boot 3.4 annoncé par le projet ? La base ne donne pas la version réelle. [#8708a38930713169-1]",
+   "fact_text": "Le package webmvc.test.autoconfigure de ProductRestoreIntegrationTest est-il cohérent avec Spring Boot 3.4 annoncé par le projet ? La base ne donne pas la version réelle",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "product/8708a38930713169-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductRestoreIntegrationTest.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductRestoreIntegrationTest.java",
+     16,
+     16,
+     "37e0d63e9ebe8aace04c8062c6e7f66073128ae413519cb9f48e811ed53de2ba"
+    ]
+   ],
+   "code_sha256": "37e0d63e9ebe8aace04c8062c6e7f66073128ae413519cb9f48e811ed53de2ba",
+   "verdict": "drop",
+   "reason": "resolved",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Le pom fixe Spring Boot 4.1.2, donc le package webmvc.test.autoconfigure est celui de Boot 4. L'incohérence éventuelle est avec le CLAUDE.md (3.4), pas avec le code.",
+      "Le pom déclare Spring Boot 4.1.2 et de nombreux tests utilisent le même package, donc il est cohérent avec la version réelle (pas avec le 3.4 annoncé).",
+      "Le pom.xml indique que le projet est en Boot 4 (#886) avec spring-boot-starter-webmvc-test, ce qui explique le package org.springframework.boot.webmvc.test.autoconfigure, utilisé par de nombreux tests. Il est cohérent avec Boot 4, pas avec 3.4."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "resolved",
+     "searched": true,
+     "search": {
+      "check": "answer",
+      "outcome": "resolved",
+      "votes": 3,
+      "supporters": 3,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "webmvc.test.autoconfigure|spring-boot-starter-parent dans backend",
+         "found": "18 tests utilisent ce package, parent 4.1.2"
+        },
+        {
+         "tool": "Grep",
+         "target": "<version>(3|4).x.y</version> dans pom.xml",
+         "found": "version 4.1.2 à la ligne 8"
+        }
+       ],
+       [
+        {
+         "tool": "Read",
+         "target": "backend/pom.xml",
+         "found": "parent spring-boot-starter-parent 4.1.2"
+        },
+        {
+         "tool": "Grep",
+         "target": "webmvc.test.autoconfigure dans backend",
+         "found": "même import dans une vingtaine de tests"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "webmvc.test.autoconfigure dans backend",
+         "found": "Même import dans de nombreux tests."
+        },
+        {
+         "tool": "Grep",
+         "target": "pom.xml starter-test et version",
+         "found": "Commentaire Boot 4 (#886) et dépendance spring-boot-starter-webmvc-test."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0,
+      "evidence": [
+       {
+        "file": "mytimeline:backend/pom.xml",
+        "line_start": 5,
+        "line_end": 8,
+        "evidence": "<artifactId>spring-boot-starter-parent</artifactId>",
+        "evidence_check": "exact"
+       }
+      ],
+      "rule_proposal": {
+       "text": "Le backend est sur Spring Boot 4.1.2 (pom.xml), pas 3.4. Les tests importent org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc.",
+       "file": "mytimeline:backend/pom.xml",
+       "line_start": 5,
+       "line_end": 8,
+       "evidence": "<artifactId>spring-boot-starter-parent</artifactId>"
+      }
+     }
+    }
+   },
+   "contrary": null,
+   "check": "answer",
+   "answer": [
+    {
+     "file": "mytimeline:backend/pom.xml",
+     "line_start": 5,
+     "line_end": 8,
+     "evidence": "<artifactId>spring-boot-starter-parent</artifactId>",
+     "evidence_check": "exact"
+    }
+   ],
+   "rule_proposal": {
+    "text": "Le backend est sur Spring Boot 4.1.2 (pom.xml), pas 3.4. Les tests importent org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc.",
+    "file": "mytimeline:backend/pom.xml",
+    "line_start": 5,
+    "line_end": 8,
+    "evidence": "<artifactId>spring-boot-starter-parent</artifactId>"
+   },
+   "placed": {
+    "pack_line": null,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:alerts:1",
+   "section": "alerts",
+   "rank": 1,
+   "text": "- Le endpoint des événements d'un produit répond 404 quand la liste est vide, alors que le service autorise un produit sans événement, donc un produit valide neuf donne une erreur côté client. Ne pas traiter une liste vide comme un produit absent. [#d2ac56499c27c2b2-1] [#b9e90088400e813c-1]",
+   "fact_text": "Le endpoint des événements d'un produit répond 404 quand la liste est vide, alors que le service autorise un produit sans événement, donc un produit valide neuf donne une erreur côté client",
+   "consigne": "Ne pas traiter une liste vide comme un produit absent",
+   "consigne_dropped": false,
+   "cites": [
+    "product/d2ac56499c27c2b2-1",
+    "product/b9e90088400e813c-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java",
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java",
+     229,
+     231,
+     "44191cbcc455a084f7afdd38942140f61ed77d4f44450c375cea8911e08a9c3c"
+    ],
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+     66,
+     69,
+     "58e103f0fbdce75f5a9dfb7ecaeb85f0aa44f5b357fd1bf6058cf77df28bfd31"
+    ]
+   ],
+   "code_sha256": "1ec8bfd334082f15c2eb6da22933405371e44fd002eb47ee0295a07fb1f27908",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": {
+     "fact_supported": true,
+     "consigne_supported": true,
+     "reason": "Les faits product/d2ac56499c27c2b2-1 et product/b9e90088400e813c-1 portent le 404 sur liste vide et l'autorisation d'un produit sans événement, et la consigne découle directement de ce constat."
+    },
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "ProductController.getEventsByProductId L229-231 renvoie 404 si events.isEmpty(), alors que createProduct autorise un produit sans événement. L'existence du produit est vérifiée avant (L221), mais la liste vide donne quand même 404.",
+      "ProductController.getEventsByProductId renvoie 404 si events.isEmpty() (L229-231), alors que createProduct autorise un produit sans événement (L66-69). Le produit est déjà vérifié existant et appartenant à l'appelant juste avant, donc le 404 sur liste vide est bien trompeur.",
+      "ProductController.getEventsByProductId L228-231 répond 404 quand la liste d'événements est vide, alors que le produit existe et appartient à l'appelant (vérifié L220-226), et que createProduct autorise un produit sans événement."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "supported",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "guards",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Read",
+         "target": "ProductController.java L205-245",
+         "found": "Contrôles 401, 403 et produit présent, puis 404 si la liste d'événements est vide."
+        }
+       ],
+       [
+        {
+         "tool": "Read",
+         "target": "ProductController.java L205-247",
+         "found": "Contrôles 401, 403, 404 sur produit absent, puis 404 si la liste d'événements est vide."
+        }
+       ],
+       [
+        {
+         "tool": "Read",
+         "target": "ProductController.java L205-245",
+         "found": "Les contrôles de propriétaire précèdent le test events.isEmpty(), qui renvoie NOT_FOUND. Aucun traitement de la liste vide."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     }
+    }
+   },
+   "contrary": null,
+   "check": "guards",
+   "placed": {
+    "pack_line": 173,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:alerts:2",
+   "section": "alerts",
+   "rank": 2,
+   "text": "- Le filtre sur archived = false s'applique à tout findById Hibernate, et ProductRepositoryJpaImpl.save poursuit vers la création avec un id déjà renseigné quand findById ne trouve rien. Un produit archivé peut donc être recréé au lieu de rejeter la sauvegarde, il faut tester le cas avant de toucher à save. [#ee624a18d9fa7d32-1] [#ed1e9d0b02832172-1]",
+   "fact_text": "Le filtre sur archived = false s'applique à tout findById Hibernate, et ProductRepositoryJpaImpl.save poursuit vers la création avec un id déjà renseigné quand findById ne trouve rien. Un produit archivé peut donc être recréé au lieu de rejeter la sauvegarde",
+   "consigne": "il faut tester le cas avant de toucher à save",
+   "consigne_dropped": false,
+   "cites": [
+    "product/ee624a18d9fa7d32-1",
+    "product/ed1e9d0b02832172-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ProductRepositoryJpaImpl.java",
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/ProductEntity.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ProductRepositoryJpaImpl.java",
+     95,
+     118,
+     "e98e7e4e2a5c0bf3ea2d97961f33b9a3c547f0f6032ff5f4a4e0348f635b3c56"
+    ],
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/ProductEntity.java",
+     25,
+     25,
+     "6a796775801ccd697887c61676c987226892386e9be4474d9cbe91716ece8254"
+    ]
+   ],
+   "code_sha256": "42d419cf31d9e3e15dfd0cfa6c27707607722257d3d4537cd6f1a4e52492a338",
+   "verdict": "drop",
+   "reason": "guarded_elsewhere",
+   "final": true,
+   "measures": {
+    "fidelity": {
+     "fact_supported": true,
+     "consigne_supported": true,
+     "reason": "Les faits product/ee624a18d9fa7d32-1 et product/ed1e9d0b02832172-1 décrivent le orElse(null) suivi de la création avec id et le filtre archived = false sur toute lecture, la recréation n'est qu'une conséquence formulée avec « peut », et tester le cas avant de toucher à save est une pratique motivée par ces faits."
+    },
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Le constat est exact : ProductRepositoryJpaImpl.save tombe en création quand super.findById renvoie null (L95-118), et @SQLRestriction filtre les archivés.",
+      "ProductRepositoryJpaImpl.save L95-118 bascule bien vers la création quand findById (filtré par @SQLRestriction) rend vide, et rien lu n'empêche ce chemin.",
+      "Le constat est fidèle : save() (L95-108) passe à la création si findById ne trouve rien, et @SQLRestriction (L25) masque les archivés. Les appelants sont toutefois protégés (voir guards)."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "supported",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "guards",
+      "outcome": "guarded",
+      "votes": 3,
+      "supporters": 1,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Read",
+         "target": "ProductRepositoryJpaImpl.java",
+         "found": "save: findById(...).orElse(null) puis création si absent, donc un id archivé tombe en création"
+        },
+        {
+         "tool": "Grep",
+         "target": "productRepository.save( | archiveById",
+         "found": "appelants ProductServiceImpl L93, L146, L178"
+        },
+        {
+         "tool": "Read",
+         "target": "ProductServiceImpl.java L70-185",
+         "found": "updateProduct et archiveById passent par findDomainProductById (404 si archivé) avant save. Le create passe un id nul"
+        }
+       ],
+       [
+        {
+         "tool": "Read",
+         "target": "ProductRepositoryJpaImpl.java",
+         "found": "save: findById(...).orElse(null) puis création sans contrôle d'archivage"
+        },
+        {
+         "tool": "Read",
+         "target": "ProductEntity.java",
+         "found": "@SQLRestriction(\"archived = false\") L25, version Integer nullable donc isNew vrai"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "productRepository.save dans application/services Product*.java",
+         "found": "Trois appelants dans ProductServiceImpl : création (id null), updateProduct et archiveById, ces deux derniers chargent d'abord via findDomainProductById."
+        },
+        {
+         "tool": "Read",
+         "target": "ProductServiceImpl.java L60-150",
+         "found": "updateProduct lève ProductNotFoundException si le produit est introuvable (donc si archivé) avant save."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0,
+      "evidence": [
+       {
+        "file": "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+        "line_start": 123,
+        "line_end": 124,
+        "evidence": "productRepository.findDomainProductById(id) .orElseThrow(() -> new ProductNotFoundException(id));",
+        "evidence_check": "exact"
+       }
+      ],
+      "promote": {
+       "text": "ProductRepositoryJpaImpl.save ne doit être appelé qu'après un findDomainProductById réussi (404 sinon) pour un id existant, car un id d'archivé tombe dans la branche de création.",
+       "file": "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+       "line_start": 123,
+       "line_end": 124,
+       "evidence": "productRepository.findDomainProductById(id) .orElseThrow(() -> new ProductNotFoundException(id));",
+       "cites": [
+        "product/522d191440441932-1"
+       ]
+      }
+     }
+    }
+   },
+   "contrary": null,
+   "check": "guards",
+   "guard": [
+    {
+     "file": "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+     "line_start": 123,
+     "line_end": 124,
+     "evidence": "productRepository.findDomainProductById(id) .orElseThrow(() -> new ProductNotFoundException(id));",
+     "evidence_check": "exact"
+    }
+   ],
+   "promote": {
+    "text": "ProductRepositoryJpaImpl.save ne doit être appelé qu'après un findDomainProductById réussi (404 sinon) pour un id existant, car un id d'archivé tombe dans la branche de création.",
+    "file": "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+    "line_start": 123,
+    "line_end": 124,
+    "evidence": "productRepository.findDomainProductById(id) .orElseThrow(() -> new ProductNotFoundException(id));",
+    "cites": [
+     "product/522d191440441932-1"
+    ]
+   },
+   "placed": {
+    "pack_line": null,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:alerts:3",
+   "section": "alerts",
+   "rank": 3,
+   "text": "- La javadoc de productCreateSchema interdit d'envoyer events à null en parlant d'un NPE backend, mais le service traite null comme une liste vide et le schéma Zod n'interdit pas null. Se fier au code, corriger la javadoc ou resserrer le schéma. [#43db0c42b7b0c20e-1] [#4143ff129fa65ed6-1] [#b9e90088400e813c-1]",
+   "fact_text": "La javadoc de productCreateSchema interdit d'envoyer events à null en parlant d'un NPE backend, mais le service traite null comme une liste vide et le schéma Zod n'interdit pas null. Se fier au code",
+   "consigne": "corriger la javadoc ou resserrer le schéma",
+   "consigne_dropped": false,
+   "cites": [
+    "product/43db0c42b7b0c20e-1",
+    "product/4143ff129fa65ed6-1",
+    "product/b9e90088400e813c-1"
+   ],
+   "files": [
+    "mytimeline:frontend/src/types/product.ts",
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:frontend/src/types/product.ts",
+     54,
+     58,
+     "fb7758bb54395cb7b9de8de2c2eed40d18a2febfffceafb4e04afe4f5a6bab7d"
+    ],
+    [
+     "mytimeline:frontend/src/types/product.ts",
+     57,
+     67,
+     "d5b25b166a94fa7d53d88cf407bc2e6ee5b787ec8e0d4a422da4fe48f83c5c36"
+    ],
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+     66,
+     69,
+     "58e103f0fbdce75f5a9dfb7ecaeb85f0aa44f5b357fd1bf6058cf77df28bfd31"
+    ]
+   ],
+   "code_sha256": "51f23f16fbc6d1f4f827c4ac49bbf3ed5c965de73b0e909f77d9ad78d35652c4",
+   "verdict": "drop",
+   "reason": "guarded_elsewhere",
+   "final": true,
+   "measures": {
+    "fidelity": {
+     "fact_supported": true,
+     "consigne_supported": true,
+     "reason": "La javadoc interdisant null (product/43db0c42b7b0c20e-1), le schéma optionnel qui n'interdit pas null (product/4143ff129fa65ed6-1) et le traitement de null comme liste vide (product/b9e90088400e813c-1) soutiennent le constat, et corriger la javadoc ou resserrer le schéma en découle directement."
+    },
+    "deduce": null,
+    "rediscover": null,
+    "comment": [
+     {
+      "id": "product/43db0c42b7b0c20e-1",
+      "verdict": "confirmed"
+     }
+    ],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "ProductServiceImpl L69 traite getEvents() null comme une liste vide (la javadoc de product.ts L57 parle à tort d'un NPE non gardé). Le constat est vrai pour l'essentiel. Seul bémol : z.array().optional() refuse null côté client, mais cela ne change pas l'écart entre la javadoc et le backend.",
+      "Le code confirme le décalage : ProductServiceImpl L66-69 traite getEvents() null comme liste vide via Optional.ofNullable(...).orElseGet(List::of), donc pas de NPE, alors que la javadoc de productCreateSchema (L57) parle d'un NPE backend non gardé. Réserve : z.array(...).optional() de Zod rejette en pratique null côté frontend, mais l'incohérence de la javadoc reste réelle.",
+      "Le service ProductServiceImpl.createProduct (L66-69) traite bien events null comme liste vide (Optional.ofNullable(request.getEvents()).orElseGet(List::of)), donc la javadoc (L57, NPE backend non gardé) est fausse. Nuance, z.array(...).optional() (L67) rejette null côté Zod (seul undefined passe), donc le constat sur le schéma est discutable, mais l'essentiel de l'alerte tient. Au doute, non réfuté."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "supported",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "guards",
+      "outcome": "guarded",
+      "votes": 3,
+      "supporters": 1,
+      "budget": 6,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "events dans ProductServiceImpl.java",
+         "found": "seule occurrence à la javadoc L107, le code de createProduct est lu dans l'extrait L66-69"
+        },
+        {
+         "tool": "Grep",
+         "target": "events dans frontend/src/types/product.ts",
+         "found": "javadoc L57 'ne JAMAIS envoyer null (NPE backend non gardé)' et schéma L67 z.array(eventCreationSchema).optional()"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "events dans ProductServiceImpl.java",
+         "found": "Seule une javadoc L107 mentionne events (liste vide, jamais null) pour un autre chemin."
+        },
+        {
+         "tool": "Read",
+         "target": "extrait refute-f3a529a07bd2.excerpt.txt",
+         "found": "Le service garde null avec Optional.ofNullable (L69), schéma Zod events: z.array(...).optional()."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "events dans frontend/src/types/product.ts",
+         "found": "javadoc L57 interdit null (NPE), schéma L67 z.array(eventCreationSchema).optional()"
+        },
+        {
+         "tool": "Grep",
+         "target": "getEvents|events == null dans ProductServiceImpl.java",
+         "found": "L66-69 null traité comme liste vide via Optional.ofNullable, commentaire #186 BR-PRO-005"
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0,
+      "evidence": [
+       {
+        "file": "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+        "line_start": 66,
+        "line_end": 69,
+        "evidence": "Optional.ofNullable(request.getEvents()).orElseGet(List::of).forEach(eventCreationRequest -> {",
+        "evidence_check": "exact"
+       }
+      ],
+      "promote": {
+       "text": "ProductServiceImpl.createProduct accepte ProductCreationRequest.events null ou absent (traité comme liste vide), donc la javadoc de productCreateSchema qui prétend le contraire est périmée.",
+       "file": "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+       "line_start": 66,
+       "line_end": 69,
+       "evidence": "Optional.ofNullable(request.getEvents()).orElseGet(List::of).forEach(eventCreationRequest -> {",
+       "cites": [
+        "product/b9e90088400e813c-1",
+        "product/fc5fea0dc91f12cf-1",
+        "product/404568a8227181ab-1"
+       ]
+      }
+     }
+    }
+   },
+   "contrary": null,
+   "check": "guards",
+   "guard": [
+    {
+     "file": "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+     "line_start": 66,
+     "line_end": 69,
+     "evidence": "Optional.ofNullable(request.getEvents()).orElseGet(List::of).forEach(eventCreationRequest -> {",
+     "evidence_check": "exact"
+    }
+   ],
+   "promote": {
+    "text": "ProductServiceImpl.createProduct accepte ProductCreationRequest.events null ou absent (traité comme liste vide), donc la javadoc de productCreateSchema qui prétend le contraire est périmée.",
+    "file": "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+    "line_start": 66,
+    "line_end": 69,
+    "evidence": "Optional.ofNullable(request.getEvents()).orElseGet(List::of).forEach(eventCreationRequest -> {",
+    "cites": [
+     "product/b9e90088400e813c-1",
+     "product/fc5fea0dc91f12cf-1",
+     "product/404568a8227181ab-1"
+    ]
+   },
+   "placed": {
+    "pack_line": null,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:alerts:4",
+   "section": "alerts",
+   "rank": 4,
+   "text": "- ProductMapper.toEntity et Product.addEvent parcourent ou complètent la liste d'événements sans garde null, alors que ProductResponse.fromDomain en a une. Un produit dont la liste est null provoque un NPE dans ces deux chemins, il faut garder la liste avant d'y toucher. [#4a18358aa5f8d75c-1] [#backend-socle/e4027da2250fba89-1]",
+   "fact_text": "ProductMapper.toEntity et Product.addEvent parcourent ou complètent la liste d'événements sans garde null, alors que ProductResponse.fromDomain en a une. Un produit dont la liste est null provoque un NPE dans ces deux chemins",
+   "consigne": "il faut garder la liste avant d'y toucher",
+   "consigne_dropped": false,
+   "cites": [
+    "product/4a18358aa5f8d75c-1",
+    "backend-socle/e4027da2250fba89-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/mappers/ProductMapper.java",
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/Product.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/mappers/ProductMapper.java",
+     42,
+     42,
+     "c17d04aded14ceca1586be0184c7d2b6dd5d21b6f6f84c0b1b972895bb579b56"
+    ],
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/Product.java",
+     66,
+     68,
+     "66a8d3c19ea399507ade6fec12f2cf0f63c1ed55c6bed0e6c08ce6e32f6c0759"
+    ]
+   ],
+   "code_sha256": "edac57faa6a36e332bfa1dd7e20bd4e5edc927ed65b07d2784b19d2430972ac9",
+   "verdict": "drop",
+   "reason": "guarded_elsewhere",
+   "final": true,
+   "measures": {
+    "fidelity": {
+     "fact_supported": false,
+     "consigne_supported": true,
+     "reason": "Les faits product/4a18358aa5f8d75c-1 et backend-socle/e4027da2250fba89-1 établissent l'absence de garde null dans toEntity et addEvent, mais aucun fait cité n'affirme qu'une liste null provoque un NPE, ce qui ajoute une conséquence non vérifiée, tandis que la consigne de garder la liste se fonde sur ces faits."
+    },
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "ProductMapper.toEntity L42 et Product.addEvent L67 n'ont pas de garde null, comme dit. Les appelants lus passent des listes non nulles, mais rien ne l'impose (setEvents(null) reste possible), donc le risque n'est pas garanti écarté.",
+      "ProductMapper.toEntity L42 et Product.addEvent L67 n'ont aucune garde null, le constat est exact. Tous les chemins de construction fournissent pourtant une liste non null.",
+      "ProductMapper.toEntity L42 et Product.addEvent L67 n'ont pas de garde null et le constructeur de Product accepte une liste null. Les appelants lus passent une liste non null, mais setEvents reste public et rien ne l'impose, donc le risque reste."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "supported",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "guards",
+      "outcome": "guarded",
+      "votes": 3,
+      "supporters": 1,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "new Product\\(|productMapper.toEntity|.addEvent(",
+         "found": "Product construit avec new ArrayList<>() dans createProduct, toDomain avec une liste collectée ; toEntity appelé par ProductRepositoryJpaImpl.save L118."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "new Product\\(|setEvents\\( dans backend/src/main",
+         "found": "Trois constructions de Product (createProduct, toDomain, toDomainWithoutEvents), toutes avec une liste non null. Aucun appelant de Product.setEvents(null) trouvé."
+        },
+        {
+         "tool": "Grep",
+         "target": "events = dans ProductEntity.java",
+         "found": "L48 : liste initialisée par new ArrayList<>()."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "new Product\\(",
+         "found": "Trois constructions en production (ProductServiceImpl L62, ProductMapper.toDomain, ProductRepositoryJpaImpl.toDomainWithoutEvents), toutes avec une liste non null."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0,
+      "evidence": [
+       {
+        "file": "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+        "line_start": 62,
+        "line_end": 62,
+        "evidence": "Product product = new Product(null, request.getName(), category, user, new ArrayList<>());",
+        "evidence_check": "exact"
+       },
+       {
+        "file": "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ProductRepositoryJpaImpl.java",
+        "line_start": 239,
+        "line_end": 240,
+        "evidence": "userMapper.toDomain(entity.getUser()), new ArrayList<>(),",
+        "evidence_check": "exact"
+       }
+      ],
+      "promote": {
+       "text": "Construire Product avec une liste d'événements non null (new ArrayList<>()), car ProductMapper.toEntity et Product.addEvent ne la gardent pas.",
+       "file": "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+       "line_start": 62,
+       "line_end": 62,
+       "evidence": "Product product = new Product(null, request.getName(), category, user, new ArrayList<>());",
+       "cites": [
+        "product/404568a8227181ab-1",
+        "product/b1423a6b9a69c37d-2"
+       ]
+      }
+     }
+    }
+   },
+   "contrary": null,
+   "check": "guards",
+   "guard": [
+    {
+     "file": "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+     "line_start": 62,
+     "line_end": 62,
+     "evidence": "Product product = new Product(null, request.getName(), category, user, new ArrayList<>());",
+     "evidence_check": "exact"
+    },
+    {
+     "file": "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ProductRepositoryJpaImpl.java",
+     "line_start": 239,
+     "line_end": 240,
+     "evidence": "userMapper.toDomain(entity.getUser()), new ArrayList<>(),",
+     "evidence_check": "exact"
+    }
+   ],
+   "promote": {
+    "text": "Construire Product avec une liste d'événements non null (new ArrayList<>()), car ProductMapper.toEntity et Product.addEvent ne la gardent pas.",
+    "file": "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+    "line_start": 62,
+    "line_end": 62,
+    "evidence": "Product product = new Product(null, request.getName(), category, user, new ArrayList<>());",
+    "cites": [
+     "product/404568a8227181ab-1",
+     "product/b1423a6b9a69c37d-2"
+    ]
+   },
+   "placed": {
+    "pack_line": null,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:alerts:5",
+   "section": "alerts",
+   "rank": 5,
+   "text": "- Le commentaire de ProductEntity dit que la liste passe par findAll, alors que le test et findByUserId indiquent un filtre par utilisateur. Lire findByUserId comme référence et ne pas s'appuyer sur ce commentaire. [#273e1cf63cf5b461-1]",
+   "fact_text": "Le commentaire de ProductEntity dit que la liste passe par findAll, alors que le test et findByUserId indiquent un filtre par utilisateur",
+   "consigne": "Lire findByUserId comme référence et ne pas s'appuyer sur ce commentaire",
+   "consigne_dropped": false,
+   "cites": [
+    "product/273e1cf63cf5b461-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/ProductEntity.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/ProductEntity.java",
+     22,
+     22,
+     "b0e9d059ed84d9e6e4ce734592f56430cdc7d8294ee37f157b868133d55b8ec7"
+    ]
+   ],
+   "code_sha256": "b0e9d059ed84d9e6e4ce734592f56430cdc7d8294ee37f157b868133d55b8ec7",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": {
+     "fact_supported": true,
+     "consigne_supported": true,
+     "reason": "Le fait product/273e1cf63cf5b461-1 oppose le commentaire (findAll) au test ProductServiceImplTest et à findByUserId, ce qui soutient à la fois le constat et la consigne de s'appuyer sur findByUserId."
+    },
+    "deduce": null,
+    "rediscover": null,
+    "comment": [
+     {
+      "id": "product/273e1cf63cf5b461-1",
+      "verdict": "unverifiable"
+     }
+    ],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Le commentaire de ProductEntity (L20-24) parle de findAll, alors que findByUserId filtre par user.id en HQL (L71-82). Le constat est fidèle.",
+      "Le commentaire L20-24 de ProductEntity cite findAll, alors que findByUserId filtre par p.user.id (L71-82 du repository).",
+      "Le commentaire de ProductEntity L20-24 cite bien findAll alors que findByUserId (L71-82) filtre par p.user.id : la ligne est exacte."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "supported",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "guards",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Read",
+         "target": "ProductEntity.java et ProductRepositoryJpaImpl.java",
+         "found": "commentaire L22 cite findAll, alors que ProductServiceImpl.getProductsWithEvents appelle findByUserId (WHERE p.user.id = :userId)"
+        }
+       ],
+       [
+        {
+         "tool": "Read",
+         "target": "ProductRepositoryJpaImpl.java findByUserId",
+         "found": "WHERE p.user.id = :userId, donc filtre par utilisateur"
+        }
+       ],
+       [
+        {
+         "tool": "Read",
+         "target": "ProductRepositoryJpaImpl.java findByUserId et ProductServiceImpl.getProductsWithEvents",
+         "found": "Le service appelle findByUserId (WHERE p.user.id = :userId), pas findAll."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     }
+    }
+   },
+   "contrary": null,
+   "check": "guards",
+   "placed": {
+    "pack_line": 174,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:alerts:6",
+   "section": "alerts",
+   "rank": 6,
+   "text": "- ProductSparkline fige l'instant de référence au montage, donc la fenêtre de 90 jours ne glisse pas tant que le composant reste monté. Passer l'instant en prop si un affichage long doit se mettre à jour. [#71bf1dbf78fedd0b-2]",
+   "fact_text": "ProductSparkline fige l'instant de référence au montage, donc la fenêtre de 90 jours ne glisse pas tant que le composant reste monté",
+   "consigne": "Passer l'instant en prop si un affichage long doit se mettre à jour",
+   "consigne_dropped": false,
+   "cites": [
+    "product/71bf1dbf78fedd0b-2"
+   ],
+   "files": [
+    "mytimeline:frontend/src/components/products/ProductSparkline.tsx"
+   ],
+   "ranges": [
+    [
+     "mytimeline:frontend/src/components/products/ProductSparkline.tsx",
+     58,
+     71,
+     "69be3c507ef5c50b950f155ca7632026fa6cdc7dda95b69aa132d305c7893aa2"
+    ]
+   ],
+   "code_sha256": "69be3c507ef5c50b950f155ca7632026fa6cdc7dda95b69aa132d305c7893aa2",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": {
+     "fact_supported": true,
+     "consigne_supported": true,
+     "reason": "Le fait ProductSparkline (useState(() => Date.now())) établit que la fenêtre de 90 jours reste figée au montage, et la consigne de recalculer l'instant découle directement de ce constat.",
+     "reused": true,
+     "reused_from": "2026-11-19T10:28:12Z"
+    },
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "ProductSparkline L60 fige now via useState(() => Date.now()) et L70 l'utilise dans toDayIndex : la fenêtre ne glisse pas tant que le composant reste monté. Aucun garde-fou n'a été trouvé, le composant est utilisé dans ProductDrawer et ProductsListView sans remontage périodique visible.",
+      "ProductSparkline L60 fige now avec useState(() => Date.now()), sans recalcul. Le constat est exact. ProductDrawer et ProductsListView l'utilisent sans clé de remontage visible.",
+      "ProductSparkline L60 fige now avec React.useState(() => Date.now()). Les appelants (ProductsListView, ProductDrawer) ne passent pas de clé ni de now qui le recalcule. Aucun garde-fou ne garantit le glissement de la fenêtre."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "supported",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "guards",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "ProductSparkline dans frontend/src",
+         "found": "Utilisé dans ProductDrawer.tsx L436 et ProductsListView.tsx L463 et L471. Aucun mécanisme de rafraîchissement trouvé."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "ProductSparkline dans frontend/src",
+         "found": "utilisé dans ProductDrawer L436 et ProductsListView L463/471, aucun mécanisme de rafraîchissement de l'instant"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "ProductSparkline dans frontend/src",
+         "found": "Utilisé dans ProductsListView L463 et L471 et dans ProductDrawer L436, sans prop de temps."
+        },
+        {
+         "tool": "Read",
+         "target": "ProductDrawer.tsx L430-445",
+         "found": "Le composant reçoit dates, color et label seulement, pas d'instant de référence."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-19T10:28:12Z"
+    }
+   },
+   "contrary": null,
+   "check": "guards",
+   "placed": {
+    "pack_line": 175,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:alerts:7",
+   "section": "alerts",
+   "rank": 7,
+   "text": "- Le port ProductRepository importe Spring et ProductService dépend des DTOs de la couche application, ce qui contredit la règle hexagonale du projet. Ne pas copier ce schéma dans un nouveau port. [#af393afe6d8cdb5e-1] [#320ca0e55e5d619b-1]",
+   "fact_text": "Le port ProductRepository importe Spring et ProductService dépend des DTOs de la couche application, ce qui contredit la règle hexagonale du projet",
+   "consigne": "Ne pas copier ce schéma dans un nouveau port",
+   "consigne_dropped": false,
+   "cites": [
+    "product/af393afe6d8cdb5e-1",
+    "product/320ca0e55e5d619b-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/ports/repositories/ProductRepository.java",
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/ports/services/ProductService.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/ports/repositories/ProductRepository.java",
+     8,
+     13,
+     "71615818f7b6b105757df5ece18100ab84315b31254bdca2fa7083c960b562d2"
+    ],
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/ports/services/ProductService.java",
+     7,
+     8,
+     "0d89d0ef3834fc08acaadfa5c111c2deb0f2529965cbec99e20315819b2a477a"
+    ]
+   ],
+   "code_sha256": "f056eac595c608d0ab634a56d54babe5f97bfb67a3f3031fa2e58a7f3d3d4f3e",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": {
+     "fact_supported": true,
+     "consigne_supported": true,
+     "reason": "Les faits product/af393afe6d8cdb5e-1 et product/320ca0e55e5d619b-1 établissent l'import Spring dans le port de domaine et la dépendance aux DTOs d'application, avec une mention de rupture de séparation stricte, et la consigne de ne pas reprendre ce schéma découle de ces faits, même si la règle hexagonale elle-même n'est pas citée textuellement."
+    },
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "ProductRepository porte @Repository Spring (L8, L13) et ProductService importe des DTOs application (L7-8). ArchitectureTest gèle explicitement ces violations historiques, ce qui confirme l'alerte et ne la garantit pas résolue.",
+      "Le constat est exact : ProductRepository importe org.springframework.stereotype.Repository (L8) et ProductService importe deux DTOs de application.dtos (L7-8). Aucun garde-fou ne rend le schéma conforme.",
+      "ProductRepository importe org.springframework.stereotype.Repository (L8) et ProductService importe des DTOs application (L7-8), ce qui est exact. Aucun garde-fou n'a été trouvé qui corrige cela."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "supported",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "guards",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "ArchRule|ArchUnit|noClasses()",
+         "found": "ArchitectureTest existe, avec FreezingArchRule qui liste @Repository sur les ports et DTOs importés par les ports services comme violations historiques gelées."
+        },
+        {
+         "tool": "Grep",
+         "target": "Spring|application|freeze dans ArchitectureTest",
+         "found": "Lignes 30-31 listent ces deux violations comme gelées."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "import org.springframework|import ...application dans domain/ports",
+         "found": "Seulement ProductRepository (Spring) et ProductService (DTOs application)."
+        }
+       ],
+       [
+        {
+         "tool": "Read",
+         "target": "extrait ProductRepository.java et ProductService.java",
+         "found": "Import Spring dans le port et imports de DTOs application dans le port de service."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     }
+    }
+   },
+   "contrary": null,
+   "check": "guards",
+   "placed": {
+    "pack_line": 176,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:rules:p1",
+   "section": "rules",
+   "rank": 0,
+   "text": "- Dans ProductServiceImpl.createProduct, product.getId() est null au moment de construire les Event ; le lien passe par ProductMapper.toEntity [#b9e90088400e813c-1] [#fc5fea0dc91f12cf-1] [#b9e90088400e813c-2] `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java:62-87`.",
+   "fact_text": "Dans ProductServiceImpl.createProduct, product.getId() est null au moment de construire les Event ; le lien passe par ProductMapper.toEntity ProductServiceImpl.java",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "product/b9e90088400e813c-1",
+    "product/fc5fea0dc91f12cf-1",
+    "product/b9e90088400e813c-2"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+     66,
+     69,
+     "58e103f0fbdce75f5a9dfb7ecaeb85f0aa44f5b357fd1bf6058cf77df28bfd31"
+    ],
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+     68,
+     68,
+     "f8bf22eed3908a43784c996210bf14425676700220da0c75c3a4973db98c162b"
+    ],
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+     70,
+     70,
+     "635950e51f57b1125d8b9c4b64d65701db28cb896915fd92a6cc228af93ccc5b"
+    ]
+   ],
+   "code_sha256": "ec9f8391fabcc6a45c4b723aa72d6f3cad9ecac328ff2cb60d1cd7ab3f68e476",
+   "verdict": "admit",
+   "reason": "promoted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "promoted_from": "product:questions:1",
+   "guard_range": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+    62,
+    87
+   ],
+   "placed": {
+    "pack_line": 53,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:rules:p2",
+   "section": "rules",
+   "rank": 0,
+   "text": "- ProductRepositoryJpaImpl.save ne doit être appelé qu'après un findDomainProductById réussi (404 sinon) pour un id existant, car un id d'archivé tombe dans la branche de création [#522d191440441932-1] `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java:123-124`.",
+   "fact_text": "ProductRepositoryJpaImpl.save ne doit être appelé qu'après un findDomainProductById réussi (404 sinon) pour un id existant, car un id d'archivé tombe dans la branche de création ProductServiceImpl.java",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "product/522d191440441932-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+     122,
+     147,
+     "cf67ee0bba6f88bd5933e7a0632de0aea6184b9e63ee986d0aa30ae1c0858523"
+    ]
+   ],
+   "code_sha256": "cf67ee0bba6f88bd5933e7a0632de0aea6184b9e63ee986d0aa30ae1c0858523",
+   "verdict": "admit",
+   "reason": "promoted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "promoted_from": "product:alerts:2",
+   "guard_range": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+    123,
+    124
+   ],
+   "placed": {
+    "pack_line": 54,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:rules:p3",
+   "section": "rules",
+   "rank": 0,
+   "text": "- ProductServiceImpl.createProduct accepte ProductCreationRequest.events null ou absent (traité comme liste vide), donc la javadoc de productCreateSchema qui prétend le contraire est périmée [#b9e90088400e813c-1] [#fc5fea0dc91f12cf-1] [#404568a8227181ab-1] `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java:66-69`.",
+   "fact_text": "ProductServiceImpl.createProduct accepte ProductCreationRequest.events null ou absent (traité comme liste vide), donc la javadoc de productCreateSchema qui prétend le contraire est périmée ProductServiceImpl.java",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "product/b9e90088400e813c-1",
+    "product/fc5fea0dc91f12cf-1",
+    "product/404568a8227181ab-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+     66,
+     69,
+     "58e103f0fbdce75f5a9dfb7ecaeb85f0aa44f5b357fd1bf6058cf77df28bfd31"
+    ],
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+     68,
+     68,
+     "f8bf22eed3908a43784c996210bf14425676700220da0c75c3a4973db98c162b"
+    ],
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+     48,
+     94,
+     "e7f65078077280038ddb7dab4b39e30ea6f59dcdad8b8020493fb1118ff21238"
+    ]
+   ],
+   "code_sha256": "f7be6399b32cca975b62c6e003690d640150c1a3a8f99a65728448d54b8e3256",
+   "verdict": "admit",
+   "reason": "promoted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "promoted_from": "product:alerts:3",
+   "guard_range": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+    66,
+    69
+   ],
+   "placed": {
+    "pack_line": 55,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:rules:p4",
+   "section": "rules",
+   "rank": 0,
+   "text": "- Construire Product avec une liste d'événements non null (new ArrayList<>()), car ProductMapper.toEntity et Product.addEvent ne la gardent pas [#404568a8227181ab-1] [#b1423a6b9a69c37d-2] `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java:62`.",
+   "fact_text": "Construire Product avec une liste d'événements non null (new ArrayList<>()), car ProductMapper.toEntity et Product.addEvent ne la gardent pas ProductServiceImpl.java",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "product/404568a8227181ab-1",
+    "product/b1423a6b9a69c37d-2"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ProductRepositoryJpaImpl.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+     48,
+     94,
+     "e7f65078077280038ddb7dab4b39e30ea6f59dcdad8b8020493fb1118ff21238"
+    ],
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ProductRepositoryJpaImpl.java",
+     234,
+     243,
+     "02a089c8fbfd6cff7a5fb43ac902ec440b74f8402ab3d06fe6a1a3c58cf9f44a"
+    ]
+   ],
+   "code_sha256": "fafe68f0e00d3073b86bfc87b22e4cf51631490239d336ffb531fe32792bfde8",
+   "verdict": "admit",
+   "reason": "promoted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "promoted_from": "product:alerts:4",
+   "guard_range": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+    62,
+    62
+   ],
+   "placed": {
+    "pack_line": 56,
+    "annex_table": null
+   },
+   "uses": 0
+  }
+ ],
+ "comment_facts": [
+  {
+   "id": "product/43db0c42b7b0c20e-1",
+   "verdict": "confirmed",
+   "code_says": "Le schéma productCreateSchema déclare events comme z.array(eventCreationSchema).optional(). Zod accepte donc un tableau (y compris vide) ou une omission, et rejette null, ce qui applique la règle de la javadoc.",
+   "code_line_start": 63,
+   "code_line_end": 68,
+   "code_evidence": "events: z.array(eventCreationSchema).optional(),",
+   "evidence_check": null,
+   "code_file": "mytimeline:frontend/src/types/product.ts",
+   "invalid": false,
+   "cache_digest": "ce99caf7483b7fc7d49700621e288fc7701cabac1a24463606174c13107c0a33",
+   "reused": true,
+   "reused_from": "2026-11-19T10:28:12Z",
+   "cited_by": [
+    "product:alerts:3"
+   ],
+   "structure_rows_removed": []
+  },
+  {
+   "id": "product/273e1cf63cf5b461-1",
+   "verdict": "unverifiable",
+   "code_says": "Dans ProductEntity.java, la seule annotation de restriction est @SQLRestriction(\"archived = false\"), qui filtre les lectures générées par Hibernate. Le fichier ne contient ni appel à findAll ni appel à findByUserId, donc il ne montre pas quelle méthode alimente la liste.",
+   "code_line_start": 0,
+   "code_line_end": 0,
+   "code_evidence": "",
+   "evidence_check": null,
+   "code_file": "",
+   "invalid": false,
+   "cache_digest": "8fb4052fdd50bcfa2f1a6903719c3885ff8fcb119a1b099f861219ef5a54a636",
+   "cited_by": [
+    "product:alerts:5"
+   ],
+   "structure_rows_removed": []
+  }
+ ],
+ "facts_validated": [
+  "product/cb9cd539bc6aefc5-1",
+  "product/f9764289451941b1-1",
+  "product/3cf28ed77eb574bb-1",
+  "product/9cc65799cbc6def7-1",
+  "product/4e9437e462e8c665-1",
+  "product/676746658e0bc721-1",
+  "product/8201be6af3b41edb-1",
+  "product/c730773888727d2d-1",
+  "product/99b2ca01d45a7db5-1",
+  "product/529d47becb68ce40-1",
+  "product/b3cdac12863fa666-1",
+  "product/886190a156eb7d0d-1",
+  "product/489818ded7d0ce9d-1",
+  "product/2a25f62a0b7cc915-1",
+  "product/543d5111ef963789-1",
+  "product/cc79bb18430a4b6d-1",
+  "product/485f8b3b418aef7b-1",
+  "product/551bcc200cf8e8da-5",
+  "product/551bcc200cf8e8da-4",
+  "product/551bcc200cf8e8da-7",
+  "product/a45ab87714125d89-1",
+  "product/d44fc22f2b25162b-1",
+  "product/d1e3766cca0d7a1c-1",
+  "product/14e94e9251725880-1",
+  "product/326ff59e03dce0b8-1",
+  "product/7f9be5fdb738e55f-1",
+  "product/cbf7e3080a18d38f-1",
+  "product/16b8dd187d80edb9-1",
+  "product/fffd1d9642eaa076-1",
+  "product/aa5109733cf7f78a-1",
+  "product/5e6820bd0759ed38-1",
+  "product/25b83a2183e60a2b-3",
+  "product/25b83a2183e60a2b-4",
+  "product/fe8823be27d22b73-1",
+  "product/d2ac56499c27c2b2-1",
+  "product/b9e90088400e813c-1",
+  "product/273e1cf63cf5b461-1",
+  "product/71bf1dbf78fedd0b-2",
+  "product/af393afe6d8cdb5e-1",
+  "product/320ca0e55e5d619b-1",
+  "product/fc5fea0dc91f12cf-1",
+  "product/b9e90088400e813c-2",
+  "product/522d191440441932-1",
+  "product/404568a8227181ab-1",
+  "product/b1423a6b9a69c37d-2"
+ ],
+ "counts": {
+  "units": 54,
+  "admit": 38,
+  "annex": 11,
+  "drop": 5,
+  "hold": 0,
+  "pending": 0,
+  "consigne_before_unsupported": 0,
+  "consigne_after_dropped": 0,
+  "structure_rows_removed": 0,
+  "framework": 0,
+  "guarded_elsewhere": 3,
+  "resolved": 2,
+  "restricted": 0,
+  "counterexample": 0,
+  "promoted": 4,
+  "kept_for": {
+   "rediscovered": 13
+  },
+  "pointers_removed": 0,
+  "restored_alerts": 0,
+  "budget_cut": 0
+ },
+ "answers": [
+  {
+   "unit": "product:questions:1",
+   "question": "Les événements sont-ils créés avec un id produit encore null dans createProduct ? Le fait signale que product.getId() est null à cette étape, sans autre fait qui tranche",
+   "answer": [
+    {
+     "file": "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+     "line_start": 62,
+     "line_end": 87,
+     "evidence": "Product product = new Product(null, request.getName(), category, user, new ArrayList<>());",
+     "evidence_check": "exact"
+    }
+   ]
+  },
+  {
+   "unit": "product:questions:3",
+   "question": "Le package webmvc.test.autoconfigure de ProductRestoreIntegrationTest est-il cohérent avec Spring Boot 3.4 annoncé par le projet ? La base ne donne pas la version réelle",
+   "answer": [
+    {
+     "file": "mytimeline:backend/pom.xml",
+     "line_start": 5,
+     "line_end": 8,
+     "evidence": "<artifactId>spring-boot-starter-parent</artifactId>",
+     "evidence_check": "exact"
+    }
+   ]
+  }
+ ],
+ "budget_cut": [],
+ "structure_rows_removed": [],
+ "notes": [
+  "product:alerts:1 : consigne non retrouvée dans la ligne, ligne laissée telle quelle",
+  "product:alerts:5 : consigne non retrouvée dans la ligne, ligne laissée telle quelle",
+  "product:alerts:6 : consigne non retrouvée dans la ligne, ligne laissée telle quelle",
+  "product:alerts:7 : consigne non retrouvée dans la ligne, ligne laissée telle quelle",
+  "règle promue depuis product:questions:1 : - Dans ProductServiceImpl.createProduct, product.getId() est null au moment de construire les Event ; le lien passe par ProductMapper.toEntity [#b9e90088400e813c-1] [#fc5fea0dc91f12cf-1] [#b9e90088400e813c-2] `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java:62-87`.",
+  "règle promue depuis product:alerts:2 : - ProductRepositoryJpaImpl.save ne doit être appelé qu'après un findDomainProductById réussi (404 sinon) pour un id existant, car un id d'archivé tombe dans la branche de création [#522d191440441932-1] `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java:123-124`.",
+  "règle promue depuis product:alerts:3 : - ProductServiceImpl.createProduct accepte ProductCreationRequest.events null ou absent (traité comme liste vide), donc la javadoc de productCreateSchema qui prétend le contraire est périmée [#b9e90088400e813c-1] [#fc5fea0dc91f12cf-1] [#404568a8227181ab-1] `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java:66-69`.",
+  "règle promue depuis product:alerts:4 : - Construire Product avec une liste d'événements non null (new ArrayList<>()), car ProductMapper.toEntity et Product.addEvent ne la gardent pas [#404568a8227181ab-1] [#b1423a6b9a69c37d-2] `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java:62`.",
+  "product:rules:1 : unité annex dont la ligne n'est plus dans l'annexe, non reportée",
+  "product:rules:6 : unité annex dont la ligne n'est plus dans l'annexe, non reportée",
+  "product:rules:7 : unité annex dont la ligne n'est plus dans l'annexe, non reportée",
+  "product:rules:8 : unité annex dont la ligne n'est plus dans l'annexe, non reportée",
+  "product:rules:9 : unité annex dont la ligne n'est plus dans l'annexe, non reportée",
+  "product:rules:11 : unité annex dont la ligne n'est plus dans l'annexe, non reportée",
+  "product:rules:12 : unité annex dont la ligne n'est plus dans l'annexe, non reportée",
+  "product:surface:2 : unité annex dont la ligne n'est plus dans l'annexe, non reportée",
+  "product:surface:5 : unité annex dont la ligne n'est plus dans l'annexe, non reportée",
+  "product:surface:14 : unité annex dont la ligne n'est plus dans l'annexe, non reportée"
+ ],
+ "base_sha256_after": "bd7c35086f9c3eadb19d838ddb4b9a10d81229309cbbe01ed0dd9d158179baab",
+ "bases_touched": {
+  "product": {
+   "fingerprint": "3843c657fa8a079a78b9d59d356792408a28879c7895acbe87e4c617334eb54a",
+   "sha256_after": "bd7c35086f9c3eadb19d838ddb4b9a10d81229309cbbe01ed0dd9d158179baab"
+  }
+ },
+ "lint": {
+  "ok": true,
+  "errors": 0,
+  "warnings": 0
+ }
+}

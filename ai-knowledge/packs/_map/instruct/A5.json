@@ -1,16 +1,19 @@
 {
  "id": "A5",
- "question": "Le motif batch (14 fichiers) justifie-t-il un pack transversal ?",
- "decision": "oui, pack transversal batch",
- "rule": "R5 motif mesuré (14 fichiers à 3 occurrences ou plus)",
+ "question": "Radical « auth » des fichiers front : user ou session ?",
+ "decision": "user",
+ "rule": "R3 radical omis des alias car il désigne deux packs (User -> Session 10 imports, Session -> User 5)",
  "confidence": "low",
  "seeds": [
-  "PasswordResetTokenEntity",
-  "ExportJobEntity"
+  "User",
+  "Session"
  ],
- "evidence": [],
- "falsified_if": "après extraction, le pack batch contient moins de faits que son budget minimal et se fond mieux dans le pack timeline",
+ "evidence": [
+  "mytimeline:frontend/src/lib/auth-token-verify.ts",
+  "mytimeline:frontend/src/lib/auth-jwks.ts"
+ ],
+ "falsified_if": "un ticket de session modifie les fichiers auth-* du frontend sans toucher au profil utilisateur",
  "status": "open",
- "opened": "2026-11-17",
+ "opened": "2026-11-19",
  "touched_by": []
 }

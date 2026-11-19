@@ -26,7 +26,15 @@
  "seeds": {
   "entities": true,
   "routed_folders": true,
-  "extra": []
+  "extra": [
+   "Event",
+   "Category",
+   "Product",
+   "Session",
+   "ExportJob",
+   "PasswordReset",
+   "User"
+  ]
  },
  "edges": {
   "source": "regex"
@@ -34,9 +42,9 @@
  "tech_folders": [],
  "thresholds": {
   "min_seed_files": 6,
-  "merge_ratio": 0.6,
+  "merge_ratio": 0.9,
   "max_merge_target": 40,
-  "pack_min_kb": 60,
+  "pack_min_kb": 15,
   "replay_agent_new_leftover": 10
  },
  "motifs_file": "motifs.json",

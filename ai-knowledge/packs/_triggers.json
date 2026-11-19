@@ -1,133 +1,191 @@
 {
  "packs": {
-  "timeline": {
+  "user": {
    "kind": "domain",
    "keywords": [
     "user",
     "utilisateur",
-    "event",
-    "événement",
-    "evenement",
-    "category",
-    "catégorie",
-    "categorie",
-    "product",
-    "produit",
-    "session",
-    "export",
-    "password reset",
+    "password",
     "mot de passe",
-    "timeline",
-    "chronologie",
-    "recurrence",
-    "récurrence",
-    "avatar"
+    "reset",
+    "avatar",
+    "register",
+    "inscription",
+    "profile",
+    "profil",
+    "auth"
    ],
    "routes": [
     "/api/auth",
-    "/api/categories",
-    "/api/events",
-    "/api/export",
     "/api/me",
-    "/api/sessions",
     "/api/test-support"
    ],
    "entities": [
     "UserEntity",
-    "CategoryEntity",
-    "EventEntity",
-    "ExportJobEntity",
-    "PasswordResetTokenEntity",
-    "ProductEntity",
-    "SessionEntity"
+    "PasswordResetTokenEntity"
+   ],
+   "paths": [],
+   "name_globs": [
+    "**/User*",
+    "**/*user*",
+    "**/UserEntity*",
+    "**/PasswordReset*",
+    "**/PasswordResetTokenEntity*",
+    "**/*password*",
+    "**/*avatar*"
+   ]
+  },
+  "event": {
+   "kind": "domain",
+   "keywords": [
+    "event",
+    "évènement",
+    "timeline",
+    "frise",
+    "recurrence",
+    "récurrence"
+   ],
+   "routes": [
+    "/api/events"
+   ],
+   "entities": [
+    "EventEntity"
    ],
    "paths": [
-    "mytimeline:backend/",
-    "mytimeline:frontend/src/types/",
-    "mytimeline:frontend/src/components/events/",
-    "mytimeline:frontend/src/components/products/"
+    "mytimeline:frontend/src/components/events/"
    ],
    "name_globs": [
-    "**/UserEntity*",
-    "**/CategoryEntity*",
-    "**/EventEntity*",
-    "**/ExportJobEntity*",
-    "**/PasswordResetTokenEntity*",
-    "**/ProductEntity*",
-    "**/SessionEntity*",
-    "**/*user*",
+    "**/Event*",
     "**/*event*",
-    "**/*category*",
-    "**/*product*",
-    "**/*session*",
-    "**/*export*",
-    "**/*password*",
+    "**/EventEntity*",
     "**/*recurrence*",
-    "**/*auth*",
-    "**/*theme*"
+    "**/*preview*",
+    "**/*lane*",
+    "**/*zoom*"
    ]
   },
-  "authorization": {
-   "kind": "transversal",
-   "motif": "authorization",
-   "crosses": [
-    "timeline"
+  "product": {
+   "kind": "domain",
+   "keywords": [
+    "product",
+    "produit"
+   ],
+   "routes": [],
+   "entities": [
+    "ProductEntity"
+   ],
+   "paths": [],
+   "name_globs": [
+    "**/Product*",
+    "**/*product*",
+    "**/ProductEntity*"
    ]
   },
-  "state-machine": {
-   "kind": "transversal",
-   "motif": "state-machine",
-   "crosses": [
-    "timeline"
+  "category": {
+   "kind": "domain",
+   "keywords": [
+    "category",
+    "catégorie",
+    "categorie"
+   ],
+   "routes": [
+    "/api/categories"
+   ],
+   "entities": [
+    "CategoryEntity"
+   ],
+   "paths": [],
+   "name_globs": [
+    "**/Category*",
+    "**/*category*",
+    "**/CategoryEntity*"
    ]
   },
-  "integrations": {
-   "kind": "transversal",
-   "motif": "integrations",
-   "crosses": [
-    "timeline"
+  "export": {
+   "kind": "domain",
+   "keywords": [
+    "export",
+    "exporter",
+    "zip",
+    "csv",
+    "markdown",
+    "json"
+   ],
+   "routes": [
+    "/api/export"
+   ],
+   "entities": [
+    "ExportJobEntity"
+   ],
+   "paths": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/"
+   ],
+   "name_globs": [
+    "**/ExportJob*",
+    "**/ExportJobEntity*",
+    "**/*export*"
    ]
   },
-  "batch": {
-   "kind": "transversal",
-   "motif": "batch",
-   "crosses": [
-    "timeline"
+  "session": {
+   "kind": "domain",
+   "keywords": [
+    "session",
+    "jwt",
+    "jwks",
+    "token",
+    "jeton",
+    "refresh"
+   ],
+   "routes": [
+    "/api/sessions"
+   ],
+   "entities": [
+    "SessionEntity"
+   ],
+   "paths": [],
+   "name_globs": [
+    "**/Session*",
+    "**/*session*",
+    "**/SessionEntity*",
+    "**/*jwks*"
    ]
   },
   "backend-socle": {
    "kind": "technical",
    "layers": [
     "mytimeline/infrastructure",
+    "mytimeline/db",
     "mytimeline/",
+    "mytimeline/domain",
     "mytimeline/support",
+    "mytimeline/application",
     "mytimeline/architecture",
     "mytimeline/build"
    ],
-   "paths": []
-  },
-  "frontend-socle": {
-   "kind": "technical",
-   "layers": [
-    "mytimeline/resources"
-   ],
    "paths": [
-    "mytimeline:frontend/app/",
-    "mytimeline:frontend/src/__tests__/",
-    "mytimeline:frontend/src/styles/",
-    "mytimeline:frontend/src/components/dashboard/",
-    "mytimeline:frontend/src/components/landing/",
-    "mytimeline:frontend/src/components/shared/",
-    "mytimeline:frontend/src/components/ui/",
-    "mytimeline:frontend/src/components/settings/mobile/"
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/config/"
    ]
   },
-  "migrations": {
-   "kind": "technical",
-   "layers": [
-    "mytimeline/db"
-   ],
-   "paths": []
+  "authorization": {
+   "kind": "transversal",
+   "motif": "authorization",
+   "crosses": [
+    "user",
+    "session",
+    "export"
+   ]
+  },
+  "integrations": {
+   "kind": "transversal",
+   "motif": "integrations",
+   "crosses": [
+    "user",
+    "export",
+    "event",
+    "session",
+    "product",
+    "category"
+   ]
   }
  },
  "rules": {

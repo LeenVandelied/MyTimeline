@@ -1,0 +1,12 @@
+C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/components/timeline/TimelineView.tsx
+C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/components/EventEditForm.tsx
+C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/components/timeline/TimelineView.test.tsx
+C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/components/EventEditForm.test.tsx
+C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/components/events/NewEventDrawer.test.tsx
+C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/components/timeline/TimelineEditHost.test.tsx
+C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/components/timeline/useTimelineMobileState.ts
+C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/components/timeline/zoom.test.ts
+C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/components/timeline/zoom.ts
+C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/types/event.ts
+C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/components/timeline/TimelineMobileLandscape.tsx
+C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/components/timeline/TimelineMobilePortrait.tsx

@@ -1,9 +1,16 @@
 {
- "CategoryEntity": "timeline",
- "EventEntity": "timeline",
- "ExportJobEntity": "timeline",
- "PasswordResetTokenEntity": "timeline",
- "ProductEntity": "timeline",
- "SessionEntity": "timeline",
- "UserEntity": "timeline"
+ "Category": "category",
+ "CategoryEntity": "category",
+ "Event": "event",
+ "EventEntity": "event",
+ "ExportJob": "export",
+ "ExportJobEntity": "export",
+ "PasswordReset": "user",
+ "PasswordResetTokenEntity": "user",
+ "Product": "product",
+ "ProductEntity": "product",
+ "Session": "session",
+ "SessionEntity": "session",
+ "User": "user",
+ "UserEntity": "user"
 }

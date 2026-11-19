@@ -1,0 +1,46 @@
+{
+ "files": 700,
+ "bytes": 4621905,
+ "by_repo": {
+  "mytimeline": 700
+ },
+ "entities": 7,
+ "seeds": 14,
+ "seeds_by_origin": {
+  "entity": 7,
+  "extra": 7
+ },
+ "seeds_from_folders": [],
+ "folders_on_entity_seeds": [],
+ "groups": 6,
+ "groups_with_files": 6,
+ "labelled": 373,
+ "by_how": {
+  "name": 340,
+  "fanin": 12,
+  "imports": 21
+ },
+ "tech": 37,
+ "transversal_home": 0,
+ "ambiguous": 0,
+ "unassigned": 290,
+ "unassigned_rate": 0.4143,
+ "unassigned_bytes_rate": 0.3814,
+ "edges_source": "regex",
+ "file_edges": 627,
+ "graphify": {},
+ "motifs": [
+  "authorization",
+  "batch",
+  "integrations",
+  "state-machine"
+ ],
+ "notes": [
+  "diff phase 3 (premier passage) : instabilité, 1 fichier change de pack sans alias qui l explique (8 autres expliqués par alias) ; rejeu phase 2 fait, état figé tel quel"
+ ],
+ "duration_s": 0.53,
+ "instability": {
+  "unexplained_moves": 1,
+  "alias_moves": 8
+ }
+}

@@ -1,16 +1,17 @@
 {
  "id": "A6",
- "question": "Les foyers state-machine sans seed (Role, ThemePreferenceTest, ExportJobTest) relèvent-ils du transversal ou du domaine ?",
- "decision": "revendiqués par le transversal state-machine via path_rules, sans retirer leur propriétaire",
- "rule": "R10 recouvrement par path_rules, pas de transfert",
- "confidence": "low",
+ "question": "Session : pack propre ou fusion dans user ?",
+ "decision": "session",
+ "rule": "R2 séparation : deux controllers propres et 111 ko, au-dessus de pack_min_kb (15), malgré 10 imports User -> Session",
+ "confidence": "medium",
  "seeds": [
-  "ExportJobEntity",
-  "UserEntity"
+  "Session",
+  "SessionEntity",
+  "User"
  ],
  "evidence": [],
- "falsified_if": "un ticket sur le rôle ou la préférence de thème ne concerne jamais les états d'export ni de session",
+ "falsified_if": "un ticket de session modifie systématiquement les services de User",
  "status": "open",
- "opened": "2026-11-17",
+ "opened": "2026-11-19",
  "touched_by": []
 }

@@ -1,13 +1,18 @@
 {
  "id": "A7",
- "question": "Quelles tailles donner aux packs sans groupe (transversaux et techniques) ?",
- "decision": "nombre de fichiers du motif ou de la couche tel que donné, 0 ko tant que la taille n'est pas mesurée",
- "rule": "R10 fichiers techniques possédés par le pack de leur couche, tailles non fournies par le résumé",
- "confidence": "low",
- "seeds": [],
- "evidence": [],
- "falsified_if": "la porte mécanique recalcule des tailles différentes à partir de l'inventaire",
+ "question": "Fichiers front timeline : event ou autre domaine ?",
+ "decision": "event",
+ "rule": "R3 dossier d'écran sans entité : alias timeline vers event (TimelineView.tsx 94 ko, 357 fichiers non rattachés)",
+ "confidence": "medium",
+ "seeds": [
+  "Event"
+ ],
+ "evidence": [
+  "mytimeline:frontend/src/components/timeline/TimelineView.tsx",
+  "mytimeline:frontend/src/components/timeline/zoom.ts"
+ ],
+ "falsified_if": "un ticket de produit ou de catégorie modifie TimelineView sans toucher aux évènements",
  "status": "open",
- "opened": "2026-11-17",
+ "opened": "2026-11-19",
  "touched_by": []
 }

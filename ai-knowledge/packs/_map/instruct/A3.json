@@ -1,15 +1,16 @@
 {
  "id": "A3",
- "question": "ExportJobEntity (1 fichier) appartient-il au pack timeline ou à un pack d'export séparé ?",
- "decision": "fondu dans timeline",
- "rule": "R7 pack sous pack_min_kb=60, liens 2/2 vers UserEntity",
+ "question": "Event et Product : un pack ou deux ?",
+ "decision": "event",
+ "rule": "R2 séparation : controller propre et 376 ko pour Product, donc deux packs malgré 20 et 18 imports croisés",
  "confidence": "medium",
  "seeds": [
-  "ExportJobEntity"
+  "Event",
+  "Product"
  ],
  "evidence": [],
- "falsified_if": "un ticket d'export modifie ExportJob et ses moteurs de rendu sans toucher au compte ni aux événements",
+ "falsified_if": "la plupart des tickets de produit touchent aussi les fichiers d'évènement",
  "status": "open",
- "opened": "2026-11-17",
+ "opened": "2026-11-19",
  "touched_by": []
 }

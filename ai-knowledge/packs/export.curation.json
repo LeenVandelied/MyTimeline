@@ -1,0 +1,4431 @@
+{
+ "pack": "export",
+ "schema": 1,
+ "curated_at": "2026-11-19T10:32:37Z",
+ "curator": "curate/1",
+ "base_sha256": "9807af7b9f0064ee479ee35d726baab4256d4affd97cd2823ee91534c0e757c1",
+ "pack_sha256_before": "d4a27406b963cc818b7471cc73010d62b89e112af1224d936d4c55907a3e8f94",
+ "pack_sha256_after": "ba05f56a93cd7c9a27e71903e8059418c98af0857f7441e903dc3226285b1a6d",
+ "criteria_sha256": "48e0e20f086c5b11deecfecdc547ba1d6115faee1597a5aaf682f6c699e92423",
+ "models": {
+  "measure": "haiku",
+  "refute": "sonnet"
+ },
+ "base_fingerprint": "703dac725cbfd907bd223383780d6a2314332111bc70fe975d9c439d2c3a1f56",
+ "bytes": {
+  "before": 20003,
+  "after": 18887,
+  "by_section": {
+   "activate": {
+    "before": 223,
+    "after": 223
+   },
+   "lexicon": {
+    "before": 972,
+    "after": 972
+   },
+   "rules": {
+    "before": 2263,
+    "after": 2285
+   },
+   "structure": {
+    "before": 6581,
+    "after": 6581
+   },
+   "surface": {
+    "before": 2073,
+    "after": 2073
+   },
+   "files": {
+    "before": 1900,
+    "after": 1900
+   },
+   "relations": {
+    "before": 320,
+    "after": 320
+   },
+   "tests": {
+    "before": 1879,
+    "after": 1167
+   },
+   "questions": {
+    "before": 708,
+    "after": 281
+   },
+   "alerts": {
+    "before": 2087,
+    "after": 2089
+   },
+   "coverage": {
+    "before": 618,
+    "after": 618
+   }
+  }
+ },
+ "units": [
+  {
+   "id": "export:lexicon:1",
+   "section": "lexicon",
+   "rank": 1,
+   "text": "| ownerId et user_id | Le même propriétaire d'un job d'export, nommé ownerId dans le modèle de domaine sans annotation de persistance et user_id dans l'entité JPA. | [#5d78bcd81aad2ffb-1] [#e5310f4744270c73-1] |",
+   "fact_text": "ownerId et user_id : Le même propriétaire d'un job d'export, nommé ownerId dans le modèle de domaine sans annotation de persistance et user_id dans l'entité JPA",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "export/5d78bcd81aad2ffb-1",
+    "export/e5310f4744270c73-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/export/ExportJob.java",
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/ExportJobEntity.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/export/ExportJob.java",
+     18,
+     26,
+     "341b3162cad4a22944f25235b03d9364d12623cb20e6872e0c36a39cd3314095"
+    ],
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/ExportJobEntity.java",
+     23,
+     25,
+     "120dd89800f575740728c3e189310cf8def7b53e32b8aae172af9a644f4c5460"
+    ]
+   ],
+   "code_sha256": "993503393b8d9a169a31e11b968b10ad24821b81869602c7ef1ce65c9b5d2b9c",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "ExportJob.ownerId (L19) sans annotation, entité avec user_id (L31-32) : fidèle.",
+      "ExportJob L19 porte ownerId sans annotation, l'entité ExportJobEntity est un @Entity avec colonne user_id (L31-32).",
+      "ExportJob.ownerId (L19) sans annotation, ExportJobEntity.userId mappé sur user_id (L31-32)."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 29,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "export:lexicon:2",
+   "section": "lexicon",
+   "rank": 2,
+   "text": "| user_id (colonne) | Simple colonne UUID non nulle de l'entité, la clé étrangère vers users n'existant que dans le DDL et pas comme association JPA. | [#7234330aa18ccba8-1] [#e5310f4744270c73-1] |",
+   "fact_text": "user_id (colonne) : Simple colonne UUID non nulle de l'entité, la clé étrangère vers users n'existant que dans le DDL et pas comme association JPA",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "export/7234330aa18ccba8-1",
+    "export/e5310f4744270c73-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/ExportJobEntity.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/ExportJobEntity.java",
+     31,
+     32,
+     "24b295f2587528ae2db20bdf15829a79d17ea3c6dc3ab18089866f72cabe5f20"
+    ],
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/ExportJobEntity.java",
+     23,
+     25,
+     "120dd89800f575740728c3e189310cf8def7b53e32b8aae172af9a644f4c5460"
+    ]
+   ],
+   "code_sha256": "126c863507bbbe019083bb09d092af2144d5dd67a4b99ce05391a7900c3d26b4",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Entité L31-32 colonne UUID non nulle, javadoc L20-21 confirme l'absence de @ManyToOne et FK dans le DDL.",
+      "ExportJobEntity L31-32 : colonne user_id UUID non nulle, simple champ UUID sans association. Le DDL n'est pas lu, au doute pas de réfutation.",
+      "Entité L31-32 colonne UUID non nulle, javadoc L20-21 sans @ManyToOne, FK portée par le DDL."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 30,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "export:lexicon:3",
+   "section": "lexicon",
+   "rank": 3,
+   "text": "| status et format | Des chaînes de 16 caractères non nulles dans l'entité, pas des enums JPA. | [#22140398eaee939d-1] |",
+   "fact_text": "status et format : Des chaînes de 16 caractères non nulles dans l'entité, pas des enums JPA",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "export/22140398eaee939d-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/ExportJobEntity.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/ExportJobEntity.java",
+     34,
+     38,
+     "992b2df1b965f5fcc3337492b4a7faf91fe88fb6d51dfac4bae7d48c58e3074b"
+    ]
+   ],
+   "code_sha256": "992b2df1b965f5fcc3337492b4a7faf91fe88fb6d51dfac4bae7d48c58e3074b",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "L34-38 : String, nullable=false, length=16, pas d'@Enumerated.",
+      "ExportJobEntity L34-38 : format et status sont des String nullable=false, length=16.",
+      "Entité L34-38 : String, nullable=false, length=16, pas d'enum."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 31,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "export:lexicon:4",
+   "section": "lexicon",
+   "rank": 4,
+   "text": "| phase | Étape courante du flux d'export dans l'interface, qui détermine la clé de traduction du titre affiché. | [#1b603774c55bd69c-1] |",
+   "fact_text": "phase : Étape courante du flux d'export dans l'interface, qui détermine la clé de traduction du titre affiché",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "export/1b603774c55bd69c-1"
+   ],
+   "files": [
+    "mytimeline:frontend/src/components/settings/ExportDataFlow.tsx"
+   ],
+   "ranges": [
+    [
+     "mytimeline:frontend/src/components/settings/ExportDataFlow.tsx",
+     90,
+     90,
+     "77a91f5a70157a54502437a525d91dd45f4dd2b1be861b9f7030de69bd278f5a"
+    ]
+   ],
+   "code_sha256": "77a91f5a70157a54502437a525d91dd45f4dd2b1be861b9f7030de69bd278f5a",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "ExportDataFlow L90 utilise t(`steps.${flow.phase}.title`).",
+      "ExportDataFlow L90 : t(`steps.${flow.phase}.title`) dérive la clé de traduction de la phase.",
+      "ExportDataFlow L90 utilise t(`steps.${flow.phase}.title`) comme titre."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 32,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "export:lexicon:5",
+   "section": "lexicon",
+   "rank": 5,
+   "text": "| expiresAt | Date d'expiration d'un export, nullable dans le schéma frontend et affichée par un message riche enveloppant la date dans un élément time. | [#f577776383d9d0e5-1] [#2645ac6a99c0b30e-1] |",
+   "fact_text": "expiresAt : Date d'expiration d'un export, nullable dans le schéma frontend et affichée par un message riche enveloppant la date dans un élément time",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "export/f577776383d9d0e5-1",
+    "export/2645ac6a99c0b30e-1"
+   ],
+   "files": [
+    "mytimeline:frontend/src/lib/schemas/export.ts",
+    "mytimeline:frontend/src/components/settings/ExportDataFlow.tsx"
+   ],
+   "ranges": [
+    [
+     "mytimeline:frontend/src/lib/schemas/export.ts",
+     42,
+     48,
+     "80b7191d2b689490b7a3054b08987f600bd6b6cee0467461bca0a90076c33d5c"
+    ],
+    [
+     "mytimeline:frontend/src/components/settings/ExportDataFlow.tsx",
+     203,
+     210,
+     "b278a0640fa83151b24354d4551e52a471806f274ebec2a973e6a0521d311455"
+    ]
+   ],
+   "code_sha256": "0fc72fb8cc00ae305a642f4b838719f87638d8157c7b0c831d5c3d4225dedb61",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Schéma L47 expiresAt nullable ; L203-210 t.rich avec élément time.",
+      "export.ts L47 expiresAt nullable ; ExportDataFlow L203-210 t.rich enveloppe la date dans un élément time.",
+      "Schéma export.ts L47 expiresAt nullable ; ExportDataFlow L203-206 t.rich avec élément time."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 33,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "export:rules:1",
+   "section": "rules",
+   "rank": 1,
+   "text": "- Au démarrage, le secret des jetons de téléchargement doit être du Base64 standard décodant à au moins 32 octets, sinon une IllegalStateException est levée. [#97c6ffbc9f90a7c7-1]",
+   "fact_text": "Au démarrage, le secret des jetons de téléchargement doit être du Base64 standard décodant à au moins 32 octets, sinon une IllegalStateException est levée",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "export/97c6ffbc9f90a7c7-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/ExportTokenService.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/ExportTokenService.java",
+     65,
+     83,
+     "8d2a224d817ec49bd55f697d992d3ccb7d1c29735d08c7c49a35f20118186e79"
+    ]
+   ],
+   "code_sha256": "8d2a224d817ec49bd55f697d992d3ccb7d1c29735d08c7c49a35f20118186e79",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 0.375,
+      "n": {
+       "identifiers": 2,
+       "values": 1,
+       "terms": 8
+      }
+     },
+     "restatement": "ExportTokenService.validateSecret, annoté @PostConstruct, appelle getSigningKey et, en cas de RuntimeException, lève IllegalStateException. Le message nomme EXPORT_TOKEN_SECRET et exige du Base64 standard décodant à au moins 32 octets, sans inclure e.getMessage() : seul le nom simple de la classe d'exception est affiché, et la cause est attachée.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 4,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/ExportTokenService.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 0.625,
+      "n": {
+       "identifiers": 2,
+       "values": 1,
+       "terms": 8
+      }
+     },
+     "job": "export:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_services_AsyncExportRunner.java:1",
+     "rank_in_lot": 3
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 38,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "export:rules:2",
+   "section": "rules",
+   "rank": 2,
+   "text": "- Le jeton est refusé si son claim typ n'est pas export-download, et un jeton null ou blanc rend Optional.empty sans parsing. [#5518a4ccbe66c43e-1] [#9df4eccae353d025-1]",
+   "fact_text": "Le jeton est refusé si son claim typ n'est pas export-download, et un jeton null ou blanc rend Optional.empty sans parsing",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "export/5518a4ccbe66c43e-1",
+    "export/9df4eccae353d025-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/ExportTokenService.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/ExportTokenService.java",
+     114,
+     122,
+     "a8326a16b00ee435bfa4a2c7ee24a1b5402dd84046194a581697078c49b84b66"
+    ],
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/ExportTokenService.java",
+     110,
+     112,
+     "8109e596080e3288ec1d564c953a68f461db5c83091b000fedcc8875bf14262a"
+    ]
+   ],
+   "code_sha256": "e63916b2f020b6268030860c82bc33f52e020f2ebc93a7fcdb9dda74f9aea458",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.222,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 9
+      }
+     },
+     "restatement": "ExportTokenService.verify renvoie Optional.empty pour un token null ou blank. Sinon il parse les claims signés avec la clé de signature et l'horloge injectée, puis renvoie empty si le claim de type (CLAIM_TYPE) ne vaut pas TOKEN_TYPE.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 4,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/ExportTokenService.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.778,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 9
+      }
+     },
+     "job": "export:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_services_AsyncExportRunner.java:1",
+     "rank_in_lot": 4
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 39,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "export:rules:3",
+   "section": "rules",
+   "rank": 3,
+   "text": "- JSON et MARKDOWN sont synchrones, ZIP et CSV asynchrones. [#5c99877877a45cd9-1]",
+   "fact_text": "JSON et MARKDOWN sont synchrones, ZIP et CSV asynchrones",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "export/5c99877877a45cd9-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/export/ExportFormat.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/export/ExportFormat.java",
+     21,
+     24,
+     "673aa9f2364358c077f7df0a086caae7be40e55a61f835b5a5b7112cb94ecf23"
+    ]
+   ],
+   "code_sha256": "673aa9f2364358c077f7df0a086caae7be40e55a61f835b5a5b7112cb94ecf23",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 1.0,
+      "n": {
+       "identifiers": 4,
+       "values": 0,
+       "terms": 2
+      }
+     },
+     "restatement": "L'enum ExportFormat déclare JSON et MARKDOWN avec le flag synchrone true, puis ZIP et CSV avec le flag false. Ce flag détermine si le format peut être produit en inline ou seulement en asynchrone.",
+     "confidence": "high"
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "export.details.md",
+     "row": 1
+    }
+   },
+   "uses": 0
+  },
+  {
+   "id": "export:rules:4",
+   "section": "rules",
+   "rank": 4,
+   "text": "- Un format asynchrone en inline, ou synchrone en soumission asynchrone, lève ExportFormatNotSupportedException. [#af65cc3c4e44fd91-1] [#55c73956146012b3-1]",
+   "fact_text": "Un format asynchrone en inline, ou synchrone en soumission asynchrone, lève ExportFormatNotSupportedException",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "export/af65cc3c4e44fd91-1",
+    "export/55c73956146012b3-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportServiceImpl.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportServiceImpl.java",
+     66,
+     69,
+     "241a6fac153a7ba89008529f93203bb403d67bbf40881e04cedf26b435aed403"
+    ],
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportServiceImpl.java",
+     77,
+     80,
+     "4cf678ba3731396bc6847867ef2db380e4cbadffb8c71c269f3a051ff0cd7ad8"
+    ]
+   ],
+   "code_sha256": "16f4ae80815481e33b621094fdef7cf322dd239ab96d038ccc600c61ce866d6c",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.667,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 6
+      }
+     },
+     "restatement": "Dans ExportServiceImpl, exportInline lève ExportFormatNotSupportedException si le format est asynchrone (isSync faux), ce qui correspond à un 400 pour un GET. Le bloc de submitAsync lève la même exception pour un format synchrone soumis en POST.",
+     "confidence": "high"
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "export.details.md",
+     "row": 2
+    }
+   },
+   "uses": 0
+  },
+  {
+   "id": "export:rules:5",
+   "section": "rules",
+   "rank": 5,
+   "text": "- Un paramètre de format est rogné et mis en majuscules, et une valeur nulle ou inconnue lève la même exception. [#92631067bebbe0e2-1]",
+   "fact_text": "Un paramètre de format est rogné et mis en majuscules, et une valeur nulle ou inconnue lève la même exception",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "export/92631067bebbe0e2-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/export/ExportFormat.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/export/ExportFormat.java",
+     55,
+     65,
+     "c1d6da6c0142045c9683aabb645fd6315441b183591fa534c1ee8975e2968f75"
+    ]
+   ],
+   "code_sha256": "c1d6da6c0142045c9683aabb645fd6315441b183591fa534c1ee8975e2968f75",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 0.556,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 9
+      }
+     },
+     "restatement": "ExportFormat.fromParam supprime les espaces, met la valeur en majuscules et la compare au nom de chaque constante de l'enum. Une valeur null ou inconnue lève ExportFormatNotSupportedException avec la valeur d'origine.",
+     "confidence": "high"
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "export.details.md",
+     "row": 3
+    }
+   },
+   "uses": 0
+  },
+  {
+   "id": "export:rules:6",
+   "section": "rules",
+   "rank": 6,
+   "text": "- Un job est téléchargeable seulement s'il est COMPLETED, avec fichier et expiration renseignés, et avant expiresAt. [#81521953162492b3-1]",
+   "fact_text": "Un job est téléchargeable seulement s'il est COMPLETED, avec fichier et expiration renseignés, et avant expiresAt",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "export/81521953162492b3-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/export/ExportJob.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/export/ExportJob.java",
+     65,
+     70,
+     "b8f1fcdaabcc91af3f048334e7ceab81d027ca76c278cc49da64852fccc7a4e9"
+    ]
+   ],
+   "code_sha256": "b8f1fcdaabcc91af3f048334e7ceab81d027ca76c278cc49da64852fccc7a4e9",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.0,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 4
+      }
+     },
+     "restatement": "ExportJob.isDownloadable renvoie vrai seulement si le statut vaut COMPLETED, que storageRef et expiresAt ne sont pas null, et que now est strictement avant expiresAt.",
+     "confidence": "high"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 7,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/domain/models/export/ExportJob.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.25,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 4
+      }
+     },
+     "job": "export:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_services_AsyncExportRunner.java:1"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "isDownloadable L65-70 vérifie COMPLETED, storageRef, expiresAt non null et now.isBefore(expiresAt).",
+      "ExportJob.isDownloadable L65-70 vérifie COMPLETED, storageRef non nul, expiresAt non nul et now.isBefore(expiresAt).",
+      "ExportJob.isDownloadable L65-70 reprend exactement les conditions."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 41,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "export:rules:7",
+   "section": "rules",
+   "rank": 7,
+   "text": "- Le fichier expire à l'heure de complétion plus DOWNLOAD_TTL_HOURS heures, soit environ 24 h selon le test. [#81287d1d93072e46-2] [#83b9ba463b32f52f-1]",
+   "fact_text": "Le fichier expire à l'heure de complétion plus DOWNLOAD_TTL_HOURS heures, soit environ 24 h selon le test",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "export/81287d1d93072e46-2",
+    "export/83b9ba463b32f52f-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/AsyncExportRunner.java",
+    "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ExportEndpointsIntegrationTest.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/AsyncExportRunner.java",
+     75,
+     77,
+     "270e81ab93ee0603d14afa234ba8b3ef0e55ff352003fa1dba50d49efd0b2904"
+    ],
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ExportEndpointsIntegrationTest.java",
+     228,
+     228,
+     "8b44f2820f0d2e4478ae666546d8ed3a76b815fa5b94a8884672d94fad14a37d"
+    ]
+   ],
+   "code_sha256": "00991c93a72c41b8105a3ca1d3c42c38a8736dd1d85d5d4c4c96c143d4371f0e",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 0.0,
+      "terms": 0.667,
+      "n": {
+       "identifiers": 1,
+       "values": 1,
+       "terms": 6
+      }
+     },
+     "restatement": "Dans AsyncExportRunner.run, à la complétion d'un job, la date d'expiration est calculée comme now plus DOWNLOAD_TTL_HOURS heures, puis passée à job.markCompleted avec storageRef. Le test ExportEndpointsIntegrationTest attend une expiration strictement entre now+23h et now+25h.",
+     "confidence": "high"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 5,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/application/services/AsyncExportRunner.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 0.833,
+      "n": {
+       "identifiers": 1,
+       "values": 1,
+       "terms": 6
+      }
+     },
+     "job": "export:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_services_AsyncExportRunner.java:1",
+     "rank_in_lot": 5
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 42,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "export:rules:8",
+   "section": "rules",
+   "rank": 8,
+   "text": "- Toute RuntimeException pendant la génération met le job à FAILED avec le code GENERATION_ERROR, sans message. [#81287d1d93072e46-3]",
+   "fact_text": "Toute RuntimeException pendant la génération met le job à FAILED avec le code GENERATION_ERROR, sans message",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "export/81287d1d93072e46-3"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/AsyncExportRunner.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/AsyncExportRunner.java",
+     80,
+     82,
+     "6ff3dcc3376aff17c9e4dc12e29fb0266823d3c44057b5c02885742ed59751b9"
+    ]
+   ],
+   "code_sha256": "6ff3dcc3376aff17c9e4dc12e29fb0266823d3c44057b5c02885742ed59751b9",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 0.667,
+      "values": null,
+      "terms": 0.667,
+      "n": {
+       "identifiers": 3,
+       "values": 0,
+       "terms": 3
+      }
+     },
+     "restatement": "Dans AsyncExportRunner.run, toute RuntimeException lève job.markFailed avec le code borné \"GENERATION_ERROR\". Le message et la stack de l'exception ne sont jamais enregistrés dans le job, pour éviter les fuites de données personnelles ou internes.",
+     "confidence": "high"
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "words:toute",
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "export.details.md",
+     "row": 4
+    }
+   },
+   "uses": 0
+  },
+  {
+   "id": "export:rules:9",
+   "section": "rules",
+   "rank": 9,
+   "text": "- La purge planifiée tourne toutes les 3600000 ms par défaut (app.export.purge.interval-ms) et supprime le fichier avant la ligne du job. [#integrations/93e7f2eb215791bd-1] [#615d012cf62ba1aa-1]",
+   "fact_text": "La purge planifiée tourne toutes les 3600000 ms par défaut (app.export.purge.interval-ms) et supprime le fichier avant la ligne du job",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "integrations/93e7f2eb215791bd-1",
+    "export/615d012cf62ba1aa-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportPurgeScheduler.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportPurgeScheduler.java",
+     59,
+     60,
+     "172aea051af858bb008c101b36becc4e7703b260bc10b09d3e3b63422083e363"
+    ],
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportPurgeScheduler.java",
+     68,
+     73,
+     "4ea3430fb88b72f304dd58548891df941be23dd2ff14cf47335c0a0fdca0512f"
+    ]
+   ],
+   "code_sha256": "28c15ec26a091d361efa191afa5f53da9200455eb72fde15a6697228a841d78f",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": 1.0,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 1,
+       "values": 1,
+       "terms": 8
+      }
+     },
+     "restatement": "ExportPurgeScheduler.purgeExpired est planifié par @Scheduled avec un délai fixe de 3600000 ms par défaut et un délai initial de 300000 ms, tous deux configurables. Pour chaque job expiré, le fichier est supprimé en premier (si storageRef n'est pas null), puis la ligne du job est supprimée par deleteById.",
+     "confidence": "high"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 6,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/application/services/ExportPurgeScheduler.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 0.875,
+      "n": {
+       "identifiers": 1,
+       "values": 1,
+       "terms": 8
+      }
+     },
+     "job": "export:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_services_AsyncExportRunner.java:1",
+     "rank_in_lot": 6
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "words:toutes",
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 43,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "export:rules:10",
+   "section": "rules",
+   "rank": 10,
+   "text": "- L'URL de téléchargement vaut null si le job n'est pas COMPLETED ou sans expiresAt. [#c9609cb29dcf3902-1]",
+   "fact_text": "L'URL de téléchargement vaut null si le job n'est pas COMPLETED ou sans expiresAt",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "export/c9609cb29dcf3902-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ExportController.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ExportController.java",
+     144,
+     151,
+     "f99ba55caaba73015dd46ebf3d98181b3592ece8f48b4dfa55ee7a0b193bdeef"
+    ]
+   ],
+   "code_sha256": "f99ba55caaba73015dd46ebf3d98181b3592ece8f48b4dfa55ee7a0b193bdeef",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.333,
+      "n": {
+       "identifiers": 3,
+       "values": 0,
+       "terms": 3
+      }
+     },
+     "restatement": "ExportController.buildDownloadUrl renvoie null si le statut n'est pas COMPLETED ou si expiresAt est absent. Sinon, il signe un token avec l'id du job, l'id du propriétaire et la date d'expiration, puis construit l'URL \"/api/export/download/{jobId}?token=...\".",
+     "confidence": "high"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 3,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ExportController.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.667,
+      "values": null,
+      "terms": 0.667,
+      "n": {
+       "identifiers": 3,
+       "values": 0,
+       "terms": 3
+      }
+     },
+     "job": "export:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_services_AsyncExportRunner.java:1",
+     "rank_in_lot": 1
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 44,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "export:rules:11",
+   "section": "rules",
+   "rank": 11,
+   "text": "- Côté interface, le polling du job s'arrête sur COMPLETED ou FAILED, sinon il repart toutes les 4000 ms. [#6017043edb1a6398-1]",
+   "fact_text": "Côté interface, le polling du job s'arrête sur COMPLETED ou FAILED, sinon il repart toutes les 4000 ms",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "export/6017043edb1a6398-1"
+   ],
+   "files": [
+    "mytimeline:frontend/src/hooks/useExportFlow.ts"
+   ],
+   "ranges": [
+    [
+     "mytimeline:frontend/src/hooks/useExportFlow.ts",
+     97,
+     101,
+     "82353d85f06f131dcb9961336aaf713b025fe1b5239371f5d29464c5a16b8ccf"
+    ]
+   ],
+   "code_sha256": "82353d85f06f131dcb9961336aaf713b025fe1b5239371f5d29464c5a16b8ccf",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 0.0,
+      "terms": 0.4,
+      "n": {
+       "identifiers": 2,
+       "values": 1,
+       "terms": 5
+      }
+     },
+     "restatement": "Le `refetchInterval` de `useExportFlow.jobQuery` renvoie `false` dès que le statut du job vaut `COMPLETED` ou `FAILED`, ce qui arrête le polling. Tant que le statut est autre (ou absent, car `query.state.data?.status` est optionnel), il renvoie `POLL_INTERVAL_MS`, donc le polling continue.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 7,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/hooks/useExportFlow.ts",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 0.0,
+      "n": {
+       "identifiers": 2,
+       "values": 1,
+       "terms": 5
+      }
+     },
+     "job": "export:rediscover:mytimeline_backend_src_test_java_com_matimeline_eventmanager_infrastructure_adapters_controllers_ExportEndpointsIntegrationTest.java:2"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "useExportFlow.ts L97-100 : refetchInterval renvoie false sur COMPLETED/FAILED, sinon POLL_INTERVAL_MS (4000). Aucun autre refetchInterval dans le frontend, donc la généralité tient.",
+      "useExportFlow.ts L97-100 : refetchInterval renvoie false sur COMPLETED/FAILED, sinon POLL_INTERVAL_MS (4000). Seul polling du frontend, aucun contre-exemple.",
+      "useExportFlow.ts L97-100 : refetchInterval renvoie false sur COMPLETED ou FAILED, sinon POLL_INTERVAL_MS (4000, L36). Seul polling de ce type dans le frontend."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "scope",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 18,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "refetchInterval|POLL_INTERVAL dans frontend/src hors tests",
+         "found": "Seules occurrences dans useExportFlow.ts (4000 ms, arrêt sur statut terminal). Aucun contre-exemple."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "refetchInterval|getExportJob|downloadAsyncExport dans frontend/src",
+         "found": "Un seul refetchInterval, dans useExportFlow.ts, et getExportJob n'est appelé que par ce hook."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "refetchInterval|POLL_INTERVAL dans frontend/src",
+         "found": "Seule occurrence en code non test : useExportFlow.ts, aucun autre polling avec un autre intervalle."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     }
+    }
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "words:toutes",
+   "placed": {
+    "pack_line": 45,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "export:rules:12",
+   "section": "rules",
+   "rank": 12,
+   "text": "- Une référence de stockage vide, avec séparateur ou .., ou résolue hors du répertoire de base lève une IllegalArgumentException. [#397906559a89ee45-1] [#397906559a89ee45-2]",
+   "fact_text": "Une référence de stockage vide, avec séparateur ou.., ou résolue hors du répertoire de base lève une IllegalArgumentException",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "export/397906559a89ee45-1",
+    "export/397906559a89ee45-2"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapter.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapter.java",
+     87,
+     91,
+     "045d306a42921b03ac0b5b4cd503162c4bf4295e974f36f6036f7bb037423485"
+    ],
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapter.java",
+     92,
+     95,
+     "b615183373ba3d45ae38aefa5ea2510b4e8ce34f7aaef728bcb4d59a42a2e12e"
+    ]
+   ],
+   "code_sha256": "efedc00dfa6fc5e6913946ff6d456476e4071fb695207a6936a05cc1b1b11389",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.375,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 8
+      }
+     },
+     "restatement": "LocalStorageAdapter.resolveWithinBase rejette avec IllegalArgumentException une référence nulle, vide ou contenant \"/\", \"\\\\\" ou \"..\". Il résout ensuite le chemin depuis baseDir, le normalise, et rejette s'il ne commence pas par baseDir (\"référence de stockage hors périmètre\").",
+     "confidence": "high"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 9,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapter.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.375,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 8
+      }
+     },
+     "job": "export:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_services_AsyncExportRunner.java:1"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "resolveWithinBase L87-95 lève IllegalArgumentException dans les trois cas.",
+      "LocalStorageAdapter.resolveWithinBase L87-95 lève IllegalArgumentException pour référence vide, avec / \\ ou .., ou hors baseDir.",
+      "LocalStorageAdapter.resolveWithinBase L87-95 lève IllegalArgumentException dans les trois cas."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 47,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "export:rules:13",
+   "section": "rules",
+   "rank": 13,
+   "text": "- Une extension de stockage doit suivre [a-z0-9] sur 1 à 5 caractères. [#034728f94739a0d6-1]",
+   "fact_text": "Une extension de stockage doit suivre [a-z0-9] sur 1 à 5 caractères",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "export/034728f94739a0d6-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapter.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapter.java",
+     101,
+     103,
+     "c6c8293347303a3636e3c683e538dad8a4600d7a9800335185ec09bbb7983d23"
+    ]
+   ],
+   "code_sha256": "c6c8293347303a3636e3c683e538dad8a4600d7a9800335185ec09bbb7983d23",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": null,
+      "values": 1.0,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 0,
+       "values": 3,
+       "terms": 4
+      }
+     },
+     "restatement": "LocalStorageAdapter.sanitizeExtension n'accepte que une à cinq lettres minuscules ou chiffres (regex [a-z0-9]{1,5}). Sinon, il lève IllegalArgumentException \"extension de stockage invalide\".",
+     "confidence": "high"
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "export.details.md",
+     "row": 5
+    }
+   },
+   "uses": 0
+  },
+  {
+   "id": "export:rules:14",
+   "section": "rules",
+   "rank": 14,
+   "text": "- Le CSV préfixe d'une apostrophe toute valeur commençant par =, +, -, @, tabulation, CR ou LF, nombres négatifs compris. [#1bc565c665c6a8ab-1]",
+   "fact_text": "Le CSV préfixe d'une apostrophe toute valeur commençant par =, +, -, @, tabulation, CR ou LF, nombres négatifs compris",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "export/1bc565c665c6a8ab-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/CsvExportRenderer.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/CsvExportRenderer.java",
+     118,
+     128,
+     "cea2e5e40a7fed4e6cce19d11b12bf7f45636a01a29824bb6d5aa7366cab3ecb"
+    ]
+   ],
+   "code_sha256": "cea2e5e40a7fed4e6cce19d11b12bf7f45636a01a29824bb6d5aa7366cab3ecb",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 8
+      }
+     },
+     "restatement": "CsvExportRenderer.neutralizeFormula renvoie la valeur telle quelle si elle est vide. Si le premier caractère est =, +, -, @, tabulation, retour chariot ou saut de ligne, elle préfixe la valeur d'une apostrophe pour neutraliser l'injection de formule.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 8,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/CsvExportRenderer.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
+      "terms": 0.625,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 8
+      }
+     },
+     "job": "export:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_services_AsyncExportRunner.java:1"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "CsvExportRenderer.neutralizeFormula (118-128) préfixe l'apostrophe pour =,+,-,@,tab,CR,LF, appelée via escape() pour tous les champs de row(). Les nombres passent par str() puis escape, donc les négatifs sont préfixés. Aucun autre rendu CSV.",
+      "CsvExportRenderer.neutralizeFormula L118-128 préfixe l'apostrophe pour = + - @ tab CR LF. Tous les champs passent par row() puis escape(), y compris les nombres convertis par str().",
+      "CsvExportRenderer.neutralizeFormula L118-128 préfixe l'apostrophe pour = + - @ tab CR LF, y compris les nombres négatifs puisque '-' est testé sans exception. Seul CsvExportRenderer l'appelle, via escape(). Le ZIP ne réutilise pas cette méthode, mais la ligne parle du CSV."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "scope",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "neutralizeFormula|ExportFilenames.forFormat|text/csv dans main",
+         "found": "neutralizeFormula n'est utilisée que par CsvExportRenderer.escape ; un seul rendu CSV."
+        },
+        {
+         "tool": "Read",
+         "target": "CsvExportRenderer.java",
+         "found": "Tous les champs passent par row() puis escape()."
+        }
+       ],
+       [
+        {
+         "tool": "Read",
+         "target": "CsvExportRenderer.java",
+         "found": "toutes les sections utilisent row() puis escape() puis neutralizeFormula, aucun contournement"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "neutralizeFormula",
+         "found": "Défini et appelé uniquement dans CsvExportRenderer (L101, L118). Aucun autre rendu CSV dans la portée."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     }
+    }
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "words:toute",
+   "placed": {
+    "pack_line": 48,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "export:rules:15",
+   "section": "rules",
+   "rank": 15,
+   "text": "- L'identifiant utilisateur n'apparaît dans les logs que par ses 8 premiers caractères suivis de ***. [#cc21821cb9e6e949-1]",
+   "fact_text": "L'identifiant utilisateur n'apparaît dans les logs que par ses 8 premiers caractères suivis de ***",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "export/cc21821cb9e6e949-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportServiceImpl.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportServiceImpl.java",
+     113,
+     117,
+     "ae1a36f19351d1aa3dee944e31c39f40606566eab97ee02a2683ab7d7a6759b9"
+    ]
+   ],
+   "code_sha256": "ae1a36f19351d1aa3dee944e31c39f40606566eab97ee02a2683ab7d7a6759b9",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": null,
+      "values": 1.0,
+      "terms": 0.714,
+      "n": {
+       "identifiers": 0,
+       "values": 1,
+       "terms": 7
+      }
+     },
+     "restatement": "La méthode privée maskId ne garde que les 8 premiers caractères de l'UUID suivis de \"***\" pour les logs, afin de ne pas exposer l'identifiant complet.",
+     "confidence": "high"
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "export.details.md",
+     "row": 6
+    }
+   },
+   "uses": 0
+  },
+  {
+   "id": "export:surface:1",
+   "section": "surface",
+   "rank": 1,
+   "text": "- Le contrôleur est monté sur le préfixe /api/export dans `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ExportController.java:46` [#de0bc85fd312dc8f-1]. Le parcours écran est dans `mytimeline:frontend/src/components/settings/ExportDataFlow.tsx:96-135` [#d8c8eda7735c3dcc-1].",
+   "fact_text": "Le contrôleur est monté sur le préfixe /api/export dans ExportController.java. Le parcours écran est dans ExportDataFlow.tsx",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "export/de0bc85fd312dc8f-1",
+    "export/d8c8eda7735c3dcc-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ExportController.java",
+    "mytimeline:frontend/src/components/settings/ExportDataFlow.tsx"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ExportController.java",
+     46,
+     46,
+     "37aeba0ddd80d976a61f31b119af24c2ea0bd6639075793ebdd79b39f0452d79"
+    ],
+    [
+     "mytimeline:frontend/src/components/settings/ExportDataFlow.tsx",
+     96,
+     135,
+     "d25e68799d43eed8267a6a91b508d7874b422258899b3e85e1e5e55a9275e87c"
+    ]
+   ],
+   "code_sha256": "76070618cd74e9b4ce232f471b86c58d38fe4adf0905ef3bd6f7057707448b38",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.167,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 6
+      }
+     },
+     "restatement": "Cet extrait montre seulement l'annotation @RequestMapping(\"/api/export\") sur la classe ExportController, et le bloc Settings ExportDataFlow.confirm. Ce dernier affiche un Select de format, un hint traduit, et un bouton dont le libellé est « download » pour les formats synchrones et « prepare » pour les autres, désactivé pendant isBusy.",
+     "confidence": "high"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 15,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ExportController.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.833,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 6
+      }
+     },
+     "job": "export:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_services_AsyncExportRunner.java:1",
+     "rank_in_lot": 10
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 118,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "export:surface:2",
+   "section": "surface",
+   "rank": 2,
+   "text": "- Le format choisit la voie. GET /api/export renvoie le fichier directement pour les formats synchrones (JSON ou MARKDOWN), POST /api/export crée un job PENDING pour ZIP ou CSV et répond 202 [#9c6a60a36e277cd6-1] [#b4da90ec2a492ed4-1] [#a2e995cf5ee333e1-1] [#3220477240ce1b58-1].",
+   "fact_text": "Le format choisit la voie. GET /api/export renvoie le fichier directement pour les formats synchrones (JSON ou MARKDOWN), POST /api/export crée un job PENDING pour ZIP ou CSV et répond 202",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "export/9c6a60a36e277cd6-1",
+    "export/b4da90ec2a492ed4-1",
+    "export/a2e995cf5ee333e1-1",
+    "export/3220477240ce1b58-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ExportController.java",
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/ports/services/ExportService.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ExportController.java",
+     65,
+     74,
+     "9976deeadf0771f1febb3d62276cc6e5e6623dc71b16392f6b1a15e901a9dd69"
+    ],
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ExportController.java",
+     77,
+     88,
+     "1a19a98dbe61c7cfbf568e7abd436520180d9578e4a4c6bfdb7a3481026aec34"
+    ],
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/ports/services/ExportService.java",
+     29,
+     29,
+     "594c98933761a791e2feef988c5382bd0c2327d0542bbe001fcf1e815a1df94c"
+    ],
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/ports/services/ExportService.java",
+     38,
+     38,
+     "da4d00caef5f87d29786a4a1837afc0a08345d8e4a49d9073839732cf3e91ed8"
+    ]
+   ],
+   "code_sha256": "f96b062d860ecf81fbd487aee2d8d1cf5cfb07eb4169fd320291ef4d7130195c",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.286,
+      "values": 1.0,
+      "terms": 0.333,
+      "n": {
+       "identifiers": 7,
+       "values": 1,
+       "terms": 9
+      }
+     },
+     "restatement": "ExportController.exportInline (GET /api/export) renvoie 401 si l'utilisateur courant est absent, parse le format avec ExportFormat.fromParam, puis appelle exportService.exportInline. ExportController.submitAsync (POST) fait le même contrôle et appelle submitAsync, en répondant 202 Accepted avec ExportJobResponse et l'URL de téléchargement.",
+     "confidence": "high"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 3,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ExportController.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.857,
+      "values": 1.0,
+      "terms": 1.0,
+      "n": {
+       "identifiers": 7,
+       "values": 1,
+       "terms": 9
+      }
+     },
+     "job": "export:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_services_AsyncExportRunner.java:1",
+     "rank_in_lot": 2
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 119,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "export:surface:3",
+   "section": "surface",
+   "rank": 3,
+   "text": "- Le job est persisté en PENDING avant le déclenchement de la génération, qui tourne ensuite sur l'executor exportExecutor dans sa propre transaction [#5ae974f70943fd90-1] [#baeff23ee580d812-1].",
+   "fact_text": "Le job est persisté en PENDING avant le déclenchement de la génération, qui tourne ensuite sur l'executor exportExecutor dans sa propre transaction",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "export/5ae974f70943fd90-1",
+    "export/baeff23ee580d812-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportServiceImpl.java",
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/AsyncExportRunner.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportServiceImpl.java",
+     76,
+     87,
+     "33ef788ac0e961360e7f9e80cab68d1ca209a5017bea873ea86794ab6302316a"
+    ],
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/AsyncExportRunner.java",
+     59,
+     61,
+     "c53faf51e7402650834b06309f17f724316dbdb4ad964471aac2a3aa711f3264"
+    ]
+   ],
+   "code_sha256": "ca0ec450a47bc491d23dcac4875d32804ca4407199f0a63f462496d842163cb9",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.143,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "restatement": "ExportServiceImpl.submitAsync rejette un format synchrone avec ExportFormatNotSupportedException, journalise un identifiant masqué, puis persiste un job PENDING avant d'appeler asyncRunner.run. Le commentaire indique que la persistance est committée avant le lancement du worker. AsyncExportRunner.run est annoté @Async(\"exportExecutor\") et @Transactional.",
+     "confidence": "high"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 12,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/application/services/ExportServiceImpl.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.857,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "job": "export:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_services_AsyncExportRunner.java:1",
+     "rank_in_lot": 9
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 120,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "export:surface:4",
+   "section": "surface",
+   "rank": 4,
+   "text": "- Un job d'un autre utilisateur et un job absent donnent le même 404 sur GET /api/export/job/{jobId}, car l'appartenance est filtrée dans la requête SQL [#09f4761f4127c7d2-1] [#288f7f5d3e590ae5-1] [#f1b5d7e3f47f86f4-1].",
+   "fact_text": "Un job d'un autre utilisateur et un job absent donnent le même 404 sur GET /api/export/job/{jobId}, car l'appartenance est filtrée dans la requête SQL",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "export/09f4761f4127c7d2-1",
+    "export/288f7f5d3e590ae5-1",
+    "export/f1b5d7e3f47f86f4-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ExportController.java",
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ExportJobRepositoryJpaImpl.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ExportController.java",
+     101,
+     101,
+     "e5429cf70150464bc2e4be3e5f7078ddc6023963ad7edb5638dfabdf89901fa4"
+    ],
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ExportJobRepositoryJpaImpl.java",
+     76,
+     76,
+     "ca6e74ab6939517e1c7633a15242f1cdf21c1ad47cb81d994232a9e80f30f6b2"
+    ],
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ExportController.java",
+     91,
+     102,
+     "d0d5c43158e6773539f5066a0cb24ad85fa6f72d345386244fb21111802b0153"
+    ]
+   ],
+   "code_sha256": "9e9c155f5754bab50ae06fa52415c03f70a454001fe01cbe58b5f3d7d3275ec6",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.667,
+      "values": 1.0,
+      "terms": 0.429,
+      "n": {
+       "identifiers": 3,
+       "values": 1,
+       "terms": 7
+      }
+     },
+     "restatement": "ExportController.jobStatus (GET /api/export/job/{jobId}) renvoie 401 sans utilisateur courant, puis 200 avec la réponse du job si exportService.getJob le trouve pour cet utilisateur, sinon 404. La requête JPA findByIdAndOwnerId filtre sur le propriétaire, ce qui limite l'accès aux jobs de l'utilisateur appelant.",
+     "confidence": "high"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 10,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ExportJobRepositoryJpaImpl.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 0.857,
+      "n": {
+       "identifiers": 3,
+       "values": 1,
+       "terms": 7
+      }
+     },
+     "job": "export:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_services_AsyncExportRunner.java:1",
+     "rank_in_lot": 7
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 121,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "export:surface:5",
+   "section": "surface",
+   "rank": 5,
+   "text": "- Le téléchargement GET /api/export/download/{jobId} exige un token. Il répond 404 si le token est invalide ou expiré, ou si son jobId ou son ownerId diffère du job demandé ou de l'appelant, et un test vérifie que B reçoit 404 sur l'URL signée de A [#8e1198c694a1e3a4-1] [#0ca6271d7be3edbf-1].",
+   "fact_text": "Le téléchargement GET /api/export/download/{jobId} exige un token. Il répond 404 si le token est invalide ou expiré, ou si son jobId ou son ownerId diffère du job demandé ou de l'appelant, et un test vérifie que B reçoit 404 sur l'URL signée de A",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "export/8e1198c694a1e3a4-1",
+    "export/0ca6271d7be3edbf-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ExportController.java",
+    "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ExportEndpointsIntegrationTest.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ExportController.java",
+     118,
+     124,
+     "a2b0f028007877221f04d4aa0150d5c4c33b25fe9d4b098ddcf1710e10122d84"
+    ],
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ExportEndpointsIntegrationTest.java",
+     298,
+     303,
+     "7c02377c80a6e7007557efb8452245c550135e14ccd5ebdf79a505b01accbb4e"
+    ]
+   ],
+   "code_sha256": "7bbedd7b7a819884a756276fd0571c3e88c092b9bc4c062b707adb56c698be26",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.75,
+      "values": 1.0,
+      "terms": 0.333,
+      "n": {
+       "identifiers": 4,
+       "values": 1,
+       "terms": 15
+      }
+     },
+     "restatement": "ExportController.download renvoie 404 sans corps si verify(token) est vide, si jobId du token ne correspond pas au jobId de l'URL, ou si ownerId du token ne correspond pas à callerId. Le test associé montre qu'un utilisateur B qui utilise l'URL signée de A reçoit 404, et que A reçoit 200.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 16,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ExportController.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 1.0,
+      "n": {
+       "identifiers": 4,
+       "values": 1,
+       "terms": 15
+      }
+     },
+     "job": "export:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_services_AsyncExportRunner.java:1",
+     "rank_in_lot": 11
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 122,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "export:surface:6",
+   "section": "surface",
+   "rank": 6,
+   "text": "- L'export synchrone répond 401 quand aucun utilisateur courant n'est résolu [#c76aa1b25065c8c0-1].",
+   "fact_text": "L'export synchrone répond 401 quand aucun utilisateur courant n'est résolu",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "export/c76aa1b25065c8c0-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ExportController.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ExportController.java",
+     67,
+     70,
+     "b3df7b8795562c7d0a3ccb7493e6df7cdc115f52dc4d931f469b7ffd02d48a33"
+    ]
+   ],
+   "code_sha256": "b3df7b8795562c7d0a3ccb7493e6df7cdc115f52dc4d931f469b7ffd02d48a33",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": null,
+      "values": 1.0,
+      "terms": 0.333,
+      "n": {
+       "identifiers": 0,
+       "values": 1,
+       "terms": 6
+      }
+     },
+     "restatement": "ExportController.exportInline résout l'utilisateur courant via callerResolver.currentUser() et renvoie 401 (UNAUTHORIZED) sans corps si aucun utilisateur n'est trouvé.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 3,
+     "within_budget": true,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ExportController.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": null,
+      "values": 1.0,
+      "terms": 0.167,
+      "n": {
+       "identifiers": 0,
+       "values": 1,
+       "terms": 6
+      }
+     },
+     "job": "export:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_services_AsyncExportRunner.java:1"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "ExportController.exportInline lignes 67-70 renvoie 401 si callerResolver.currentUser() est vide ; aucun contre-exemple trouvé.",
+      "ExportController.exportInline L67-70 renvoie 401 si callerResolver.currentUser() est vide, conforme à la ligne.",
+      "ExportController.exportInline L67-70 renvoie UNAUTHORIZED si callerResolver.currentUser() est vide. Aucun contre-exemple dans la portée."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "scope",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "UNAUTHORIZED dans infrastructure",
+         "found": "Les autres contrôleurs et filtres renvoient aussi 401, mais aucun ne contredit l'export synchrone."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "currentUser\\(\\) dans ExportController",
+         "found": "4 occurrences, chaque endpoint renvoie 401 si l'utilisateur est absent, aucun contre-exemple pour l'export synchrone"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "UNAUTHORIZED dans controllers/export/services",
+         "found": "ExportController L69 sur exportInline, même garde sur les autres endpoints d'export. Aucun autre chemin d'export synchrone."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     }
+    }
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "words:aucun",
+   "placed": {
+    "pack_line": 123,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "export:surface:7",
+   "section": "surface",
+   "rank": 7,
+   "text": "- La purge sélectionne seulement les jobs dont expiresAt est non null et antérieur à maintenant. Les jobs PENDING ou RUNNING sans expiresAt ne sont jamais purgés [#021ed4321a602727-1] [#ec5c33b517cb4a6e-1].",
+   "fact_text": "La purge sélectionne seulement les jobs dont expiresAt est non null et antérieur à maintenant. Les jobs PENDING ou RUNNING sans expiresAt ne sont jamais purgés",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "export/021ed4321a602727-1",
+    "export/ec5c33b517cb4a6e-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ExportJobRepositoryJpaImpl.java",
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportPurgeScheduler.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ExportJobRepositoryJpaImpl.java",
+     85,
+     98,
+     "8752c9738edd9bc0602bbb05198ab2c1be180ce49a3e1c24c1b566b3d0c67b3a"
+    ],
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportPurgeScheduler.java",
+     63,
+     64,
+     "64e48dcbf57bd5dda4fab77d952411873c7fe3b1b12074f20bc2b81fa4552841"
+    ]
+   ],
+   "code_sha256": "5ceb69b2996dfb6a8de5449b63a3a50aafda102fe1e08513d27b8b2f03f369eb",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.143,
+      "n": {
+       "identifiers": 3,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "restatement": "ExportJobRepositoryJpaImpl.findExpired ne remonte que les ExportJobEntity dont expiresAt n'est pas NULL et est strictement antérieur à :now, ce qui exclut PENDING et RUNNING (expiresAt nul) ainsi que les COMPLETED non expirés. ExportPurgeScheduler.purgeExpired calcule now avec LocalDateTime.now(clock) puis appelle findExpired(now).",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 10,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ExportJobRepositoryJpaImpl.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.571,
+      "n": {
+       "identifiers": 3,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "job": "export:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_application_services_AsyncExportRunner.java:1",
+     "rank_in_lot": 8
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "words:jamais",
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 124,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "export:surface:8",
+   "section": "surface",
+   "rank": 8,
+   "text": "- L'écran enchaîne confirm, preparing, ready. Le téléchargement asynchrone n'est proposé que si le job est terminé et que sa date d'expiration n'est pas dépassée, sinon le bloc expiré s'affiche [#d8c8eda7735c3dcc-1] [#d1710eebf051e128-1] [#a4f6d4232526f3fc-1].",
+   "fact_text": "L'écran enchaîne confirm, preparing, ready. Le téléchargement asynchrone n'est proposé que si le job est terminé et que sa date d'expiration n'est pas dépassée, sinon le bloc expiré s'affiche",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "export/d8c8eda7735c3dcc-1",
+    "export/d1710eebf051e128-1",
+    "export/a4f6d4232526f3fc-1"
+   ],
+   "files": [
+    "mytimeline:frontend/src/components/settings/ExportDataFlow.tsx"
+   ],
+   "ranges": [
+    [
+     "mytimeline:frontend/src/components/settings/ExportDataFlow.tsx",
+     96,
+     135,
+     "d25e68799d43eed8267a6a91b508d7874b422258899b3e85e1e5e55a9275e87c"
+    ],
+    [
+     "mytimeline:frontend/src/components/settings/ExportDataFlow.tsx",
+     138,
+     154,
+     "695573404279831130a145a3c6a2e65c59cefb30c7f75794cfee28fad6bfdf55"
+    ],
+    [
+     "mytimeline:frontend/src/components/settings/ExportDataFlow.tsx",
+     157,
+     232,
+     "7d4bd89cb9b8e8fa8d3071c3ed512502ab52546c1d27c048d2107fb32e51a86b"
+    ]
+   ],
+   "code_sha256": "8899da5567c0deec77462404957f0363b135b4a3819f8df1ecb7ce6cea2b0aff",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 0.133,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 15
+      }
+     },
+     "restatement": "ExportDataFlow, en phase confirm, affiche un Select de format, un texte d'aide par format et un bouton data-testid export-start. Le libellé du bouton est « télécharger » pour un format synchrone et « préparer » sinon. Le bouton est désactivé pendant isBusy, avec un Spinner à la place de l'icône.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 8,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/components/settings/ExportDataFlow.tsx",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 0.6,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 15
+      }
+     },
+     "job": "export:rediscover:mytimeline_backend_src_test_java_com_matimeline_eventmanager_infrastructure_adapters_controllers_ExportEndpointsIntegrationTest.java:2",
+     "rank_in_lot": 5
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 125,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "export:surface:9",
+   "section": "surface",
+   "rank": 9,
+   "text": "- Le polling du statut n'est actif que si un jobId existe et que la phase vaut preparing [#10c111d44b1ff9db-1].",
+   "fact_text": "Le polling du statut n'est actif que si un jobId existe et que la phase vaut preparing",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "export/10c111d44b1ff9db-1"
+   ],
+   "files": [
+    "mytimeline:frontend/src/hooks/useExportFlow.ts"
+   ],
+   "ranges": [
+    [
+     "mytimeline:frontend/src/hooks/useExportFlow.ts",
+     92,
+     95,
+     "4ec5e17fa3a3f8363b1f4ae305d4c492d731beca78ba158ffae376f2f3f875ad"
+    ]
+   ],
+   "code_sha256": "4ec5e17fa3a3f8363b1f4ae305d4c492d731beca78ba158ffae376f2f3f875ad",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.286,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "restatement": "La requête `jobQuery` de `useExportFlow` (`useQuery`) n'est active que si `jobId` est truthy ET `phase === 'preparing'`. Sa clé est `queryKeys.export.job(jobId ?? '')` et sa `queryFn` appelle `getExportJob(jobId as string)`, avec un cast qui ne garantit pas la présence de `jobId` à l'exécution.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 7,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/hooks/useExportFlow.ts",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.857,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "job": "export:rediscover:mytimeline_backend_src_test_java_com_matimeline_eventmanager_infrastructure_adapters_controllers_ExportEndpointsIntegrationTest.java:2",
+     "rank_in_lot": 4
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 126,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "export:tests:1",
+   "section": "tests",
+   "rank": 1,
+   "text": "- Les tests fixent qu'un token de téléchargement est accepté à 23 h et refusé à 25 h [#bc4aa8d32fe42d49-1] [#6dfed67a095b6ad1-1], et refusé si la signature est altérée, la clé différente ou les claims sub ou uid absents [#040a578cc997a78b-1] [#e4e3b8483c4932fa-1] [#a45d733d11d2cbcf-1].",
+   "fact_text": "Les tests fixent qu'un token de téléchargement est accepté à 23 h et refusé à 25 h, et refusé si la signature est altérée, la clé différente ou les claims sub ou uid absents",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "export/bc4aa8d32fe42d49-1",
+    "export/6dfed67a095b6ad1-1",
+    "export/040a578cc997a78b-1",
+    "export/e4e3b8483c4932fa-1",
+    "export/a45d733d11d2cbcf-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/ExportTokenServiceTest.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/ExportTokenServiceTest.java",
+     57,
+     64,
+     "5f7ad03b92340683b00f42bfb31005f03677a75c80d7482ef783283a4a13da3b"
+    ],
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/ExportTokenServiceTest.java",
+     67,
+     72,
+     "a6aee9f608fb4f48c133c861e982864eb394bc9a99471ffd84aaf60be6c94d14"
+    ],
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/ExportTokenServiceTest.java",
+     75,
+     79,
+     "a0860368856e4f14240def4cacb9f225002f0a9eb04911b9b69d39f7d7bb1fd9"
+    ],
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/ExportTokenServiceTest.java",
+     82,
+     88,
+     "cbd07d979e083e81fe9b96a3c395a3aec37dc3bbf4da746634a0191ebc7208a7"
+    ],
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/ExportTokenServiceTest.java",
+     164,
+     173,
+     "5b3e566e9e8ca26007d9dd6ec966632f5447f79ea789dee32edf640741db265f"
+    ]
+   ],
+   "code_sha256": "dcd901d1ddbbd93f520f400bd4af9a5c0d0080accf630054cf2483e5d2bc24fd",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": null,
+      "values": 0.5,
+      "terms": 0.364,
+      "n": {
+       "identifiers": 0,
+       "values": 2,
+       "terms": 11
+      }
+     },
+     "restatement": "Le test verify_validTokenWithin24h_returnsClaims attend qu'un token signé à T0 soit accepté à T0 plus 23 h, et renvoie des claims dont jobId et ownerId correspondent aux valeurs d'origine.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 3,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/ExportTokenServiceTest.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": null,
+      "values": 1.0,
+      "terms": 0.727,
+      "n": {
+       "identifiers": 0,
+       "values": 2,
+       "terms": 11
+      }
+     },
+     "job": "export:rediscover:mytimeline_backend_src_test_java_com_matimeline_eventmanager_infrastructure_adapters_controllers_ExportEndpointsIntegrationTest.java:2",
+     "rank_in_lot": 1
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 159,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "export:tests:2",
+   "section": "tests",
+   "rank": 2,
+   "text": "- Les tests fixent l'étanchéité entre jetons : un token d'authentification est refusé par ExportTokenService et un token de download est refusé par JwtService [#6446c73cbcd77798-1] [#37360d362a1e8679-1].",
+   "fact_text": "Les tests fixent l'étanchéité entre jetons : un token d'authentification est refusé par ExportTokenService et un token de download est refusé par JwtService",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "export/6446c73cbcd77798-1",
+    "export/37360d362a1e8679-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/ExportTokenServiceTest.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/ExportTokenServiceTest.java",
+     130,
+     139,
+     "48c9877db21ccd071ee05ab5e7f23a6623e5aacb440285d5ff5558659189c3c9"
+    ],
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/ExportTokenServiceTest.java",
+     145,
+     153,
+     "8de3d26d0f8580d7f39d9564bcafeee1366f6c09be70710bf82e5550436cecc7"
+    ]
+   ],
+   "code_sha256": "ba53ad12e3cb61ef7651c94ec713569833509d39e1434ef786c7cd360c14288e",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": null,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 8
+      }
+     },
+     "restatement": "Le test verify_rejectsAnAuthenticationToken attend que verify rejette un token d'authentification JWT émis par JwtService. Le test authenticationService_rejectsADownloadToken attend que jwtService.extractUsername lève JwtException sur un token de téléchargement, ce qui sépare les deux usages de jetons.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 3,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/ExportTokenServiceTest.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.625,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 8
+      }
+     },
+     "job": "export:rediscover:mytimeline_backend_src_test_java_com_matimeline_eventmanager_infrastructure_adapters_controllers_ExportEndpointsIntegrationTest.java:2",
+     "rank_in_lot": 2
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 160,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "export:tests:3",
+   "section": "tests",
+   "rank": 3,
+   "text": "- Les tests fixent que validateSecret échoue au démarrage sur un secret non Base64, avec un message qui nomme EXPORT_TOKEN_SECRET sans reprendre la valeur [#4e14629b14851801-1].",
+   "fact_text": "Les tests fixent que validateSecret échoue au démarrage sur un secret non Base64, avec un message qui nomme EXPORT_TOKEN_SECRET sans reprendre la valeur",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "export/4e14629b14851801-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/ExportTokenServiceTest.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/ExportTokenServiceTest.java",
+     105,
+     116,
+     "0a33401a175c6151e251c5b4edc497075e26d73eb9b89ff7e8e2bbb94ccb117d"
+    ]
+   ],
+   "code_sha256": "0a33401a175c6151e251c5b4edc497075e26d73eb9b89ff7e8e2bbb94ccb117d",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 0.667,
+      "values": null,
+      "terms": 0.556,
+      "n": {
+       "identifiers": 3,
+       "values": 0,
+       "terms": 9
+      }
+     },
+     "restatement": "Le test validateSecret_failsFast_onNonBase64Secret_withoutLeakingTheValue attend qu'un secret non Base64 fasse lever IllegalStateException, que le message nomme EXPORT_TOKEN_SECRET, et que le message ne contienne jamais la valeur configurée.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "export.details.md",
+     "row": 7
+    }
+   },
+   "uses": 0
+  },
+  {
+   "id": "export:tests:4",
+   "section": "tests",
+   "rank": 4,
+   "text": "- Les tests fixent le contrat HTTP : un format asynchrone en GET, un format synchrone en POST et un format inconnu donnent 400, sans authentification 401, un token forgé au download 404 [#99fd21e0dd9d767e-1] [#393574ac7c7176dc-1] [#99fd21e0dd9d767e-2] [#99fd21e0dd9d767e-3] [#71795aa52ceb6e83-1].",
+   "fact_text": "Les tests fixent le contrat HTTP : un format asynchrone en GET, un format synchrone en POST et un format inconnu donnent 400, sans authentification 401, un token forgé au download 404",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "export/99fd21e0dd9d767e-1",
+    "export/393574ac7c7176dc-1",
+    "export/99fd21e0dd9d767e-2",
+    "export/99fd21e0dd9d767e-3",
+    "export/71795aa52ceb6e83-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ExportEndpointsIntegrationTest.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ExportEndpointsIntegrationTest.java",
+     321,
+     327,
+     "5e1fd164c129ad5575c6ed41fee5c77933c85be986e665c8f1c95907ec5c8106"
+    ],
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ExportEndpointsIntegrationTest.java",
+     329,
+     335,
+     "33884b594e7b1db95cd3c087bfebd7412de301e2f229ac3d8924cb9c66ff1ca3"
+    ],
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ExportEndpointsIntegrationTest.java",
+     337,
+     343,
+     "ec0e67f87c0a71d76173db16c5ef9909f02332a21cecf2f67a53dc5c6bef4ccc"
+    ],
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ExportEndpointsIntegrationTest.java",
+     345,
+     349,
+     "9c144ade5e92e26a6c25b5ddaf39135ce67997c53077efe9cc7ada077d9dc5a4"
+    ],
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ExportEndpointsIntegrationTest.java",
+     315,
+     316,
+     "85f150932ad4d6a5de4ba115de476605a417e028d0c0c6fa98f63c0acd36f42e"
+    ]
+   ],
+   "code_sha256": "d4fabac266ce75ef346cea113ab6a038d866f9c6f1f75eb5976a3b1d04a2742e",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 0.667,
+      "values": 1.0,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 3,
+       "values": 3,
+       "terms": 12
+      }
+     },
+     "restatement": "Les tests vérifient que GET /api/export avec format=zip renvoie 400, que POST /api/export avec format=json renvoie 400, qu'un format inconnu (bogus) renvoie 400, que GET /api/export sans authentification renvoie 401, et que GET de téléchargement avec un token forgé renvoie 404.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "export.details.md",
+     "row": 8
+    }
+   },
+   "uses": 0
+  },
+  {
+   "id": "export:tests:5",
+   "section": "tests",
+   "rank": 5,
+   "text": "- Les tests fixent le flux asynchrone zip et csv : soumission, polling jusqu'à COMPLETED avec downloadUrl, puis téléchargement au bon type MIME [#abad5aa561722721-1] [#8938ae10a08f52d9-1].",
+   "fact_text": "Les tests fixent le flux asynchrone zip et csv : soumission, polling jusqu'à COMPLETED avec downloadUrl, puis téléchargement au bon type MIME",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "export/abad5aa561722721-1",
+    "export/8938ae10a08f52d9-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ExportEndpointsIntegrationTest.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ExportEndpointsIntegrationTest.java",
+     203,
+     237,
+     "7c80be4879db5914b4cc3db5e76ba8505ff7a64745010ae4752e1516163dc67d"
+    ],
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ExportEndpointsIntegrationTest.java",
+     240,
+     259,
+     "58c58db6e880d756a2c3aa0e3004af273b48b0968a4e9f7522d4ea71e3ac5e17"
+    ]
+   ],
+   "code_sha256": "f1d7bf10e55a5baeb19c0f6d9af0d8d06287bd8a2dc68cfaa29a8e5a1e002635",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.667,
+      "values": null,
+      "terms": 0.222,
+      "n": {
+       "identifiers": 3,
+       "values": 0,
+       "terms": 9
+      }
+     },
+     "restatement": "Le test exportZip_asyncFlow_submitPollDownload enchaîne POST /api/export en zip qui renvoie 202 avec un jobId, puis GET du job en statut COMPLETED avec downloadUrl commençant par /api/export/download/{jobId}?token=, une expiration d'environ maintenant plus 24 h, et un téléchargement 200 application/zip non vide. Le test exportCsv_asyncFlow est analogue et attend text/csv.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 5,
+     "within_budget": true,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ExportEndpointsIntegrationTest.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.667,
+      "values": null,
+      "terms": 0.333,
+      "n": {
+       "identifiers": 3,
+       "values": 0,
+       "terms": 9
+      }
+     },
+     "job": "export:rediscover:mytimeline_backend_src_test_java_com_matimeline_eventmanager_infrastructure_adapters_controllers_ExportEndpointsIntegrationTest.java:2"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Tests L203-259 : soumission, polling COMPLETED avec downloadUrl, téléchargement application/zip et text/csv.",
+      "ExportEndpointsIntegrationTest L203-259 : soumission 202, polling COMPLETED avec downloadUrl, téléchargement application/zip et text/csv.",
+      "Tests L203-259 : soumission, polling COMPLETED avec downloadUrl, téléchargement application/zip et text/csv."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 161,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "export:tests:6",
+   "section": "tests",
+   "rank": 6,
+   "text": "- Les tests fixent que le CSV protège les champs à virgule et préfixe d'une apostrophe un nom commençant par un saut de ligne, et que le ZIP contient data.json, data.md et data.csv [#474f401bb0362543-1] [#474f401bb0362543-2] [#e63725fc4482ae7d-1].",
+   "fact_text": "Les tests fixent que le CSV protège les champs à virgule et préfixe d'une apostrophe un nom commençant par un saut de ligne, et que le ZIP contient data.json, data.md et data.csv",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "export/474f401bb0362543-1",
+    "export/474f401bb0362543-2",
+    "export/e63725fc4482ae7d-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/export/ExportRenderersTest.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/export/ExportRenderersTest.java",
+     82,
+     95,
+     "b6ee787f79a1534f609158012d132b80456ea58810be51a200de359295678dfd"
+    ],
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/export/ExportRenderersTest.java",
+     161,
+     162,
+     "6cbce0b238c62d37c214803756dc4b47659363de931acea0f820562cf50f338e"
+    ],
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/export/ExportRenderersTest.java",
+     165,
+     182,
+     "1f46e7149e29073af0fe9e5506e65151adafd876f4db1ed7085226ee48b18677"
+    ]
+   ],
+   "code_sha256": "bd59ebcb8c62e25a5b92e81e14956154c077e65e1cdf9f467464334960c64e42",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.8,
+      "values": null,
+      "terms": 0.182,
+      "n": {
+       "identifiers": 5,
+       "values": 0,
+       "terms": 11
+      }
+     },
+     "restatement": "Le test csv_hasSectionsAndEscapesCommas vérifie les sections # PROFILE, # CATEGORIES, # PRODUCTS, # EVENTS, le guillemetage RFC 4180 d'un titre contenant une virgule, et l'absence du hash de mot de passe. Un autre test attend que \"'\\n=danger\" soit neutralisé puis quoté. Le test zip_bundlesThreeRepresentations attend les entrées data.json, data.md et data.csv.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 4,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/export/ExportRenderersTest.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.8,
+      "values": null,
+      "terms": 0.909,
+      "n": {
+       "identifiers": 5,
+       "values": 0,
+       "terms": 11
+      }
+     },
+     "job": "export:rediscover:mytimeline_backend_src_test_java_com_matimeline_eventmanager_infrastructure_adapters_controllers_ExportEndpointsIntegrationTest.java:2",
+     "rank_in_lot": 3
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 162,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "export:tests:7",
+   "section": "tests",
+   "rank": 7,
+   "text": "- Les tests fixent que themePreference apparaît dans les trois rendus, à null en JSON quand aucun choix n'est fait [#c794f089d108fbda-3] [#474f401bb0362543-3] [#77413e39b9ecd753-2].",
+   "fact_text": "Les tests fixent que themePreference apparaît dans les trois rendus, à null en JSON quand aucun choix n'est fait",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "export/c794f089d108fbda-3",
+    "export/474f401bb0362543-3",
+    "export/77413e39b9ecd753-2"
+   ],
+   "files": [
+    "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/export/ExportRenderersTest.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/export/ExportRenderersTest.java",
+     204,
+     219,
+     "6ce595be39bd35396e43132d167f666dea52276ef2863511def37af563715e38"
+    ],
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/export/ExportRenderersTest.java",
+     221,
+     227,
+     "4c9049a4be33f18526b96a4e82e4847c17ac6de00648da4671c6f1d161c4cd9b"
+    ],
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/export/ExportRenderersTest.java",
+     229,
+     238,
+     "dd91641b38a718e50c01073b80de94ba2e40db692cda12b221ee2418b5347f28"
+    ]
+   ],
+   "code_sha256": "c7746e1b9ce72d91cb65598bb1bf481f685a5a169ef45cd6eb8fc38dfafb113f",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": null,
+      "terms": 0.429,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "restatement": "Le test json_exportsThemePreference_andNullWhenNoChoice attend \"themePreference\":\"system\" si la préférence vaut SYSTEM, et null sinon. Le test CSV attend la colonne themePreference dans l'en-tête et la valeur light dans la ligne. Le test Markdown attend la ligne « Préférence de thème » avec dark, ou « aucune » sans choix.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 4,
+     "within_budget": true,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/export/ExportRenderersTest.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.429,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "job": "export:rediscover:mytimeline_backend_src_test_java_com_matimeline_eventmanager_infrastructure_adapters_controllers_ExportEndpointsIntegrationTest.java:2"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Tests JSON, CSV, Markdown L211-238 vérifient themePreference, null en JSON sans choix.",
+      "ExportRenderersTest L211-238 : themePreference en JSON (null sans choix), CSV et Markdown (aucune sans choix).",
+      "Tests ExportRenderersTest L211-238 couvrent JSON (null), CSV et Markdown ; le null JSON est explicite."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 163,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "export:tests:8",
+   "section": "tests",
+   "rank": 8,
+   "text": "- Les tests fixent que la purge supprime fichier et ligne d'un job COMPLETED expiré, conserve un job non expiré et reste sans erreur si le fichier est déjà absent [#4982c9d57e449504-1] [#c926615f3b27ec10-1] [#a0af33967fcc348e-1].",
+   "fact_text": "Les tests fixent que la purge supprime fichier et ligne d'un job COMPLETED expiré, conserve un job non expiré et reste sans erreur si le fichier est déjà absent",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "export/4982c9d57e449504-1",
+    "export/c926615f3b27ec10-1",
+    "export/a0af33967fcc348e-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/ExportPurgeSchedulerIntegrationTest.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/ExportPurgeSchedulerIntegrationTest.java",
+     93,
+     106,
+     "655756b007b5c3dd6343b7f5db067f4a24b8df36238b26cdba90d6c4f56738d2"
+    ],
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/ExportPurgeSchedulerIntegrationTest.java",
+     108,
+     118,
+     "89a46e5b66cca0eee229a5cc71471c15847855241256bdfdcf469640ff5ca0f2"
+    ],
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/ExportPurgeSchedulerIntegrationTest.java",
+     120,
+     133,
+     "b644a2af4c63668f4452eab072f12e7aabc3edacabe47f7fd29e0bae4b5327de"
+    ]
+   ],
+   "code_sha256": "f4db06194b42d71b86433c8b6b0f090070d868ccd56fe64de22df255c70b6220",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.727,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 11
+      }
+     },
+     "restatement": "Le test expiredCompletedJob_fileAndRowPurged vérifie qu'un job COMPLETED expiré depuis une heure voit son fichier et sa ligne supprimés après scheduler.purgeExpired(). Les tests voisins montrent qu'un job expirant dans deux heures reste intact, et qu'un job expiré dont le fichier est déjà absent est quand même purgé sans exception (purge idempotente).",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "export.details.md",
+     "row": 9
+    }
+   },
+   "uses": 0
+  },
+  {
+   "id": "export:questions:1",
+   "section": "questions",
+   "rank": 1,
+   "text": "- Le job de purge reste-t-il isolé par job si une exception survient ? Chaque job a son try/catch dans une seule méthode transactionnelle, et la base ne montre pas l'effet de l'exception sur la transaction partagée [#8cb218475cc93f3e-1].",
+   "fact_text": "Le job de purge reste-t-il isolé par job si une exception survient ? Chaque job a son try/catch dans une seule méthode transactionnelle, et la base ne montre pas l'effet de l'exception sur la transaction partagée",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "export/8cb218475cc93f3e-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportPurgeScheduler.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportPurgeScheduler.java",
+     75,
+     79,
+     "7f02290c306186575c50bf98e654372d909b4a5896909b29ab82e35c4d95219d"
+    ]
+   ],
+   "code_sha256": "7f02290c306186575c50bf98e654372d909b4a5896909b29ab82e35c4d95219d",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "purgeExpired (L61-79) est @Transactional avec try/catch par job, mais deleteById est hérité de SimpleJpaRepository (transactionnel, rejoint la transaction partagée) : une exception peut marquer la transaction rollback-only. Le code lu ne tranche pas sans ambiguïté.",
+      "purgeExpired est @Transactional avec try/catch RuntimeException par job (L75-79), mais deleteById est hérité de SimpleJpaRepository (transactionnel, REQUIRED) : une exception venant de là peut marquer la transaction partagée rollback-only, ce que le code lu ne tranche pas.",
+      "purgeExpired est @Transactional (l.61) avec try/catch RuntimeException par job (l.67-79). Une exception du stockage est bien isolée, mais une exception levée par deleteById dans la transaction partagée peut la marquer rollback-only. Le code lu ne tranche pas."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "open",
+     "searched": true,
+     "search": {
+      "check": "answer",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Read",
+         "target": "ExportJobRepositoryJpaImpl.java L30-102",
+         "found": "deleteById hérité de SimpleJpaRepository, rejoint la transaction partagée, aucun REQUIRES_NEW."
+        },
+        {
+         "tool": "Grep",
+         "target": "ExportPurgeScheduler|purgeExpired dans backend/src/test",
+         "found": "un seul test d'intégration, non lu."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "deleteById|Transactional dans ExportJobRepositoryJpaImpl",
+         "found": "deleteById hérité de SimpleJpaRepository, pas de REQUIRES_NEW ; save est @Transactional REQUIRED"
+        }
+       ],
+       [
+        {
+         "tool": "Read",
+         "target": "ExportPurgeScheduler.java",
+         "found": "@Transactional sur purgeExpired, try/catch par job, pas de REQUIRES_NEW"
+        },
+        {
+         "tool": "Read",
+         "target": "ExportJobRepositoryJpaImpl.java",
+         "found": "deleteById hérité de SimpleJpaRepository, sans isolation propre"
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     }
+    }
+   },
+   "contrary": null,
+   "check": "answer",
+   "placed": {
+    "pack_line": 167,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "export:questions:2",
+   "section": "questions",
+   "rank": 2,
+   "text": "- Le filtre de findExpired est-il bien celui de la javadoc ? Elle dit expires_at renseigné et antérieur à now, mais les faits de code ne montrent que la déclaration de la méthode [#dc25f411955de8b3-1] [#dc25f411955de8b3-2].",
+   "fact_text": "Le filtre de findExpired est-il bien celui de la javadoc ? Elle dit expires_at renseigné et antérieur à now, mais les faits de code ne montrent que la déclaration de la méthode",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "export/dc25f411955de8b3-1",
+    "export/dc25f411955de8b3-2"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/ports/repositories/ExportJobRepository.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/ports/repositories/ExportJobRepository.java",
+     32,
+     36,
+     "3d745ec95eaba18c15381a8b941abc77d51eef7bcf35777b7be2243c4d8e44d3"
+    ],
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/ports/repositories/ExportJobRepository.java",
+     37,
+     37,
+     "47f86425818332f8785ed576ebe514cc33ae479a197da5cf31b35b091542c4c9"
+    ]
+   ],
+   "code_sha256": "e719892bbfd5f7bb0f7d270fe20d41b2df6b28b11045dd016ff81abeebb9b3da",
+   "verdict": "drop",
+   "reason": "resolved",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [
+     {
+      "id": "export/dc25f411955de8b3-1",
+      "verdict": "confirmed"
+     }
+    ],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Résolu : findExpired de ExportJobRepositoryJpaImpl filtre bien expiresAt IS NOT NULL AND expiresAt < :now, comme la javadoc du port.",
+      "Le filtre est bien celui de la javadoc : la requête JPQL de findExpired filtre expiresAt IS NOT NULL AND expiresAt < :now.",
+      "Le code répond : ExportJobRepositoryJpaImpl.findExpired filtre sur expiresAt IS NOT NULL et expiresAt < :now (l.89-91), comme la javadoc du port."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "resolved",
+     "searched": true,
+     "search": {
+      "check": "answer",
+      "outcome": "resolved",
+      "votes": 3,
+      "supporters": 3,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "findExpired dans backend/src",
+         "found": "port, appel du scheduler et implémentation JPA."
+        },
+        {
+         "tool": "Read",
+         "target": "ExportJobRepositoryJpaImpl.java L30-102",
+         "found": "requête JPQL avec le filtre attendu."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "findExpired",
+         "found": "implémentation dans ExportJobRepositoryJpaImpl L85, appelée par ExportPurgeScheduler L64"
+        },
+        {
+         "tool": "Read",
+         "target": "ExportJobRepositoryJpaImpl.java L83-99",
+         "found": "requête JPQL avec le filtre attendu"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "findExpired",
+         "found": "port, impl JPA et appel dans ExportPurgeScheduler"
+        },
+        {
+         "tool": "Read",
+         "target": "ExportJobRepositoryJpaImpl.java l.60-120",
+         "found": "requête JPQL avec expiresAt IS NOT NULL AND expiresAt < :now"
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0,
+      "evidence": [
+       {
+        "file": "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ExportJobRepositoryJpaImpl.java",
+        "line_start": 89,
+        "line_end": 93,
+        "evidence": "WHERE j.expiresAt IS NOT NULL AND j.expiresAt < :now",
+        "evidence_check": "exact"
+       }
+      ],
+      "promote": {
+       "text": "ExportJobRepositoryJpaImpl.findExpired ne renvoie que les jobs avec expiresAt non nul et antérieur à now.",
+       "file": "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ExportJobRepositoryJpaImpl.java",
+       "line_start": 89,
+       "line_end": 93,
+       "evidence": "WHERE j.expiresAt IS NOT NULL AND j.expiresAt < :now",
+       "cites": [
+        "integrations/58f04da5e5caa546-1",
+        "export/021ed4321a602727-1"
+       ]
+      }
+     }
+    }
+   },
+   "contrary": null,
+   "check": "answer",
+   "answer": [
+    {
+     "file": "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ExportJobRepositoryJpaImpl.java",
+     "line_start": 89,
+     "line_end": 93,
+     "evidence": "WHERE j.expiresAt IS NOT NULL AND j.expiresAt < :now",
+     "evidence_check": "exact"
+    }
+   ],
+   "promote": {
+    "text": "ExportJobRepositoryJpaImpl.findExpired ne renvoie que les jobs avec expiresAt non nul et antérieur à now.",
+    "file": "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ExportJobRepositoryJpaImpl.java",
+    "line_start": 89,
+    "line_end": 93,
+    "evidence": "WHERE j.expiresAt IS NOT NULL AND j.expiresAt < :now",
+    "cites": [
+     "integrations/58f04da5e5caa546-1",
+     "export/021ed4321a602727-1"
+    ]
+   },
+   "placed": {
+    "pack_line": null,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "export:questions:3",
+   "section": "questions",
+   "rank": 3,
+   "text": "- Le throttling de soumission est-il testé ailleurs ? Le commentaire renvoie à une autre classe de test, alors que ce test fixe le rate-limit à false [#2dde7d3482358d04-1] [#d44b0725e30b8509-1].",
+   "fact_text": "Le throttling de soumission est-il testé ailleurs ? Le commentaire renvoie à une autre classe de test, alors que ce test fixe le rate-limit à false",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "export/2dde7d3482358d04-1",
+    "export/d44b0725e30b8509-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ExportEndpointsIntegrationTest.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ExportEndpointsIntegrationTest.java",
+     63,
+     66,
+     "ff3628de7d82199b82c09ac16472c78a2bf5d1445f8c5e21838ae80247b8d573"
+    ],
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ExportEndpointsIntegrationTest.java",
+     67,
+     67,
+     "117dd3b6f1d09c4178a826eb4925169ec8eb1ecd4c160c60b96fe592b8ac10ec"
+    ]
+   ],
+   "code_sha256": "f1b59a87e762cff6cf72b5301c9ff910424c57673a3ef04add3e3e6656907020",
+   "verdict": "drop",
+   "reason": "resolved",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [
+     {
+      "id": "export/2dde7d3482358d04-1",
+      "verdict": "unverifiable"
+     }
+    ],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Le test RateLimitingAndHeadersIntegrationTest#exportSubmission_sixthWithinWindow_returns429 existe et couvre le throttle : 5 POST /api/export passent, le sixième renvoie 429.",
+      "Le throttling est testé ailleurs : RateLimitingAndHeadersIntegrationTest#exportSubmission_sixthWithinWindow_returns429 (L203-215) poste 6 fois sur /api/export et attend un 429. Le code tranche, la question est résolue.",
+      "Le throttling de soumission est testé ailleurs : RateLimitingAndHeadersIntegrationTest#exportSubmission_sixthWithinWindow_returns429 envoie 5 POST /api/export puis attend un 429 à la sixième."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "resolved",
+     "searched": true,
+     "search": {
+      "check": "answer",
+      "outcome": "resolved",
+      "votes": 3,
+      "supporters": 3,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "exportSubmission_sixthWithinWindow_returns429 dans backend/src/test",
+         "found": "Défini à RateLimitingAndHeadersIntegrationTest.java:203, avec 5 requêtes puis un 429."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "exportSubmission_sixthWithinWindow_returns429",
+         "found": "test existant dans RateLimitingAndHeadersIntegrationTest L203, 5 soumissions non throttlées puis la sixième renvoie 429"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "exportSubmission_sixthWithinWindow_returns429",
+         "found": "Méthode de test présente dans RateLimitingAndHeadersIntegrationTest L203-216, avec la sixième requête attendue en 429."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0,
+      "evidence": [
+       {
+        "file": "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/RateLimitingAndHeadersIntegrationTest.java",
+        "line_start": 203,
+        "line_end": 215,
+        "evidence": "void exportSubmission_sixthWithinWindow_returns429() throws Exception {",
+        "evidence_check": "exact"
+       }
+      ],
+      "promote": {
+       "text": "Le throttling 429 de la soumission d'export est testé dans RateLimitingAndHeadersIntegrationTest#exportSubmission_sixthWithinWindow_returns429 (5 requêtes par minute et par IP), pas dans ExportEndpointsIntegrationTest qui désactive app.rate-limit.enabled.",
+       "file": "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/RateLimitingAndHeadersIntegrationTest.java",
+       "line_start": 203,
+       "line_end": 215,
+       "evidence": "void exportSubmission_sixthWithinWindow_returns429() throws Exception {",
+       "cites": [
+        "authorization/967569dbcbf3865f-1"
+       ]
+      }
+     }
+    }
+   },
+   "contrary": null,
+   "check": "answer",
+   "answer": [
+    {
+     "file": "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/RateLimitingAndHeadersIntegrationTest.java",
+     "line_start": 203,
+     "line_end": 215,
+     "evidence": "void exportSubmission_sixthWithinWindow_returns429() throws Exception {",
+     "evidence_check": "exact"
+    }
+   ],
+   "promote": {
+    "text": "Le throttling 429 de la soumission d'export est testé dans RateLimitingAndHeadersIntegrationTest#exportSubmission_sixthWithinWindow_returns429 (5 requêtes par minute et par IP), pas dans ExportEndpointsIntegrationTest qui désactive app.rate-limit.enabled.",
+    "file": "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/RateLimitingAndHeadersIntegrationTest.java",
+    "line_start": 203,
+    "line_end": 215,
+    "evidence": "void exportSubmission_sixthWithinWindow_returns429() throws Exception {",
+    "cites": [
+     "authorization/967569dbcbf3865f-1"
+    ]
+   },
+   "placed": {
+    "pack_line": null,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "export:alerts:1",
+   "section": "alerts",
+   "rank": 1,
+   "text": "- Le record RenderedExport expose son tableau d'octets directement et ses equals et hashCode comparent les références, malgré la javadoc qui parle de valeur immuable [#backend-socle/aa81f9b911dcabe9-1]. Comparer deux exports ou modifier le tableau reçu donne des résultats faux, donc comparer le contenu à part et ne jamais muter le tableau.",
+   "fact_text": "Le record RenderedExport expose son tableau d'octets directement et ses equals et hashCode comparent les références, malgré la javadoc qui parle de valeur immuable. Comparer deux exports ou modifier le tableau reçu donne des résultats faux, donc comparer le contenu à part et ne jamais muter le tableau",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "backend-socle/aa81f9b911dcabe9-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/export/RenderedExport.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/export/RenderedExport.java",
+     5,
+     8,
+     "4608ead5d1e06e4c52caf56921152c28fdab36f7a6f36edb4262f03bc0475a61"
+    ]
+   ],
+   "code_sha256": "4608ead5d1e06e4c52caf56921152c28fdab36f7a6f36edb4262f03bc0475a61",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "RenderedExport est un record avec byte[] content (L8), donc equals et hashCode comparent la référence du tableau, malgré la javadoc 'Valeur immuable'. Aucune copie défensive.",
+      "RenderedExport est un record avec byte[] content exposé (L8), donc equals et hashCode comparent la référence du tableau, malgré la javadoc 'Valeur immuable'. Aucune copie défensive.",
+      "RenderedExport est un record avec byte[] content, donc equals et hashCode comparent les références. Les usages lus (contrôleur, AsyncExportRunner, ZipExportRenderer) ne font que lire le tableau, mais rien n'empêche une mutation."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "guards",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Read",
+         "target": "RenderedExport.java",
+         "found": "record sans constructeur compact ni override d'equals."
+        }
+       ],
+       [
+        {
+         "tool": "Read",
+         "target": "RenderedExport.java",
+         "found": "record sans constructeur compact ni copie défensive"
+        },
+        {
+         "tool": "Grep",
+         "target": "rendered.content() usages",
+         "found": "AsyncExportRunner passe content() à storagePort.store, aucune protection du tableau"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "RenderedExport|.content()",
+         "found": "les usages en production lisent seulement content(), sans copie défensive ni redéfinition d'equals"
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     }
+    }
+   },
+   "contrary": null,
+   "check": "guards",
+   "placed": {
+    "pack_line": 171,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "export:alerts:2",
+   "section": "alerts",
+   "rank": 2,
+   "text": "- Le commentaire de `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapter.java:99` dit que le service ne passe que jpg, png et webp, alors que l'export passe json, md, zip et csv [#ea7fd73d5bdcae8e-1]. Le code accepte toute extension de 1 à 5 caractères a-z0-9 et lève IllegalArgumentException sinon [#034728f94739a0d6-1], donc se fier au code et corriger le commentaire.",
+   "fact_text": "Le commentaire de LocalStorageAdapter.java dit que le service ne passe que jpg, png et webp, alors que l'export passe json, md, zip et csv. Le code accepte toute extension de 1 à 5 caractères a-z0-9 et lève IllegalArgumentException sinon, donc se fier au code et corriger le commentaire",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "export/ea7fd73d5bdcae8e-1",
+    "export/034728f94739a0d6-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapter.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapter.java",
+     99,
+     99,
+     "06ab338343a534a797a3fe1dc8b736672003ab79b7b012bac38764f3f2eb08bc"
+    ],
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapter.java",
+     101,
+     103,
+     "c6c8293347303a3636e3c683e538dad8a4600d7a9800335185ec09bbb7983d23"
+    ]
+   ],
+   "code_sha256": "d4822a1d1c2433a66e6bcb26a3366e9c1a9b3a33bafe3fd0e301c27ff554dfa2",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [
+     {
+      "id": "export/ea7fd73d5bdcae8e-1",
+      "verdict": "unverifiable"
+     }
+    ],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Le commentaire L99 cite jpg/png/webp alors que le code (L101) accepte toute extension [a-z0-9]{1,5} et lève IllegalArgumentException sinon. L'alerte est fidèle, aucun garde-fou ne limite aux trois formats.",
+      "sanitizeExtension rejette hors [a-z0-9]{1,5} (L101-102) alors que le commentaire L99 parle de jpg/png/webp ; AsyncExportRunner L73 passe job.getFormat().extension() (export), donc le commentaire est périmé et l'alerte est exacte.",
+      "sanitizeExtension accepte [a-z0-9]{1,5} (l.101) et lève IllegalArgumentException sinon. AsyncExportRunner l.73 passe job.getFormat().extension() (formats export) à store, ce qui contredit le commentaire sur jpg/png/webp."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "guards",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Read",
+         "target": "excerpt LocalStorageAdapter L99-103",
+         "found": "regex [a-z0-9]{1,5}, pas de liste jpg/png/webp."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "storagePort.store( / extension()",
+         "found": "AsyncExportRunner L73 passe l'extension du format d'export, AvatarServiceImpl L90 celle de l'avatar"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "sanitizeExtension|store(",
+         "found": "AvatarServiceImpl et AsyncExportRunner appellent storagePort.store, l'export avec job.getFormat().extension()"
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     }
+    }
+   },
+   "contrary": null,
+   "check": "guards",
+   "placed": {
+    "pack_line": 172,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "export:alerts:3",
+   "section": "alerts",
+   "rank": 3,
+   "text": "- Selon la javadoc de classe, chaque demande d'export est journalisée, or download et getJob ne contiennent aucun appel de log [#d6ca15f932a49ab7-1]. Les téléchargements ne laissent aucune trace, donc ajouter les logs si l'audit est attendu ou corriger la javadoc.",
+   "fact_text": "Selon la javadoc de classe, chaque demande d'export est journalisée, or download et getJob ne contiennent aucun appel de log. Les téléchargements ne laissent aucune trace, donc ajouter les logs si l'audit est attendu ou corriger la javadoc",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "export/d6ca15f932a49ab7-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportServiceImpl.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportServiceImpl.java",
+     96,
+     111,
+     "39360f7cdfb36267b10a0e302723a2f9c705245a563a40e4a31e9e5d72c7daf3"
+    ]
+   ],
+   "code_sha256": "39360f7cdfb36267b10a0e302723a2f9c705245a563a40e4a31e9e5d72c7daf3",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "download (L96-111) et getJob (L90-93) n'appellent pas log, alors que la javadoc L31 dit que chaque demande est journalisée. Seuls exportInline et submitAsync loggent.",
+      "download (L96-111) et getJob (L91-93) n'ont aucun appel log ; seuls exportInline et submitAsync journalisent. L'ExportController n'a aucun log non plus.",
+      "La javadoc l.31 dit que chaque demande est journalisée. exportInline (l.70) et submitAsync (l.81) loguent, mais getJob (l.91-93) et download (l.96-111) n'ont aucun log."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "guards",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Read",
+         "target": "ExportServiceImpl.java",
+         "found": "log.info présent seulement dans exportInline et submitAsync."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "exportService.(download|getJob)|log. dans *Export*Controller*.java",
+         "found": "deux appels au service (L98, L126), aucun log dans le contrôleur"
+        },
+        {
+         "tool": "Read",
+         "target": "ExportServiceImpl.java",
+         "found": "log.info seulement dans exportInline et submitAsync"
+        }
+       ],
+       [
+        {
+         "tool": "Read",
+         "target": "ExportServiceImpl.java",
+         "found": "logs uniquement dans exportInline et submitAsync"
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     }
+    }
+   },
+   "contrary": null,
+   "check": "guards",
+   "placed": {
+    "pack_line": 173,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "export:alerts:4",
+   "section": "alerts",
+   "rank": 4,
+   "text": "- Le titre d'événement et le nom de produit sont insérés dans le Markdown sans échappement, alors que le CSV neutralise les formules [#4a46a37ed4d6c39c-1] [#integrations/9e65d14dde7b0ffe-1]. Un texte saisi par l'utilisateur peut casser ou injecter du balisage dans l'export, donc échapper ces champs avant d'ajouter un nouveau rendu.",
+   "fact_text": "Le titre d'événement et le nom de produit sont insérés dans le Markdown sans échappement, alors que le CSV neutralise les formules. Un texte saisi par l'utilisateur peut casser ou injecter du balisage dans l'export, donc échapper ces champs avant d'ajouter un nouveau rendu",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "export/4a46a37ed4d6c39c-1",
+    "integrations/9e65d14dde7b0ffe-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/MarkdownExportRenderer.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/MarkdownExportRenderer.java",
+     98,
+     99,
+     "0ff5f242c45d2b8fe0e80128380f040235c099c6b857d5442e10c850b6690652"
+    ],
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/MarkdownExportRenderer.java",
+     84,
+     84,
+     "545f50a3a43f92623126abb8c4ad298873b9702cd59daa3d88f4b3a96cb533c8"
+    ]
+   ],
+   "code_sha256": "7465ca7c415f083b212a75936a5403777f5cbcaaad149e94b285c5a7619b6adf",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "MarkdownExportRenderer lignes 84 et 99 insèrent product.name() et e.title() via nz() sans échappement. Aucune fonction d'échappement trouvée dans ce fichier.",
+      "MarkdownExportRenderer L84 et L99 insèrent product.name() et e.title() via nz() sans échappement. Aucune fonction d'échappement trouvée dans le fichier.",
+      "MarkdownExportRenderer L99 et L84 insèrent nz(e.title()) et nz(product.name()) sans échappement. nz() (L113-114) ne fait que remplacer null par une chaîne vide. Aucun échappement Markdown n'existe dans le fichier."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "guards",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "escape|replace(|sanitize|neutralize dans MarkdownExportRenderer.java",
+         "found": "Aucune correspondance, donc pas d'échappement."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "escape|replace\\(|sanitize dans MarkdownExportRenderer.java",
+         "found": "aucune correspondance"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "replace|escape|nz\\( dans MarkdownExportRenderer",
+         "found": "Seul nz() est présent, null-safe sans échappement."
+        },
+        {
+         "tool": "Read",
+         "target": "MarkdownExportRenderer.java L108-116",
+         "found": "nz retourne value ou chaîne vide."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     }
+    }
+   },
+   "contrary": null,
+   "check": "guards",
+   "placed": {
+    "pack_line": 174,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "export:alerts:5",
+   "section": "alerts",
+   "rank": 5,
+   "text": "- Le nom de fichier d'export ne contient que la date au jour [#1f983012c678fee1-1]. Deux exports du même jour portent le même nom, donc ne pas s'en servir comme identifiant.",
+   "fact_text": "Le nom de fichier d'export ne contient que la date au jour. Deux exports du même jour portent le même nom, donc ne pas s'en servir comme identifiant",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "export/1f983012c678fee1-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/ExportFilenames.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/ExportFilenames.java",
+     15,
+     15,
+     "7078a9393c8064d21c46e8fb00f14655037b351b19196217f8ff03da70b886f7"
+    ]
+   ],
+   "code_sha256": "7078a9393c8064d21c46e8fb00f14655037b351b19196217f8ff03da70b886f7",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "ExportFilenames.DAY utilise yyyyMMdd, nom sans identifiant. Aucun garde-fou d'unicité trouvé, tous les renderers utilisent forFormat.",
+      "ExportFilenames.forFormat L21-23 n'utilise que le format yyyyMMdd, deux exports du même jour ont le même nom.",
+      "ExportFilenames.forFormat construit PREFIX + date yyyyMMdd + extension, sans identifiant de job ni heure. Tous les rendus l'appellent avec generatedAt. Aucun garde-fou n'ajoute d'unicité."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "guards",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "ExportFilenames.forFormat dans main",
+         "found": "Utilisé par les quatre renderers avec la seule date de génération."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "ExportFilenames|.filename()",
+         "found": "nom généré uniquement par forFormat dans les 4 renderers, aucun suffixe d'unicité ajouté"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "ExportFilenames\\.",
+         "found": "Utilisé par les rendus CSV, JSON, Markdown et ZIP avec data.generatedAt(). Aucun suffixe d'unicité ajouté."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     }
+    }
+   },
+   "contrary": null,
+   "check": "guards",
+   "placed": {
+    "pack_line": 175,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "export:alerts:6",
+   "section": "alerts",
+   "rank": 6,
+   "text": "- Le nom de repli de downloadAsyncExport est mytimeline-export sans extension, alors qu'exportInline ajoute celle du format [#afea5a17cb2d273d-1]. Un téléchargement sans nom fourni donne un fichier sans extension, donc aligner le repli sur exportInline.",
+   "fact_text": "Le nom de repli de downloadAsyncExport est mytimeline-export sans extension, alors qu'exportInline ajoute celle du format. Un téléchargement sans nom fourni donne un fichier sans extension, donc aligner le repli sur exportInline",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "export/afea5a17cb2d273d-1"
+   ],
+   "files": [
+    "mytimeline:frontend/src/services/exportService.ts"
+   ],
+   "ranges": [
+    [
+     "mytimeline:frontend/src/services/exportService.ts",
+     105,
+     106,
+     "7334f2bdc9b7a1f270e93377a5b8ecb90ce3d3bdb9f7e0bdb618f9e19e1586cd"
+    ]
+   ],
+   "code_sha256": "7334f2bdc9b7a1f270e93377a5b8ecb90ce3d3bdb9f7e0bdb618f9e19e1586cd",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "exportService.ts L105-106 : repli 'mytimeline-export' sans extension, alors que exportInline utilise fallbackFilename(format) avec extension (L33-36). Le backend envoie Content-Disposition sur le téléchargement (ExportController L135), ce qui réduit le risque sans le garantir si le header est absent ou illisible.",
+      "exportService.ts L106 : le repli est 'mytimeline-export' sans extension, alors que fallbackFilename (L33-36) en ajoute une. Le seul appelant, useExportFlow L124, ne fournit aucun nom, donc le risque est réel.",
+      "exportService.ts L105-106 : le repli est 'mytimeline-export' sans extension, alors que fallbackFilename (L33-36) ajoute l'extension. Le backend envoie toujours Content-Disposition (ExportController L135), ce qui réduit le risque sans le supprimer côté client. L'alerte reste vraie."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "guards",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 18,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "Content-Disposition|attachment dans backend/src/main",
+         "found": "ExportController L135-136 pose le header sur la réponse de fichier. Le repli reste atteignable côté client si le header manque."
+        },
+        {
+         "tool": "Grep",
+         "target": "download|Mapping dans ExportController.java",
+         "found": "GET /download/{jobId} renvoie fileResponse, sinon 404. Aucun nom de repli côté client."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "downloadAsyncExport et mytimeline-export dans frontend/src",
+         "found": "Un seul appelant (useExportFlow L124) qui ne passe que l'URL. Le repli sans extension n'apparaît qu'à L106."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "downloadAsyncExport|Content-Disposition dans le dépôt",
+         "found": "Seul appelant : useExportFlow, avec la downloadUrl. Le backend fixe le header dans ExportController.fileResponse."
+        },
+        {
+         "tool": "Read",
+         "target": "ExportController.java L120-150",
+         "found": "fileResponse pose attachment; filename=... sur chaque téléchargement. Le repli client n'est donc atteint que si le header est absent ou illisible."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     }
+    }
+   },
+   "contrary": null,
+   "check": "guards",
+   "placed": {
+    "pack_line": 176,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "export:alerts:7",
+   "section": "alerts",
+   "rank": 7,
+   "text": "- Le commentaire de `mytimeline:frontend/src/lib/schemas/export.ts:37-45` décrit format comme ZIP ou CSV, mais le champ accepte les quatre formats [#95f695b70feea45b-1]. Ne pas restreindre l'affichage à deux formats sur la foi du commentaire.",
+   "fact_text": "Le commentaire de export.ts décrit format comme ZIP ou CSV, mais le champ accepte les quatre formats",
+   "consigne": "Ne pas restreindre l'affichage à deux formats sur la foi du commentaire",
+   "consigne_dropped": false,
+   "cites": [
+    "export/95f695b70feea45b-1"
+   ],
+   "files": [
+    "mytimeline:frontend/src/lib/schemas/export.ts"
+   ],
+   "ranges": [
+    [
+     "mytimeline:frontend/src/lib/schemas/export.ts",
+     37,
+     45,
+     "8147aa3236c9edfadc4a5ad630fdd5527504f946aa98498048d91688befa7819"
+    ]
+   ],
+   "code_sha256": "8147aa3236c9edfadc4a5ad630fdd5527504f946aa98498048d91688befa7819",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": {
+     "fact_supported": true,
+     "consigne_supported": true,
+     "reason": "Le fait cité indique que le commentaire décrit format comme ZIP ou CSV alors que le champ utilise exportFormatSchema, qui accepte les quatre formats, ce qui couvre le constat. La consigne découle directement de ce fait, car elle demande de ne pas restreindre l'affichage à deux formats sur la foi du commentaire."
+    },
+    "deduce": null,
+    "rediscover": null,
+    "comment": [
+     {
+      "id": "export/95f695b70feea45b-1",
+      "verdict": "unverifiable"
+     }
+    ],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "export.ts L45 : format: exportFormatSchema, soit les quatre valeurs (EXPORT_FORMATS L21), alors que le commentaire L39 dit ZIP|CSV. Constat exact, consigne motivée par ce code.",
+      "Le commentaire de export.ts L39 dit ZIP|CSV pour un job, alors que exportFormatSchema (L21-22, L45) accepte JSON, MARKDOWN, ZIP et CSV. Aucun garde-fou ne restreint le champ à deux formats.",
+      "exportFormatSchema (export.ts L21-22) accepte JSON, MARKDOWN, ZIP et CSV, et le commentaire L39 dit ZIP|CSV. ExportDataFlow.tsx L30 affiche FORMAT_OPTIONS = EXPORT_FORMATS, donc les quatre formats. La consigne est utile."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "supported",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "guards",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 18,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "exportJobResponseSchema|ZIP.*CSV dans frontend/src",
+         "found": "Le schéma de job utilise exportFormatSchema (4 formats) ; seuls des commentaires parlent de ZIP|CSV. Aucune restriction de format dans le code."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "exportFormatSchema|ExportJobResponse|mytimeline-export dans frontend/src",
+         "found": "exportJobResponseSchema.format utilise exportFormatSchema (4 valeurs), sans refine ni restriction ailleurs."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "EXPORT_FORMATS|exportFormatSchema dans frontend/src",
+         "found": "ExportDataFlow.tsx L30 : FORMAT_OPTIONS = EXPORT_FORMATS, soit quatre formats affichés."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     }
+    }
+   },
+   "contrary": null,
+   "check": "guards",
+   "placed": {
+    "pack_line": 177,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "export:rules:p1",
+   "section": "rules",
+   "rank": 0,
+   "text": "- ExportJobRepositoryJpaImpl.findExpired ne renvoie que les jobs avec expiresAt non nul et antérieur à now [#integrations/58f04da5e5caa546-1] [#021ed4321a602727-1] `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ExportJobRepositoryJpaImpl.java:89-93`.",
+   "fact_text": "ExportJobRepositoryJpaImpl.findExpired ne renvoie que les jobs avec expiresAt non nul et antérieur à now ExportJobRepositoryJpaImpl.java",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "integrations/58f04da5e5caa546-1",
+    "export/021ed4321a602727-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ExportJobRepositoryJpaImpl.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ExportJobRepositoryJpaImpl.java",
+     89,
+     91,
+     "e3afe4186886ff46c4eab717710a3178caa0cb0909a080ac65a8f518452806f0"
+    ],
+    [
+     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ExportJobRepositoryJpaImpl.java",
+     85,
+     98,
+     "8752c9738edd9bc0602bbb05198ab2c1be180ce49a3e1c24c1b566b3d0c67b3a"
+    ]
+   ],
+   "code_sha256": "d33401700b54f4657c1f0bf8138919d7666a35bc284027d95e4a20a7aaf9bbfb",
+   "verdict": "admit",
+   "reason": "promoted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "promoted_from": "export:questions:2",
+   "guard_range": [
+    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ExportJobRepositoryJpaImpl.java",
+    89,
+    93
+   ],
+   "placed": {
+    "pack_line": 50,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "export:rules:p2",
+   "section": "rules",
+   "rank": 0,
+   "text": "- Le throttling 429 de la soumission d'export est testé dans RateLimitingAndHeadersIntegrationTest#exportSubmission_sixthWithinWindow_returns429 (5 requêtes par minute et par IP), pas dans ExportEndpointsIntegrationTest qui désactive app.rate-limit.enabled [#authorization/967569dbcbf3865f-1] `mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/RateLimitingAndHeadersIntegrationTest.java:203-215`.",
+   "fact_text": "Le throttling 429 de la soumission d'export est testé dans RateLimitingAndHeadersIntegrationTest#exportSubmission_sixthWithinWindow_returns429 (5 requêtes par minute et par IP), pas dans ExportEndpointsIntegrationTest qui désactive app.rate-limit.enabled RateLimitingAndHeadersIntegrationTest.java",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "authorization/967569dbcbf3865f-1"
+   ],
+   "files": [
+    "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/RateLimitingAndHeadersIntegrationTest.java"
+   ],
+   "ranges": [
+    [
+     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/RateLimitingAndHeadersIntegrationTest.java",
+     202,
+     216,
+     "7c0de760254c3a163f3bf5ceb1d0ad6215c58d6084426bfe1ce1d0f9dc35870a"
+    ]
+   ],
+   "code_sha256": "7c0de760254c3a163f3bf5ceb1d0ad6215c58d6084426bfe1ce1d0f9dc35870a",
+   "verdict": "admit",
+   "reason": "promoted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "promoted_from": "export:questions:3",
+   "guard_range": [
+    "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/RateLimitingAndHeadersIntegrationTest.java",
+    203,
+    215
+   ],
+   "placed": {
+    "pack_line": 51,
+    "annex_table": null
+   },
+   "uses": 0
+  }
+ ],
+ "comment_facts": [
+  {
+   "id": "export/dc25f411955de8b3-1",
+   "verdict": "confirmed",
+   "code_says": "findExpired exécute la requête JPQL « SELECT j FROM ExportJobEntity j WHERE j.expiresAt IS NOT NULL AND j.expiresAt < :now » avec le paramètre now. Seuls les jobs dont expiresAt est renseigné et antérieur à now remontent, ce qui exclut PENDING et RUNNING (expiresAt nul).",
+   "code_line_start": 89,
+   "code_line_end": 91,
+   "code_evidence": "WHERE j.expiresAt IS NOT NULL AND j.expiresAt < :now",
+   "evidence_check": null,
+   "code_file": "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ExportJobRepositoryJpaImpl.java",
+   "invalid": false,
+   "cache_digest": "b3e8085e6f43a2176eff35a1f9a3bd37384ec082fe411e14939c5bbf59e065d1",
+   "cited_by": [
+    "export:questions:2"
+   ],
+   "structure_rows_removed": []
+  },
+  {
+   "id": "export/2dde7d3482358d04-1",
+   "verdict": "unverifiable",
+   "code_says": "",
+   "code_line_start": 0,
+   "code_line_end": 0,
+   "code_evidence": "",
+   "evidence_check": null,
+   "code_file": "",
+   "invalid": false,
+   "cache_digest": "307d6883fb36e479bf0cb3b89a490cbef7e87f6948482b45612b43403fffff65",
+   "reused": true,
+   "reused_from": "2026-11-19T10:28:12Z",
+   "cited_by": [
+    "export:questions:3"
+   ],
+   "structure_rows_removed": []
+  },
+  {
+   "id": "export/ea7fd73d5bdcae8e-1",
+   "verdict": "unverifiable",
+   "code_says": "",
+   "code_line_start": 0,
+   "code_line_end": 0,
+   "code_evidence": "",
+   "evidence_check": null,
+   "code_file": "",
+   "invalid": false,
+   "cache_digest": "0cd3094c222e9d7e11f07b1e7a6e2a5d0f9702275a685060bdc3c8cba52154d2",
+   "reused": true,
+   "reused_from": "2026-11-19T10:28:12Z",
+   "cited_by": [
+    "export:alerts:2"
+   ],
+   "structure_rows_removed": []
+  },
+  {
+   "id": "export/95f695b70feea45b-1",
+   "verdict": "unverifiable",
+   "code_says": "",
+   "code_line_start": 0,
+   "code_line_end": 0,
+   "code_evidence": "",
+   "evidence_check": null,
+   "code_file": "",
+   "invalid": false,
+   "cache_digest": "4b7beba3d47dc131b9725bb219b1bc24b1d805f0dd997393e9ed050fb949aa51",
+   "reused": true,
+   "reused_from": "2026-11-19T10:28:12Z",
+   "cited_by": [
+    "export:alerts:7"
+   ],
+   "structure_rows_removed": []
+  }
+ ],
+ "facts_validated": [
+  "export/5d78bcd81aad2ffb-1",
+  "export/e5310f4744270c73-1",
+  "export/7234330aa18ccba8-1",
+  "export/22140398eaee939d-1",
+  "export/1b603774c55bd69c-1",
+  "export/f577776383d9d0e5-1",
+  "export/2645ac6a99c0b30e-1",
+  "export/81521953162492b3-1",
+  "export/6017043edb1a6398-1",
+  "export/397906559a89ee45-1",
+  "export/397906559a89ee45-2",
+  "export/1bc565c665c6a8ab-1",
+  "export/c76aa1b25065c8c0-1",
+  "export/abad5aa561722721-1",
+  "export/8938ae10a08f52d9-1",
+  "export/c794f089d108fbda-3",
+  "export/474f401bb0362543-3",
+  "export/77413e39b9ecd753-2",
+  "export/8cb218475cc93f3e-1",
+  "backend-socle/aa81f9b911dcabe9-1",
+  "export/ea7fd73d5bdcae8e-1",
+  "export/034728f94739a0d6-1",
+  "export/d6ca15f932a49ab7-1",
+  "export/4a46a37ed4d6c39c-1",
+  "integrations/9e65d14dde7b0ffe-1",
+  "export/1f983012c678fee1-1",
+  "export/afea5a17cb2d273d-1",
+  "export/95f695b70feea45b-1",
+  "integrations/58f04da5e5caa546-1",
+  "export/021ed4321a602727-1",
+  "authorization/967569dbcbf3865f-1"
+ ],
+ "counts": {
+  "units": 49,
+  "admit": 38,
+  "annex": 9,
+  "drop": 2,
+  "hold": 0,
+  "pending": 0,
+  "consigne_before_unsupported": 0,
+  "consigne_after_dropped": 0,
+  "structure_rows_removed": 0,
+  "framework": 0,
+  "guarded_elsewhere": 0,
+  "resolved": 2,
+  "restricted": 0,
+  "counterexample": 0,
+  "promoted": 2,
+  "kept_for": {
+   "rediscovered": 16
+  },
+  "pointers_removed": 0,
+  "restored_alerts": 0,
+  "budget_cut": 0
+ },
+ "answers": [
+  {
+   "unit": "export:questions:2",
+   "question": "Le filtre de findExpired est-il bien celui de la javadoc ? Elle dit expires_at renseigné et antérieur à now, mais les faits de code ne montrent que la déclaration de la méthode",
+   "answer": [
+    {
+     "file": "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ExportJobRepositoryJpaImpl.java",
+     "line_start": 89,
+     "line_end": 93,
+     "evidence": "WHERE j.expiresAt IS NOT NULL AND j.expiresAt < :now",
+     "evidence_check": "exact"
+    }
+   ]
+  },
+  {
+   "unit": "export:questions:3",
+   "question": "Le throttling de soumission est-il testé ailleurs ? Le commentaire renvoie à une autre classe de test, alors que ce test fixe le rate-limit à false",
+   "answer": [
+    {
+     "file": "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/RateLimitingAndHeadersIntegrationTest.java",
+     "line_start": 203,
+     "line_end": 215,
+     "evidence": "void exportSubmission_sixthWithinWindow_returns429() throws Exception {",
+     "evidence_check": "exact"
+    }
+   ]
+  }
+ ],
+ "budget_cut": [],
+ "structure_rows_removed": [],
+ "notes": [
+  "règle promue depuis export:questions:2 : - ExportJobRepositoryJpaImpl.findExpired ne renvoie que les jobs avec expiresAt non nul et antérieur à now [#integrations/58f04da5e5caa546-1] [#021ed4321a602727-1] `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ExportJobRepositoryJpaImpl.java:89-93`.",
+  "règle promue depuis export:questions:3 : - Le throttling 429 de la soumission d'export est testé dans RateLimitingAndHeadersIntegrationTest#exportSubmission_sixthWithinWindow_returns429 (5 requêtes par minute et par IP), pas dans ExportEndpointsIntegrationTest qui désactive app.rate-limit.enabled [#authorization/967569dbcbf3865f-1] `mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/RateLimitingAndHeadersIntegrationTest.java:203-215`.",
+  "export:rules:7 : unité annex dont la ligne n'est plus dans l'annexe, non reportée",
+  "export:rules:9 : unité annex dont la ligne n'est plus dans l'annexe, non reportée",
+  "export:surface:4 : unité annex dont la ligne n'est plus dans l'annexe, non reportée",
+  "export:surface:12 : unité annex dont la ligne n'est plus dans l'annexe, non reportée",
+  "export:tests:3 : unité annex dont la ligne n'est plus dans l'annexe, non reportée",
+  "export:tests:5 : unité annex dont la ligne n'est plus dans l'annexe, non reportée"
+ ],
+ "base_sha256_after": "3fd3c68a22b9eef72066c9b45419c3dd51a726bd9c8c453d32eaa558e70d9708",
+ "bases_touched": {
+  "authorization": {
+   "fingerprint": "8a4ea2bc158e16eb4637013da6580876506a4bf20594c46c72a1570465d610f9",
+   "sha256_after": "2ff5797c1019e938bf080b2851fc2a218fcd0646a3edd695a61907abd13b9005"
+  },
+  "backend-socle": {
+   "fingerprint": "d956fbc33e87e1e63b22a05a320e27391420ae86d0a592c5fc07ab0d4b0bf7bb",
+   "sha256_after": "445dbe594307737c69333035a040c29b7aea304e86e19eb005d47bab35634be4"
+  },
+  "export": {
+   "fingerprint": "703dac725cbfd907bd223383780d6a2314332111bc70fe975d9c439d2c3a1f56",
+   "sha256_after": "3fd3c68a22b9eef72066c9b45419c3dd51a726bd9c8c453d32eaa558e70d9708"
+  },
+  "integrations": {
+   "fingerprint": "6a981b9898e1e3b0d610ebdbdea021ae039f761dfa9406c5d2359ca1dc659e8c",
+   "sha256_after": "4de6b49bc780719e49e48e87480e6e075a0806c683bc0ce6811bb25bf9d5609f"
+  }
+ },
+ "lint": {
+  "ok": true,
+  "errors": 0,
+  "warnings": 0
+ }
+}

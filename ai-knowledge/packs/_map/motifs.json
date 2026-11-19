@@ -1,33 +1,33 @@
 {
  "authorization": {
-  "regex": "org\\.springframework\\.security|io\\.jsonwebtoken|io\\.github\\.bucket4j",
-  "path_hint": "infrastructure/security",
-  "rationale": "Spring Security is imported in 39 files and JJWT in 8, with bucket4j rate limiting in 7 more, all concentrated in infrastructure/security.",
-  "sample_hits": 54,
-  "sample_hits_measured": 48
+  "regex": "org\\.springframework\\.security|io\\.jsonwebtoken",
+  "path_hint": "/infrastructure/security/",
+  "rationale": "Le contrôle d'accès passe par Spring Security (org.springframework.security, 39 fichiers) et les jetons JWT (io.jsonwebtoken, 8 fichiers).",
+  "sample_hits": 47,
+  "sample_hits_measured": 43
  },
  "state-machine": {
-  "regex": "Enumerated|ExportJobStatus",
-  "path_hint": "domain/models",
-  "rationale": "Few explicit state types: @Enumerated appears 4 times and the Status suffix once (ExportJobStatus for export jobs), so the concern is small.",
+  "regex": "@Enumerated|ExportJobStatus",
+  "path_hint": "",
+  "rationale": "Les états sont portés par des énumérations persistées (@Enumerated, 4 fichiers) et le statut de tâche d'export (ExportJobStatus, 1 fichier).",
   "sample_hits": 5,
   "sample_hits_measured": 14,
   "below_threshold": "14 fichiers < seuil 20"
  },
  "integrations": {
-  "regex": "java\\.net\\.http|java\\.util\\.zip|Renderer|Adapter|Template",
-  "path_hint": "infrastructure/adapters",
-  "rationale": "Outgoing and file-exchange code shows up as the Renderer suffix (5) and java.util.zip (2), alongside the Adapter suffix (2) and java.net.http (1).",
-  "sample_hits": 11,
-  "sample_hits_measured": 40
+  "regex": "ExportRenderer|StoragePort|BrevoHealthIndicator|java\\.util\\.zip",
+  "path_hint": "/infrastructure/adapters/",
+  "rationale": "Les échanges externes passent par les moteurs d'export (suffixe Renderer, 5 fichiers) et l'archivage de fichiers (java.util.zip, 2 fichiers).",
+  "sample_hits": 9,
+  "sample_hits_measured": 23
  },
  "batch": {
-  "regex": "@Scheduled|@Async|org\\.springframework\\.scheduling|Scheduler|Runner",
+  "regex": "@Scheduled|@Async|org\\.springframework\\.scheduling",
   "path_hint": "",
-  "rationale": "Scheduled jobs and async execution are marked by org.springframework.scheduling (6 files) and @Scheduled (5), with the Scheduler suffix on 2 purge classes.",
-  "sample_hits": 19,
-  "sample_hits_measured": 18,
-  "below_threshold": "18 fichiers < seuil 20"
+  "rationale": "Les traitements planifiés s'appuient sur org.springframework.scheduling (6 fichiers) et @Scheduled (5 fichiers).",
+  "sample_hits": 16,
+  "sample_hits_measured": 11,
+  "below_threshold": "11 fichiers < seuil 20"
  },
  "rejected": {}
 }

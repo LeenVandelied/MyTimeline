@@ -3,14 +3,14 @@
  "schema": 1,
  "kind": "transversal",
  "lang": "fr",
- "generated_at": "2026-11-18T16:25:37Z",
- "base_sha256": "ae69bce89a10b8531f1efac49a7bc8b64dae3be866c0bffd63f2eb0ff1cf2c63",
- "pack_bytes": 7898,
- "pack_budget_bytes": 26000,
+ "generated_at": "2026-11-19T10:19:38Z",
+ "base_sha256": "3c05a3044a73eeee8aac4165d7b48b312f4fe5936c88c925b128b5bb54f18582",
+ "pack_bytes": 10149,
+ "pack_budget_bytes": 26125,
  "details": [
   {
    "file": "integrations.details.md",
-   "bytes": 25442
+   "bytes": 35000
   }
  ],
  "sections": [
@@ -20,8 +20,8 @@
    "title": "Quand activer",
    "heading": "## 1. Quand activer {#activate}",
    "line_start": 17,
-   "line_end": 22,
-   "bytes": 225,
+   "line_end": 23,
+   "bytes": 353,
    "budget_bytes": 1500,
    "cut_lines": 0,
    "writer": "script",
@@ -31,16 +31,15 @@
    "lots": 0,
    "merged": false,
    "review": null,
-   "never_truncate": false,
-   "copied": false
+   "never_truncate": false
   },
   {
    "id": "lexicon",
    "order": 2,
    "title": "Lexique",
    "heading": "## 2. Lexique {#lexicon}",
-   "line_start": 23,
-   "line_end": 26,
+   "line_start": 24,
+   "line_end": 27,
    "bytes": 78,
    "budget_bytes": 2500,
    "cut_lines": 0,
@@ -59,18 +58,17 @@
     "rejected": 0,
     "unreviewed": 0
    },
-   "never_truncate": false,
-   "copied": true
+   "never_truncate": false
   },
   {
    "id": "rules",
    "order": 3,
    "title": "Règles du motif",
    "heading": "## 3. Règles du motif {#rules}",
-   "line_start": 27,
-   "line_end": 43,
-   "bytes": 1837,
-   "budget_bytes": 2500,
+   "line_start": 28,
+   "line_end": 38,
+   "bytes": 988,
+   "budget_bytes": 2625,
    "cut_lines": 0,
    "writer": "agent",
    "kinds": [
@@ -83,46 +81,37 @@
     "convention",
     "config"
    ],
-   "facts_available": 67,
+   "facts_available": 75,
    "facts_cited": [
-    "0041f21f67193426-1",
-    "0041f21f67193426-3",
-    "1a1fec74340ec77e-1",
-    "6f4983af9414aa47-1",
-    "381d4591926b8291-1",
-    "381d4591926b8291-2",
-    "64f39489a8c24fb5-1",
+    "64f39489a8c24fb5-2",
     "8b52ae90d30c1625-1",
     "35a51e5f0043333c-1",
-    "35a51e5f0043333c-3",
-    "60b20fc9921c8347-1",
-    "1e979c5fd365d269-1",
-    "60b20fc9921c8347-3",
+    "c5d7f522302cb87d-2",
+    "1c7bee558c4afcb5-1",
+    "1c7bee558c4afcb5-2",
     "424bd631166a816d-1",
-    "2a75f7941ba689a8-1",
-    "0c3b8b5d276d059a-1",
-    "timeline/0ff8f26bcd36d07e-1",
-    "timeline/a77b308ca87756a8-1"
+    "424bd631166a816d-2",
+    "user/d49e6680fcdfcaff-1",
+    "user/775621251ad13b2f-1"
    ],
    "lots": 1,
    "merged": false,
    "review": {
     "lines": 16,
-    "kept": 16,
-    "rejected": 0,
+    "kept": 15,
+    "rejected": 1,
     "unreviewed": 4
    },
-   "never_truncate": false,
-   "copied": true
+   "never_truncate": false
   },
   {
    "id": "structure",
    "order": 4,
    "title": "Structure",
    "heading": "## 4. Structure {#structure}",
-   "line_start": 44,
-   "line_end": 47,
-   "bytes": 82,
+   "line_start": 39,
+   "line_end": 53,
+   "bytes": 1267,
    "budget_bytes": 2000,
    "cut_lines": 0,
    "writer": "script",
@@ -133,22 +122,25 @@
     "entity",
     "store_action"
    ],
-   "facts_available": 0,
-   "facts_cited": [],
+   "facts_available": 3,
+   "facts_cited": [
+    "4bc09dd6c60c1854-2",
+    "0116118345deaf3f-1",
+    "e2dcd55a97c66d7b-1"
+   ],
    "lots": 0,
    "merged": false,
    "review": null,
-   "never_truncate": false,
-   "copied": false
+   "never_truncate": false
   },
   {
    "id": "surface",
    "order": 5,
    "title": "Mise en œuvre par domaine",
    "heading": "## 5. Mise en œuvre par domaine {#surface}",
-   "line_start": 48,
-   "line_end": 52,
-   "bytes": 450,
+   "line_start": 54,
+   "line_end": 58,
+   "bytes": 265,
    "budget_bytes": 4000,
    "cut_lines": 0,
    "writer": "agent",
@@ -161,27 +153,26 @@
    ],
    "facts_available": 1,
    "facts_cited": [
-    "0c3b8b5d276d059a-1"
+    "e2dcd55a97c66d7b-1"
    ],
    "lots": 1,
    "merged": false,
    "review": {
-    "lines": 2,
-    "kept": 2,
-    "rejected": 0,
+    "lines": 4,
+    "kept": 3,
+    "rejected": 1,
     "unreviewed": 1
    },
-   "never_truncate": false,
-   "copied": true
+   "never_truncate": false
   },
   {
    "id": "files",
    "order": 6,
    "title": "Fichiers critiques",
    "heading": "## 6. Fichiers critiques {#files}",
-   "line_start": 53,
-   "line_end": 70,
-   "bytes": 1998,
+   "line_start": 59,
+   "line_end": 75,
+   "bytes": 1896,
    "budget_bytes": 2000,
    "cut_lines": 0,
    "writer": "script",
@@ -191,17 +182,16 @@
    "lots": 0,
    "merged": false,
    "review": null,
-   "never_truncate": false,
-   "copied": false
+   "never_truncate": false
   },
   {
    "id": "relations",
    "order": 7,
    "title": "Relations avec d'autres packs",
    "heading": "## 7. Relations avec d'autres packs {#relations}",
-   "line_start": 71,
-   "line_end": 81,
-   "bytes": 376,
+   "line_start": 76,
+   "line_end": 91,
+   "bytes": 535,
    "budget_bytes": 1500,
    "cut_lines": 0,
    "writer": "script",
@@ -211,117 +201,125 @@
    "lots": 0,
    "merged": false,
    "review": null,
-   "never_truncate": false,
-   "copied": false
+   "never_truncate": false
   },
   {
    "id": "tests",
    "order": 8,
    "title": "Tests attendus",
    "heading": "## 8. Tests attendus {#tests}",
-   "line_start": 82,
-   "line_end": 92,
-   "bytes": 1510,
+   "line_start": 92,
+   "line_end": 106,
+   "bytes": 1853,
    "budget_bytes": 2000,
-   "cut_lines": 0,
+   "cut_lines": 1,
    "writer": "agent",
    "kinds": [
     "test_case"
    ],
-   "facts_available": 28,
+   "facts_available": 32,
    "facts_cited": [
-    "2ee6e70558a01924-1",
-    "b6c46816605b971d-1",
-    "f31607d729555ad2-1",
-    "271360493da3f939-1",
-    "dfb8aa6061657764-1",
-    "4ee17d496acc51ca-1",
-    "6370768e2f4f6dde-1",
-    "e4b07cd063572333-1",
-    "a1f67c5fae1badd3-1",
-    "92ce5b0e34535e58-1",
-    "adb4712c956147b0-1",
-    "d97eba2cdca557f1-3",
-    "3de9961cfcdacd70-1",
+    "981f3d22e5d3ffbb-1",
+    "2ccd4c5a70563723-1",
+    "925eda645ab40484-3",
+    "925eda645ab40484-4",
     "52720a500310ccdf-1",
-    "bebc0555404acb33-1",
+    "fd66bd245160df70-1",
+    "72cded3f8ca31e3c-1",
+    "e671c9d0e878ab41-1",
     "e671c9d0e878ab41-2",
-    "096f7886865e90ea-1",
-    "e671c9d0e878ab41-4"
+    "e671c9d0e878ab41-3",
+    "08593db1f3d7a7c6-1",
+    "84e78eb149834ed3-1",
+    "a6e459a10869f945-1",
+    "dadfc6792a00f948-1",
+    "712e5bc738c45338-1",
+    "271360493da3f939-1",
+    "271360493da3f939-2",
+    "76bc88e0381b34a8-1",
+    "f7303661efe58435-1",
+    "a1f67c5fae1badd3-1",
+    "540abb4817870901-1"
    ],
    "lots": 1,
    "merged": false,
    "review": {
-    "lines": 11,
-    "kept": 10,
+    "lines": 14,
+    "kept": 13,
     "rejected": 1,
     "unreviewed": 0
    },
-   "never_truncate": false,
-   "copied": true
+   "never_truncate": false
   },
   {
    "id": "questions",
    "order": 9,
    "title": "Questions ouvertes",
    "heading": "## 9. Questions ouvertes {#questions}",
-   "line_start": 93,
-   "line_end": 96,
-   "bytes": 91,
+   "line_start": 107,
+   "line_end": 110,
+   "bytes": 254,
    "budget_bytes": 1500,
    "cut_lines": 0,
    "writer": "agent",
    "kinds": [
     "suspicious"
    ],
-   "facts_available": 4,
-   "facts_cited": [],
+   "facts_available": 10,
+   "facts_cited": [
+    "1bc758ece67369a1-1",
+    "72cded3f8ca31e3c-1"
+   ],
    "lots": 1,
    "merged": false,
    "review": {
-    "lines": 1,
-    "kept": 1,
+    "lines": 3,
+    "kept": 3,
     "rejected": 0,
     "unreviewed": 0
    },
-   "never_truncate": false,
-   "copied": true
+   "never_truncate": false
   },
   {
    "id": "alerts",
    "order": 10,
    "title": "Alertes",
    "heading": "## 10. Alertes {#alerts}",
-   "line_start": 97,
-   "line_end": 100,
-   "bytes": 78,
+   "line_start": 111,
+   "line_end": 116,
+   "bytes": 1495,
    "budget_bytes": 4000,
    "cut_lines": 0,
    "writer": "agent",
    "kinds": [
     "suspicious"
    ],
-   "facts_available": 4,
-   "facts_cited": [],
+   "facts_available": 10,
+   "facts_cited": [
+    "3a8615964c21dcf2-1",
+    "087ffd68ac374677-1",
+    "9e65d14dde7b0ffe-1",
+    "5d60be11852f2495-1",
+    "d3f82d215b296dc2-1"
+   ],
    "lots": 1,
    "merged": false,
    "review": {
-    "lines": 0,
-    "kept": 0,
+    "lines": 3,
+    "kept": 3,
     "rejected": 0,
     "unreviewed": 0
    },
-   "never_truncate": true,
-   "copied": true
+   "never_truncate": true
   },
   {
    "id": "coverage",
    "order": 11,
    "title": "Couverture",
    "heading": "## 11. Couverture {#coverage}",
-   "line_start": 101,
-   "line_end": 108,
-   "bytes": 752,
+   "line_start": 117,
+   "line_end": 124,
+   "bytes": 754,
    "budget_bytes": 1500,
    "cut_lines": 0,
    "writer": "script",
@@ -331,34 +329,20 @@
    "lots": 0,
    "merged": false,
    "review": null,
-   "never_truncate": false,
-   "copied": false
+   "never_truncate": false
   }
  ],
  "dedup": {
-  "base": 391,
+  "base": 200,
   "taken_in": 0,
-  "out_of_scope": 283,
-  "pool_before": 108,
-  "pool_after": 108,
-  "related_pairs": 37
+  "out_of_scope": 60,
+  "pool_before": 140,
+  "pool_after": 140,
+  "related_pairs": 52
  },
  "lint": {
   "ok": true,
   "errors": 0,
   "warnings": 0
- },
- "refresh": {
-  "mode": "only-changed",
-  "at": "2026-11-18T16:25:37Z",
-  "rewritten": [],
-  "copied": [
-   "lexicon",
-   "rules",
-   "surface",
-   "tests",
-   "questions",
-   "alerts"
-  ]
  }
 }
