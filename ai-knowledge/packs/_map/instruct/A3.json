@@ -1,15 +1,17 @@
 {
  "id": "A3",
- "question": "Event et Product : un pack ou deux ?",
- "decision": "event",
- "rule": "R2 séparation : controller propre et 376 ko pour Product, donc deux packs malgré 20 et 18 imports croisés",
+ "question": "PasswordReset (22 fichiers) : pack propre ou dans user ?",
+ "decision": "user",
+ "rule": "R3 fusion par le script à 13 liens sur 14 vers User, PasswordReset ne dépasse pas pack_min_kb seul sans écran propre",
  "confidence": "medium",
  "seeds": [
-  "Event",
-  "Product"
+  "PasswordReset",
+  "PasswordResetTokenEntity"
  ],
- "evidence": [],
- "falsified_if": "la plupart des tickets de produit touchent aussi les fichiers d'évènement",
+ "evidence": [
+  "backend:src/main/java/com/matimeline/eventmanager/application/validation/StrongPasswordValidator.java"
+ ],
+ "falsified_if": "un ticket de réinitialisation de mot de passe évolue sans toucher aux comptes utilisateur",
  "status": "open",
  "opened": "2026-11-19",
  "touched_by": []

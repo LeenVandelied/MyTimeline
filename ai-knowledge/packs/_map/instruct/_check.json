@@ -1,13 +1,61 @@
 {
- "checked": 1,
+ "checked": 7,
  "outcomes": {
-  "skipped_not_open": 6,
-  "undecidable": 1
+  "undecidable": 2,
+  "confirmed": 5
  },
  "details": [
   {
-   "id": "A12",
-   "verdict": "undecidable",
+   "id": "A3",
+   "verdict": "refuted",
+   "outcome": "undecidable",
+   "verified": 6,
+   "rejected": 0,
+   "rejections": {}
+  },
+  {
+   "id": "A4",
+   "verdict": "confirmed",
+   "outcome": "confirmed",
+   "verified": 6,
+   "rejected": 0,
+   "rejections": {}
+  },
+  {
+   "id": "A5",
+   "verdict": "confirmed",
+   "outcome": "confirmed",
+   "verified": 6,
+   "rejected": 0,
+   "rejections": {}
+  },
+  {
+   "id": "A6",
+   "verdict": "confirmed",
+   "outcome": "confirmed",
+   "verified": 8,
+   "rejected": 0,
+   "rejections": {}
+  },
+  {
+   "id": "A7",
+   "verdict": "confirmed",
+   "outcome": "confirmed",
+   "verified": 4,
+   "rejected": 0,
+   "rejections": {}
+  },
+  {
+   "id": "A8",
+   "verdict": "confirmed",
+   "outcome": "confirmed",
+   "verified": 5,
+   "rejected": 0,
+   "rejections": {}
+  },
+  {
+   "id": "A9",
+   "verdict": "refuted",
    "outcome": "undecidable",
    "verified": 3,
    "rejected": 0,

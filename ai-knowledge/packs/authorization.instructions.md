@@ -1,25 +1,25 @@
 ---
 pack: authorization
 kind: transversal
-name: Autorisation
-generated_at: 2026-11-19T10:19:38Z
+name: Autorisation et sécurité
+generated_at: 2026-11-19T16:00:00Z
 generator: synth/1
-base_sha256: 420223323de8e9184d65ec406fc11303302b894cb52140ec6d3d4ff9374f5372
-facts_in_base: 291
-facts_in_pool: 192
-facts_cited: 49
+base_sha256: e5725a063e222d9594e3df240e8af61e55eb67cccd1c4cda6b8c3c3e1b3011bb
+facts_in_base: 301
+facts_in_pool: 177
+facts_cited: 33
 sections: authorization.sections.json
 details: [authorization.details.md]
 lang: fr
-curated_at: 2026-11-19T10:32:37Z
+curated_at: 2026-11-19T16:38:00Z
 curation: authorization.curation.json
 ---
 ## 1. Quand activer {#activate}
 
 Ce pack s'active quand la demande ou le code touche l'un de ces éléments.
 
-- Mots-clés : authorization, autorisation, role, rôle, security, sécurité, rate limit, jwt
-- Chemins : `^mytimeline:backend/.*/(SecurityConfig|JwtFilter|JwtService|CustomUserDetailsService|[A-Za-z]*RateLimitingFilter|CallerResolver)[A-Za-z0-9]*\.java$`
+- Mots-clés : authorization, autorisation, security, sécurité, rate limit, role, jwt
+- Chemins : `^backend:src/.*/(SecurityConfig|JwtFilter|JwtService|RateLimitingFilter|UserRateLimitingFilter|CustomUserDetailsService)[^/]*\.java$`
 
 ## 2. Lexique {#lexicon}
 
@@ -28,56 +28,50 @@ Aucun fait de la base ne relève de cette section.
 ## 3. Règles du motif {#rules}
 
 ### Invariants
-- Une jwt.private-key vide donne une paire RSA éphémère, une clé invalide, non CRT ou de moins de 2048 bits fait échouer le démarrage. [#0a82116312df662d-1] [#5bce4b2b35400bce-1] [#ad94765637b5f497-1] [#aad4f7e728fc2479-1]
-- La chaîne est STATELESS et sans CSRF, qui repose selon le commentaire sur le cookie HttpOnly et l'absence de form-POST navigateur. [#93676e7880662cfc-1] [#20c936dfaa725a62-1] [#20c936dfaa725a62-7]
-### Authentification des requêtes
-- Si la validation échoue, le contexte reste anonyme et le 401 vient de SecurityConfig. [#f6e75e0a5e5133b6-3]
-- Sur /me et /refresh, toute JwtException donne un 401 générique et les autres exceptions un 500, un jeton vide levant MalformedJwtException. [#8f1db677a53572c6-4] [#78a820cabbe925f7-3] [#c9ffe973525260e3-2]
-- CallerResolver renvoie Optional.empty pour un appelant anonyme ou sans User en base. [#99a5ef0b25688c6e-1] [#0fc229f09fd1eed3-3]
-- Le rôle stocké est l'unique authority, sans préfixe ajouté. [#9c5d8fc04a9de815-1]
+- Les jetons sont signés et lus en RS256 uniquement, et parseClaims refuse tout autre algorithme ainsi que les jetons vides. [#40d48297b0756461-1] [#006c110809de4e75-1]
+- Sans jwt.private-key, une paire RSA éphémère est générée. Une clé fournie mais invalide, non CRT ou de moins de 2048 bits fait échouer le démarrage. [#2acb131f0ebd7c9c-1] [#48e6f6949702d043-1] [#105846cf9aaec1b8-1]
 ### Limitation de débit
-- Le limiteur par IP ne contrôle que les paires méthode et chemin listées, avec un compteur par IP et par paire, et se désactive par app.rate-limit.enabled. [#ef1ceb9ef6e0e2d9-3] [#ef1ceb9ef6e0e2d9-4] [#4505cafcc3a4dbe2-1]
-- L'IP est l'adresse du socket, X-Forwarded-For n'est lu que si trustForwardedHeader vaut true. [#454cce6a9210f047-1] [#843166042d2f6a3e-1]
-- Le limiteur par utilisateur ne plafonne que PUT /api/me/preferences, à 30 par minute, et renvoie le même 429 que le limiteur IP. [#589eeb31cac50d43-1] [#e752f9ef4f24e41f-1] [#0833c211a9b3191d-4]
+- Un plafond configuré inférieur à 1 fait échouer le démarrage, et les seaux sont en mémoire par instance. [#4f0198a0e07b3760-1] [#03b7dff5982812dc-1]
+- UserRateLimitingFilter limite PUT /api/me/preferences à 30 requêtes par minute et par compte, avec 100 000 seaux au plus. [#1d61137988d01278-1] [#a45be4f888638a0b-1] [#c9565e3232d203cd-1]
+- Un authentifié sans identifiant de compte reçoit 401 (fail-closed), un seau épuisé donne 429. [#7a92a5b41b351244-1] [#7a92a5b41b351244-2]
 ### Vérifié dans le code
-- SecurityConfig.securityFilterChain garde /error en permitAll pour qu'une exception non gérée ne ressorte pas en 401 trompeur [#20c936dfaa725a62-2] `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/SecurityConfig.java:166`.
-- AuthControllerDevProfileCookieTest (standaloneSetup) ne prouve que le contenu du cookie. L'authentification et les filtres se couvrent par un test @SpringBootTest avec @AutoConfigureMockMvc, comme SessionRevocationIntegrationTest [#session/9d1fc0fa65838096-1] [#session/2ef4abcad452d6cf-1] `mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/SessionRevocationIntegrationTest.java:37-59`.
+- Un token sans jti (legacy pré-#73) est accepté : SessionServiceImpl.isSessionActive(null) renvoie true et JwtFilter l'authentifie [#session/6a0da51faf97aa4c-1] [#session/6e267b0acf8be06d-1] `backend:src/main/java/com/matimeline/eventmanager/application/services/SessionServiceImpl.java:55-61`.
+- Capturer JwtException (comme JwtFilter) et non IllegalArgumentException pour un jeton null ou blanc, car JwtService.parseClaims lève MalformedJwtException [#20661afcf565be41-1] `backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtFilter.java:92-96`.
 
 ## 4. Structure {#structure}
 
-#### mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java
+#### backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtFilter.java
 | Symbole | Énoncé | Lignes | Fait |
 |---|---|---|---|
-| AuthController.login | Un utilisateur anonyme passe à authentifié après authenticationManager.authenticate, puis un jti est enregistré en session et le cookie jwt est posé. (partiel) | L115-127 | [#bfe467a84207cfa3-1] |
-| AuthController.logout | Le logout révoque le jti du cookie courant en base puis pose un cookie jwt vide avec maxAge 0. (partiel) | L257-260 | [#ed68a63fc2b66b67-1] |
-| AuthController.refreshToken | Le refresh révoque l'ancien jti puis enregistre le jti du nouveau token, et pose un nouveau cookie jwt. (partiel) | L316-326 | [#10efe7ec9942ce01-1] |
-#### mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/SecurityConfig.java
+| JwtFilter.doFilterInternal | Le contexte de sécurité passe de anonyme à authentifié uniquement si le nom d'utilisateur est présent, le contexte est vide, le token est valide pour l'utilisateur chargé et le jti est actif. (partiel) | L73-85 | [#899c7ea5383e6ca6-1] |
+#### backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/SecurityConfig.java
 | Symbole | Énoncé | Lignes | Fait |
 |---|---|---|---|
-| SecurityConfig.securityFilterChain | Le endpoint JWKS, défini par JwksController.JWKS_PATH, est accessible sans authentification. | L172 | [#8bc3a1ce71fe4ba9-1] |
+| SecurityConfig.securityFilterChain | Le endpoint /actuator/health est accessible sans authentification. | L161 | [#10ab0800c4c3ca76-1] |
+| JwksController.JWKS_PATH | Le chemin JWKS est accessible sans authentification, la javadoc du bloc précisant qu'il doit rester public pour la vérification RS256 côté middleware. | L167-172 | [#6bf025d08b434efd-1] |
 
 ## 5. Mise en œuvre par domaine {#surface}
 
-### Clés de signature JWT
-- Le endpoint JWKS (chemin défini par la constante du contrôleur JWKS) est ouvert sans authentification dans la chaîne de filtres, voir `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/SecurityConfig.java:172`. [#8bc3a1ce71fe4ba9-1]
+### Vérification des jetons côté middleware
+- Le chemin JWKS est ouvert sans authentification, et la javadoc du bloc précise qu'il doit rester public pour la vérification RS256 côté middleware. `backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/SecurityConfig.java:167-172` [#6bf025d08b434efd-1]
 
 ## 6. Fichiers critiques {#files}
 
-Fichiers du pool au poids le plus élevé (11 sur 28), le poids étant la somme des scores de spécificité de leurs faits. Liste complète : annexe.
+Fichiers du pool au poids le plus élevé (11 sur 27), le poids étant la somme des scores de spécificité de leurs faits. Liste complète : annexe.
 
 | Fichier | Faits | Sortes dominantes |
 |---|---|---|
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/SecurityConfig.java` | 20 | convention 11, config 4, role_check 4 |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java` | 16 | convention 8, state_transition 3, other 2 |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/RateLimitingFilter.java` | 21 | convention 8, other 7, config 3 |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/UserRateLimitingFilter.java` | 15 | convention 7, config 3, other 2 |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtService.java` | 12 | convention 5, validation 3, other 2 |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtFilter.java` | 8 | convention 5, business_rule 1, external_call 1 |
-| `mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/JwtServiceRs256Test.java` | 20 | test_case 12, convention 5, other 2 |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/RsaKeyMaterial.java` | 4 | validation 3, convention 1 |
-| `mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/RateLimitingAndHeadersIntegrationTest.java` | 7 | convention 4, test_case 2, config 1 |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/CallerResolver.java` | 4 | convention 3, validation 1 |
-| `mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthControllerSecurityTest.java` | 13 | test_case 13 |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java` | 16 | convention 9, config 3, validation 3 |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/SecurityConfig.java` | 18 | convention 9, role_check 3, config 2 |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtService.java` | 13 | convention 5, business_rule 2, suspicious 2 |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/JwtServiceRs256Test.java` | 20 | test_case 9, config 4, validation 3 |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/RateLimitingFilter.java` | 15 | other 4, config 3, convention 3 |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/UserRateLimitingFilter.java` | 10 | config 4, role_check 2, validation 2 |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtFilter.java` | 7 | convention 3, business_rule 1, state_transition 1 |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eTestSupportSecurityConfig.java` | 9 | convention 8, config 1 |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/UserRateLimitingFilterTest.java` | 11 | test_case 8, config 2, convention 1 |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthControllerSecurityTest.java` | 12 | test_case 11, other 1 |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/CorsAllowedOriginsConfigIntegrationTest.java` | 4 | test_case 2, config 1, suspicious 1 |
 
 ## 7. Relations avec d'autres packs {#relations}
 
@@ -85,35 +79,37 @@ Packs liés par des faits repris, des faits équivalents écartés à la dédupl
 
 | Pack | Faits repris | Faits équivalents | Catalogue |
 |---|---|---|---|
-| user | 72 | 30 | oui |
-| session | 50 | 24 | oui |
-| backend-socle | 67 | 0 |  |
-| export | 3 | 3 | oui |
+| user | 100 | 57 | oui |
+| backend-core | 62 | 0 |  |
+| session | 14 | 3 | oui |
+| export | 1 | 0 | oui |
 
-- Faits du pool par pack d'origine : user 72, backend-socle 67, session 50, export 3
+- Faits du pool par pack d'origine : user 100, backend-core 62, session 14, export 1
 
 ## 8. Tests attendus {#tests}
 
-- Les tests fixent que les jetons sont émis en RS256, que HS256 forgé depuis la clé publique et alg none sont rejetés. [#1d6343583ff4cb9a-1] [#35c98d343af70d16-1] [#59230c81582d34b3-1]
-- Les tests fixent qu'un jeton vide lève une JwtException, que validateToken renvoie false et que le filtre reste non authentifié. [#5d2f68edb7108f3e-1] [#8ae00d6ecf2dc04f-1] [#70d4d7a5fcf8ca5c-2]
-- Les tests fixent un cookie jwt HttpOnly, absent du corps, Secure en prod, non Secure avec Domain localhost en dev, aux attributs identiques entre login, refresh et logout. [#947ec0951545e427-1] [#029d78f2484a600b-1] [#b59e1cc447f03d19-1] [#5fd40af78c2a4f52-1]
-- Les tests fixent que le limiteur par utilisateur est lié à l'utilisateur, renvoie 429 avec Retry-After arrondi sans X-RateLimit, et refuse en 401 un principal étranger ou sans identifiant. [#e6e137afcb49a159-1] [#c65fbe64d8da475f-1] [#e5f96f735ac2600b-1] [#8fd0d9f8dd6f46c8-1]
+- Les tests fixent un 401 anonyme et un 403 forbidden sans ROLE_USER, en JSON, via la chaîne complète. [#f5eb141422bbbbcb-1] [#aae3d7977f8dcf62-1]
+- Les tests fixent le cookie jwt Secure à false en dev et true en prod, HttpOnly, absent du corps, avec des attributs identiques au login, refresh et logout. [#80aae410574f341d-1] [#8c46899cb4ce82da-1] [#3c5a78a8da443252-1] [#f58b26a1c675bc5a-1]
+- Les tests fixent l'absence de session serveur et la CSP exacte. [#85caeada9614f594-1] [#1d2a655bc933e21a-1]
+- Un test du contrôleur d'auth force cookieSecure par réflexion et simule sessionService.isSessionActive à true pour /me. [#d95f3adb1ce89629-1] [#7271124452b70525-1]
+- Un test de SecurityConfig passe par réflexion pour writeJsonError, ou construit la classe avec des null pour le CORS. [#2b18a3f419b512a7-1] [#427229d3685c539b-1]
 
 ## 9. Questions ouvertes {#questions}
 
-- Faut-il borner la carte de buckets du filtre de débit par IP et chemin ? Selon la javadoc, il n'y a aucune éviction et la carte croît avec les couples vus, aucun fait de code ne le confirme ni ne le contredit, voir `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/RateLimitingFilter.java:111`. [#41dd62aea9e27bf0-1] [#948cf8b91f5231d8-2]
-- Le filtre de débit par utilisateur évince-t-il vraiment les buckets en LRU ? Selon la javadoc, un attaquant peut en créer en ouvrant des comptes et l'éviction efface l'historique du moins récent, mais les faits de code ne décrivent pas cette éviction, voir `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/UserRateLimitingFilter.java:78-79`. [#28035b740c80cb01-1] [#4967cc3e212efe58-1]
+Aucun fait de la base ne relève de cette section.
 
 ## 10. Alertes {#alerts}
 
-- Dans le filtre JWT, toute exception autre que JwtException est journalisée en erreur puis la chaîne continue avec un contexte anonyme, voir `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtFilter.java:97-100`. Une panne technique de validation du jeton ne bloque donc pas la requête et ressort comme un refus d'accès anonyme, alors ne comptez pas sur ce filtre pour signaler une erreur serveur. [#af86537e34083429-1]
-- Le constructeur d'AuthController reçoit un CustomUserDetailsService qui n'est ni stocké ni utilisé, voir `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java:66`. Ce paramètre laisse croire que le contrôleur charge l'utilisateur lui-même, alors ne vous y fiez pas pour la logique d'authentification et retirez-le si vous touchez au constructeur. [#7ee28be5964c768b-1]
+- Dans JwtFilter, toute exception autre que JwtException est journalisée en error puis la requête continue en anonyme, sans rejet explicite . Une panne technique de la vérification (par exemple la session) ne bloque donc rien dans le filtre, et seule la configuration de sécurité aval protège les routes ⇒ Ne pas supposer que le filtre échoue fermé [#20661afcf565be41-1]
+- validateToken avale toute exception et renvoie false sans journaliser [#dfeb9a6862fd5358-1]. Une cause d'invalidation réelle (clé, format) reste invisible dans les logs, donc ajouter de la journalisation avant de diagnostiquer un 401 inexpliqué.
+- La table des plafonds par utilisateur ne contient qu'une clé exacte, donc toute autre requête authentifiée n'est pas plafonnée par ce filtre [#3d2d7f98e0c7f971-1]. Ajouter une route sensible exige d'ajouter sa clé exacte (méthode et chemin), sinon elle reste sans limite par utilisateur.
+- L'endpoint /me lit le jwt depuis le cookie brut et ne passe pas par CallerResolver [#36aa78900fe7b738-1]. Il ne suit pas le chemin par contexte de sécurité décrit par la javadoc de CallerResolver, donc une règle ajoutée à ce chemin ne l'atteint pas. L'y appliquer explicitement.
 
 ## 11. Couverture {#coverage}
 
-- Fichiers du pack : 35 ; avec au moins un fait en base : 34 ; sans fait après remise en file : 0.
-- Faits en base : 291, repris d'autres packs : +0, hors périmètre : -99, doublons écartés à la déduplication : -0, soit 192 dans le pool.
-- Faits du pool venus d'un autre pack : 192 (par pack : section Relations).
-- Destination des 192 faits du pool : Règles du motif 108 ; Mise en œuvre par domaine 1 ; Tests attendus 54 ; Alertes / Questions ouvertes 7 ; annexe seule 4 ; écartés (sorte `other` ou inconnue) 18.
+- Fichiers du pack : 35 ; avec au moins un fait en base : 30 ; sans fait après remise en file : 0.
+- Faits en base : 301, repris d'autres packs : +0, hors périmètre : -121, doublons écartés à la déduplication : -3, soit 177 dans le pool.
+- Faits du pool venus d'un autre pack : 177 (par pack : section Relations).
+- Destination des 177 faits du pool : Règles du motif 96 ; Mise en œuvre par domaine 2 ; Tests attendus 49 ; Alertes / Questions ouvertes 10 ; annexe seule 6 ; écartés (sorte `other` ou inconnue) 14.
 - Passe transversale : scope 35 fichiers, tous lus.
-- Base : sha256 420223323de8…, générée le 2026-11-19.
+- Base : sha256 e5725a063e22…, générée le 2026-11-19.

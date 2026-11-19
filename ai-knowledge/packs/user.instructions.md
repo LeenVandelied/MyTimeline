@@ -1,141 +1,200 @@
 ---
 pack: user
 kind: domain
-name: Utilisateur et mot de passe
-generated_at: 2026-11-19T10:32:37Z
+name: Utilisateur et authentification
+generated_at: 2026-11-19T16:00:00Z
 generator: synth/1
-base_sha256: dc8f2b63041bb2889fb0705f1a464354444ed4aee4094af287bdf3e4c392379d
-facts_in_base: 943
-facts_in_pool: 1037
-facts_cited: 104
+base_sha256: 16ba5e6f01b55b18a4d3d220532ed23521ee7dc2be4a82937ab6578523831611
+facts_in_base: 1370
+facts_in_pool: 1502
+facts_cited: 143
 sections: user.sections.json
 details: [user.details.md, user.details-2.md]
 lang: fr
-curated_at: 2026-11-19T10:32:37Z
+curated_at: 2026-11-19T16:38:00Z
 curation: user.curation.json
 ---
 ## 1. Quand activer {#activate}
 
 Ce pack s'active quand la demande ou le code touche l'un de ces éléments.
 
-- Mots-clés : user, utilisateur, password, mot de passe, reset, avatar, register, inscription, profile, profil, auth
-- Routes : `/api/auth`, `/api/me`, `/api/test-support`
+- Mots-clés : user, utilisateur, auth, login, register, password, mot de passe, avatar, email, theme, preference
+- Routes : `/api/auth`, `/api/me`, `/api/test-support`, `me/avatar`, `me/export`
 - Entités : UserEntity, PasswordResetTokenEntity
 
 ## 2. Lexique {#lexicon}
 
 | Terme | Sens dans ce projet | Faits |
 |---|---|---|
-| themePreference | Préférence de thème de l'utilisateur, à trois valeurs côté domaine avec une valeur externe en minuscules. Côté frontend elle est toujours présente mais peut être nulle. | [#91ad61b21554d634-1] [#722e39414f050e84-1] |
-| theme_preference | Colonne de 16 caractères de la table users, convertie depuis la préférence de thème, sans contrainte nullable explicite. | [#3f1031a6800df02c-1] |
-| AvatarContent | Octets de l'avatar et type MIME, côté domaine. Le frontend ne voit qu'avatarUrl, une chaîne nullable toujours présente. | [#b4af9c54c76c838a-1] [#faf07dbd8221ea3f-1] |
-| PasswordResetToken | Jeton de réinitialisation de mot de passe, avec une date d'expiration et une date d'usage. | [#c342fa8964981090-1] |
-| password_reset_tokens | Table des jetons de réinitialisation. Le token y est unique et non nul, et une colonne version est présente. | [#28a8fc931f196d75-1] [#ae440359e09d13c4-1] |
-| Validité du lien | Le lien de l'email de réinitialisation est valable 15 minutes, en français comme en anglais. | [#aab6bd536448849d-1] [#20b6db88ba7b9b89-1] |
-| CustomUserDetails | Adaptateur de sécurité qui encapsule un User avec une liste d'autorités fournie à la construction. | [#56bae8d1952df702-1] |
-| strength | Niveau de robustesse du mot de passe affiché, weak, medium ou strong, résolu par la clé settings.security.strength. | [#5ca9d4e6a77a659d-1] |
-| createdAt et updatedAt | Dates d'audit de l'utilisateur. La première n'est jamais modifiable après création. | [#2d40482f1e19ff86-1] |
+| Role | Rôle du compte, aussi utilisé comme autorité Spring dont le nom est celui de la constante. | [#37f7f6970ad6f804-1] |
+| themePreference | Préférence de thème, null tant que le compte n'a rien choisi. | [#b70d850cad866490-1] [#ac3f779bf2baa91a-1] |
+| Token de réinitialisation | Jeton de mot de passe, unique, dont la date de consommation est nullable. | [#ca1bdcf91a964b81-1] [#0f07b0160a8df5ed-1] |
+| StrongPassword | Contrainte de validation des mots de passe, portée par un validateur dédié. | [#ddedbcd7e1084aca-1] |
+| Niveau de force | Libellé traduit du mot de passe, avec trois niveaux. | [#9945538f6f31edc2-1] |
+| AvatarContent | Octets de l'avatar avec son type MIME. | [#51683061c927814f-1] |
+| UserDataExport | Export des données du compte, sans champ de mot de passe. | [#e8be31c1360b78e8-1] |
+| jobStatus | Statut du job d'export, PENDING quand il est absent. | [#7bf2cb1a7ee42811-1] |
+| version | Compteur de verrou optimiste du compte, sans setter public. | [#b4bfb3a0e8cb6c7f-1] |
 
 ## 3. Règles {#rules}
 
-### Politique de mot de passe
-- Un mot de passe valide fait de 8 à 100 caractères avec au moins une majuscule et un chiffre, et une valeur nulle passe ce validateur car @NotBlank la traite. [#436c92fe7ec45d1f-2] [#436c92fe7ec45d1f-4] [#436c92fe7ec45d1f-1]
-- L'inscription, le reset et le changement de mot de passe appliquent cette politique au nouveau mot de passe. [#4fd656ac52faacf2-1] [#45f5fded0dd2736f-1] [#2ac526e658044675-1]
+### Invariants de session et de jeton
+- Le logout révoque le jti du cookie, sans effet si le token est absent ou malformé. [#authorization/0f5088adcf6210ee-1] [#ad961b363692f995-1]
+- Au démarrage, une paire RSA éphémère est générée si la clé privée configurée est vide, et une clé mal formée fait échouer le démarrage sans journaliser sa valeur. [#eaeb1fec0ed5c825-1] [#8d5689df1cb8a729-1]
+### Vérification du cookie d'authentification
+- Un cookie absent ou vide donne rejected. Il est accepté sans analyse si l'URL JWKS n'est pas configurée ou invalide, ou si les clés ne sont pas joignables. [#510afab3cb27e0b6-1] [#510afab3cb27e0b6-2] [#510afab3cb27e0b6-3]
+- Après découpage, un jeton à la forme invalide est rejeté, puis accepté si une clé connue valide la signature. Sinon les clés sont redécouvertes, et le verdict est rejected si le garde-fou anti-tempête renvoie null. [#510afab3cb27e0b6-4] [#510afab3cb27e0b6-5]
+- Un rafraîchissement forcé des clés renvoie null sans appel réseau si le précédent date de moins de JWKS_REFRESH_COOLDOWN_MS, sinon la découverte ignore le cache. [#4c085da69e8a3ae5-1]
+- Est refusé un jeton dont alg n'est pas exactement RS256 (avant la signature), dont sub est absent, non chaîne ou vide, dont exp est absent, non numérique ou NaN, ou dont nbf (contrôlé s'il est présent) est postérieur à maintenant. [#fef4f558bcb33253-1] [#fef4f558bcb33253-2] [#0ce549b16c384755-1] [#0ce549b16c384755-2]
+### Limitation par utilisateur
+- Seule PUT /api/me/preferences est limitée, à 30 requêtes par minute et par compte, dans une LRU de 100 000 buckets. Un bucket vide renvoie le 429 du limiteur par IP avec Retry-After (arrondi au supérieur, minimum 1). [#876d03702960b795-1] [#1310596ba9fef422-1] [#2c92a4e81594cd94-2] [#c6f23c1591fac2c8-2] [#c6f23c1591fac2c8-3]
+### Inscription et profil
+- register répond 409 si le username existe déjà, sans pré-contrôle bloquant sur l'email, et une violation d'unicité en base donne aussi 409. Le mot de passe est haché et le rôle fixé à ROLE_USER. [#6f3d723273af408f-1] [#85963bd8c274bb03-1] [#6f3d723273af408f-2]
+- Une confirmation différente lève validation.password.match sur confirmPassword, à l'inscription, à la réinitialisation et au changement de mot de passe. [#64a91db71f56df5a-1] [#54b11dd25fc13a86-1] [#4db1c494b3a92d56-3]
+- changePassword vérifie l'ancien mot de passe (InvalidCredentialsException) puis refuse un nouveau identique (SamePasswordException), dans cet ordre. Côté formulaire, la clé validation.password.same est levée sur newPassword. [#6d9644d06bc8f672-1] [#6d9644d06bc8f672-2] [#4db1c494b3a92d56-1] [#4db1c494b3a92d56-2] [#a0a38563f06fc85d-1]
 ### Réinitialisation du mot de passe
-- Un token nul, non UUID, absent, expiré, déjà consommé ou dont le compte a disparu lève la même InvalidPasswordResetTokenException, sans révéler la cause. [#8f292fce24271a96-1] [#73a8b35d1023d45e-1] [#73a8b35d1023d45e-2] [#73a8b35d1023d45e-3]
-- Un token est expiré dès que expiresAt n'est plus strictement postérieur à l'instant, et consommé dès que usedAt est renseigné. [#a849b2b5eaa23ad1-1] [#b22d13082ea4efc9-1] [#2ea382d05bae8c72-1]
-- Un conflit de verrou optimiste à la consommation devient aussi InvalidPasswordResetTokenException, le flush étant immédiat. [#73a8b35d1023d45e-4] [#38e6158d5b55a273-1]
-- Sans clé API Brevo, l'envoi est sauté avec un warning, et une RestClientException est journalisée sans être propagée. [#775621251ad13b2f-1] [#775621251ad13b2f-2]
-- Le nom et le lien sont échappés HTML dans le corps de l'email, et une locale nulle, vide ou inconnue retombe sur le gabarit FR. [#5b0443ae67966f97-1] [#91583347a8781dfd-1]
-### Connexion et session
-- Un échec d'authentification renvoie un 401 UNAUTHORIZED générique, sans distinguer username inconnu et mot de passe faux. [#b2cfb8b742831c99-1]
-- GET /api/auth/me vérifie lui-même que le jti est une session active, car /api/auth/** échappe à JwtFilter. [#575186050ab1cb42-1]
-- L'inscription renvoie 409 CONFLICT si le username existe ou si une contrainte unique saute, et crée toujours le compte avec le rôle ROLE_USER. [#2a37f60098851612-1] [#2a37f60098851612-3] [#2a37f60098851612-2]
-- La session enregistre une IP anonymisée (dernier octet IPv4 à 0, trois hextets IPv6 conservés, IPv6 compressée non stockée). [#4be1f8cb5e6cb3ff-2] [#c8e16bfb4284d0e4-1] [#c8e16bfb4284d0e4-2] [#c8e16bfb4284d0e4-3]
-### Profil, avatar et thème
-- PATCH /api/me renvoie 409 si le nouveau username appartient à un autre compte, et ne modifie que name, username et email. [#c655c234892a675c-1] [#c655c234892a675c-3]
-- La suppression de compte exige que la confirmation égale le username du caller, sinon AccountDeletionMismatchException avant toute écriture. [#943127ba120eccec-1]
-- Un avatar vide, trop gros ou qui n'est ni JPEG, ni PNG, ni WebP (détecté par magic bytes) lève InvalidAvatarException, et le front refuse déjà au-delà de 5 Mo. [#609349e75b77f88c-1] [#609349e75b77f88c-2] [#609349e75b77f88c-3] [#5a34f17fcd039d02-1]
-- themePreference n'accepte que light, dark ou system en minuscules sans espace, et reste null tant qu'aucun choix n'a été fait. [#91aff7dce9ed0a4f-2] [#69c568fbca4799a7-1] [#2e01cbedfbb7918a-2]
-- PUT /api/me/preferences est limité à 30 requêtes par minute et par compte et par route, les requêtes anonymes n'étant pas comptées. [#ce64361fcde0a725-1] [#6ecf7cddb53990f8-3] [#6ecf7cddb53990f8-2]
-- L'export de données exclut les catégories système et n'expose aucun champ password. [#f881252ad777c509-1] [#fc21f644a3de7d83-1]
-### Vérifié dans le code
-- PUT /api/me/preferences est plafonné à 30 par minute et par utilisateur par UserRateLimitingFilter, monté avant AuthorizationFilter dans SecurityConfig [#authorization/589eeb31cac50d43-1] [#ce64361fcde0a725-1] [#authorization/e752f9ef4f24e41f-1] `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/UserRateLimitingFilter.java:88-91`.
-- users.username est unique en base par uq_users_username (V2). Le contrôle de UserController.updateCurrentUser n'est qu'un pré-contrôle, et la course est arrêtée par la contrainte [#backend-socle/f1934b5a2a3e854b-1] `mytimeline:backend/src/main/resources/db/migration/V2__unique_constraints.sql:14`.
-- UserRepositoryJpaImpl.copyMutableFields ne recopie pas themePreference : seul updateThemePreference l'écrit, donc reconstruire un User sans thème avant save est sans effet sur la préférence [#126abc370019e426-1] `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/UserRepositoryJpaImpl.java:113-124`.
+- Un token non UUID, inutilisable, d'un compte supprimé ou en conflit de verrou optimiste lève la même InvalidPasswordResetTokenException. [#f161b00db820f46b-1] [#889d2f96ff3498a0-1] [#889d2f96ff3498a0-2] [#ff14c981b945f4fa-1]
+- Sans clé API Brevo, le mail n'est pas envoyé et un warning est journalisé, et une RestClientException n'est pas propagée. [#4db21754de87e441-1] [#4db21754de87e441-2]
+### Avatar
+- Un contenu vide ou dont les magic bytes ne sont ni JPEG, ni PNG, ni WebP est refusé par InvalidAvatarException, et selon le test la taille maximale est contrôlée avant les magic bytes. [#03ded0c6fbc9b97d-1] [#03ded0c6fbc9b97d-3] [#eabeb42ae4e10cd0-1] [#77e3815cb83d949a-1]
+### Préférence de thème
+- À la connexion, la préférence du compte est appliquée localement, sinon le choix local est persisté. Un échec du PUT est journalisé sans bloquer la connexion. [#7778743e7e4fb5f0-1] [#746fbc524426587b-1] [#1d342e9d1d1d858c-3] [#65ed3d30b6a09ce0-1]
+### Garde d'accès frontend
+- Sans utilisateur une fois le chargement terminé, la garde redirige vers la page de login de la locale. [#444f9d665751e3ef-1]
 
 ## 4. Structure {#structure}
 
-#### mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java
+#### backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java
 | Symbole | Énoncé | Lignes | Fait |
 |---|---|---|---|
-| AuthController.login | POST /api/auth/login reçoit un AuthRequest validé, authentifie via AuthenticationManager et répond 200 avec un message de succès. (partiel) | L111-112 | [#16e5d2460834bf93-1] |
-| AuthController.login | Un utilisateur anonyme passe à authentifié après authenticationManager.authenticate, puis un jti est enregistré en session et le cookie jwt est posé. (partiel) | L115-127 | [#authorization/bfe467a84207cfa3-1] |
-| AuthController.getUserDetails | GET /api/auth/me lit le cookie jwt et renvoie le UserResponse de l'utilisateur, ou 401 si le cookie est absent. | L146 | [#503bec9c13e1fb8b-1] |
-| AuthController.logout | Le logout révoque le jti du cookie courant en base puis pose un cookie jwt vide avec maxAge 0. (partiel) | L257-260 | [#authorization/ed68a63fc2b66b67-1] |
-| AuthController.refreshToken | POST /api/auth/refresh refuse avec 401 un token dont la signature ou l'expiration est invalide, ou dont le jti est révoqué. | L300-314 | [#f9f3a5b3da17235e-1] |
-| AuthController.refreshToken | Le refresh révoque l'ancien jti puis enregistre le jti du nouveau token, et pose un nouveau cookie jwt. (partiel) | L316-326 | [#authorization/10efe7ec9942ce01-1] |
-| AuthController.refreshToken | Le refresh génère un nouveau token, révoque l'ancienne session puis enregistre la nouvelle, pour un token encore actif. (partiel) | L319-324 | [#3ec9a1f9167849a7-1] |
-| AuthController.forgotPassword | POST /api/auth/forgot-password délègue à PasswordResetService.requestReset et répond toujours 200 avec un message neutre. | L354-360 | [#edf4a1d6b06c7d54-1] |
-| AuthController.resetPassword | POST /api/auth/reset-password délègue à PasswordResetService.resetPassword avec le token et le nouveau mot de passe, puis répond 200. | L368-372 | [#cbde0c2e7948278f-1] |
-#### mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/UserController.java
+| AuthController | Le contrôleur d'authentification est exposé sous le préfixe /api/auth. | L49 | [#468143db288956bb-1] |
+| AuthController.login | POST /api/auth/login authentifie via AuthenticationManager, enregistre la session, pose le cookie jwt et renvoie un message de succès. | L111-112 | [#b8df8b0ebcd1dac4-1] |
+| AuthController.register | POST /api/auth/register crée un compte avec le rôle ROLE_USER et renvoie 201 en cas de succès. | L209-210 | [#f94eac9e6a1acea9-1] |
+| AuthController.logout | POST /api/auth/logout révoque la session du jti courant puis efface le cookie jwt. | L250-251 | [#e1bc96480b3ef4c3-1] |
+| AuthController.logout | Le logout appelle revokeSessionSilently sur le token du cookie, ce qui révoque le jti courant en base et reste sans effet si le token est absent ou malformé. (partiel) | L254-257 | [#authorization/0f5088adcf6210ee-1] |
+| AuthController.refreshToken | POST /api/auth/refresh lit le cookie jwt, valide le token courant puis émet un nouveau token en cookie. | L269-270 | [#aabb86633e0d2592-1] |
+| AuthController.refreshToken | Le refresh révoque le jti de l'ancien token puis enregistre le jti du nouveau token via registerSession, en faisant tourner la session. (partiel) | L319-324 | [#authorization/1b96ea31a014d92e-1] |
+| AuthController.refreshToken | Lors du refresh, l'ancien jti est révoqué puis une nouvelle session est enregistrée pour le nouveau token, par rotation de session. (partiel) | L323-324 | [#c62478f0f1a3cf17-1] |
+| AuthController.forgotPassword | POST /api/auth/forgot-password répond toujours 200 avec un message neutre, que le compte existe ou non. | L354-360 | [#3b36126a4b26b1fd-1] |
+| AuthController.resetPassword | POST /api/auth/reset-password délègue à PasswordResetService.resetPassword et renvoie 200 avec un message de succès. | L368-372 | [#e9191dd75ac71526-1] |
+#### frontend:contexts/AuthContext.tsx
 | Symbole | Énoncé | Lignes | Fait |
 |---|---|---|---|
-| UserController.getCurrentUser | GET /api/me renvoie le profil de l'utilisateur courant via UserResponse.fromDomain, sans hash, ou 401 si aucun caller n'est résolu. | L82-87 | [#592f826951fba179-1] |
-| UserController.updateCurrentUser | PATCH /api/me valide un UserUpdateRequest et met à jour name, username et email de l'utilisateur courant. | L109-110 | [#7bcf048f941d320f-1] |
-| UserController.updatePreferences | PUT /api/me/preferences pose la préférence de thème du caller après conversion par ThemePreference.fromValue et renvoie le UserResponse mis à jour. | L160-169 | [#2c91bf6991df9da3-1] |
-| UserController.changePassword | POST /api/me/change-password délègue à UserService.changePassword avec le caller, l'ancien et le nouveau mot de passe, puis répond 204. | L178-187 | [#e7b23c8b45ef374e-1] |
-| UserController.deleteCurrentUser | La suppression de compte appelle UserService.deleteAccount puis pose un cookie jwt expiré, la suppression du compte se faisant avant toute écriture de la réponse. (partiel) | L214-218 | [#1e0136f1cce43bd1-1] |
-#### mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/PasswordResetServiceImpl.java
+| AuthProvider.login | Le login passe le user de null à l'utilisateur chargé via loadUser, après loginService réussi, puis adopte le thème local si le compte n'a pas de préférence, sans faire échouer la connexion en cas de PUT en échec. (partiel) | L216-220 | [#65ed3d30b6a09ce0-1] |
+| AuthProvider.logout | Le logout appelle logoutService puis, dans le finally, passe le user à null via commitUser, même si l'appel échoue. | L253-260 | [#18a688bb40f9a9be-1] |
+#### backend:src/main/java/com/matimeline/eventmanager/application/services/PasswordResetServiceImpl.java
 | Symbole | Énoncé | Lignes | Fait |
 |---|---|---|---|
-| PasswordResetServiceImpl.resetPassword | Le token passe à l'état consommé via token.consume puis markConsumed, lors d'un reset de mot de passe réussi. (partiel) | L183 | [#261bada364382191-1] |
-#### mytimeline:frontend/src/components/ui/toaster.tsx
+| PasswordResetServiceImpl.resetPassword | Le token passe à l'état consommé via consume, par resetPassword, si il est utilisable et si sa version optimiste n'a pas changé. (partiel) | L183 | [#df6782a5426a1e6d-1] |
+#### backend:src/test/java/com/matimeline/eventmanager/application/services/PasswordResetServiceImplTest.java
 | Symbole | Énoncé | Lignes | Fait |
 |---|---|---|---|
-| AppToaster | La pause du compte à rebours est démarrée par startPause quand le survol ou le focus est actif, et levée par endPause quand les deux cessent. (partiel) | L255-257 | [#765dffc2ac572ce4-1] |
-#### mytimeline:frontend/src/components/settings/AvatarUpload.tsx
+| PasswordResetServiceImplTest.resetPassword_validToken_reHashes_updatesUser_andConsumesToken | Le token passe de non consommé à consommé via markConsumed lors de resetPassword, si le token est utilisable, avec usedAt égal à maintenant. (partiel) | L191-194 | [#c51c490797ade3f9-1] |
+#### backend:src/main/java/com/matimeline/eventmanager/application/services/AvatarServiceImpl.java
 | Symbole | Énoncé | Lignes | Fait |
 |---|---|---|---|
-| AvatarUpload.confirmCrop | Le recadrage passe du mode sourceUrl défini au mode sourceUrl null par confirmCrop, si canvas.toBlob renvoie un blob, après envoi du fichier PNG au parent. | L126-137 | [#58e39df082f01931-1] |
-| AvatarUpload.cancelCrop | L'annulation du recadrage remet sourceUrl à null et révoque l'URL d'objet, sans appel au parent. | L139-143 | [#964716d693e4a39a-1] |
-#### mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/PasswordResetToken.java
+| AvatarServiceImpl.deleteAvatar | L'avatar passe d'une référence non vide à null, par deleteAvatar, si la référence de l'appelant est renseignée. | L124-137 | [#522252fba7fe5e36-1] |
+#### frontend:components/settings/mobile/BottomSheet.tsx
 | Symbole | Énoncé | Lignes | Fait |
 |---|---|---|---|
-| PasswordResetToken.consume | La consommation produit une nouvelle instance avec usedAt renseigné, le modèle restant immuable. (partiel) | L72-74 | [#fb0bcb272c564e7f-1] |
-#### mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/PasswordResetServiceImplTest.java
+| BottomSheet.dragY | Le décalage de glissement est remis à zéro à chaque ouverture du sheet, par ajustement d'état pendant le rendu. (partiel) | L88-92 | [#31ecf099b769d80a-1] |
+#### frontend:components/settings/useDeleteAccountFlow.ts
 | Symbole | Énoncé | Lignes | Fait |
 |---|---|---|---|
-| PasswordResetServiceImplTest.resetPassword_validToken_reHashes_updatesUser_andConsumesToken | Un token valide passe à l'état consommé via markConsumed avec used_at posé à now, et le mot de passe est ré-encodé par BCrypt avant save. (partiel) | L169-195 | [#72fb626cb2c7c8b5-1] |
+| useDeleteAccountFlow.step | L'étape de suppression démarre à warn. (partiel) | L46 | [#79763f022018bd04-1] |
+| useDeleteAccountFlow.goConfirm | La méthode goConfirm passe l'étape de warn à confirm. | L74 | [#72b9345ca57e779d-1] |
+| useDeleteAccountFlow.goWarn | La méthode goWarn ramène l'étape de confirm à warn. | L75 | [#89c2eaa90e8ec688-1] |
+#### frontend:components/settings/DeleteAccountSteps.tsx
+| Symbole | Énoncé | Lignes | Fait |
+|---|---|---|---|
+| DeleteAccountSteps | Le bouton Continuer de l'étape warn appelle flow.goConfirm pour passer à l'étape de confirmation. (partiel) | L64-72 | [#a374a26413ccdd71-1] |
+| DeleteAccountSteps | Le bouton Retour de l'étape de confirmation appelle flow.goWarn pour revenir à l'étape warn. (partiel) | L113-121 | [#a374a26413ccdd71-2] |
+#### frontend:components/settings/AccountSection.tsx
+| Symbole | Énoncé | Lignes | Fait |
+|---|---|---|---|
+| AccountSection.closeDeleteDialog | Quand closeDeleteDialog reçoit false, deleteOpen passe de true à false et le flux de suppression est réinitialisé par deleteFlow.reset. (partiel) | L43-46 | [#739e0d75dfe539fb-1] |
+| AccountSection.deleteOpen | Le clic sur le bouton delete-account-open passe deleteOpen de false à true. (partiel) | L71 | [#3028dc0858c16440-1] |
+#### frontend:components/settings/mobile/MobileSettings.tsx
+| Symbole | Énoncé | Lignes | Fait |
+|---|---|---|---|
+| MobileSettings.active | L'état actif vaut null pour l'index et un ChapterId pour l'écran détail. (partiel) | L34 | [#18828bb0b5460f44-1] |
+| MobileSettings.back | Le bouton retour remet active à null, ce qui ramène à l'index. (partiel) | L56 | [#9c0fe3d5c3da8720-1] |
+#### backend:src/main/java/com/matimeline/eventmanager/domain/models/PasswordResetToken.java
+| Symbole | Énoncé | Lignes | Fait |
+|---|---|---|---|
+| PasswordResetToken.consume | consume crée une nouvelle instance avec usedAt renseigné, l'instance d'origine restant inchangée. (partiel) | L72-74 | [#e422b66cd438a960-1] |
+#### backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/UserController.java
+| Symbole | Énoncé | Lignes | Fait |
+|---|---|---|---|
+| UserController | Le contrôleur de profil est exposé sous le préfixe /api/me. | L49 | [#dc686d3191cfb9b2-1] |
+| UserController.getCurrentUser | GET /api/me renvoie le profil de l'utilisateur courant sous forme de UserResponse, sans le hash du mot de passe. | L81-88 | [#98a5f01006883445-1] |
+| UserController.updateCurrentUser | PATCH /api/me met à jour name, username et email de l'utilisateur courant et renvoie UserResponse. | L110 | [#184243d16ccf53c3-1] |
+| UserController.updatePreferences | PUT /api/me/preferences pose la préférence de thème du compte courant via un corps themePreference, et renvoie UserResponse. | L160-161 | [#f3a65d295cff5005-1] |
+| UserController.changePassword | POST /api/me/change-password délègue le changement de mot de passe au port UserService et renvoie 204. | L178-188 | [#cf512413e3a1ad31-1] |
+| UserController.deleteCurrentUser | DELETE /api/me supprime le compte courant après confirmation par le username saisi, puis renvoie 204. | L203-204 | [#4b311aa3577f75bf-1] |
+| UserController.uploadAvatar | POST /api/me/avatar accepte un upload multipart dans la part file et renvoie UserResponse après relecture du user. | L233-234 | [#f89dbbadc558a9d9-1] |
+| UserController.getAvatar | GET /api/me/avatar streame les octets de l'avatar du caller avec le Content-Type du type stocké. | L264-275 | [#9cb59a02980f65cc-1] |
+| UserController.deleteAvatar | DELETE /api/me/avatar appelle avatarService.deleteAvatar pour le caller et renvoie 204, sans erreur si aucun avatar n'existe. | L282-290 | [#3394e708bc740d15-1] |
+#### backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/SecurityConfig.java
+| Symbole | Énoncé | Lignes | Fait |
+|---|---|---|---|
+| JwksController.JWKS_PATH | Le chemin JWKS est accessible sans authentification, la javadoc du bloc précisant qu'il doit rester public pour la vérification RS256 côté middleware. | L167-172 | [#authorization/6bf025d08b434efd-1] |
+#### backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthControllerLegacyPasswordLoginTest.java
+| Symbole | Énoncé | Lignes | Fait |
+|---|---|---|---|
+| AuthControllerLegacyPasswordLoginTest.login | Le helper login envoie un POST /api/auth/login en JSON avec une IP distante issue du sous-réseau dédié et retourne le MvcResult. | L116-123 | [#d9a850fefe246758-1] |
+| AuthControllerLegacyPasswordLoginTest.register_withTheSameSixCharPassword_isRejected | Le test appelle POST /api/auth/register avec un corps JSON contenant name, username, email et password. | L288-292 | [#8a0f60ab0b3d6fc4-1] |
+| AuthControllerLegacyPasswordLoginTest.legacyAccount_canChangeToACompliantPassword_thenLogInWithIt | Le test appelle POST /api/me/change-password avec le cookie jwt et un oldPassword et newPassword dans le corps JSON. | L322-323 | [#d27b7af1f4f2781f-1] |
+#### backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ThemePreferenceIntegrationTest.java
+| Symbole | Énoncé | Lignes | Fait |
+|---|---|---|---|
+| ThemePreferenceIntegrationTest.putPreference | La méthode putPreference appelle PUT /api/me/preferences avec un corps themePreference, attend 200, relit themePreference et vérifie l'absence de la clé password. | L128-136 | [#129a149e5857c054-1] |
+| ThemePreferenceIntegrationTest.newAccount_hasNullPreference_onBothMeEndpoints | Le test appelle GET /api/me avec le cookie jwt et attend un statut 200 avec la clé themePreference. | L143 | [#345731ffb13fc464-1] |
+| ThemePreferenceIntegrationTest.newAccount_hasNullPreference_onBothMeEndpoints | Le test appelle GET /api/auth/me avec le cookie jwt et attend un statut 200 avec la clé themePreference. | L148 | [#345731ffb13fc464-2] |
+| ThemePreferenceIntegrationTest.patchProfile_afterPreference_doesNotEraseIt | Le test appelle PATCH /api/me avec le cookie jwt pour renommer le compte. | L189 | [#8a5dedf4de70c3fa-1] |
+#### backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/ResetPasswordTokenRateLimitIntegrationTest.java
+| Symbole | Énoncé | Lignes | Fait |
+|---|---|---|---|
+| ResetPasswordTokenRateLimitIntegrationTest.reset | Le helper reset envoie POST /api/auth/reset-password avec un corps contenant token et newPassword, en fixant l'IP socket par setRemoteAddr. | L80-87 | [#45d794329eb3d9fc-1] |
+#### backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/PasswordResetEndpointsIntegrationTest.java
+| Symbole | Énoncé | Lignes | Fait |
+|---|---|---|---|
+| PasswordResetEndpointsIntegrationTest.forgotPassword_unknownEmail_noToken_returns200 | Le test appelle POST /api/auth/forgot-password sans cookie ni en-tête d'authentification. | L43 | [#e5ab898a6f87f49c-1] |
+| PasswordResetEndpointsIntegrationTest.resetPassword_unknownToken_noAuth_returns400 | Le test appelle POST /api/auth/reset-password sans authentification avec un corps contenant token et newPassword. | L70 | [#d3528d767166474e-1] |
 
 ## 5. Endpoints et écrans {#surface}
 
-- Les routes /api/me sont dans `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/UserController.java:82-290` [#592f826951fba179-1], les routes /api/auth dans AuthController, et l'écran de réglages avatar dans `mytimeline:frontend/src/components/settings/AvatarUpload.tsx:146-221` [#7b1d4ef2370cf8b0-1].
-- Le contrôleur de test `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenController.java:44-45` n'est actif que sous le profil e2e, ne porte aucune annotation de sécurité dans son fichier et expose le token de reset le plus récent d'un email [#1ed742974441f8cd-1] [#c7abb657718092cb-1]. Ne jamais activer ce profil hors e2e.
-- POST /api/auth/forgot-password répond toujours 200 avec un message neutre [#edf4a1d6b06c7d54-1], et requestReset avale toute RuntimeException en la journalisant [#c69d437a32e90da2-1]. Un échec d'envoi Brevo reste donc invisible pour l'appelant, il faut lire les logs.
-- POST /api/auth/refresh répond 401 si la signature ou l'expiration est invalide, ou si le jti est révoqué [#f9f3a5b3da17235e-1]. GET /api/auth/me répond 401 si le cookie jwt est absent [#503bec9c13e1fb8b-1].
-- DELETE /api/me exige le username saisi dans le corps, supprime dans l'ordre sessions, events, products, catégories possédées puis user, efface le cookie jwt et répond 204 [#6dc99624ee4f5fdd-1] [#2c29c1b4eee4abdc-1]. Garder cet ordre si une nouvelle table dépend de l'utilisateur.
-- Le téléversement d'avatar (multipart, part file) sauvegarde le User avec la nouvelle référence puis supprime l'ancien fichier si la référence change [#6a491107ed3002b8-1] [#2b36e62dc08c222c-1]. GET /api/me/avatar lève AvatarNotFoundException si la référence est absente ou introuvable dans le stockage [#6ade347418a09a23-1].
-- findDomainUserByEmail prend le premier résultat de la liste sans getSingleResult [#771c1e9c3e1907b8-1], donc un doublon d'email ne lève pas d'erreur. Ne pas supposer l'unicité côté code.
-- Côté front, useCurrentUser ne fait aucun appel HTTP, il renvoie l'utilisateur d'AuthContext [#961a913b384b8222-2]. Pour rafraîchir le profil il faut mettre à jour AuthContext, pas invalider la requête.
+- Les entrées sont AuthController (`backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java:49`) sous /api/auth, UserController sous /api/me, et le dossier front `frontend:components/settings/SettingsShell.tsx:49-56`. [#468143db288956bb-1] [#dc686d3191cfb9b2-1] [#4ffc169780e92af6-1]
+- Toutes les routes /api/auth/** sont ouvertes sans authentification, y compris /me, qui renvoie 401 si le jti est révoqué ou inconnu et accepte un token sans jti. [#authorization/98b2cdbd7d200daa-1] [#badc1ab0e710d816-1]
+- forgot-password répond toujours 200 avec un message neutre, et l'adapter Brevo intercepte les erreurs d'envoi sans les propager, donc un échec d'email reste invisible du client. [#3b36126a4b26b1fd-1] [#f0e9994b6c91fdae-1]
+- Le JWKS est public sur /.well-known/jwks.json, hors du préfixe /api, avec un cache public de 300 secondes. [#2a7035d417ef3594-1] [#authorization/6bf025d08b434efd-1] [#integrations/321539050fd09532-1]
+- Le filtre de limitation par utilisateur répond 401 JSON sans comptage à un principal authentifié sans identifiant de compte. [#e5aa1bfc7a6eeec1-1]
+- DELETE /api/me exige le username en confirmation, puis révoque les sessions et supprime events, products, catégories possédées et user, dans cet ordre. [#4b311aa3577f75bf-1] [#c65286231ca612ed-1]
+- L'avatar est validé par signature d'octets (JPEG, PNG, WebP), et l'ancien fichier n'est supprimé qu'après l'enregistrement du nouveau. [#8ba1a7110d4eb0a3-1] [#9a081bc3705702c1-1]
+- DELETE /api/me/avatar ne produit pas d'erreur sans avatar, alors que la lecture lève AvatarNotFoundException. [#3394e708bc740d15-1] [#4e2814c09ff587bb-1]
+- Côté réglages, seul le chapitre actif est monté sur desktop, et le chapitre Compte reçoit deleteContainer sheet sur mobile seulement. [#0eadb6f6204628c6-1] [#0eadb6f6204628c6-2] [#b7cb8655e1dde07c-1]
+- Le front enregistre le thème avec l'option qui désactive le toast global de 500, l'erreur étant gérée en ligne. [#46460b1d11deab1a-1]
+- L'export de données affiche un écran expiré sans bouton de téléchargement quand le lien async a expiré. [#b964b1edbababf16-1]
+- GET /api/test-support/password-reset-token renvoie le token de réinitialisation utilisable pour un email, à l'usage des tests E2E. [#8fb84ca2abcae011-1]
 
 ## 6. Fichiers critiques {#files}
 
-Fichiers du pool au poids le plus élevé (11 sur 146), le poids étant la somme des scores de spécificité de leurs faits. Liste complète : annexe.
+Fichiers du pool au poids le plus élevé (12 sur 154), le poids étant la somme des scores de spécificité de leurs faits. Liste complète : annexe.
 
 | Fichier | Faits | Sortes dominantes |
 |---|---|---|
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java` | 41 | convention 13, business_rule 10, endpoint 5 |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/UserController.java` | 26 | endpoint 8, business_rule 5, convention 3 |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/AvatarServiceImpl.java` | 17 | business_rule 5, service_method 3, validation 3 |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/UserRateLimitingFilter.java` | 19 | business_rule 5, convention 5, config 3 |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/PasswordResetServiceImpl.java` | 15 | validation 5, business_rule 2, service_method 2 |
-| `mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthControllerSecurityTest.java` | 28 | test_case 20, business_rule 5, convention 2 |
-| `mytimeline:frontend/src/components/ui/toaster.tsx` | 14 | business_rule 6, config 5, other 2 |
-| `mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthControllerLegacyPasswordLoginTest.java` | 20 | other 5, test_case 4, suspicious 3 |
-| `mytimeline:frontend/src/components/ui/palette-color-picker.tsx` | 13 | business_rule 7, config 2, convention 1 |
-| `mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/UserControllerTest.java` | 29 | test_case 24, business_rule 2, convention 1 |
-| `mytimeline:frontend/src/components/ui/theme-toggle.tsx` | 14 | business_rule 6, other 5, convention 2 |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java` | 52 | convention 18, business_rule 10, endpoint 7 |
+| `frontend:lib/auth-jwks.ts` | 31 | business_rule 11, convention 10, config 5 |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/UserController.java` | 30 | endpoint 9, other 6, business_rule 5 |
+| `frontend:contexts/AuthContext.tsx` | 29 | business_rule 9, convention 8, other 7 |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtService.java` | 24 | convention 8, suspicious 4, business_rule 3 |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/UserControllerTest.java` | 29 | test_case 16, validation 12, role_check 1 |
+| `frontend:lib/schemas/auth.ts` | 19 | validation 9, business_rule 4, convention 3 |
+| `frontend:lib/auth-guard-paths.test.ts` | 37 | test_case 26, business_rule 6, config 3 |
+| `frontend:lib/auth-token-verify.ts` | 21 | business_rule 10, other 6, config 2 |
+| `backend:src/main/java/com/matimeline/eventmanager/application/services/PasswordResetServiceImpl.java` | 20 | business_rule 5, service_method 4, convention 3 |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/SecurityConfig.java` | 20 | config 7, convention 6, role_check 4 |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/UserRateLimitingFilter.java` | 16 | business_rule 7, config 3, other 2 |
 
 ## 7. Relations avec d'autres packs {#relations}
 
@@ -143,34 +202,37 @@ Packs liés par des faits repris, des faits équivalents écartés à la dédupl
 
 | Pack | Faits repris | Faits équivalents | Catalogue |
 |---|---|---|---|
-| authorization | 58 | 43 |  |
-| integrations | 28 | 20 |  |
-| backend-socle | 30 | 10 |  |
+| authorization | 88 | 58 |  |
+| frontend-core | 48 | 18 |  |
+| backend-core | 39 | 16 |  |
+| integrations | 17 | 17 |  |
+| batch | 11 | 8 |  |
 
 ## 8. Tests attendus {#tests}
 
-- Le HTML serveur de ThemeToggle porte le libellé générique theme.toggle sans aria-pressed, puis après montage le nom accessible est la destination [#eda8e9fd8608d0bb-1] [#eda8e9fd8608d0bb-3] [#dc08544a82d797cb-1] [#dc08544a82d797cb-2].
+- Les tests fixent que le login n'applique pas la politique de mot de passe (compte legacy de 6 caractères accepté), contrairement à register, reset-password et change-password. [#1d0c91a5f7948ea6-1] [#137714ce36c35e22-1] [#829273ea1e1f5554-1] [#8ae601ae7ba7c536-1] [#d18d63afea137eb6-1]
+- Les tests fixent que forgot-password répond 200 sans token ni email pour un email inconnu, et que le token de réinitialisation est à usage unique sous concurrence. [#c72c07371932fb96-1] [#fe97df0f7d56d492-1] [#58f796c8fce18cc5-1]
 
 ## 9. Questions ouvertes {#questions}
 
-Aucun fait de la base ne relève de cette section.
+- L'unicité du username est-elle désormais garantie en base ? Le commentaire dit la contrainte absente (cf. #42) et le contrôle reste applicatif, avec une course possible. [#97b09f09b018a856-1] [#f1e8c7982ae29cba-1]
+- Pourquoi /me lit-il le cookie jwt directement sans passer par CallerResolver, dont la javadoc décrit le remplacement de cette extraction ? [#authorization/36aa78900fe7b738-1]
+- Un échec du PUT de thème doit-il rester silencieux ? Le commentaire promet un affichage local sans retour arrière, et le code appelle persist sans attendre ni gérer d'erreur. [#c4d59b1aa2bcb242-1] [#da42081b6d60dfbf-1]
+- Quel type User fait foi côté frontend ? useSettings importe user.ts, AuthContext utilise auth.ts, deux définitions coexistent. [#fe5c7b81b7dd9db2-1] [#frontend-core/fcb2319587514c3b-1]
 
 ## 10. Alertes {#alerts}
 
-- UserMapper.toDomain ne transmet pas la préférence de thème [#128e6d740428545a-1], seul le repository la rajoute après coup [#76453319e4ee83e9-1]. Un appel direct au mapper perd donc le thème, donc passer par le repository ou ajouter le thème explicitement.
-- Les routes /api/auth/** sont exclues de JwtFilter, donc /me contrôle la session à la main [#575186050ab1cb42-1]. Un nouvel endpoint sous ce préfixe ne vérifie pas la révocation, donc appeler isSessionActive explicitement.
-- Une IPv6 compressée (avec deux-points doubles) donne null et aucune IP n'est stockée dans la session [#c8e16bfb4284d0e4-2]. Les clients concernés n'ont pas d'IP de session, donc ne pas exiger cette valeur.
-- Le commentaire de resetPassword fixe 15 minutes, or la durée est configurable [#ca0b32858809cbcd-1]. Le code teste seulement l'usage possible à l'instant courant [#73a8b35d1023d45e-2], donc se fier au code et à la configuration.
-- Le message d'erreur d'avatar annonce 5 Mo en dur alors que la limite est configurable [#e7a18c51ee2b051d-1]. Il peut mentir à l'utilisateur, donc le construire depuis maxBytes.
-- Le log d'erreur du login écrit le username saisi [#46538dfcc6254d7f-1]. Un identifiant personnel atterrit dans les logs, donc le retirer ou le masquer.
-- Le test d'email inconnu annonce qu'aucun email n'est envoyé mais ne vérifie rien sur emailService [#a9c23fe46c902026-1]. Une régression passerait inaperçue, donc ajouter la vérification.
-- Les tests de contrainte acceptent toute Exception [#9552c12d646d8a0b-1] [#3bbd81a9f4e12a54-1]. Ils passent même si une autre contrainte échoue, donc cibler la contrainte attendue.
-- La javadoc du test de limitation annonce un 400 pour les cinq premières tentatives, le test vérifie seulement l'absence de 429 [#1ced9020fce38c3b-1]. Le 400 n'est pas couvert, donc l'asserter ou corriger la javadoc.
+- Sans clé privée JWT configurée, la paire RS256 est éphémère et tous les jetons émis sont invalidés à chaque redémarrage. Configurer JWT_PRIVATE_KEY pour tout environnement durable. [#authorization/6d1d59909a7eca5b-1]
+- Dans UserRepositoryJpaImpl.save, un id absent en base crée un nouvel utilisateur sans erreur. Une mise à jour d'un compte supprimé entre-temps le recrée silencieusement, donc vérifier l'existence avant d'appeler save. [#0747b8c3ebe8fd23-1] [#b828c6672c873402-1]
+- Selon la javadoc de UserController.changePassword, le nouveau mot de passe est validé à 6 caractères minimum, alors que le validateur StrongPassword exige 8 à 100 caractères avec majuscule et chiffre. Se fier au validateur et corriger la javadoc. [#6cafba87a980c0d0-1] [#e2385a30ad2b3acd-1] [#bd040f4c8fa54886-2]
+- authService.registerUser retourne apiClient.post sans await dans le try, donc le catch local ne capte jamais l'erreur d'inscription. Ajouter await avant de compter sur ce catch. [#775e9e7033a036d2-1]
+- Le message d'erreur d'avatar annonce 5 Mo en dur, alors que la limite vient de app.storage.avatar-max-bytes. Le message devient faux dès que la propriété change. [#8d758cbb64816069-1]
+- Plusieurs tests ont un nom qui contredit leur assertion. Les noms en notFound attendent un 401 générique, et le test forgotPassword d'email inconnu ne vérifie pas l'absence d'envoi. Ne pas s'appuyer sur ces noms comme garantie. [#fa60a46d6dd6e480-1] [#b5b6fed9ee4b11a1-1] [#881306212b0fb628-1]
 
 ## 11. Couverture {#coverage}
 
-- Fichiers du pack : 146 ; avec au moins un fait en base : 146 ; sans fait après remise en file : 0.
-- Faits en base : 943, repris d'autres packs : +189, hors périmètre : -0, doublons écartés à la déduplication : -95, soit 1 037 dans le pool.
-- Faits du pool venus d'un autre pack : 116 (par pack : section Relations).
-- Destination des 1 037 faits du pool : Lexique 22 ; Règles 162 ; Endpoints et écrans 69 ; Tests attendus 256 ; Alertes / Questions ouvertes 53 ; annexe seule 243 ; écartés (sorte `other` ou inconnue) 232.
-- Base : sha256 dc8f2b63041b…, générée le 2026-11-19.
+- Fichiers du pack : 154 ; avec au moins un fait en base : 154 ; sans fait après remise en file : 0.
+- Faits en base : 1 370, repris d'autres packs : +320, hors périmètre : -0, doublons écartés à la déduplication : -188, soit 1 502 dans le pool.
+- Faits du pool venus d'un autre pack : 203 (par pack : section Relations).
+- Destination des 1 502 faits du pool : Lexique 32 ; Règles 250 ; Endpoints et écrans 161 ; Tests attendus 419 ; Alertes / Questions ouvertes 91 ; annexe seule 329 ; écartés (sorte `other` ou inconnue) 220.
+- Base : sha256 16ba5e6f01b5…, générée le 2026-11-19.

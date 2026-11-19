@@ -1,15 +1,17 @@
 {
  "id": "A4",
- "question": "PasswordReset : user ou pack propre ?",
- "decision": "user",
- "rule": "R3 satellite fondu dans user (22 fichiers, 13 liens sur 14), sous la taille de séparation",
- "confidence": "medium",
+ "question": "Pages timeline : event ou autre pack ?",
+ "decision": "event",
+ "rule": "R3 dossier d'écran sans entité, alias timeline rattaché au pack qui porte la chronologie d'événements",
+ "confidence": "low",
  "seeds": [
-  "PasswordReset",
-  "PasswordResetTokenEntity"
+  "Event"
  ],
- "evidence": [],
- "falsified_if": "un ticket de réinitialisation de mot de passe ne touche jamais le profil utilisateur",
+ "evidence": [
+  "frontend-app:[locale]/(app)/timeline/page.tsx",
+  "frontend-app:[locale]/(app)/timeline/page.test.tsx"
+ ],
+ "falsified_if": "la page timeline consomme surtout des données produit ou utilisateur sans les événements",
  "status": "open",
  "opened": "2026-11-19",
  "touched_by": []

@@ -1,35 +1,22 @@
 {
- "User": [
-  "user",
-  "password",
-  "avatar",
-  "register",
-  "forgot"
- ],
  "Event": [
   "timeline",
-  "recurrence",
-  "preview",
-  "lane",
-  "zoom",
-  "viewport"
+  "recurrence"
+ ],
+ "User": [
+  "login",
+  "register",
+  "password",
+  "forgot-password",
+  "reset-password",
+  "auth",
+  "role",
+  "theme",
+  "preference",
+  "settings"
  ],
  "Product": [
-  "product",
-  "produit"
- ],
- "Category": [
-  "category",
-  "categorie",
-  "catégorie"
- ],
- "ExportJob": [
-  "export",
-  "exporter"
- ],
- "Session": [
-  "session",
-  "jwks",
-  "jwt"
+  "products",
+  "productId"
  ]
 }

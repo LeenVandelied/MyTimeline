@@ -1,408 +1,143 @@
 # Catalogue des packs (carte du système)
 
-Mode rejeu. 700 fichiers, 420 rattachés (60.0 %), 280 restants. Porte mécanique : 0 erreurs, 0 avertissements.
+Mode rejeu. 700 fichiers, 700 rattachés (100.0 %), 0 restants. Porte mécanique : 0 erreurs, 0 avertissements.
 
 
 ## domain
 
-### user : Utilisateur et mot de passe  (94 fichiers, 451 ko)
-- Le groupe User réunit 87 fichiers (430 ko) avec trois controllers, dont PasswordReset fondu à 13 liens sur 14.
-- seeds : User, UserEntity, PasswordReset, PasswordResetTokenEntity
-- entité pivot : UserEntity
-- controllers : AuthController, UserController, E2eResetTokenController
-- services : UserService, PasswordResetService, AvatarService, EmailService, BrevoEmailService, CustomUserDetailsService
-- déclencheurs keywords : user, utilisateur, password, mot de passe, reset, avatar, register, inscription, profile, profil, auth
-- déclencheurs routes : /api/auth, /api/me, /api/test-support
-- déclencheurs entities : UserEntity, PasswordResetTokenEntity
-- motifs de noms : **/User*, **/*user*, **/UserEntity*, **/PasswordReset*, **/PasswordResetTokenEntity*, **/*password*, **/*avatar*
-- alias : user, password, avatar, register, forgot
-- hypothèse A4 [confirmed, medium, R3 satellite fondu dans user (22 fichiers, 13 liens sur 14),] : PasswordReset : user ou pack propre ?
-- hypothèse A5 [undecidable, low, R3 radical omis des alias car il désigne deux packs (User ->] : Radical « auth » des fichiers front : user ou session ?
-- hypothèse A12 [undecidable, low, R3 le préfixe /api/auth est servi par AuthController (pack u] : Mot-clé auth du pack user : sursélection sur une demande de session ?
-
-### event : Évènements et timeline  (129 fichiers, 1174 ko)
-- Event est le plus gros groupe avec 81 fichiers (589 ko), deux controllers et 21 imports vers User.
+### event : Événement  (180 fichiers, 1502 ko)
+- Le groupe Event pèse 178 fichiers et 1498 ko (118 composants front) avec son controller /api/events et un service de récurrence propres.
 - seeds : Event, EventEntity
 - entité pivot : EventEntity
 - controllers : EventController, RecurrencePreviewController
 - services : EventService, RecurrenceExpansionService
-- déclencheurs keywords : event, évènement, timeline, frise, recurrence, récurrence
-- déclencheurs routes : /api/events
+- déclencheurs keywords : event, événement, evenement, recurrence, récurrence, timeline
+- déclencheurs routes : /api/events, events/evt-desktop, events/evt-mobile
 - déclencheurs entities : EventEntity
-- dossiers purs (>= 80 %, >= 5 fichiers) : mytimeline:frontend/src/components/events/
-- motifs de noms : **/Event*, **/*event*, **/EventEntity*, **/*recurrence*, **/*preview*, **/*lane*, **/*zoom*
-- alias : timeline, recurrence, preview, lane, zoom, viewport
-- hypothèse A3 [confirmed, medium, R2 séparation : controller propre et 376 ko pour Product, do] : Event et Product : un pack ou deux ?
-- hypothèse A7 [confirmed, medium, R3 dossier d'écran sans entité : alias timeline vers event (] : Fichiers front timeline : event ou autre domaine ?
+- dossiers purs (>= 80 %, >= 5 fichiers) : frontend:components/events/, frontend:components/timeline/
+- motifs de noms : **/Event*, **/*event*, **/EventEntity*, **/*recurrence*
+- alias : timeline, recurrence
+- hypothèse A4 [open, low, R3 dossier d'écran sans entité, alias timeline rattaché au p] : Pages timeline : event ou autre pack ?
 
-### product : Produits  (46 fichiers, 380 ko)
-- Product compte 45 fichiers (376 ko) rattachés par le nom (45 sur 45) et un controller propre.
+### user : Utilisateur et authentification  (154 fichiers, 826 ko)
+- Le groupe User compte 87 fichiers et 430 ko, avec 3 controllers (/api/auth, /api/me, /api/test-support) et PasswordReset fondu à 13 liens sur 14.
+- seeds : User, UserEntity, PasswordReset, PasswordResetTokenEntity
+- entité pivot : UserEntity
+- controllers : AuthController, E2eResetTokenController, UserController
+- services : AvatarService, BrevoEmailService, CustomUserDetailsService, EmailService, PasswordResetService, UserService
+- déclencheurs keywords : user, utilisateur, auth, login, register, password, mot de passe, avatar, email, theme, preference
+- déclencheurs routes : /api/auth, /api/me, /api/test-support, me/avatar, me/export
+- déclencheurs entities : UserEntity, PasswordResetTokenEntity
+- dossiers purs (>= 80 %, >= 5 fichiers) : frontend:components/settings/
+- motifs de noms : **/User*, **/*user*, **/UserEntity*, **/PasswordReset*, **/PasswordResetTokenEntity*, **/*password*, **/*auth*, **/*role*, **/*theme*, **/*preference*, **/*settings*
+- alias : login, register, password, forgot-password, reset-password, auth, role, theme, preference, settings
+- hypothèse A3 [open, medium, R3 fusion par le script à 13 liens sur 14 vers User, Passwor] : PasswordReset (22 fichiers) : pack propre ou dans user ?
+- hypothèse A5 [open, medium, R3 écrans d'authentification sans entité, suivent le pack qu] : Pages login, register, forgot-password, reset-password : user ou session ?
+- hypothèse A8 [open, medium, R9 test sans seed suivant la classe de production la plus pr] : ThemePreference et rôle utilisateur : user ou socle ?
+
+### product : Produit  (69 fichiers, 535 ko)
+- Le groupe Product pèse 68 fichiers et 531 ko, dont 40 composants front, avec un ProductController et un ProductService propres.
 - seeds : Product, ProductEntity
 - entité pivot : ProductEntity
 - controllers : ProductController
 - services : ProductService
-- déclencheurs keywords : product, produit
+- déclencheurs keywords : product, produit, products
+- déclencheurs routes : users/user-1/products, users/user-1/products/p2
 - déclencheurs entities : ProductEntity
+- dossiers purs (>= 80 %, >= 5 fichiers) : frontend:components/dashboard/
 - motifs de noms : **/Product*, **/*product*, **/ProductEntity*
-- alias : product, produit
-- hypothèse A2 [confirmed, medium, R1 par le nom, malgré 6 liens sur 11 vers Event et un coupla] : ProductEntity : product ou event ?
+- alias : products, productId
+- hypothèse A1 [open, high, R1 satellite suivant le pivot dont il porte le nom (liens 6/] : ProductEntity : fondu dans Event par le script ou dans product ?
 
-### category : Catégories  (32 fichiers, 187 ko)
-- Category compte 31 fichiers (184 ko), tous rattachés par le nom, avec un controller et la route /api/categories.
+### session : Session et jetons  (22 fichiers, 84 ko)
+- Le groupe Session compte 52 fichiers et 232 ko, avec le controller /api/sessions, JwksController et JwtService, et 36 occurrences du motif authorization.
+- seeds : Session, SessionEntity
+- entité pivot : SessionEntity
+- controllers : JwksController, SessionController
+- services : JwtService, SessionService
+- déclencheurs keywords : session, jwt, jwks, token, jeton
+- déclencheurs routes : /api/sessions
+- déclencheurs entities : SessionEntity
+- motifs de noms : **/Session*, **/*session*, **/SessionEntity*
+
+### category : Catégorie  (32 fichiers, 187 ko)
+- Le groupe Category compte 31 fichiers et 184 ko (au-dessus de pack_min_kb=15) avec un CategoryController sur /api/categories et un front propre de 5 composants.
 - seeds : Category, CategoryEntity
 - entité pivot : CategoryEntity
 - controllers : CategoryController
 - services : CategoryService
-- déclencheurs keywords : category, catégorie, categorie
-- déclencheurs routes : /api/categories
+- déclencheurs keywords : category, catégorie, categorie, categories
+- déclencheurs routes : /api/categories, api/categories
 - déclencheurs entities : CategoryEntity
 - motifs de noms : **/Category*, **/*category*, **/CategoryEntity*
-- alias : category, categorie, catégorie
-- hypothèse A1 [open, high, R1 le satellite suit le pivot dont il porte le nom (le scrip] : CategoryEntity : category ou event ?
+- hypothèse A2 [open, high, R1 satellite suivant le pivot dont il porte le nom (liens 5/] : CategoryEntity : fondu dans Event par le script ou dans category ?
 
-### export : Export de données  (42 fichiers, 170 ko)
-- ExportJob compte 31 fichiers (92 ko) avec une machine à états (17 occurrences du motif) et un controller propre.
+### export : Export de données  (31 fichiers, 92 ko)
+- Le groupe ExportJob compte 31 fichiers et 92 ko avec 17 occurrences du motif state-machine et 111 du motif integrations (renderers).
 - seeds : ExportJob, ExportJobEntity
 - entité pivot : ExportJobEntity
 - controllers : ExportController
 - services : ExportService, ExportTokenService
-- déclencheurs keywords : export, exporter, zip, csv, markdown, json
+- déclencheurs keywords : export, exportjob, zip, csv, markdown, téléchargement
 - déclencheurs routes : /api/export
 - déclencheurs entities : ExportJobEntity
-- dossiers purs (>= 80 %, >= 5 fichiers) : mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/
-- motifs de noms : **/ExportJob*, **/ExportJobEntity*, **/*export*
-- alias : export, exporter
-
-### session : Sessions et jetons JWT  (30 fichiers, 145 ko)
-- Session compte 27 fichiers (111 ko), deux controllers et 36 occurrences du motif d'autorisation.
-- seeds : Session, SessionEntity
-- entité pivot : SessionEntity
-- controllers : SessionController, JwksController
-- services : SessionService, JwtService
-- déclencheurs keywords : session, jwt, jwks, token, jeton, refresh
-- déclencheurs routes : /api/sessions
-- déclencheurs entities : SessionEntity
-- motifs de noms : **/Session*, **/*session*, **/SessionEntity*, **/*jwks*
-- alias : session, jwks, jwt
-- hypothèse A6 [confirmed, medium, R2 séparation : deux controllers propres et 111 ko, au-dessu] : Session : pack propre ou fusion dans user ?
+- dossiers purs (>= 80 %, >= 5 fichiers) : backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/
+- motifs de noms : **/ExportJob*, **/ExportJobEntity*
 
 
 ## transversal
 
-### authorization : Autorisation  (0 fichiers, 0 ko)
-- Le motif authorization touche 35 fichiers, dont 16 hors groupe, 14 dans User et 4 dans Session.
+### authorization : Autorisation et sécurité  (0 fichiers, 0 ko)
+- Le motif authorization touche 35 fichiers (SecurityConfig 19 occurrences, JwtFilter 11), répartis entre User (14), Session (4) et le socle (16).
 - motif : authorization
-- déclencheurs keywords : authorization, autorisation, role, rôle, security, sécurité, rate limit, jwt
-- règles de chemin : ^mytimeline:backend/.*/(SecurityConfig|JwtFilter|JwtService|CustomUserDetailsService|[A-Za-z]*RateLimitingFilter|CallerResolver)[A-Za-z0-9]*\.java$
+- déclencheurs keywords : authorization, autorisation, security, sécurité, rate limit, role, jwt
+- règles de chemin : ^backend:src/.*/(SecurityConfig|JwtFilter|JwtService|RateLimitingFilter|UserRateLimitingFilter|CustomUserDetailsService)[^/]*\.java$
 - traverse : user, session, export
-- fichiers revendiqués en recouvrement : 12
+- fichiers revendiqués en recouvrement : 10
 
-### integrations : Intégrations externes  (0 fichiers, 0 ko)
-- Le motif integrations touche 84 fichiers, dont 25 dans User, 16 dans ExportJob et 15 dans Event.
+### integrations : Intégrations et services externes  (0 fichiers, 0 ko)
+- Le motif integrations touche 97 fichiers (ZipExportRenderer 33 occurrences, apiClient 9), répartis sur les 6 domaines (User 25, Event 17, ExportJob 12).
 - motif : integrations
-- déclencheurs keywords : integration, intégration, brevo, email, storage, stockage, renderer
-- règles de chemin : ^mytimeline:backend/.*/(Brevo[A-Za-z0-9]*|LocalStorageAdapter[A-Za-z0-9]*|StorageConfig[A-Za-z0-9]*|[A-Za-z]*ExportRenderer[A-Za-z0-9]*)\.java$
-- traverse : user, export, event, session, product, category
-- fichiers revendiqués en recouvrement : 15
+- déclencheurs keywords : integration, intégration, storage, stockage, brevo, renderer, apiclient
+- règles de chemin : ^backend:src/.*/(ZipExportRenderer|MarkdownExportRenderer|JsonExportRenderer|CsvExportRenderer|LocalStorageAdapter|BrevoEmailService|BrevoHealthIndicator)[^/]*\.java$ ; ^frontend:.*/apiClient[^/]*$
+- traverse : user, event, export, session, product, category
+- fichiers revendiqués en recouvrement : 13
+
+### batch : Tâches planifiées et asynchrones  (0 fichiers, 0 ko)
+- Le motif batch touche 9 fichiers (PasswordResetTokenPurgeScheduler 6 occurrences, ExportPurgeScheduler 5) répartis entre User (4), ExportJob (3) et le socle (2).
+- motif : batch
+- déclencheurs keywords : batch, scheduler, scheduled, cron, purge, async
+- règles de chemin : ^backend:src/.*/(PasswordResetTokenPurgeScheduler|ExportPurgeScheduler|SchedulingConfig|AsyncConfig|AsyncExportRunner)[^/]*\.java$
+- traverse : user, export
+- fichiers revendiqués en recouvrement : 7
 
 
 ## technical
 
-### backend-socle : Socle backend  (47 fichiers, 313 ko)
-- Le socle porte les 41 fichiers techniques sans seed, dont 38 en infrastructure (configuration, filtres, erreurs, tests d'intégration).
-- dossiers purs (>= 80 %, >= 5 fichiers) : mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/config/
-- règles de chemin : ^mytimeline:backend/
+### backend-core : Socle backend  (44 fichiers, 326 ko)
+- 41 fichiers techniques backend sans seed (38 en infrastructure : configuration, sécurité, filtres, tests d'intégration), plus les migrations non rattachées.
+- dossiers purs (>= 80 %, >= 5 fichiers) : backend:src/main/java/com/matimeline/eventmanager/infrastructure/config/
+- règles de chemin : ^backend:src/(main|test)/(java|resources)/
+
+### frontend-core : Socle frontend  (127 fichiers, 778 ko)
+- 159 fichiers techniques frontend sans seed (63 composants, 33 lib, 19 hooks, 14 services, 9 styles).
+- dossiers purs (>= 80 %, >= 5 fichiers) : frontend:__tests__/, frontend:styles/, frontend:components/landing/
+- règles de chemin : ^frontend:
+
+### frontend-app : Routes et pages Next.js  (41 fichiers, 179 ko)
+- 8 fichiers techniques à la racine de l'app router plus 33 fichiers de pages et layouts non rattachés sous [locale].
+- dossiers purs (>= 80 %, >= 5 fichiers) : frontend-app:[locale]/
+- règles de chemin : ^frontend-app:
 
 
 ## Hypothèses hors pack (différées, indécidables)
 
-- A8 [deferred] non créé : state-machine : State-machine : transversal ou non ?
-- A9 [deferred] non créé : batch : Batch : transversal ou non ?
-- A10 [deferred] non créé : frontend-socle : Socle frontend : pack technical ou pas ?
-- A11 [undecidable] état courant : Tailles des packs technical et transversaux
+- A6 [open] état courant : Radical dashboard et pages settings : quel pack ?
+- A7 [open] non créé : state-machine : state-machine : créer un pack transversal ?
+- A9 [open] état courant : Migrations non rattachées (V1 à V9) : quel propriétaire ?
 
 ## Porte mécanique
 
 
-## Fichiers restants (280)
+## Fichiers restants (0)
 
-- mytimeline:frontend/app/[locale]/(app)/dashboard/loading.test.tsx
-- mytimeline:frontend/app/[locale]/(app)/dashboard/loading.tsx
-- mytimeline:frontend/app/[locale]/(app)/dashboard/page.test.tsx
-- mytimeline:frontend/app/[locale]/(app)/dashboard/page.tsx
-- mytimeline:frontend/app/[locale]/(app)/layout.tsx
-- mytimeline:frontend/app/[locale]/(app)/products/[productId]/loading.test.tsx
-- mytimeline:frontend/app/[locale]/(app)/products/[productId]/loading.tsx
-- mytimeline:frontend/app/[locale]/(app)/products/[productId]/page.tsx
-- mytimeline:frontend/app/[locale]/(app)/products/loading.test.tsx
-- mytimeline:frontend/app/[locale]/(app)/products/loading.tsx
-- mytimeline:frontend/app/[locale]/(app)/products/page.tsx
-- mytimeline:frontend/app/[locale]/(app)/settings/loading.test.tsx
-- mytimeline:frontend/app/[locale]/(app)/settings/loading.tsx
-- mytimeline:frontend/app/[locale]/(app)/settings/page.tsx
-- mytimeline:frontend/app/[locale]/(app)/timeline/loading.test.tsx
-- mytimeline:frontend/app/[locale]/(app)/timeline/loading.tsx
-- mytimeline:frontend/app/[locale]/(app)/timeline/page.test.tsx
-- mytimeline:frontend/app/[locale]/(app)/timeline/page.tsx
-- mytimeline:frontend/app/[locale]/error.test.tsx
-- mytimeline:frontend/app/[locale]/error.tsx
-- mytimeline:frontend/app/[locale]/forgot-password/page.test.tsx
-- mytimeline:frontend/app/[locale]/forgot-password/page.tsx
-- mytimeline:frontend/app/[locale]/home/page.tsx
-- mytimeline:frontend/app/[locale]/layout.tsx
-- mytimeline:frontend/app/[locale]/login/page.test.tsx
-- mytimeline:frontend/app/[locale]/login/page.tsx
-- mytimeline:frontend/app/[locale]/page.tsx
-- mytimeline:frontend/app/[locale]/privacy/page.tsx
-- mytimeline:frontend/app/[locale]/register/page.test.tsx
-- mytimeline:frontend/app/[locale]/register/page.tsx
-- mytimeline:frontend/app/[locale]/reset-password/page.test.tsx
-- mytimeline:frontend/app/[locale]/reset-password/page.tsx
-- mytimeline:frontend/app/[locale]/terms/page.tsx
-- mytimeline:frontend/app/fonts.ts
-- mytimeline:frontend/app/global-error.test.tsx
-- mytimeline:frontend/app/global-error.tsx
-- mytimeline:frontend/app/global-not-found-screen.tsx
-- mytimeline:frontend/app/global-not-found.test.tsx
-- mytimeline:frontend/app/global-not-found.tsx
-- mytimeline:frontend/app/layout.tsx
-- mytimeline:frontend/app/page.tsx
-- mytimeline:frontend/src/__tests__/console-error-guard.test.ts
-- mytimeline:frontend/src/__tests__/ds-type-scale.test.ts
-- mytimeline:frontend/src/__tests__/e2e-pixel-guards.test.ts
-- mytimeline:frontend/src/__tests__/e2e-rate-limit-budget.test.ts
-- mytimeline:frontend/src/__tests__/i18n-namespaces.test.ts
-- mytimeline:frontend/src/__tests__/i18n-request-config.test.ts
-- mytimeline:frontend/src/__tests__/seed-cleanup-outcome.test.ts
-- mytimeline:frontend/src/__tests__/smoke.test.tsx
-- mytimeline:frontend/src/components/__tests__/date-time-semantics.test.tsx
-- mytimeline:frontend/src/components/dashboard/CompactAgenda.tsx
-- mytimeline:frontend/src/components/dashboard/CompactRail.tsx
-- mytimeline:frontend/src/components/dashboard/DensityRibbon.intl.test.tsx
-- mytimeline:frontend/src/components/dashboard/DensityRibbon.tsx
-- mytimeline:frontend/src/components/dashboard/DensityRibbon.window.test.tsx
-- mytimeline:frontend/src/components/dashboard/GreetingHeader.tsx
-- mytimeline:frontend/src/components/dashboard/KpiMarginalia.intl.test.tsx
-- mytimeline:frontend/src/components/dashboard/KpiMarginalia.tsx
-- mytimeline:frontend/src/components/dashboard/MobileDrawer.tsx
-- mytimeline:frontend/src/components/dashboard/WeekAgenda.tsx
-- mytimeline:frontend/src/components/dashboard/dashboard-components.test.tsx
-- mytimeline:frontend/src/components/dashboard/dashboard-landscape.test.tsx
-- mytimeline:frontend/src/components/dashboard/dashboard-lib.test.ts
-- mytimeline:frontend/src/components/dashboard/dashboard-mobile.test.tsx
-- mytimeline:frontend/src/components/dashboard/densityWindow.test.ts
-- mytimeline:frontend/src/components/dashboard/densityWindow.ts
-- mytimeline:frontend/src/components/dashboard/index.ts
-- mytimeline:frontend/src/components/dashboard/intl-formats.test.tsx
-- mytimeline:frontend/src/components/dashboard/kpis.test.ts
-- mytimeline:frontend/src/components/dashboard/kpis.ts
-- mytimeline:frontend/src/components/dashboard/lib.ts
-- mytimeline:frontend/src/components/dashboard/section-counts.test.tsx
-- mytimeline:frontend/src/components/dashboard/section-titles.test.tsx
-- mytimeline:frontend/src/components/events/ArchiveConfirmDialog.tsx
-- mytimeline:frontend/src/components/landing/CtaSection.test.tsx
-- mytimeline:frontend/src/components/landing/CtaSection.tsx
-- mytimeline:frontend/src/components/landing/FooterSection.test.tsx
-- mytimeline:frontend/src/components/landing/FooterSection.tsx
-- mytimeline:frontend/src/components/landing/HeaderSection.test.tsx
-- mytimeline:frontend/src/components/landing/HeaderSection.tsx
-- mytimeline:frontend/src/components/landing/HeroSection.flex-min-size.test.tsx
-- mytimeline:frontend/src/components/landing/HeroSection.test.tsx
-- mytimeline:frontend/src/components/landing/HeroSection.tsx
-- mytimeline:frontend/src/components/landing/HowItWorksSection.test.tsx
-- mytimeline:frontend/src/components/landing/HowItWorksSection.tsx
-- mytimeline:frontend/src/components/landing/LandingMobileMenu.tsx
-- mytimeline:frontend/src/components/landing/landing-nav.ts
-- mytimeline:frontend/src/components/landing/landing.hover-pairing.test.ts
-- mytimeline:frontend/src/components/layout/AppShell.test.tsx
-- mytimeline:frontend/src/components/layout/AppShell.tsx
-- mytimeline:frontend/src/components/layout/index.ts
-- mytimeline:frontend/src/components/legal/legal-disclaimer.tsx
-- mytimeline:frontend/src/components/legal/legal-table-of-contents.tsx
-- mytimeline:frontend/src/components/pages/HomePage.accent-roles.test.tsx
-- mytimeline:frontend/src/components/pages/HomePage.test.tsx
-- mytimeline:frontend/src/components/pages/HomePage.tsx
-- mytimeline:frontend/src/components/settings/AccountSection.test.tsx
-- mytimeline:frontend/src/components/settings/AccountSection.tsx
-- mytimeline:frontend/src/components/settings/DeleteAccountSteps.tsx
-- mytimeline:frontend/src/components/settings/PreferencesSection.tsx
-- mytimeline:frontend/src/components/settings/ProfileSection.test.tsx
-- mytimeline:frontend/src/components/settings/ProfileSection.tsx
-- mytimeline:frontend/src/components/settings/SecuritySection.test.tsx
-- mytimeline:frontend/src/components/settings/SecuritySection.tsx
-- mytimeline:frontend/src/components/settings/SettingsShell.test.tsx
-- mytimeline:frontend/src/components/settings/SettingsShell.tsx
-- mytimeline:frontend/src/components/settings/mobile/BottomSheet.test.tsx
-- mytimeline:frontend/src/components/settings/mobile/BottomSheet.tsx
-- mytimeline:frontend/src/components/settings/mobile/MobileSettings.test.tsx
-- mytimeline:frontend/src/components/settings/mobile/MobileSettings.tsx
-- mytimeline:frontend/src/components/settings/mobile/SettingsIndex.test.tsx
-- mytimeline:frontend/src/components/settings/mobile/SettingsIndex.tsx
-- mytimeline:frontend/src/components/settings/mobile/chapters.ts
-- mytimeline:frontend/src/components/settings/touchTarget.ts
-- mytimeline:frontend/src/components/settings/useDeleteAccountFlow.ts
-- mytimeline:frontend/src/components/shared/ConflictDialog.intl.test.tsx
-- mytimeline:frontend/src/components/shared/ConflictDialog.test.tsx
-- mytimeline:frontend/src/components/shared/ConflictDialog.tsx
-- mytimeline:frontend/src/components/shared/DeleteConfirmDialog.forbidden.test.tsx
-- mytimeline:frontend/src/components/shared/DeleteConfirmDialog.intl.test.tsx
-- mytimeline:frontend/src/components/shared/DeleteConfirmDialog.test.tsx
-- mytimeline:frontend/src/components/shared/DeleteConfirmDialog.tsx
-- mytimeline:frontend/src/components/shared/EmptyState.test.tsx
-- mytimeline:frontend/src/components/shared/EmptyState.tsx
-- mytimeline:frontend/src/components/shared/EphemerisLeaf.test.tsx
-- mytimeline:frontend/src/components/shared/EphemerisLeaf.tsx
-- mytimeline:frontend/src/components/shared/LoadingSkeleton.test.tsx
-- mytimeline:frontend/src/components/shared/LoadingSkeleton.tsx
-- mytimeline:frontend/src/components/shared/OfflineBanner.test.tsx
-- mytimeline:frontend/src/components/shared/OfflineBanner.tsx
-- mytimeline:frontend/src/components/shared/StateScreen.test.tsx
-- mytimeline:frontend/src/components/shared/StateScreen.tsx
-- mytimeline:frontend/src/components/shared/empty-states.i18n.test.ts
-- mytimeline:frontend/src/components/theme-provider.tsx
-- mytimeline:frontend/src/components/timeline/Cursor.stories.tsx
-- mytimeline:frontend/src/components/timeline/Cursor.tsx
-- mytimeline:frontend/src/components/timeline/DateStamp.stories.tsx
-- mytimeline:frontend/src/components/timeline/DateStamp.tsx
-- mytimeline:frontend/src/components/timeline/Minimap.tsx
-- mytimeline:frontend/src/components/timeline/Ruler.stories.tsx
-- mytimeline:frontend/src/components/timeline/Ruler.tsx
-- mytimeline:frontend/src/components/timeline/fixtures.tsx
-- mytimeline:frontend/src/components/timeline/index.ts
-- mytimeline:frontend/src/components/timeline/label-reserve.test.ts
-- mytimeline:frontend/src/components/timeline/label-reserve.ts
-- mytimeline:frontend/src/components/timeline/lib-a11y.test.ts
-- mytimeline:frontend/src/components/timeline/lib.ts
-- mytimeline:frontend/src/components/timeline/stress-fixtures.ts
-- mytimeline:frontend/src/components/timeline/useFocusTrap.test.tsx
-- mytimeline:frontend/src/components/timeline/useFocusTrap.ts
-- mytimeline:frontend/src/components/timeline/virtualization.test.ts
-- mytimeline:frontend/src/components/timeline/virtualization.ts
-- mytimeline:frontend/src/components/ui/badge.stories.tsx
-- mytimeline:frontend/src/components/ui/badge.tsx
-- mytimeline:frontend/src/components/ui/button.hover-pairing.test.ts
-- mytimeline:frontend/src/components/ui/button.stories.tsx
-- mytimeline:frontend/src/components/ui/button.tsx
-- mytimeline:frontend/src/components/ui/card.stories.tsx
-- mytimeline:frontend/src/components/ui/card.tsx
-- mytimeline:frontend/src/components/ui/checkbox.stories.tsx
-- mytimeline:frontend/src/components/ui/checkbox.tsx
-- mytimeline:frontend/src/components/ui/dialog.stories.tsx
-- mytimeline:frontend/src/components/ui/dialog.test.tsx
-- mytimeline:frontend/src/components/ui/dialog.tsx
-- mytimeline:frontend/src/components/ui/dropdown-menu.tsx
-- mytimeline:frontend/src/components/ui/footer-app.tsx
-- mytimeline:frontend/src/components/ui/form.tsx
-- mytimeline:frontend/src/components/ui/icon-button.stories.tsx
-- mytimeline:frontend/src/components/ui/icon-button.tsx
-- mytimeline:frontend/src/components/ui/input.stories.tsx
-- mytimeline:frontend/src/components/ui/input.tsx
-- mytimeline:frontend/src/components/ui/label.tsx
-- mytimeline:frontend/src/components/ui/language-selector.a11y.test.tsx
-- mytimeline:frontend/src/components/ui/language-selector.i18n.test.ts
-- mytimeline:frontend/src/components/ui/language-selector.tsx
-- mytimeline:frontend/src/components/ui/palette-color-picker.test.tsx
-- mytimeline:frontend/src/components/ui/palette-color-picker.tsx
-- mytimeline:frontend/src/components/ui/popover.tsx
-- mytimeline:frontend/src/components/ui/popoverPicker.tsx
-- mytimeline:frontend/src/components/ui/radio.stories.tsx
-- mytimeline:frontend/src/components/ui/radio.tsx
-- mytimeline:frontend/src/components/ui/select.stories.tsx
-- mytimeline:frontend/src/components/ui/select.tsx
-- mytimeline:frontend/src/components/ui/spinner.tsx
-- mytimeline:frontend/src/components/ui/switch.stories.tsx
-- mytimeline:frontend/src/components/ui/switch.tsx
-- mytimeline:frontend/src/components/ui/table.stories.tsx
-- mytimeline:frontend/src/components/ui/table.tsx
-- mytimeline:frontend/src/components/ui/tabs.stories.tsx
-- mytimeline:frontend/src/components/ui/tabs.test.tsx
-- mytimeline:frontend/src/components/ui/tabs.tsx
-- mytimeline:frontend/src/components/ui/tag.stories.tsx
-- mytimeline:frontend/src/components/ui/tag.tsx
-- mytimeline:frontend/src/components/ui/textarea.stories.tsx
-- mytimeline:frontend/src/components/ui/textarea.tsx
-- mytimeline:frontend/src/components/ui/theme-toggle.i18n.test.ts
-- mytimeline:frontend/src/components/ui/theme-toggle.test.tsx
-- mytimeline:frontend/src/components/ui/theme-toggle.tsx
-- mytimeline:frontend/src/components/ui/toast.stories.tsx
-- mytimeline:frontend/src/components/ui/toast.tsx
-- mytimeline:frontend/src/components/ui/toaster.test.tsx
-- mytimeline:frontend/src/components/ui/toaster.tsx
-- mytimeline:frontend/src/components/ui/tooltip.stories.tsx
-- mytimeline:frontend/src/components/ui/tooltip.tsx
-- mytimeline:frontend/src/contexts/AuthContext.test.tsx
-- mytimeline:frontend/src/contexts/AuthContext.theme.test.tsx
-- mytimeline:frontend/src/contexts/AuthContext.themeSaveToast.test.tsx
-- mytimeline:frontend/src/contexts/AuthContext.tsx
-- mytimeline:frontend/src/contexts/NetworkStatusContext.test.tsx
-- mytimeline:frontend/src/contexts/NetworkStatusContext.tsx
-- mytimeline:frontend/src/contexts/QueryProvider.tsx
-- mytimeline:frontend/src/hooks/useAuth.ts
-- mytimeline:frontend/src/hooks/useAuthGuard.ts
-- mytimeline:frontend/src/hooks/useDashboardData.ts
-- mytimeline:frontend/src/hooks/useDensity.test.tsx
-- mytimeline:frontend/src/hooks/useDensity.ts
-- mytimeline:frontend/src/hooks/useHydrated.ts
-- mytimeline:frontend/src/hooks/useMediaQuery.ts
-- mytimeline:frontend/src/hooks/useMobileKeyboard.test.ts
-- mytimeline:frontend/src/hooks/useMobileKeyboard.ts
-- mytimeline:frontend/src/hooks/useReturnFocus.test.tsx
-- mytimeline:frontend/src/hooks/useReturnFocus.ts
-- mytimeline:frontend/src/hooks/useSectionAnimation.test.ts
-- mytimeline:frontend/src/hooks/useSectionAnimation.ts
-- mytimeline:frontend/src/hooks/useSettings.ts
-- mytimeline:frontend/src/hooks/useThemeChoice.test.tsx
-- mytimeline:frontend/src/hooks/useThemeChoice.ts
-- mytimeline:frontend/src/i18n/locales.test.ts
-- mytimeline:frontend/src/i18n/locales.ts
-- mytimeline:frontend/src/lib/auth-guard-paths.test.ts
-- mytimeline:frontend/src/lib/auth-guard-paths.ts
-- mytimeline:frontend/src/lib/auth-token-verify.test.ts
-- mytimeline:frontend/src/lib/auth-token-verify.ts
-- mytimeline:frontend/src/lib/canonical-host.test.ts
-- mytimeline:frontend/src/lib/canonical-host.ts
-- mytimeline:frontend/src/lib/color.test.ts
-- mytimeline:frontend/src/lib/color.ts
-- mytimeline:frontend/src/lib/date-iso.local-date.test.tsx
-- mytimeline:frontend/src/lib/date-iso.ts
-- mytimeline:frontend/src/lib/density.test.ts
-- mytimeline:frontend/src/lib/density.ts
-- mytimeline:frontend/src/lib/ephemeris.test.ts
-- mytimeline:frontend/src/lib/ephemeris.ts
-- mytimeline:frontend/src/lib/legal-pages.test.ts
-- mytimeline:frontend/src/lib/legal-pages.ts
-- mytimeline:frontend/src/lib/next-occurrence.test.ts
-- mytimeline:frontend/src/lib/next-occurrence.ts
-- mytimeline:frontend/src/lib/query-keys.ts
-- mytimeline:frontend/src/lib/safe-error.ts
-- mytimeline:frontend/src/lib/schemas/auth.ts
-- mytimeline:frontend/src/lib/schemas/settings.ts
-- mytimeline:frontend/src/lib/state-errors.test.ts
-- mytimeline:frontend/src/lib/state-errors.ts
-- mytimeline:frontend/src/lib/touchTarget.test.ts
-- mytimeline:frontend/src/lib/touchTarget.ts
-- mytimeline:frontend/src/lib/utils.ts
-- mytimeline:frontend/src/services/ApiErrorTranslatorBridge.intl.test.tsx
-- mytimeline:frontend/src/services/ApiErrorTranslatorBridge.tsx
-- mytimeline:frontend/src/services/apiClient.multipart.test.ts
-- mytimeline:frontend/src/services/apiClient.test.ts
-- mytimeline:frontend/src/services/apiClient.ts
-- mytimeline:frontend/src/services/apiErrorMessages.test.ts
-- mytimeline:frontend/src/services/apiErrorMessages.ts
-- mytimeline:frontend/src/services/authService.test.ts
-- mytimeline:frontend/src/services/authService.ts
-- mytimeline:frontend/src/services/inlineErrorHandling.test.ts
-- mytimeline:frontend/src/services/inlineErrorHandling.ts
-- mytimeline:frontend/src/services/networkStatus.ts
-- mytimeline:frontend/src/styles/__tests__/base-layer.test.ts
-- mytimeline:frontend/src/styles/__tests__/control-border-tier.test.ts
-- mytimeline:frontend/src/styles/__tests__/eyebrow-consumers.test.tsx
-- mytimeline:frontend/src/styles/__tests__/i18n-intl-classes.test.ts
-- mytimeline:frontend/src/styles/__tests__/ink-faint-non-text.test.ts
-- mytimeline:frontend/src/styles/__tests__/landing-palette.test.ts
-- mytimeline:frontend/src/styles/__tests__/nav-label-class.test.ts
-- mytimeline:frontend/src/styles/__tests__/storybook-font-shell.test.ts
-- mytimeline:frontend/src/styles/__tests__/tsx-focus-utility.test.ts
-- mytimeline:frontend/src/types/auth.ts
-- mytimeline:frontend/src/types/settings.ts
-- mytimeline:frontend/src/utils/time-utils.ts

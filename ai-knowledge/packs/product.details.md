@@ -4,551 +4,545 @@
 
 | Fichier | Faits | Sortes |
 |---|---|---|
-| `mytimeline:frontend/src/components/products/ProductsListView.test.tsx` | 44 | test_case 39, business_rule 3, other 1 |
-| `mytimeline:frontend/src/components/products/ProductDetailView.test.tsx` | 43 | test_case 35, business_rule 3, other 2 |
-| `mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductControllerOwnershipTest.java` | 27 | test_case 22, convention 4, suspicious 1 |
-| `mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/ProductServiceImplTest.java` | 25 | test_case 18, business_rule 6, validation 1 |
-| `mytimeline:frontend/src/components/products/ProductDetailView.tsx` | 24 | business_rule 10, ui_screen 7, state_transition 3 |
-| `mytimeline:frontend/src/components/products/ProductDrawer.tsx` | 24 | business_rule 14, validation 4, ui_screen 2 |
-| `mytimeline:frontend/src/components/dashboard/DensityRibbon.window.test.tsx` | 23 | test_case 17, convention 3, business_rule 2 |
-| `mytimeline:frontend/src/components/products/ProductsListView.tsx` | 23 | other 9, business_rule 4, convention 3 |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java` | 22 | service_method 6, business_rule 5, suspicious 4 |
-| `mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/ProductArchivedFilterIntegrationTest.java` | 21 | test_case 10, convention 5, other 2 |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ProductRepositoryJpaImpl.java` | 20 | persistence_query 7, convention 5, other 3 |
-| `mytimeline:frontend/src/components/dashboard/DensityRibbon.tsx` | 20 | other 13, business_rule 4, i18n_key 2 |
-| `mytimeline:frontend/src/components/products/RestoreProductDialog.tsx` | 20 | other 6, ui_screen 5, business_rule 4 |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java` | 18 | endpoint 8, convention 3, role_check 3 |
-| `mytimeline:frontend/src/components/dashboard/section-titles.test.tsx` | 18 | test_case 9, convention 6, other 2 |
-| `mytimeline:frontend/src/components/products/ProductSparkline.tsx` | 18 | other 9, business_rule 3, config 2 |
-| `mytimeline:frontend/src/hooks/useThemeChoice.test.tsx` | 17 | test_case 15, business_rule 1, convention 1 |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/ProductEntity.java` | 16 | entity 7, other 5, suspicious 2 |
-| `mytimeline:frontend/src/components/dashboard/CompactAgenda.tsx` | 16 | other 7, business_rule 3, i18n_key 3 |
-| `mytimeline:frontend/src/components/dashboard/kpis.test.ts` | 15 | test_case 14, config 1 |
-| `mytimeline:frontend/src/components/dashboard/kpis.ts` | 15 | business_rule 8, service_method 4, config 1 |
-| `mytimeline:frontend/src/types/product.ts` | 15 | business_rule 5, validation 4, convention 2 |
-| `mytimeline:frontend/src/components/dashboard/section-counts.test.tsx` | 14 | test_case 11, convention 1, i18n_key 1 |
-| `mytimeline:frontend/src/hooks/useThemeChoice.ts` | 14 | business_rule 5, convention 3, service_method 2 |
-| `mytimeline:frontend/src/components/dashboard/densityWindow.ts` | 13 | business_rule 7, config 3, other 3 |
-| `mytimeline:frontend/src/components/products/ArchivedProductsView.tsx` | 13 | ui_screen 5, business_rule 3, other 2 |
-| `mytimeline:frontend/src/components/products/ProductDrawer.test.tsx` | 13 | test_case 13 |
-| `mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductRestoreIntegrationTest.java` | 12 | test_case 7, other 2, convention 1 |
-| `mytimeline:frontend/src/components/dashboard/MobileDrawer.tsx` | 12 | other 4, convention 3, i18n_key 2 |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/ports/repositories/ProductRepository.java` | 11 | persistence_query 8, suspicious 2, convention 1 |
-| `mytimeline:frontend/src/components/dashboard/KpiMarginalia.tsx` | 11 | convention 3, ui_screen 3, business_rule 2 |
-| `mytimeline:frontend/src/components/dashboard/ProductCarousel.tsx` | 11 | other 3, ui_screen 3, business_rule 2 |
-| `mytimeline:frontend/src/components/dashboard/intl-formats.test.tsx` | 11 | test_case 8, business_rule 1, convention 1 |
-| `mytimeline:frontend/src/types/product.test.ts` | 11 | test_case 10, other 1 |
-| `mytimeline:frontend/src/components/dashboard/ProductList.tsx` | 10 | other 4, ui_screen 3, business_rule 2 |
-| `mytimeline:frontend/src/components/dashboard/WeekAgenda.tsx` | 10 | business_rule 4, other 4, convention 1 |
-| `mytimeline:frontend/src/hooks/useMobileKeyboard.ts` | 10 | business_rule 5, other 3, state_transition 2 |
-| `mytimeline:frontend/src/hooks/useSettings.ts` | 10 | service_method 6, convention 1, other 1 |
-| `mytimeline:frontend/src/components/dashboard/CompactRail.tsx` | 9 | other 7, convention 1, i18n_key 1 |
-| `mytimeline:frontend/src/components/dashboard/KpiMarginalia.intl.test.tsx` | 9 | test_case 7, convention 1, other 1 |
-| `mytimeline:frontend/src/components/dashboard/dashboard-mobile.test.tsx` | 9 | test_case 9 |
-| `mytimeline:frontend/src/components/products/RestoreProductDialog.test.tsx` | 9 | test_case 7, convention 1, other 1 |
-| `mytimeline:frontend/src/components/dashboard/DensityRibbon.intl.test.tsx` | 8 | test_case 5, config 1, i18n_key 1 |
-| `mytimeline:frontend/src/hooks/useMobileKeyboard.test.ts` | 8 | test_case 8 |
-| `mytimeline:frontend/src/services/productService.ts` | 8 | endpoint 6, other 2 |
-| `mytimeline:frontend/src/components/dashboard/dashboard-components.test.tsx` | 7 | test_case 7 |
-| `mytimeline:frontend/src/components/products/ArchivedProductsView.test.tsx` | 7 | test_case 5, other 2 |
-| `mytimeline:frontend/src/components/products/ProductDrawer.forbidden.test.tsx` | 7 | test_case 5, config 1, convention 1 |
-| `mytimeline:frontend/src/hooks/useArchiveProduct.test.tsx` | 7 | test_case 7 |
-| `mytimeline:frontend/src/hooks/useArchiveProduct.ts` | 7 | business_rule 3, other 2, service_method 1 |
-| `mytimeline:frontend/src/hooks/useReturnFocus.ts` | 7 | business_rule 3, other 2, service_method 1 |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/ProductCreationRequest.java` | 6 | validation 5, business_rule 1 |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/ports/services/ProductService.java` | 6 | other 3, suspicious 2, service_method 1 |
-| `mytimeline:frontend/src/hooks/useRestoreProduct.ts` | 6 | business_rule 2, other 2, config 1 |
-| `mytimeline:frontend/src/hooks/useReturnFocus.test.tsx` | 6 | test_case 6 |
-| `mytimeline:frontend/src/components/dashboard/GreetingHeader.tsx` | 5 | business_rule 1, convention 1, i18n_key 1 |
-| `mytimeline:frontend/src/components/dashboard/dashboard-lib.test.ts` | 5 | test_case 5 |
-| `mytimeline:frontend/src/components/products/ArchivedProductsView.intl.test.tsx` | 5 | other 4, i18n_key 1 |
-| `mytimeline:frontend/src/hooks/useDensity.ts` | 5 | business_rule 3, other 1, service_method 1 |
-| `mytimeline:frontend/src/hooks/useRestoreProduct.test.tsx` | 5 | test_case 5 |
-| `mytimeline:frontend/src/hooks/useSectionAnimation.ts` | 5 | business_rule 2, other 2, state_transition 1 |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/ProductResponse.java` | 4 | business_rule 2, other 2 |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/ProductUpdateRequest.java` | 4 | validation 3, convention 1 |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/mappers/ProductMapper.java` | 4 | other 2, convention 1, suspicious 1 |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/Product.java` | 4 | business_rule 2, other 1, suspicious 1 |
-| `mytimeline:frontend/src/components/dashboard/dashboard-landscape.test.tsx` | 4 | test_case 4 |
-| `mytimeline:frontend/src/hooks/useCreateProduct.test.tsx` | 4 | test_case 3, other 1 |
-| `mytimeline:frontend/src/hooks/useCreateProduct.ts` | 4 | other 1, service_method 1, suspicious 1 |
-| `mytimeline:frontend/src/hooks/useDashboardData.ts` | 4 | business_rule 2, external_call 1, other 1 |
-| `mytimeline:frontend/src/hooks/useSectionAnimation.test.ts` | 4 | test_case 4 |
-| `mytimeline:frontend/src/hooks/useUpdateProduct.ts` | 4 | business_rule 1, other 1, service_method 1 |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/ArchivedProductResponse.java` | 3 | other 3 |
-| `mytimeline:frontend/src/components/dashboard/ProductList.test.tsx` | 3 | other 2, test_case 1 |
-| `mytimeline:frontend/src/components/products/ProductSparkline.test.tsx` | 3 | test_case 2, other 1 |
-| `mytimeline:frontend/src/hooks/useAuthGuard.ts` | 3 | business_rule 1, other 1, service_method 1 |
-| `mytimeline:frontend/src/hooks/useDensity.test.tsx` | 3 | test_case 3 |
-| `mytimeline:frontend/src/hooks/useMediaQuery.ts` | 3 | convention 1, service_method 1, suspicious 1 |
-| `mytimeline:frontend/src/hooks/useUpdateProduct.test.tsx` | 3 | test_case 2, other 1 |
-| `mytimeline:frontend/src/components/dashboard/lib.ts` | 2 | convention 1, other 1 |
-| `mytimeline:frontend/src/hooks/useArchivedProducts.ts` | 2 | business_rule 1, service_method 1 |
-| `mytimeline:frontend/src/hooks/useAuth.ts` | 2 | convention 1, other 1 |
-| `mytimeline:frontend/src/hooks/useHydrated.ts` | 2 | convention 1, service_method 1 |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/exceptions/ProductNotFoundException.java` | 1 | convention 1 |
-| `mytimeline:frontend/src/components/dashboard/index.ts` | 1 | other 1 |
+| `frontend:components/products/ProductDrawer.tsx` | 36 | business_rule 13, ui_screen 9, other 5 |
+| `frontend:components/dashboard/DensityRibbon.tsx` | 33 | business_rule 16, other 8, convention 4 |
+| `frontend:components/products/ProductDetailView.test.tsx` | 32 | test_case 23, business_rule 2, convention 2 |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductControllerOwnershipTest.java` | 31 | test_case 18, convention 4, business_rule 3 |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductRestoreIntegrationTest.java` | 23 | test_case 9, other 5, convention 4 |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/ProductArchivedFilterIntegrationTest.java` | 22 | test_case 9, convention 4, business_rule 3 |
+| `frontend:components/products/ProductsListView.test.tsx` | 22 | test_case 20, convention 1, suspicious 1 |
+| `backend:src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java` | 20 | business_rule 8, service_method 5, convention 2 |
+| `frontend:components/products/ProductDetailView.tsx` | 20 | business_rule 6, ui_screen 6, other 3 |
+| `frontend:components/products/ProductDrawer.test.tsx` | 20 | test_case 19, convention 1 |
+| `backend:src/test/java/com/matimeline/eventmanager/application/services/ProductServiceImplTest.java` | 19 | test_case 17, business_rule 2 |
+| `frontend:components/dashboard/DensityRibbon.window.test.tsx` | 19 | test_case 16, other 2, convention 1 |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java` | 17 | endpoint 8, role_check 3, convention 2 |
+| `frontend:components/products/ProductsListView.tsx` | 17 | other 8, business_rule 3, convention 1 |
+| `frontend:types/product.ts` | 16 | convention 7, validation 4, entity 2 |
+| `frontend:components/dashboard/CompactAgenda.tsx` | 15 | business_rule 8, i18n_key 3, convention 2 |
+| `frontend:components/dashboard/kpis.test.ts` | 15 | test_case 13, config 1, other 1 |
+| `frontend:components/dashboard/kpis.ts` | 15 | business_rule 10, config 1, entity 1 |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ProductRepositoryJpaImpl.java` | 14 | persistence_query 6, business_rule 2, convention 2 |
+| `frontend:components/dashboard/KpiMarginalia.tsx` | 14 | convention 5, other 4, i18n_key 3 |
+| `frontend:components/dashboard/dashboard-mobile.test.tsx` | 14 | business_rule 6, test_case 6, role_check 2 |
+| `frontend:components/dashboard/section-titles.test.tsx` | 14 | test_case 8, convention 2, other 2 |
+| `frontend:components/products/ArchivedProductsView.tsx` | 14 | ui_screen 5, business_rule 3, other 2 |
+| `frontend:components/dashboard/KpiMarginalia.intl.test.tsx` | 13 | test_case 10, other 2, suspicious 1 |
+| `frontend:components/dashboard/WeekAgenda.tsx` | 13 | other 6, business_rule 2, convention 2 |
+| `frontend:components/dashboard/section-counts.test.tsx` | 13 | test_case 11, config 1, other 1 |
+| `frontend:components/products/ProductDrawer.forbidden.test.tsx` | 13 | test_case 8, other 4, convention 1 |
+| `frontend:components/dashboard/dashboard-components.test.tsx` | 12 | test_case 5, business_rule 3, convention 1 |
+| `frontend:components/dashboard/densityWindow.ts` | 12 | business_rule 10, config 2 |
+| `frontend:services/productService.ts` | 12 | convention 5, endpoint 5, business_rule 2 |
+| `backend:src/main/java/com/matimeline/eventmanager/application/dtos/ProductUpdateRequest.java` | 11 | business_rule 3, convention 3, other 2 |
+| `frontend:components/dashboard/GreetingHeader.tsx` | 11 | other 4, business_rule 3, convention 1 |
+| `frontend:components/dashboard/ProductCarousel.tsx` | 11 | convention 4, business_rule 2, other 2 |
+| `frontend:components/products/ProductSparkline.tsx` | 11 | business_rule 7, convention 2, other 2 |
+| `backend:src/main/java/com/matimeline/eventmanager/domain/ports/repositories/ProductRepository.java` | 10 | persistence_query 9, suspicious 1 |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/entities/ProductEntity.java` | 10 | entity 6, other 4 |
+| `frontend:components/dashboard/MobileDrawer.tsx` | 10 | convention 3, other 3, ui_screen 2 |
+| `frontend:components/products/ArchivedProductsView.test.tsx` | 10 | test_case 7, other 3 |
+| `frontend:hooks/useArchiveProduct.ts` | 10 | convention 5, service_method 3, business_rule 1 |
+| `frontend:components/dashboard/DensityRibbon.intl.test.tsx` | 9 | test_case 4, other 3, convention 1 |
+| `frontend:components/dashboard/ProductList.tsx` | 9 | convention 3, other 2, ui_screen 2 |
+| `frontend:components/products/RestoreProductDialog.tsx` | 9 | business_rule 3, other 3, i18n_key 1 |
+| `frontend:components/dashboard/CompactRail.tsx` | 8 | other 4, ui_screen 2, business_rule 1 |
+| `frontend:components/dashboard/dashboard-lib.test.ts` | 8 | business_rule 5, test_case 2, persistence_query 1 |
+| `backend:src/main/java/com/matimeline/eventmanager/application/dtos/ProductCreationRequest.java` | 7 | validation 5, convention 1, other 1 |
+| `frontend:components/products/ArchivedProductsView.intl.test.tsx` | 7 | test_case 4, config 1, other 1 |
+| `frontend:components/products/RestoreProductDialog.test.tsx` | 7 | test_case 7 |
+| `frontend:types/product.test.ts` | 7 | test_case 6, convention 1 |
+| `frontend:components/dashboard/ProductList.test.tsx` | 6 | test_case 5, other 1 |
+| `frontend:components/dashboard/intl-formats.test.tsx` | 6 | test_case 5, business_rule 1 |
+| `frontend:hooks/useArchiveProduct.test.tsx` | 6 | test_case 5, suspicious 1 |
+| `frontend:hooks/useRestoreProduct.ts` | 6 | service_method 2, business_rule 1, convention 1 |
+| `backend:src/main/java/com/matimeline/eventmanager/domain/models/Product.java` | 5 | other 3, business_rule 1, suspicious 1 |
+| `backend:src/main/java/com/matimeline/eventmanager/domain/ports/services/ProductService.java` | 5 | other 3, business_rule 1, suspicious 1 |
+| `frontend:components/dashboard/densityWindow.test.ts` | 5 | test_case 4, other 1 |
+| `backend:src/main/java/com/matimeline/eventmanager/application/dtos/ProductResponse.java` | 4 | other 3, business_rule 1 |
+| `backend:src/main/java/com/matimeline/eventmanager/application/mappers/ProductMapper.java` | 4 | other 3, convention 1 |
+| `frontend:components/dashboard/dashboard-landscape.test.tsx` | 4 | test_case 2, convention 1, validation 1 |
+| `frontend:components/products/ProductSparkline.test.tsx` | 4 | test_case 3, other 1 |
+| `frontend:hooks/useArchivedProducts.ts` | 3 | business_rule 1, convention 1, other 1 |
+| `frontend:hooks/useCreateProduct.test.tsx` | 3 | test_case 2, other 1 |
+| `frontend:hooks/useCreateProduct.ts` | 3 | service_method 2, convention 1 |
+| `frontend:hooks/useRestoreProduct.test.tsx` | 3 | test_case 3 |
+| `frontend:hooks/useUpdateProduct.test.tsx` | 3 | test_case 2, suspicious 1 |
+| `frontend:hooks/useUpdateProduct.ts` | 3 | convention 2, service_method 1 |
+| `backend:src/main/java/com/matimeline/eventmanager/application/dtos/ArchivedProductResponse.java` | 2 | other 2 |
+| `backend:src/main/java/com/matimeline/eventmanager/domain/exceptions/ProductNotFoundException.java` | 2 | convention 1, other 1 |
+| `frontend:components/dashboard/index.ts` | 2 | other 2 |
+| `frontend:components/dashboard/lib.ts` | 2 | convention 1, other 1 |
 
 ## Structure (suite) {#t-structure_overflow}
 
 | Pointeur | Symbole | Énoncé | Fait |
 |---|---|---|---|
-| `mytimeline:frontend/src/components/products/ProductsListView.tsx:84-92` | ProductsListView | Le composant ProductsListView affiche la liste des produits, avec recherche, tri, états et actions, et charge les produits via useProductsWithEvents avec l'identifiant de l'utilisateur connecté. | [#d44fc22f2b25162b-1] |
-| `mytimeline:frontend/src/components/products/ProductsListView.tsx:292-312` | ProductsListView | Quand l'utilisateur n'a aucun produit, l'écran affiche un EmptyState dont le CTA ouvre le drawer de création. | [#d44fc22f2b25162b-2] |
-| `mytimeline:frontend/src/components/products/ProductsListView.tsx:313-333` | ProductsListView | Quand la recherche ne donne aucun résultat, l'écran affiche un EmptyState dont le CTA efface le filtre, sans proposer de création. | [#d44fc22f2b25162b-3] |
-| `mytimeline:frontend/src/components/products/RestoreProductDialog.tsx:55-60` | RestoreProductDialog | Le composant RestoreProductDialog est un dialog modal de confirmation de désarchivage, dont la fermeture par overlay passe par handleCancel. | [#e23fbeab5c44091f-1] |
-| `mytimeline:frontend/src/components/products/RestoreProductDialog.tsx:96` | RestoreProductDialog | Le Dialog ferme via handleCancel à toute demande de fermeture qui n'ouvre pas, donc aussi depuis l'overlay ou la touche Échap. | [#e23fbeab5c44091f-2] |
-| `mytimeline:frontend/src/components/products/RestoreProductDialog.tsx:112-121` | RestoreProductDialog | L'erreur inline s'affiche dans un paragraphe role alert portant data-kind égal à notFound ou generic. | [#e23fbeab5c44091f-3] |
-| `mytimeline:frontend/src/components/products/RestoreProductDialog.tsx:124-133` | RestoreProductDialog | Le bouton d'annulation est de variante outline et désactivé pendant l'attente. | [#e23fbeab5c44091f-4] |
-| `mytimeline:frontend/src/components/products/RestoreProductDialog.tsx:134-143` | RestoreProductDialog | Le bouton de confirmation est de variante par défaut sans destructive, désactivé pendant l'attente, et lance handleConfirm au clic. | [#e23fbeab5c44091f-5] |
-| `mytimeline:frontend/src/components/products/ArchivedProductsView.tsx:36-163` | ArchivedProductsView | Le composant affiche l'onglet des produits archivés avec un titre, un tableau (produit et actions), un squelette de chargement, un message d'erreur, un état vide ou la liste. | [#4ec53a326344b7a0-1] |
-| `mytimeline:frontend/src/components/products/ArchivedProductsView.tsx:77-80` | ArchivedProductsView | En cas d'erreur de chargement, le composant affiche un paragraphe d'alerte avec la clé products.archived.error. | [#4ec53a326344b7a0-2] |
-| `mytimeline:frontend/src/components/products/ArchivedProductsView.tsx:81-86` | ArchivedProductsView | Lorsque la liste des produits archivés est vide, le composant affiche un EmptyState sans action. | [#4ec53a326344b7a0-3] |
-| `mytimeline:frontend/src/components/products/ArchivedProductsView.tsx:113-129` | ArchivedProductsView | Chaque ligne affiche une pastille de couleur, le nom du produit et le nom de sa catégorie en mention. | [#4ec53a326344b7a0-4] |
-| `mytimeline:frontend/src/components/products/ArchivedProductsView.tsx:131-145` | ArchivedProductsView | Chaque ligne contient un bouton outline de taille sm qui ouvre la restauration du produit, avec un libellé d'accessibilité restoreLabel portant le nom du produit. | [#4ec53a326344b7a0-5] |
-| `mytimeline:frontend/src/components/dashboard/CompactAgenda.tsx:126` | CompactAgenda.openCreateEvent | Dans l'état vide, le bouton de création est rendu seulement si openCreateEvent est fourni et canCreateEvent vaut true. | [#e51ca2b98d504599-1] |
-| `mytimeline:frontend/src/components/dashboard/KpiMarginalia.tsx:56-64` | KpiMarginalia | La section En bref porte un titre h2 issu de la clé title, sans sur-titre ni compteur. | [#7006d3de04416cbb-1] |
-| `mytimeline:frontend/src/components/dashboard/KpiMarginalia.tsx:65-99` | KpiMarginalia | Les quatre phrases sont rendues dans une carte à filet, chacune via t.rich pour que les chiffres soient enveloppés par balise. | [#7006d3de04416cbb-2] |
-| `mytimeline:frontend/src/components/dashboard/KpiMarginalia.tsx:76-85` | KpiMarginalia | La phrase des échéances affiche le nombre d'échéances en accent, et la durée DUE_SOON_DAYS non grasse. | [#7006d3de04416cbb-3] |
-| `mytimeline:frontend/src/components/dashboard/ProductCarousel.tsx:34-38` | ProductCarousel | Le composant ProductCarousel reçoit products, locale et une date de référence optionnelle now, et rend une section titrée. | [#804e5db55b8fdf5c-1] |
-| `mytimeline:frontend/src/components/dashboard/ProductCarousel.tsx:58-65` | ProductCarousel | Le compteur de produits de l'en-tête n'apparaît que si la liste contient au moins un produit. | [#804e5db55b8fdf5c-2] |
-| `mytimeline:frontend/src/components/dashboard/ProductCarousel.tsx:67-82` | ProductCarousel | Quand la liste est vide, le composant affiche un état vide compact avec un lien vers la page produits de la locale. | [#804e5db55b8fdf5c-3] |
-| `mytimeline:frontend/src/components/dashboard/MobileDrawer.tsx:46-51` | MobileDrawer | Un overlay plein écran noir semi-transparent est rendu derrière le panneau, et un clic dessus appelle onClose. | [#45d9c245b6ad1b5d-1] |
-| `mytimeline:frontend/src/components/dashboard/MobileDrawer.tsx:67-75` | MobileDrawer.close | Le bouton de fermeture a une zone de 44 px (h-11 w-11), un aria-label issu de la clé close et appelle onClose. | [#5de2026f9189fa67-1] |
-| `mytimeline:frontend/src/components/dashboard/ProductList.tsx:24` | ProductList | Le composant ProductList reçoit products, locale et une date de référence optionnelle now, et rend une section de liste. | [#2243f3e05988396b-1] |
-| `mytimeline:frontend/src/components/dashboard/ProductList.tsx:54-73` | ProductList | Quand la liste est vide, le composant affiche un état vide compact avec un lien vers la page produits de la locale. | [#2243f3e05988396b-2] |
-| `mytimeline:frontend/src/components/dashboard/ProductList.tsx:108-125` | ProductList | Le prochain événement est masqué sous le breakpoint sm, puis élastique et tronqué à partir de sm, et affiche le titre suivi de la date. | [#2243f3e05988396b-3] |
-| `mytimeline:frontend/src/components/dashboard/GreetingHeader.tsx:44-60` | GreetingHeader | Le bandeau affiche un eyebrow, un h1 de salutation selon la tranche horaire et le nom fourni, et un sous-titre seulement en variante full. | [#b1ae10cd6088471f-1] |
-| `mytimeline:frontend/src/components/dashboard/kpis.ts:17-28` | DashboardKpis | L'interface DashboardKpis porte les cinq métriques week, weekRecurring, dueSoon, ongoing et busiestCategory. | [#c730773888727d2d-1] |
-| `mytimeline:frontend/src/types/product.ts:26-36` | productSchema | productSchema décrit un produit avec id, name, color nullable, une catégorie (id, name, color nullable) et une liste d'events validée par eventSchema. | [#cb9cd539bc6aefc5-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/ProductEntity.java:17-19` | ProductEntity | Entité JPA mappée sur la table products, avec un écouteur d'audit AuditingEntityListener. | [#25d4547f392dae02-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/ProductEntity.java:27-28` | ProductEntity.id | Identifiant UUID généré automatiquement avec la stratégie AUTO. | [#f0b70c2fa71a973a-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/ProductEntity.java:33-34` | ProductEntity.archived | Le champ archived est une colonne non nulle, valant false par défaut. | [#3cf28ed77eb574bb-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/ProductEntity.java:42-44` | ProductEntity.user | Relation ManyToOne vers UserEntity, avec colonne user_id sans contrainte de nullité déclarée. | [#ac6726369ad615cf-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/ProductEntity.java:46-48` | ProductEntity.events | Collection OneToMany côté inverse (mappedBy product), avec cascade ALL et orphanRemoval, initialisée à une liste vide. | [#f9764289451941b1-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/ProductEntity.java:50-56` | ProductEntity.createdAt | Les dates createdAt (non modifiable) et updatedAt (non nulle) sont renseignées par l'audit Spring Data. | [#f2eb4cc35acad75e-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/ProductEntity.java:58-60` | ProductEntity.version | Le champ version est annoté Version, non nul, et pilote le verrouillage optimiste. | [#529d47becb68ce40-1] |
-| `mytimeline:frontend/src/components/products/ArchivedProductsView.tsx:42-43` | ArchivedProductsView.useRestoreProduct | Le composant charge la liste des produits archivés via useArchivedProducts et prépare la mutation de restauration via useRestoreProduct, tous deux appelés avec l'identifiant de l'utilisateur. | [#1db52aa1afe2e8e6-1] |
+| `frontend:components/dashboard/DensityRibbon.tsx:285-326` | DensityRibbon | En mode scrollable, le rail horizontal a une largeur fixe de rangeDays x minBarWidth plus les interstices, affiche un dégradé de bord droit et un indice de défilement, et ne rend aucun viewport. | [#23dc6fceff57bb0c-1] |
+| `frontend:components/dashboard/DensityRibbon.tsx:328-346` | DensityRibbon | En mode desktop, la piste contient le rail des barres en role img et le viewport en frère, sans viewport si vpDays vaut 0. | [#23dc6fceff57bb0c-2] |
+| `frontend:components/dashboard/DensityRibbon.tsx:352-377` | DensityRibbon | Le viewport desktop est un div role slider focusable, avec aria-valuemin 0, aria-valuemax vpMax, aria-valuenow startDay et des classes de bordure accent et touch-none. | [#23dc6fceff57bb0c-3] |
+| `frontend:components/products/ProductDetailView.tsx:326-340` | ProductDetailView.product-detail-new-event | Le bouton Nouvel événement n'apparaît que si openCreateEvent est disponible, et ouvre la création avec le produit préremplit. | [#f577cf2a8881d306-1] |
+| `frontend:components/products/ProductDetailView.tsx:345-350` | ProductDetailView.product-detail-edit | Le bouton Modifier ouvre le ProductDrawer en mode edit. | [#94a44beeeb937b07-1] |
+| `frontend:components/products/ProductDetailView.tsx:355-359` | ProductDetailView.product-detail-archive | Le bouton d'archivage ouvre le DeleteConfirmDialog de variant product. | [#72042b34188a806f-1] |
+| `frontend:components/products/ProductDetailView.tsx:483` | ProductDetailView.past | Chaque événement de l'historique est marqué passé ou non via isPastEvent, à partir de la date du jour. | [#6d0286f55aae7bb4-1] |
+| `frontend:components/products/ProductDetailView.tsx:546-553` | ProductDetailView.product-detail-unarchive | Le bouton Désarchiver n'est affiché que pour les événements archivés et est désactivé pendant leur désarchivage en cours. | [#777b9c89d4e1f312-1] |
+| `frontend:components/products/ProductDetailView.tsx:600` | ProductDetailView.DeleteConfirmDialog | Le dialogue d'archivage confirme via handleArchiveConfirm. | [#297e92d1c4483ed7-1] |
+| `frontend:components/products/ArchivedProductsView.tsx:36-43` | ArchivedProductsView | Le composant ArchivedProductsView lit l'utilisateur courant via useAuth et transmet son identifiant aux hooks de lecture et de restauration. | [#36251c18f79c635f-1] |
+| `frontend:components/products/ArchivedProductsView.tsx:62-63` | ArchivedProductsView | Le composant rend un conteneur d'onglet Archivés identifié par products-archived-view. | [#36251c18f79c635f-2] |
+| `frontend:components/products/ArchivedProductsView.tsx:81-86` | ArchivedProductsView | Lorsque la liste est vide, le composant affiche un EmptyState identifié par products-archived-empty, sans bouton d'action. | [#36251c18f79c635f-3] |
+| `frontend:components/products/ArchivedProductsView.tsx:88-104` | ArchivedProductsView | Le tableau comporte deux colonnes en-tête, Produit et Actions, sans autre colonne. | [#36251c18f79c635f-4] |
+| `frontend:components/products/ArchivedProductsView.tsx:133-144` | ArchivedProductsView | Chaque ligne comporte un bouton outline de taille sm libellé par la clé restore, avec un aria-label qui inclut le nom du produit. | [#36251c18f79c635f-5] |
+| `frontend:components/products/ProductsListView.tsx:296-312` | products-empty-cta | L'état vide affiche un CTA qui ouvre le drawer de création de produit. | [#d5aaf985d78c31e5-1] |
+| `frontend:components/dashboard/ProductCarousel.tsx:34-137` | ProductCarousel | ProductCarousel affiche les produits en vignettes horizontales défilantes pour le mobile, avec pastille, nom, prochain événement et compteur. | [#e3cbfe7040229a49-1] |
+| `frontend:components/dashboard/ProductCarousel.tsx:67-82` | ProductCarousel.empty | Si aucun produit n'existe, un état vide compact affiche un lien vers la page produits. | [#6d31e2536827289a-1] |
+| `frontend:components/dashboard/GreetingHeader.tsx:56-58` | GreetingHeader | Le bandeau affiche un h1 contenant la salutation traduite selon la tranche horaire, avec le nom interpolé. | [#20283fe16b14fcb0-1] |
+| `frontend:components/dashboard/KpiMarginalia.tsx:41-102` | KpiMarginalia | KpiMarginalia rend une section titrée « En bref » contenant quatre phrases, chacune rendue par t.rich dans le namespace dashboard.kpi. | [#105d8c89d8d06ce0-1] |
+| `frontend:components/dashboard/WeekAgenda.tsx:37-156` | WeekAgenda | WeekAgenda affiche les événements de la semaine courante, avec date, filet couleur, titre et nom du produit. | [#3f5862c5a47cf73e-1] |
+| `frontend:components/dashboard/MobileDrawer.tsx:34-110` | MobileDrawer | MobileDrawer est un panneau latéral droit qui contient le sélecteur de langue, la bascule de thème et le bouton de déconnexion. | [#e69ebbcc9b7b59ff-1] |
+| `frontend:components/dashboard/MobileDrawer.tsx:46-51` | MobileDrawer.overlay | Un overlay plein écran est rendu derrière le panneau, avec un clic qui appelle onClose. | [#84d88d3a18fa6db9-1] |
+| `frontend:components/products/RestoreProductDialog.tsx:109` | RestoreProductDialog | Le dialog affiche le titre et une description qui nomme le produit désarchivé. | [#f537349dd81e1673-1] |
+| `frontend:components/dashboard/ProductList.tsx:24-147` | ProductList | ProductList affiche la liste compacte des produits, avec pastille, nom, prochain événement et compteur, ou un état vide. | [#752656a97f53ae09-1] |
+| `frontend:components/dashboard/ProductList.tsx:54-73` | ProductList.empty | Si la liste est vide, un EmptyState compact s'affiche avec un lien vers la page produits du locale courant. | [#d6eba3eb83172f8d-1] |
+| `frontend:components/dashboard/CompactRail.tsx:77-80` | CompactRail | Le rail affiche deux items de navigation, home et products, les handlers onHome et onProducts étant fournis par la page parente. | [#b76ab83711f0649d-1] |
+| `frontend:components/dashboard/kpis.ts:17-28` | DashboardKpis | L'interface DashboardKpis regroupe cinq champs : week, weekRecurring, dueSoon, ongoing et busiestCategory (string ou null). | [#c6614c74b0f07976-1] |
+| `frontend:types/product.ts:1-2` | product.ts | Le fichier importe z depuis zod ainsi que eventCreationSchema et eventSchema depuis ./event. | [#648e9715dfcbd8f6-1] |
+| `frontend:types/product.ts:26-36` | productSchema | productSchema décrit un produit avec id, name, color nullable, category (id, name, color nullable) et une liste d'events de eventSchema. | [#81b17235889bce48-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/entities/ProductEntity.java:17-26` | ProductEntity | L'entité products applique @SQLRestriction("archived = false") à toutes les lectures générées par Hibernate, ce qui masque les produits archivés. | [#c4ef1fa41bcce10a-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/entities/ProductEntity.java:33-34` | ProductEntity.archived | Le champ archived est une colonne non nulle, valeur par défaut false. | [#20889a4396f284ce-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/entities/ProductEntity.java:38-40` | ProductEntity.category | Chaque produit est lié à une catégorie obligatoire par ManyToOne sur la colonne category_id. | [#415b00e234a6ac37-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/entities/ProductEntity.java:42-44` | ProductEntity.user | Chaque produit peut être lié à un utilisateur par ManyToOne sur la colonne user_id, sans contrainte nullable déclarée. | [#ac90b7e3b9deb63d-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/entities/ProductEntity.java:46-48` | ProductEntity.events | La collection events est une OneToMany mappée par product, en cascade ALL avec orphanRemoval, initialisée à une liste vide. | [#03a123b1e509bf2d-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/entities/ProductEntity.java:58-60` | ProductEntity.version | Le champ version porte @Version et est non nul, ce qui fait gérer le verrouillage optimiste par Hibernate. | [#77a5ca7747268216-1] |
+| `frontend:components/dashboard/DensityRibbon.tsx:182-194` | DensityRibbon.onPointerMove | Pendant le glisser, onPointerMove recalcule vpStart à partir de la position d'origine et du décalage horizontal en pixels, via dragViewportStart. | [#8d8d189a4e553d12-1] |
 
 ## Lignes rétrogradées {#t-demoted_lines}
 
 | Section | Ligne | Motif |
 |---|---|---|
-| rules | - L'archivage backend passe archived à true et sauvegarde, sans suppression physique. [#6a2517a951787033-1] | deducible |
-| rules | - Le nom est obligatoire, non blanc, de 1 à 100 caractères, et la catégorie est obligatoire. [#cd88dd2cf3309f34-1] [#cd88dd2cf3309f34-2] [#f063ecb315e67a4a-1] | deducible |
-| rules | - Un produit peut naître sans événement, et la date d'un événement absente vaut la date du jour. [#b9e90088400e813c-1] [#b9e90088400e813c-2] | deducible |
-| rules | - Le nom n'est modifié que s'il est fourni, et un categoryId fourni est validé contre le propriétaire du produit. [#f60876188a14193e-1] [#f60876188a14193e-2] | deducible |
-| rules | - Le patch du drawer ne contient que les champs modifiés, et sans aucun changement le drawer se ferme sans appel. [#551bcc200cf8e8da-1] [#551bcc200cf8e8da-3] | deducible |
-| rules | - productUpdateSchema exige au moins un champ parmi name, categoryId, color et clearColor. [#ad62633669322fcc-1] | deducible |
-| rules | - La couleur d'un produit vaut la sienne, à défaut celle de sa catégorie, à défaut une variable CSS de repli. [#70495bd2de08589a-1] [#da1ac8c8ad5823cf-1] | deducible |
-| rules | - Le tri par prochain événement place les produits sans échéance en fin, puis départage par nom. [#b72e1924704841ba-2] | deducible |
-| surface | - Sans produit, la liste propose la création, mais sans résultat de recherche le CTA efface seulement le filtre [#d44fc22f2b25162b-2] [#d44fc22f2b25162b-3]. | deducible |
-| tests | - Les tests fixent que DELETE est un soft delete, ligne conservée avec archived à true et masquée des lectures [#7248ace78914a68a-1] [#26fdcefec56af0bd-1] [#faec18edf7eeaa19-1] [#c0036cdc5ea05d09-1]. | deducible |
-| tests | - Les tests fixent qu'un archivage réussi invalide products.all et categories.all, et qu'un échec n'invalide rien [#377d4c3da562cc23-3] [#377d4c3da562cc23-4] [#377d4c3da562cc23-5]. | deducible |
+| rules | - Le userId du chemin remplace celui du corps de la requête. [#b912bc34cf89d67a-1] | deducible |
+| rules | - Un utilisateur introuvable lève UserNotFoundException. [#8236045f458a8db1-1] | deducible |
+| rules | - Des événements nuls deviennent une liste vide et une date de début absente devient la date du jour. [#14ee1b6e889854a1-2] [#14ee1b6e889854a1-3] | deducible |
+| rules | - Le nom n'est modifié que s'il est fourni, et un nom fait d'espaces seuls lève Name must not be blank. [#1f81adc7889b6ff7-1] [#e6032e4c6921b184-2] | deducible |
+| rules | - La catégorie fournie est vérifiée contre le propriétaire du produit chargé. [#1f81adc7889b6ff7-2] | deducible |
+| rules | - Le schéma front exige au moins un champ parmi name, categoryId, color ou clearColor. [#03f64069c06a0bb5-1] [#016901f223f53d2d-2] | deducible |
+| rules | - Le drawer n'envoie que les champs modifiés, et sans changement il ne fait aucun PATCH et se ferme. [#625c9eea23e228ac-1] [#625c9eea23e228ac-2] [#625c9eea23e228ac-3] | deducible |
+| rules | - En mise à jour, le dépôt ne recopie que name, archived et color sur l'entité gérée. [#47fa25977ab07f8c-1] | deducible |
+| rules | - L'archivage pose archived à true sans suppression physique. [#7e4b226aac0bc03f-1] | deducible |
+| rules | - Les compteurs d'événements d'un produit excluent toujours les événements archivés. [#4a720ccb2fa33d11-1] [#e2eb38fbdd986acc-1] | deducible |
+| rules | - La couleur d'un produit est la sienne, à défaut celle de sa catégorie. [#1d096e9be2ded267-1] | deducible |
+| rules | - La sparkline couvre 90 jours et ignore les dates futures ou plus anciennes. [#e63440a2afd3a325-1] | deducible |
+| surface | - Le comptage par catégorie, la réaffectation de catégorie et la suppression de tous les produits d'un utilisateur incluent les archivés [#6b4c701672dc27f4-1] [#4b4e75c10443fd43-1] [#796b2d6fe47571ce-1]. | deducible |
+| surface | - Un test vérifie que findAllProducts n'affiche pas un produit archivé [#bb2cfff0694605b8-1]. | deducible |
+| surface | - Si noCategory est vrai, la combobox catégorie est remplacée par une note [#bd8df6d1a4133787-1]. | deducible |
+| surface | - Avec canCreateEvent à false, les états vides des agendas du tableau de bord n'affichent aucun bouton de création, selon les tests [#6e7610f07881b1db-1] [#ac961dccc95f5868-1]. | deducible |
+| tests | - Les tests fixent un 403 quand le userId du chemin diffère du caller (archivés, restauration) et un 401 sans caller, sans appel au service. [#5625aeca28aec9f2-1] [#d62c687ed28b897c-1] [#845c98a982d5e07b-1] | deducible |
+| tests | - Les tests fixent qu'un archivage réussi invalide products.all et categories.all et retire le produit du cache, et qu'un échec serveur ne fait rien `frontend:hooks/useArchiveProduct.test.tsx:85-141` [#e9ef12535d63e6ae-2] [#e9ef12535d63e6ae-3] [#e9ef12535d63e6ae-4] | deducible |
 
 ## Règles métier {#t-business_rule}
 
 | Pointeur | Énoncé | Fait |
 |---|---|---|
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/ProductCreationRequest.java:23` | Javadoc : Selon la javadoc, une couleur null signifie héritage de la couleur de la catégorie. | [#9b4adb393e9656df-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/ProductResponse.java:40-53` | Si la liste d'événements du produit est null, la réponse expose une liste vide. | [#9d1866aeaf08a6f4-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/ProductResponse.java:67-72` | CategoryRef.fromDomain renvoie null quand la catégorie du produit est null. | [#ea41cb4ad3a578d6-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java:66-69` | Un produit peut être créé sans événement, et une liste d'événements null est traitée comme une liste vide. | [#b9e90088400e813c-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java:70` | La date de début d'un événement vaut la date fournie, ou la date du jour si elle est absente. | [#b9e90088400e813c-2] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java:126-128` | Le nom n'est modifié que s'il est fourni dans la requête. | [#f60876188a14193e-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java:130-136` | Si un categoryId est fourni, la catégorie est validée contre le propriétaire du produit chargé. | [#f60876188a14193e-2] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java:140-144` | Si clearColor est vrai, la couleur est remise à null, sinon une couleur non null remplace la couleur existante. | [#f60876188a14193e-3] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/Product.java:15-22` | Le constructeur à cinq paramètres pose archived à false. | [#54642ebc124044ef-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/Product.java:70-72` | Un produit a des événements seulement si la liste n'est pas null et n'est pas vide. | [#18c24963738e1c5a-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java:62-63` | Le userId du path remplace le userId du corps de la requête (BR-PRO-004). | [#cf90f9c9f863d556-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ProductRepositoryJpaImpl.java:169` | Les lignes dont category_id est nul sont ignorées dans le résultat des compteurs. | [#686b51e2f0eb3d1b-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/ProductEntity.java:25` | Toute lecture Hibernate (HQL, findAll, findById, associations) ajoute archived = false, donc les produits archivés sont masqués. | [#ed1e9d0b02832172-1] |
-| `mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/ProductServiceImplTest.java:37-40` | Javadoc : Selon la javadoc, une catégorie n'est assignable à un produit en create ou update que si elle appartient à l'appelant ou au système (ownerId null). | [#2ac3193f7456fac5-1] |
-| `mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/ProductServiceImplTest.java:131-134` | Javadoc : Selon la javadoc, un produit sans événement est autorisé et events null est traité comme une liste vide. | [#4667a92e6d573286-1] |
-| `mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/ProductServiceImplTest.java:172-176` | Javadoc : Selon la javadoc, un produit sans événement reste dans la liste renvoyée, sans nouveau filtre côté service. | [#0dc478050f61545c-1] |
-| `mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/ProductServiceImplTest.java:263-264` | Javadoc : Selon la javadoc, une couleur nulle à la création est persistée à null, le produit héritant alors de la couleur de sa catégorie côté front. | [#8e9a5a5c3594b4a7-1] |
-| `mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/ProductServiceImplTest.java:316` | Javadoc : Selon la javadoc, un PATCH avec clearColor à true réinitialise la surcharge de couleur à null, ce qui rétablit l'héritage. | [#d54e114583852181-1] |
-| `mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/ProductServiceImplTest.java:388` | Javadoc : Selon la javadoc, zéro ligne restaurée renvoie la même exception pour produit inconnu, non archivé ou appartenant à un autre utilisateur. | [#b4432df7e9f3d3eb-1] |
-| `mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/ProductArchivedFilterIntegrationTest.java:28` | Javadoc : Selon la javadoc, le soft delete des produits (BR-PRO-007) passe par @SQLRestriction("archived = false") sur ProductEntity. | [#606073512a527401-1] |
-| `mytimeline:frontend/src/components/dashboard/CompactAgenda.tsx:71-75` | La fenêtre d'affichage est limitée au jour courant et au lendemain, chaque borne étant calculée par dayBounds. | [#a40644cac0d356a3-1] |
-| `mytimeline:frontend/src/components/dashboard/CompactAgenda.tsx:86` | Le composant est considéré vide quand aucun événement n'a lieu aujourd'hui ni demain, et affiche alors l'état vide. | [#299d4189d12cbbb8-1] |
-| `mytimeline:frontend/src/components/dashboard/CompactAgenda.tsx:163` | Le groupe Demain n'est rendu que si la liste des événements de demain contient au moins un élément. | [#75c1247ca37a00e1-1] |
-| `mytimeline:frontend/src/components/dashboard/DensityRibbon.tsx:95` | La hauteur d'une barre est proportionnelle à la densité, avec un minimum de 8 pour cent si le jour contient au moins un événement et de 2 pour cent sinon. | [#7e5a20ae2be048b8-1] |
-| `mytimeline:frontend/src/components/dashboard/DensityRibbon.tsx:120-133` | Les buckets de densité sont construits à partir d'aujourd'hui à minuit sur rangeDays jours, dans la fenêtre future. | [#2b2a315de2c509ec-1] |
-| `mytimeline:frontend/src/components/dashboard/DensityRibbon.tsx:175` | Un pointeur de type souris qui n'est pas le bouton principal ne démarre pas le glissement du viewport. | [#903a1b777ece0491-1] |
-| `mytimeline:frontend/src/components/dashboard/DensityRibbon.tsx:176` | Un glissement déjà en cours bloque la prise d'un nouveau pointeur, un seul pointeur pilote le viewport à la fois. | [#903a1b777ece0491-2] |
-| `mytimeline:frontend/src/components/dashboard/DensityRibbon.window.test.tsx:99-110` | La fenêtre du ruban couvre 30 barres à partir d'aujourd'hui, un événement de la veille n'est pas compté dans le total. | [#173a8134b55f9cb1-1] |
-| `mytimeline:frontend/src/components/dashboard/DensityRibbon.window.test.tsx:230-269` | Au glisser à la souris, 20 px équivalent à un jour sur une piste de 600 px, la position reste continue pendant le mouvement, puis se cale sur le jour entier au relâchement et reste bornée à 21. | [#173a8134b55f9cb1-2] |
-| `mytimeline:frontend/src/components/dashboard/GreetingHeader.tsx:25-29` | timeOfDayKey renvoie morning si l'heure est inférieure à 12, afternoon si elle est inférieure à 18, sinon evening. | [#440ab52f04d8a661-1] |
-| `mytimeline:frontend/src/components/dashboard/KpiMarginalia.tsx:44` | Les quantités affichées sont formatées avec Intl.NumberFormat dans la locale reçue en prop. | [#3e7813ffceb55807-1] |
-| `mytimeline:frontend/src/components/dashboard/KpiMarginalia.tsx:95` | Lorsque busiestCategory est null, la catégorie affichée est la clé de repli busiestCategoryNone. | [#c753ffa4b5b43952-1] |
-| `mytimeline:frontend/src/components/dashboard/ProductCarousel.tsx:91` | La pastille prend la couleur du produit, à défaut celle de sa catégorie, à défaut la variable CSS var(--color-rule-strong). | [#70495bd2de08589a-1] |
-| `mytimeline:frontend/src/components/dashboard/ProductCarousel.tsx:92` | Le compteur d'un produit ne retient que les événements non archivés, une liste absente valant une liste vide. | [#70495bd2de08589a-2] |
-| `mytimeline:frontend/src/components/dashboard/ProductList.tsx:78` | La pastille prend la couleur du produit, à défaut celle de sa catégorie, à défaut la variable CSS var(--color-rule-strong). | [#da1ac8c8ad5823cf-1] |
-| `mytimeline:frontend/src/components/dashboard/ProductList.tsx:79` | Le compteur d'un produit ne retient que les événements non archivés, une liste absente valant une liste vide. | [#da1ac8c8ad5823cf-2] |
-| `mytimeline:frontend/src/components/dashboard/WeekAgenda.tsx:80` | Le compteur d'événements de la semaine n'est rendu que si la liste des événements de la semaine est non vide. | [#f11f89af9447cf47-1] |
-| `mytimeline:frontend/src/components/dashboard/WeekAgenda.tsx:98` | Le bouton de création dans l'état vide n'est rendu que si le hook de shell fournit une fonction d'ouverture et que canCreateEvent est vrai. | [#f11f89af9447cf47-2] |
-| `mytimeline:frontend/src/components/dashboard/WeekAgenda.tsx:133-137` | La date de la ligne est formatée avec dayFmt en fuseau local, et l'attribut dateTime est produit par toLocalIsoDate(parseLocalDate(event.start)) qui renvoie null pour une date invalide. | [#f11f89af9447cf47-3] |
-| `mytimeline:frontend/src/components/dashboard/WeekAgenda.tsx:141` | La barre de couleur de chaque ligne prend la couleur de l'événement, avec repli sur var(--color-rule-strong) si elle est absente. | [#f11f89af9447cf47-4] |
-| `mytimeline:frontend/src/components/dashboard/densityWindow.ts:33-35` | dayToPct convertit un jour en pourcentage de la fenêtre, avec 0 si rangeDays n'est pas positif. | [#6e843dc019cea64a-1] |
-| `mytimeline:frontend/src/components/dashboard/densityWindow.ts:41-52` | rulerTicks produit une graduation tous les step jours de 0 à rangeDays inclus, et renvoie une liste vide si rangeDays ou step n'est pas positif. | [#df022fd0770f6041-1] |
-| `mytimeline:frontend/src/components/dashboard/densityWindow.ts:48` | L'ancrage d'une graduation est start pour le jour 0, end pour le dernier jour de la fenêtre et center pour les autres. | [#df022fd0770f6041-2] |
-| `mytimeline:frontend/src/components/dashboard/densityWindow.ts:55-62` | La largeur effective du viewport est bornée à rangeDays, et le début maximal du viewport vaut rangeDays moins la largeur effective, avec un plancher à 0. | [#0ceb976186d00427-1] |
-| `mytimeline:frontend/src/components/dashboard/densityWindow.ts:65-68` | clampViewportStart renvoie 0 pour NaN ou -Infinity, le début maximal pour +Infinity, et sinon borne la valeur dans [0, max]. | [#afdbdd1f4640e732-1] |
-| `mytimeline:frontend/src/components/dashboard/densityWindow.ts:76-86` | dragViewportStart calcule le nouveau début du viewport à partir du début d'origine et du déplacement en pixels, proportionnellement à la largeur de piste et rangeDays, puis le borne. | [#60b1033cbbe895a4-1] |
-| `mytimeline:frontend/src/components/dashboard/densityWindow.ts:97-123` | keyToViewportStart arrondit le début courant puis applique les pas clavier : flèches de 1 jour, PageUp et PageDown de 7 jours, Home à 0, End au maximum, et renvoie null pour une autre touche. | [#4985056a5294dc6e-1] |
-| `mytimeline:frontend/src/components/dashboard/intl-formats.test.tsx:141-145` | Le code d'état affiché par StateScreen reste sans séparateur de milliers, le code 1000 s'affiche tel quel. | [#b81c3db755368483-1] |
-| `mytimeline:frontend/src/components/dashboard/kpis.ts:50-56` | civilDaysBetween calcule l'écart en jours civils en comparant les composantes locales via Date.UTC, sans passer par les millisecondes. | [#ca65008b9c04dc24-1] |
-| `mytimeline:frontend/src/components/dashboard/kpis.ts:73-81` | isOngoing renvoie vrai pour une durée dont début et fin encadrent aujourd'hui en jours civils locaux, bornes incluses. | [#ce9292d77eb832cd-1] |
-| `mytimeline:frontend/src/components/dashboard/kpis.ts:88-115` | occurrencesInMonth compte les occurrences dont le début tombe dans le mois de now, en bouclant au plus MAX_OCCURRENCES fois et en s'arrêtant à l'horizon de la série ou à la fin du mois. | [#17679c83f8c7f0ef-1] |
-| `mytimeline:frontend/src/components/dashboard/kpis.ts:97-98` | Un événement non récurrent compte 1 si son origine tombe dans le mois courant, et 0 sinon. | [#17679c83f8c7f0ef-2] |
-| `mytimeline:frontend/src/components/dashboard/kpis.ts:118` | Le départage des ex æquo utilise un Intl.Collator figé en locale en, indépendant de la locale de l'interface. | [#da89b2d0e8249581-1] |
-| `mytimeline:frontend/src/components/dashboard/kpis.ts:136-156` | busiestCategory retient la catégorie ayant le plus d'occurrences ce mois, départage les ex æquo par tieOrder, et renvoie null si aucune occurrence. | [#918925549d487a05-1] |
-| `mytimeline:frontend/src/components/dashboard/kpis.ts:165` | dueSoon compte les événements dont la prochaine occurrence est à au plus DUE_SOON_DAYS jours civils d'aujourd'hui. | [#aebb9093714a3eca-1] |
-| `mytimeline:frontend/src/components/dashboard/kpis.ts:170` | weekRecurring compte, parmi les événements de la semaine, ceux pour lesquels isRecurringSeries est vrai. | [#938c0d30049d406d-1] |
-| `mytimeline:frontend/src/components/products/ArchivedProductsView.tsx:19-24` | Javadoc : Selon la javadoc, l'archivage n'est plus définitif (BR-PRO-007) et la restauration est anti-IDOR avec un 404 uniforme (BR-PRO-011). | [#a0739a0eef14e731-1] |
-| `mytimeline:frontend/src/components/products/ArchivedProductsView.tsx:54-58` | Le toast de succès n'est émis qu'après la résolution de mutateAsync pour la restauration du produit cible. | [#31b10348c08c09ad-1] |
-| `mytimeline:frontend/src/components/products/ArchivedProductsView.tsx:106` | La couleur effective d'un produit est sa couleur propre, à défaut la couleur de sa catégorie, à défaut null. | [#a0739a0eef14e731-2] |
-| `mytimeline:frontend/src/components/products/ProductDetailView.test.tsx:282-292` | La sous-frise ne reçoit que les événements non archivés du produit sélectionné, et la liste des ressources ne contient que ce produit. | [#3402d9a51a82ceb6-1] |
-| `mytimeline:frontend/src/components/products/ProductDetailView.test.tsx:556-558` | Commentaire : Selon le commentaire, un événement passé (fin antérieure au jour local) est distinct d'un événement archivé. | [#3402d9a51a82ceb6-2] |
-| `mytimeline:frontend/src/components/products/ProductDetailView.test.tsx:622-623` | Commentaire : Selon le commentaire, le compteur d'événements actifs (BR-EVE-011) compte les événements actifs et ne suit jamais le filtre de vue. | [#3402d9a51a82ceb6-3] |
-| `mytimeline:frontend/src/components/products/ProductDetailView.tsx:40-41` | Javadoc : Selon le commentaire, les produits archivés sont invisibles côté backend, donc un produit absent de la liste affiche l'état introuvable. | [#ab4fd809595ee2ae-1] |
-| `mytimeline:frontend/src/components/products/ProductDetailView.tsx:80-84` | Le filtre de vue garde tous les événements pour 'all', seuls les archivés pour 'archived', et seuls les non archivés sinon. | [#4e58b81ab01a97c8-1] |
-| `mytimeline:frontend/src/components/products/ProductDetailView.tsx:109-112` | Le produit affiché est retrouvé dans le cache useProductsWithEvents par son id, sans refetch dédié, et vaut null s'il est absent de la liste. | [#4870690245d0f394-1] |
-| `mytimeline:frontend/src/components/products/ProductDetailView.tsx:123` | La fiche reste affichée à partir de la dernière valeur vue lorsque le produit est archivé depuis cette vue, sinon le produit live est utilisé. | [#36a9604e04113a4f-1] |
-| `mytimeline:frontend/src/components/products/ProductDetailView.tsx:152-158` | Le compteur d'événements actifs ne dépend pas du filtre de vue et exclut toujours les événements archivés (BR-EVE-011). | [#8fd6003a83a56fa2-1] |
-| `mytimeline:frontend/src/components/products/ProductDetailView.tsx:221` | Une erreur HTTP 409 lors du désarchivage affiche le message de conflit, toute autre erreur affiche le message générique. | [#205ca5754f77f1c8-1] |
-| `mytimeline:frontend/src/components/products/ProductDetailView.tsx:247` | Le retour navigue vers la liste des produits de la locale courante. | [#5a8bc54f367c38b6-1] |
-| `mytimeline:frontend/src/components/products/ProductDetailView.tsx:313` | L'historique trie les événements filtrés par date de début décroissante. | [#64d34df04537559a-1] |
-| `mytimeline:frontend/src/components/products/ProductDetailView.tsx:318-319` | Pour le filtre archived, la frise et l'historique vides affichent le message archivedEmpty, sinon timelineEmpty ou historyEmpty. | [#ce7d67018ad05a2b-1] |
-| `mytimeline:frontend/src/components/products/ProductDetailView.tsx:483` | Chaque ligne de l'historique est marquée passée selon isPastEvent appliqué au jour courant. | [#893ae97f1aa09f1f-1] |
-| `mytimeline:frontend/src/components/products/ProductDrawer.tsx:129` | Le drawer masque la combobox catégorie et affiche un message quand le drawer est ouvert, la requête catégories a réussi et la liste est vide. | [#47994101aea470d3-1] |
-| `mytimeline:frontend/src/components/products/ProductDrawer.tsx:171` | À l'ouverture, la surcharge couleur est initialisée à la couleur persistée du produit en édition, et à null en création. | [#1f1946ab75ce67e1-1] |
-| `mytimeline:frontend/src/components/products/ProductDrawer.tsx:188-189` | La couleur effective est la surcharge produit si elle existe, sinon la couleur de la catégorie sélectionnée. | [#e6dbbde05a5045c7-1] |
-| `mytimeline:frontend/src/components/products/ProductDrawer.tsx:191` | Le drawer est en cours de soumission dès qu'une des mutations de création ou de mise à jour est en attente. | [#ab64bafd1a107af8-1] |
-| `mytimeline:frontend/src/components/products/ProductDrawer.tsx:203-205` | En édition, le PATCH ne contient que le nom et la catégorie qui ont changé par rapport au produit d'origine. | [#551bcc200cf8e8da-1] |
-| `mytimeline:frontend/src/components/products/ProductDrawer.tsx:209-213` | En édition, si la surcharge couleur diffère de la couleur persistée, le PATCH envoie color quand la surcharge est non nulle, sinon clearColor à true. | [#551bcc200cf8e8da-2] |
-| `mytimeline:frontend/src/components/products/ProductDrawer.tsx:214-222` | En édition, si aucun champ n'a changé, le drawer se ferme sans appeler la mise à jour. | [#551bcc200cf8e8da-3] |
-| `mytimeline:frontend/src/components/products/ProductDrawer.tsx:231` | En création, le champ color n'est ajouté au payload que si une surcharge couleur est posée, sinon la couleur vient de la catégorie. | [#551bcc200cf8e8da-4] |
-| `mytimeline:frontend/src/components/products/ProductDrawer.tsx:240-243` | En création, si une date de premier événement est saisie, un événement de type single portant le nom du produit est ajouté au payload, et la date est lue par form.getValues car zodResolver retire les clés hors schéma. | [#551bcc200cf8e8da-5] |
-| `mytimeline:frontend/src/components/products/ProductDrawer.tsx:244-247` | En création, le payload est validé par productCreateSchema, envoyé via createMutation.mutateAsync, puis un toast de confirmation productCreated est affiché. | [#551bcc200cf8e8da-6] |
-| `mytimeline:frontend/src/components/products/ProductDrawer.tsx:252-256` | En cas d'erreur de soumission, le statut HTTP 409 affiche errors.conflict, 404 affiche errors.notFound, 403 affiche errors.forbidden, et tout autre cas affiche errors.generic. | [#551bcc200cf8e8da-7] |
-| `mytimeline:frontend/src/components/products/ProductDrawer.tsx:261` | Commentaire : Selon le commentaire, l'erreur d'archivage doit être relancée pour que le dialogue l'affiche inline, et le toast ne part qu'après la réponse serveur. | [#e2cd2148934be37e-1] |
-| `mytimeline:frontend/src/components/products/ProductDrawer.tsx:454-464` | Le bouton d'archivage n'apparaît qu'en mode édition, et il est affiché sous le libellé actions.archive. | [#1943176240c5b937-1] |
-| `mytimeline:frontend/src/components/products/ProductDrawer.tsx:481` | Le bouton de soumission est désactivé pendant la soumission ou quand aucune catégorie n'est disponible. | [#a66364760e6b8997-1] |
-| `mytimeline:frontend/src/components/products/ProductSparkline.tsx:47` | L'index de jour est calculé comme WINDOW_DAYS moins le nombre de jours écoulés depuis la date. | [#19c6ba52475bdbae-1] |
-| `mytimeline:frontend/src/components/products/ProductSparkline.tsx:71-72` | Une seule position est dessinée par index de jour, les doublons sont ignorés. | [#d35553652b957a3f-2] |
-| `mytimeline:frontend/src/components/products/ProductSparkline.tsx:73-76` | Chaque point est placé en x selon l'index de jour dans la largeur utile, et en y à la hauteur médiane, constante pour tous les points. | [#d35553652b957a3f-3] |
-| `mytimeline:frontend/src/components/products/ProductsListView.test.tsx:286-302` | Le tri par prochain événement départage les égalités ou absences d'échéance par nom alphabétique. | [#fa793aabbd02687a-1] |
-| `mytimeline:frontend/src/components/products/ProductsListView.test.tsx:311-314` | Commentaire : Les événements archivés sont écartés du calcul de la prochaine échéance, Beta affichant le 17 septembre. | [#fa793aabbd02687a-2] |
-| `mytimeline:frontend/src/components/products/ProductsListView.test.tsx:349-356` | Le compteur d'événements exclut les événements archivés, Beta affichant 1 et Alpha commençant par 2. | [#fa793aabbd02687a-3] |
-| `mytimeline:frontend/src/components/products/ProductsListView.tsx:92` | La liste charge les produits via useProductsWithEvents, paramétré par l'identifiant user issu de useAuth. | [#91657493ba7536e4-1] |
-| `mytimeline:frontend/src/components/products/ProductsListView.tsx:153-157` | La recherche filtre localement les produits dont le nom contient le texte saisi, sans comparaison de casse et sans requête réseau. | [#b72e1924704841ba-1] |
-| `mytimeline:frontend/src/components/products/ProductsListView.tsx:166-175` | Le tri par prochain événement place les produits sans échéance en fin de liste, trie les autres par date de début croissante, puis départage par nom. | [#b72e1924704841ba-2] |
-| `mytimeline:frontend/src/components/products/ProductsListView.tsx:364` | Le compteur d'événements de chaque produit ne retient que les événements non archivés. | [#91657493ba7536e4-2] |
-| `mytimeline:frontend/src/components/products/RestoreProductDialog.tsx:68-75` | À chaque réouverture du dialog, pending et error sont remis à leur valeur initiale, pour qu'une erreur précédente ne persiste pas. | [#ee9f547b2173d238-1] |
-| `mytimeline:frontend/src/components/products/RestoreProductDialog.tsx:77-88` | En cas de rejet de onConfirm, l'erreur affichée est notFound si le statut HTTP vaut 404, sinon generic. | [#3fc3ae8dc472fb2e-1] |
-| `mytimeline:frontend/src/components/products/RestoreProductDialog.tsx:77-82` | En cas de succès, handleConfirm ferme le dialog en appelant onOpenChange(false) après la résolution de onConfirm. | [#3fc3ae8dc472fb2e-2] |
-| `mytimeline:frontend/src/components/products/RestoreProductDialog.tsx:90-93` | L'annulation est ignorée tant que pending est vrai, et ferme le dialog sinon. | [#681dc67c4a1f7bc3-1] |
-| `mytimeline:frontend/src/hooks/useArchiveProduct.ts:69-71` | Sur succès, le produit archivé est retiré du cache de la liste products.withEvents de l'utilisateur. | [#4bd10885e9cd21a4-1] |
-| `mytimeline:frontend/src/hooks/useArchiveProduct.ts:73-74` | Sur succès, la mutation invalide le préfixe products.all et la clé categories.all. | [#4bd10885e9cd21a4-2] |
-| `mytimeline:frontend/src/hooks/useArchiveProduct.ts:86-98` | useIsProductArchivedHere renvoie vrai si une mutation d'archivage du produit donné est en statut pending ou success. | [#5eee9dcc1fc33697-1] |
-| `mytimeline:frontend/src/hooks/useArchivedProducts.ts:19` | La requête des produits archivés est désactivée tant que userId est absent. | [#0e2faf0572d0c73e-1] |
-| `mytimeline:frontend/src/hooks/useAuthGuard.ts:29-33` | Le hook redirige vers la page de login localisée lorsque le chargement est terminé et qu'aucun utilisateur n'est présent. | [#925dfe8cf3238256-1] |
-| `mytimeline:frontend/src/hooks/useDashboardData.ts:44-55` | Les événements archivés sont exclus de la liste aplatie des événements du dashboard. | [#192cf26c46a5c969-1] |
-| `mytimeline:frontend/src/hooks/useDashboardData.ts:72-76` | Les KPIs sont recalculés uniquement lorsque le jour civil de now change, et non à chaque nouvelle référence de now. | [#192cf26c46a5c969-2] |
-| `mytimeline:frontend/src/hooks/useDensity.ts:25-32` | La valeur lue dans localStorage n'est retenue que si elle est une densité valide, sinon le résultat est null. | [#34a7237f6577397d-1] |
-| `mytimeline:frontend/src/hooks/useDensity.ts:40-41` | La densité affichée est le choix de session si présent, sinon la valeur persistée une fois hydraté, sinon la densité par défaut. | [#dca4e2aa8fa292d8-1] |
-| `mytimeline:frontend/src/hooks/useDensity.ts:47-50` | L'attribut data-density de html n'est écrit qu'une fois le hook hydraté. | [#dca4e2aa8fa292d8-2] |
-| `mytimeline:frontend/src/hooks/useMobileKeyboard.ts:110-112` | Sans window.visualViewport, ou lorsque enabled vaut false, le hook ne pose aucun écouteur et ne mesure rien. | [#5fdb91c71c4613ba-1] |
-| `mytimeline:frontend/src/hooks/useMobileKeyboard.ts:130` | La hauteur visible est calculée comme visualViewport.height moins offsetTop, bornée à zéro. | [#5fdb91c71c4613ba-2] |
-| `mytimeline:frontend/src/hooks/useMobileKeyboard.ts:131` | Le clavier est considéré ouvert lorsque l'écart entre window.innerHeight et visualViewport.height dépasse strictement 120 px. | [#5fdb91c71c4613ba-3] |
-| `mytimeline:frontend/src/hooks/useMobileKeyboard.ts:134` | Le mode compact est actif lorsque la hauteur réellement visible est strictement inférieure à 600 px. | [#5fdb91c71c4613ba-4] |
-| `mytimeline:frontend/src/hooks/useMobileKeyboard.ts:156` | Les événements de visualViewport sont regroupés par requestAnimationFrame, de sorte qu'au plus une mesure a lieu par frame. | [#5fdb91c71c4613ba-5] |
-| `mytimeline:frontend/src/hooks/useRestoreProduct.ts:56-62` | Sur succès, le produit restauré est retiré du cache products.archived et les préfixes products.all et categories.all sont invalidés. | [#9d28ca967e35fb4c-1] |
-| `mytimeline:frontend/src/hooks/useRestoreProduct.ts:64-68` | En cas d'erreur HTTP 404, la mutation de désarchivage invalide la liste des produits archivés de l'utilisateur. | [#9d28ca967e35fb4c-2] |
-| `mytimeline:frontend/src/hooks/useReturnFocus.ts:47-49` | À l'ouverture, la cible de retour est l'élément actif, sauf si c'est document.body ou un élément qui n'est pas un HTMLElement, auquel cas elle vaut null. | [#63dac2dc2aa8cd15-1] |
-| `mytimeline:frontend/src/hooks/useReturnFocus.ts:59-60` | Le gestionnaire de l'hôte est appelé en premier, et si l'événement est annulé par l'hôte, le retour du focus est ignoré. | [#42e347a065728fa2-1] |
-| `mytimeline:frontend/src/hooks/useReturnFocus.ts:61` | Le focus n'est pas rendu lorsque la cible capturée est nulle ou n'est plus connectée au document. | [#42e347a065728fa2-2] |
-| `mytimeline:frontend/src/hooks/useSectionAnimation.ts:29-32` | Sans IntersectionObserver, toutes les sections .section-animation reçoivent immédiatement la classe visible. | [#7b19962768e3faec-1] |
-| `mytimeline:frontend/src/hooks/useSectionAnimation.ts:34-44` | L'observateur déclenche la révélation à partir de 10 % d'intersection, avec une marge basse de 100 px. | [#7b19962768e3faec-2] |
-| `mytimeline:frontend/src/hooks/useThemeChoice.test.tsx:214-216` | Le balayage détecte un appel direct à setTheme par une expression régulière textuelle et un import nommé useTheme depuis next-themes. | [#547a609f95ba2af0-1] |
-| `mytimeline:frontend/src/hooks/useThemeChoice.ts:67-69` | Une valeur est un choix de thème valide seulement si c'est une chaîne présente dans THEME_OPTIONS, soit light, dark ou system. | [#457c4d2517d27b31-1] |
-| `mytimeline:frontend/src/hooks/useThemeChoice.ts:101-108` | readStoredThemeChoice lit la clé theme du localStorage, renvoie la valeur si elle est un choix valide, et renvoie null sinon ou si l'accès au stockage lève une erreur. | [#d9b6d475b4f354c4-1] |
-| `mytimeline:frontend/src/hooks/useThemeChoice.ts:129` | La valeur theme exposée vaut undefined tant que mounted est faux, et seulement un choix valide de next-themes sinon. | [#7af0025867d26209-1] |
-| `mytimeline:frontend/src/hooks/useThemeChoice.ts:130-131` | La valeur resolvedTheme vaut undefined tant que mounted est faux, et seulement light ou dark sinon. | [#5a3127ecd19ce774-1] |
-| `mytimeline:frontend/src/hooks/useThemeChoice.ts:132` | isDark vaut vrai seulement si resolvedTheme vaut dark, ce qui le rend faux avant montage. | [#4920a5dfe62d1864-1] |
-| `mytimeline:frontend/src/hooks/useUpdateProduct.ts:30-40` | Sur succès, la mutation invalide products.all, la clé products.detail du produit et products.withEvents de l'utilisateur. | [#18d27e59c0024a01-1] |
-| `mytimeline:frontend/src/types/product.ts:13-24` | Javadoc : Selon la javadoc du schéma, le schéma Zod reprend la borne 1..100 de name côté backend (@Size(min = 1, max = 100)), et corrige une ancienne borne min(3) qui rejetait des noms valides. | [#cef1fb70570f75e7-1] |
-| `mytimeline:frontend/src/types/product.ts:21-24` | Javadoc : Selon le commentaire, la couleur effective d'un produit se calcule côté front comme product.color ?? product.category.color, les valeurs null signifiant héritage. | [#303d2a088fbfb41a-1] |
-| `mytimeline:frontend/src/types/product.ts:54-58` | Javadoc : Selon la javadoc, le champ events ne doit jamais être envoyé à null, un tableau vide ou une omission étant attendu. | [#43db0c42b7b0c20e-1] |
-| `mytimeline:frontend/src/types/product.ts:80-85` | Javadoc : Selon la javadoc, clearColor à true réinitialise la surcharge de couleur pour revenir à l'héritage de la catégorie, et prime sur color côté backend. | [#32de84d8727d6ced-1] |
-| `mytimeline:frontend/src/types/product.ts:90` | Le nom fourni en mise à jour doit contenir entre 1 et 100 caractères quand il est présent. | [#a7fef2f000f9aad7-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/application/dtos/ProductResponse.java:41-45` | Les événements nuls sont remplacés par une liste vide dans la réponse produit. | [#7dfbd1271bf64d86-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/application/dtos/ProductUpdateRequest.java:12` | Javadoc : Selon la javadoc, quand categoryId est présent, la règle BR-PRO-002 (la catégorie doit exister) est appliquée par le service, et non par le DTO. | [#4e8f71e1677946f2-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/application/dtos/ProductUpdateRequest.java:22-23` | Javadoc : Selon la javadoc, clearColor à true réinitialise la surcharge couleur, color passant à null en base pour que le produit reprenne la couleur de sa catégorie. | [#b3584879c887bce0-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/application/dtos/ProductUpdateRequest.java:30` | Quand name est fourni, sa longueur doit être comprise entre 1 et 100 caractères. | [#8adca2d837f13fca-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java:52-54` | La catégorie à la création doit appartenir à l'appelant ou être système, sinon CategoryNotFoundException est levée. | [#5905874ac78b836f-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java:62-64` | La couleur fournie à la création est posée telle quelle sur le produit, sans contrôle supplémentaire dans le service. | [#14ee1b6e889854a1-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java:66-69` | Les événements nuls sont traités comme une liste vide, un produit sans événement est donc autorisé à la création. | [#14ee1b6e889854a1-2] |
+| `backend:src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java:70` | Une date de début absente est remplacée par la date du jour. | [#14ee1b6e889854a1-3] |
+| `backend:src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java:126-128` | Le nom n'est modifié que lorsqu'il est fourni dans la requête. | [#1f81adc7889b6ff7-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java:130-136` | Une catégorie fournie est vérifiée contre le propriétaire du produit chargé avant d'être assignée. | [#1f81adc7889b6ff7-2] |
+| `backend:src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java:140-144` | clearColor à true remet la couleur à null, sinon une couleur non nulle est posée et une couleur nulle laisse la couleur inchangée. | [#1f81adc7889b6ff7-3] |
+| `backend:src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java:156-164` | Une catégorie appartenant à un autre utilisateur lève CategoryNotFoundException, comme une catégorie absente. | [#5905874ac78b836f-2] |
+| `backend:src/main/java/com/matimeline/eventmanager/domain/models/Product.java:15-22` | Le constructeur à cinq paramètres crée un produit non archivé. | [#c67a2106f273d2dc-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/domain/ports/services/ProductService.java:14-19` | Javadoc : Selon la javadoc, BR-PRO-001 et BR-PRO-002 ne s'appliquent qu'aux champs fournis lors de la mise à jour. | [#f93924a577f1e506-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java:62-63` | Le userId du chemin remplace le userId du corps de la requête. | [#b912bc34cf89d67a-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ProductRepositoryJpaImpl.java:94-109` | Pour un produit dont l'id existe, la méthode recharge l'entité gérée et ne recopie que name, archived et color, la catégorie étant rattachée par référence gérée. | [#47fa25977ab07f8c-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ProductRepositoryJpaImpl.java:119-127` | À la création, la catégorie et l'utilisateur sont rattachés par référence gérée (getReference) lorsque leur id est renseigné, puis le produit est persisté via super.save. | [#47fa25977ab07f8c-2] |
+| `backend:src/test/java/com/matimeline/eventmanager/application/services/ProductServiceImplTest.java:35-41` | Javadoc : Selon la javadoc, une catégorie n'est assignable à un produit en création ou en mise à jour que si elle appartient à l'appelant ou au système (ownerId null), sinon elle est traitée comme inexistante. | [#d48d4b515557f0cc-1] |
+| `backend:src/test/java/com/matimeline/eventmanager/application/services/ProductServiceImplTest.java:131-152` | Javadoc : Selon la javadoc, un produit peut être créé sans événement (BR-PRO-005) et une liste d'événements nulle ne lève pas de NPE, le produit étant persisté avec zéro événement. | [#ff8e130e8e660649-1] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductControllerOwnershipTest.java:202-205` | Javadoc : Selon la javadoc, un PATCH partiel sans name reste valide, car les contraintes @Pattern et @Size ignorent la valeur null. | [#a7cae0c21b838b3b-1] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductControllerOwnershipTest.java:236-250` | Javadoc : Selon la javadoc, un PATCH sur un produit inexistant renvoie 404 sans appeler ProductService.updateProduct. | [#2e084095d37ec010-1] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductControllerOwnershipTest.java:368-381` | Javadoc : Selon la javadoc, une restauration qui ne touche aucune ligne (produit inconnu, non archivé ou d'autrui) lève ProductNotFoundException et renvoie 404. | [#0e76e9555a6756f0-1] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductRestoreIntegrationTest.java:123-125` | Javadoc : Selon la javadoc, la liste des archivés inclut un produit archivé sans événement, car aucun filtre BR-PRO-006 n'est appliqué. | [#887f8e55b37da11c-1] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductRestoreIntegrationTest.java:209-225` | Javadoc : Selon la javadoc, restaurer l'archivé d'un autre utilisateur renvoie 404 et non 403, et le produit reste archivé. | [#b4d9a2a71961ac56-1] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/ProductArchivedFilterIntegrationTest.java:27-28` | Javadoc : Selon la javadoc, le soft delete BR-PRO-007 doit être effectif via la restriction SQL archived = false sur ProductEntity. | [#e6eabfc31e301843-1] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/ProductArchivedFilterIntegrationTest.java:114` | Javadoc : Selon la javadoc, un produit sans événement apparaît dans la liste findByUserId avec une liste events vide et non null. | [#8dbc3843b15f15e0-1] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/ProductArchivedFilterIntegrationTest.java:284-285` | Une requête de mise à jour avec clearColor à true remet la couleur du produit à null, ce que le test vérifie après updateProduct. | [#22d66a755989597f-1] |
+| `frontend:components/dashboard/CompactAgenda.tsx:12-16` | Javadoc : Selon la JSDoc, l'agenda compact affiche les événements du jour et du lendemain, et non la semaine complète. | [#afd07d24dfee583c-1] |
+| `frontend:components/dashboard/CompactAgenda.tsx:38-44` | La fonction dayBounds calcule les bornes d'un jour, de minuit à 23 h 59 min 59 s 999 ms. | [#b74596126b7a1f59-1] |
+| `frontend:components/dashboard/CompactAgenda.tsx:53` | Le filet coloré de chaque ligne prend la couleur de l'événement, avec var(--color-rule-strong) en repli. | [#d7cfb53e22b9ede9-1] |
+| `frontend:components/dashboard/CompactAgenda.tsx:77-80` | Les événements du jour sont filtrés par getEventsInRange entre les bornes de today. | [#afd07d24dfee583c-2] |
+| `frontend:components/dashboard/CompactAgenda.tsx:81-84` | Les événements du lendemain sont filtrés par getEventsInRange entre les bornes de tomorrow. | [#afd07d24dfee583c-3] |
+| `frontend:components/dashboard/CompactAgenda.tsx:86` | L'état vide est affiché quand aucun événement n'existe aujourd'hui ni demain. | [#afd07d24dfee583c-4] |
+| `frontend:components/dashboard/CompactAgenda.tsx:126` | Le bouton de création de l'état vide n'est rendu que si openCreateEvent est fourni et canCreateEvent vaut true. | [#afd07d24dfee583c-5] |
+| `frontend:components/dashboard/CompactAgenda.tsx:163` | Le groupe demain n'est rendu que s'il contient au moins un événement, alors que le groupe aujourd'hui reste affiché avec un message vide. | [#afd07d24dfee583c-6] |
+| `frontend:components/dashboard/CompactRail.tsx:39` | Javadoc : Selon la javadoc, l'item actif vaut 'home' par défaut et est mis en surbrillance accent. | [#68e6a370617684fb-1] |
+| `frontend:components/dashboard/DensityRibbon.tsx:25-26` | Javadoc : Selon la javadoc, la densité est représentée par la hauteur de barre proportionnelle aux événements par jour, et non par un gradient. | [#ebd6ba8ae7eef225-1] |
+| `frontend:components/dashboard/DensityRibbon.tsx:44-46` | Javadoc : Selon la javadoc, en mode scrollable il n'existe pas de viewport et la navigation se fait par défilement natif du rail. | [#ebd6ba8ae7eef225-2] |
+| `frontend:components/dashboard/DensityRibbon.tsx:89` | Le conteneur de barre porte le data-testid dashboard-density-today uniquement pour le bucket du jour courant. | [#6b304591ddb21f04-1] |
+| `frontend:components/dashboard/DensityRibbon.tsx:95` | La hauteur de la barre vaut au minimum 8 % si le compteur est supérieur à 0, sinon au minimum 2 %, et au moins la part bucket.height en pourcentage. | [#6b304591ddb21f04-2] |
+| `frontend:components/dashboard/DensityRibbon.tsx:101-103` | Le trait TODAY est affiché au bord gauche de la barre du jour courant, sur une largeur de 0,5 unité Tailwind (w-0.5). | [#6b304591ddb21f04-3] |
+| `frontend:components/dashboard/DensityRibbon.tsx:120-126` | La date de départ de la fenêtre est le jour civil courant à minuit local, mémoïsé sur année, mois et jour, de sorte que la fenêtre démarre aujourd'hui. | [#ebd6ba8ae7eef225-3] |
+| `frontend:components/dashboard/DensityRibbon.tsx:130-133` | Les seaux sont calculés sur la fenêtre des rangeDays prochains jours à partir de from, en passant from comme date de référence. | [#270851e50e43138a-1] |
+| `frontend:components/dashboard/DensityRibbon.tsx:162` | En mode scrollable le libellé de plage couvre 0 à rangeDays, sinon il couvre la position courante du viewport sur vpDays jours. | [#cd2b065d4d947547-1] |
+| `frontend:components/dashboard/DensityRibbon.tsx:164-170` | À la fin du glisser, la position du viewport est arrondie au jour entier affiché par le libellé. | [#f88b439482eb5d78-1] |
+| `frontend:components/dashboard/DensityRibbon.tsx:165` | Seul le pointeur qui a démarré le glisser peut terminer le glisser, les autres pointeurs sont ignorés. | [#f88b439482eb5d78-2] |
+| `frontend:components/dashboard/DensityRibbon.tsx:175-176` | Un clic souris démarre le glisser uniquement avec le bouton principal, et un glisser déjà en cours bloque un nouveau démarrage. | [#68eb8fff2794fe69-1] |
+| `frontend:components/dashboard/DensityRibbon.tsx:196-201` | Le clavier pilote le viewport via keyToViewportStart et n'appelle preventDefault que si une touche gérée produit une nouvelle position. | [#ee98d5ba670baba5-1] |
+| `frontend:components/dashboard/DensityRibbon.tsx:203` | Le title de chaque barre affiche la date courte formatée suivie du nombre d'événements formaté localement. | [#1b7aab519a95ab51-1] |
+| `frontend:components/dashboard/DensityRibbon.tsx:222` | La graduation du jour 0 affiche la clé today, les autres graduations affichent la date courte de leur jour. | [#35aa78eb3d490c08-1] |
+| `frontend:components/dashboard/DensityRibbon.tsx:272-279` | Le lien Ouvrir la frise n'est rendu que si la prop timelineHref est fournie. | [#ebd6ba8ae7eef225-4] |
+| `frontend:components/dashboard/DensityRibbon.tsx:298` | En mode scrollable la largeur du contenu vaut rangeDays fois minBarWidth, plus rangeDays moins 1 pixels d'interstices. | [#ebd6ba8ae7eef225-5] |
+| `frontend:components/dashboard/GreetingHeader.tsx:25-29` | timeOfDayKey renvoie morning pour une heure inférieure à 12, afternoon pour une heure inférieure à 18, et evening sinon. | [#df3ce9d438d8df6d-1] |
+| `frontend:components/dashboard/GreetingHeader.tsx:37` | La tranche horaire est calculée à partir de l'heure locale de now via getHours. | [#b3830a08e89838f6-1] |
+| `frontend:components/dashboard/GreetingHeader.tsx:59` | Le sous-titre n'est rendu que si variant vaut full. | [#b3830a08e89838f6-2] |
+| `frontend:components/dashboard/KpiMarginalia.tsx:94-97` | La catégorie affichée est kpis.busiestCategory, ou le libellé busiestCategoryNone si la valeur est absente. | [#67a9d1800317c0b0-1] |
+| `frontend:components/dashboard/MobileDrawer.tsx:42` | Le composant ne rend rien tant que la prop open vaut false. | [#7b59934497a1d787-1] |
+| `frontend:components/dashboard/ProductCarousel.tsx:91` | La pastille prend product.color, sinon la couleur de la catégorie, sinon la variable CSS rule-strong. | [#7afc28a123d9931a-1] |
+| `frontend:components/dashboard/ProductCarousel.tsx:92` | Le compteur d'une vignette compte les événements non archivés du produit. | [#05681fe56a31789e-1] |
+| `frontend:components/dashboard/ProductList.tsx:79` | Le compteur d'une ligne compte les événements non archivés du produit. | [#0fdcf9efe4adf911-1] |
+| `frontend:components/dashboard/WeekAgenda.tsx:47` | La liste affichée est le résultat de currentWeekEvents(events, now), recalculé quand events ou now change. | [#55e1fe4221aca87e-1] |
+| `frontend:components/dashboard/WeekAgenda.tsx:98-110` | Le bouton d'ajout de l'état vide n'est rendu que si openCreateEvent existe et que canCreateEvent vaut true. | [#4d6f96ac4fe983af-1] |
+| `frontend:components/dashboard/dashboard-components.test.tsx:42-45` | Le test fixe que la salutation bascule sur la clé dashboard.greeting.evening pour une heure locale de 20h. | [#95183813a2af961a-1] |
+| `frontend:components/dashboard/dashboard-components.test.tsx:117-145` | Le compteur d'événements de ProductList exclut les événements archivés, un événement actif et un archivé donnent le compteur 1. | [#f5854405638142c5-1] |
+| `frontend:components/dashboard/dashboard-components.test.tsx:147-169` | Une série récurrente dont la date de début est passée affiche sa prochaine occurrence comme échéance, ici le 20 juillet 2026 pour une série mensuelle. | [#f5854405638142c5-2] |
+| `frontend:components/dashboard/dashboard-lib.test.ts:32-47` | buildDensityBuckets compte les événements par jour et normalise height sur le maximum, le jour le plus chargé valant 1 et un jour à moitié chargé valant 0.5. | [#14d011cdc3fe80cd-1] |
+| `frontend:components/dashboard/dashboard-lib.test.ts:45-46` | La couleur dominante d'un bucket est celle du premier événement rencontré dans la liste, selon le test. | [#2bcd91187fb1b951-1] |
+| `frontend:components/dashboard/dashboard-lib.test.ts:49-55` | buildDensityBuckets ignore les événements hors de la fenêtre et marque le bucket du jour courant avec isToday. | [#14d011cdc3fe80cd-2] |
+| `frontend:components/dashboard/dashboard-lib.test.ts:59-67` | getWeekRange calcule la semaine ISO du lundi au dimanche, le début étant un lundi à 0h et la fin un dimanche à 23h. | [#ec95069be1f98a43-1] |
+| `frontend:components/dashboard/dashboard-lib.test.ts:85-93` | timeOfDayKey renvoie morning pour 8h et 11h, afternoon pour 12h et 17h, evening pour 18h et 23h. | [#30997bdc044c216f-1] |
+| `frontend:components/dashboard/dashboard-mobile.test.tsx:75-83` | CompactAgenda liste les événements du jour et du lendemain dans deux groupes distincts. | [#e9e5d2b0cbadd36b-1] |
+| `frontend:components/dashboard/dashboard-mobile.test.tsx:85-89` | CompactAgenda ignore les événements au-delà du lendemain et affiche l'état vide si aucun événement ne reste. | [#e9e5d2b0cbadd36b-2] |
+| `frontend:components/dashboard/dashboard-mobile.test.tsx:126-144` | Lorsque aujourd'hui est vide et demain non vide, le groupe du jour affiche la clé emptyToday et jamais le message global d'état vide. | [#e577a1922b47a5a3-1] |
+| `frontend:components/dashboard/dashboard-mobile.test.tsx:146-153` | Lorsque demain est vide, le groupe dashboard-compact-agenda-tomorrow n'est pas rendu. | [#678367f6bfe6eade-1] |
+| `frontend:components/dashboard/dashboard-mobile.test.tsx:215-227` | MobileDrawer appelle onClose à l'appui sur Escape et au clic sur l'overlay. | [#5e8b2e961736e895-1] |
+| `frontend:components/dashboard/dashboard-mobile.test.tsx:244-254` | En thème light le libellé de la bascule nomme common.theme.dark avec aria-pressed false, en thème dark il nomme common.theme.light avec aria-pressed true. | [#390e8481ec723dc2-1] |
+| `frontend:components/dashboard/densityWindow.ts:33-35` | dayToPct convertit un jour en pourcentage de la fenêtre, et renvoie 0 si rangeDays n'est pas strictement positif. | [#a4492eaaa38f2558-1] |
+| `frontend:components/dashboard/densityWindow.ts:41-52` | rulerTicks produit une graduation tous les step jours de 0 à rangeDays inclus, ancrée à gauche pour 0, à droite pour rangeDays et centrée sinon. | [#05f7ccad1030e678-1] |
+| `frontend:components/dashboard/densityWindow.ts:42` | rulerTicks renvoie une liste vide si rangeDays ou step ne sont pas strictement positifs. | [#05f7ccad1030e678-2] |
+| `frontend:components/dashboard/densityWindow.ts:55-57` | viewportDays renvoie la plus petite valeur entre days et rangeDays, sans descendre sous 0. | [#a30ed5c37491edfb-1] |
+| `frontend:components/dashboard/densityWindow.ts:60-62` | maxViewportStart calcule le début maximal du viewport comme rangeDays moins la largeur du viewport, borné à 0. | [#02636746ff48959c-1] |
+| `frontend:components/dashboard/densityWindow.ts:65-68` | clampViewportStart borne le début dans l'intervalle de 0 au début maximal, NaN et -Infinity donnent 0 et +Infinity donne le début maximal. | [#66234f328ac713c4-1] |
+| `frontend:components/dashboard/densityWindow.ts:84-85` | dragViewportStart garde la position inchangée, bornée, si la largeur de piste n'est pas strictement positive, sinon convertit le déplacement en pixels en jours. | [#27ba9c4a91382cf3-1] |
+| `frontend:components/dashboard/densityWindow.ts:103-115` | keyToViewportStart part de la position arrondie, avance ou recule d'un jour avec les flèches et de sept jours avec PageUp et PageDown, puis borne le résultat. | [#2c78b408e93fba68-1] |
+| `frontend:components/dashboard/densityWindow.ts:116-119` | La touche Home renvoie 0 et la touche End renvoie le début maximal du viewport. | [#2c78b408e93fba68-2] |
+| `frontend:components/dashboard/densityWindow.ts:126-130` | addCalendarDays crée un minuit local à partir de la date d'origine puis ajoute n jours civils via setDate. | [#b1e39f1fe64538b7-1] |
+| `frontend:components/dashboard/intl-formats.test.tsx:141-145` | Le code à quatre chiffres 1000 de StateScreen reste affiché sans séparateur de milliers. | [#8741f29384672b71-1] |
+| `frontend:components/dashboard/kpis.ts:38-41` | Javadoc : Selon le commentaire, la liste de la semaine diverge volontairement de la maquette, qui comptait les 7 prochains jours : elle retient un début d'événement dans la semaine civile courante. | [#17c8584d965be49e-1] |
+| `frontend:components/dashboard/kpis.ts:73-81` | isOngoing retourne vrai pour une durée dont le début est antérieur ou égal à aujourd'hui et dont la fin est postérieure ou égale à aujourd'hui, en jours civils locaux. | [#299e28e20716ad54-1] |
+| `frontend:components/dashboard/kpis.ts:88-98` | occurrencesInMonth compte une seule occurrence pour un événement non récurrent dont le début tombe dans le mois calendaire de now. | [#e214d1054f3ca7f8-1] |
+| `frontend:components/dashboard/kpis.ts:100-113` | Pour une série récurrente, les occurrences sont calculées depuis l'origine, bornées par seriesHorizon et par la fin du mois, et seules celles dont le début tombe dans le mois sont comptées. | [#e214d1054f3ca7f8-2] |
+| `frontend:components/dashboard/kpis.ts:118` | Le départage des ex æquo utilise un Intl.Collator dont la locale est figée à en. | [#c8745ffcda1a7d6c-1] |
+| `frontend:components/dashboard/kpis.ts:129-135` | Javadoc : Selon le commentaire, à compte égal la catégorie qui vient en premier selon la collation racine l'emporte, indépendamment de l'ordre de l'API. | [#57d04d7761f600cb-1] |
+| `frontend:components/dashboard/kpis.ts:136-156` | busiestCategory additionne les occurrences du mois courant par catégorie de produit, puis retient la catégorie au compte le plus élevé, ou null si aucune occurrence. | [#57d04d7761f600cb-2] |
+| `frontend:components/dashboard/kpis.ts:147-150` | Une catégorie remplace la meilleure si son compte est strictement supérieur, ou égal avec un nom qui précède selon tieOrder. | [#57d04d7761f600cb-3] |
+| `frontend:components/dashboard/kpis.ts:158-175` | computeDashboardKpis assemble les cinq métriques : semaine, semaine récurrente, échéance proche, en cours et catégorie la plus chargée. | [#84685175fe11186a-1] |
+| `frontend:components/dashboard/kpis.ts:163-167` | Un événement compte dans dueSoon si sa prochaine occurrence est à au plus 14 jours civils d'aujourd'hui, bornes incluses, et un événement sans prochaine occurrence est exclu. | [#84685175fe11186a-2] |
+| `frontend:components/products/ArchivedProductsView.tsx:69-86` | Le rendu suit un ordre de priorité : chargement, puis erreur, puis liste vide, puis tableau. | [#bba9c7068dceea7c-1] |
+| `frontend:components/products/ArchivedProductsView.tsx:106` | La couleur affichée d'une pastille est la couleur du produit, à défaut celle de sa catégorie, à défaut null. | [#1d096e9be2ded267-1] |
+| `frontend:components/products/ArchivedProductsView.tsx:115-119` | Lorsqu'aucune couleur n'est disponible, la pastille reprend la variable CSS de la règle de séparation forte. | [#bba9c7068dceea7c-2] |
+| `frontend:components/products/ProductDetailView.test.tsx:598-607` | Un event dont la date de fin est antérieure au jour local est marqué passé et désaturé, qu'il soit archivé ou non. | [#d5733f4a3c39f6d6-1] |
+| `frontend:components/products/ProductDetailView.test.tsx:624-639` | Le compteur d'events actifs (BR-EVE-011) reste à 1 quelle que soit la vue sélectionnée, il ne suit pas le filtre de vue. | [#d5733f4a3c39f6d6-2] |
+| `frontend:components/products/ProductDetailView.tsx:80-84` | Le filtre all garde tous les événements, archived ne garde que les archivés, et les autres valeurs ne gardent que les événements actifs. | [#6da42c4349c6729b-1] |
+| `frontend:components/products/ProductDetailView.tsx:108-112` | Le produit affiché est recherché par id dans la liste en cache useProductsWithEvents, sans refetch dédié, et vaut null s'il est absent. | [#234f20b95e01efe4-1] |
+| `frontend:components/products/ProductDetailView.tsx:120-123` | Un produit archivé depuis cette vue reste affiché avec la dernière fiche vue, tandis qu'un produit archivé ailleurs s'affiche comme introuvable. | [#dfec45b7a2f51dde-1] |
+| `frontend:components/products/ProductDetailView.tsx:152-158` | Le compteur d'événements actifs ne dépend pas du filtre de vue et exclut toujours les événements archivés (BR-EVE-011). | [#4a720ccb2fa33d11-1] |
+| `frontend:components/products/ProductDetailView.tsx:218-222` | Une erreur HTTP 409 au désarchivage affiche le message de conflit, toute autre erreur affiche le message générique. | [#da09d8f98f586e40-1] |
+| `frontend:components/products/ProductDetailView.tsx:254-257` | L'archivage du produit appelle la mutation, affiche le toast de succès après la réponse serveur, ferme le dialogue puis retourne à la liste des produits. | [#155396159bcd1878-1] |
+| `frontend:components/products/ProductDrawer.tsx:56` | Javadoc : Selon la javadoc, le nom du produit est borné entre 1 et 100 caractères (BR-PRO-001). | [#34e30426e8762624-1] |
+| `frontend:components/products/ProductDrawer.tsx:129` | noCategory vaut vrai quand le drawer est ouvert, que la requête catégories a réussi et que la liste est vide. | [#533bd465bf31c0d6-1] |
+| `frontend:components/products/ProductDrawer.tsx:147-150` | Le formulaire valide name et category avec productCreateSchema restreint à ces deux champs, dans les deux modes. | [#4e8f4711c48df714-1] |
+| `frontend:components/products/ProductDrawer.tsx:188` | La couleur héritée est la couleur de la catégorie sélectionnée dans la liste chargée, ou null. | [#2b479b70769243ac-1] |
+| `frontend:components/products/ProductDrawer.tsx:189` | La couleur effective est la surcharge produit si elle existe, sinon la couleur héritée de la catégorie. | [#c8d949c0e03d3e26-1] |
+| `frontend:components/products/ProductDrawer.tsx:203-205` | En édition, name et categoryId ne sont ajoutés au PATCH que s'ils diffèrent du produit d'origine (diff partiel). | [#625c9eea23e228ac-1] |
+| `frontend:components/products/ProductDrawer.tsx:209-213` | En édition, la couleur n'est envoyée que si la surcharge diffère de product.color : color si une surcharge est posée, clearColor si elle a été retirée. | [#625c9eea23e228ac-2] |
+| `frontend:components/products/ProductDrawer.tsx:214-222` | En édition, si aucun champ n'a changé, aucun PATCH n'est envoyé et le drawer se ferme. | [#625c9eea23e228ac-3] |
+| `frontend:components/products/ProductDrawer.tsx:226-231` | En création, le payload contient name et category, et color seulement si une surcharge couleur est posée. | [#625c9eea23e228ac-4] |
+| `frontend:components/products/ProductDrawer.tsx:240-243` | En création, la date firstEventDate est lue via form.getValues, et un événement de type single est ajouté au payload seulement si une date est renseignée. | [#625c9eea23e228ac-5] |
+| `frontend:components/products/ProductDrawer.tsx:245-247` | En création, le payload est envoyé à createMutation puis un toast de succès productCreated est affiché, jamais en édition. | [#625c9eea23e228ac-6] |
+| `frontend:components/products/ProductDrawer.tsx:252-256` | Dans le catch de onSubmit, une erreur HTTP 409 affiche errors.conflict, 404 affiche errors.notFound, 403 affiche errors.forbidden, et les autres cas affichent errors.generic. | [#625c9eea23e228ac-7] |
+| `frontend:components/products/ProductDrawer.tsx:481` | Le bouton de soumission est désactivé pendant la soumission et quand aucune catégorie n'est disponible. | [#ac8bf718020bd560-1] |
+| `frontend:components/products/ProductSparkline.tsx:25` | La constante WINDOW_DAYS fixe la fenêtre d'affichage de la sparkline à 90 jours. | [#2d6d2824a39585a7-1] |
+| `frontend:components/products/ProductSparkline.tsx:43-48` | toDayIndex renvoie null pour une date future ou plus ancienne que 90 jours, sinon un index où 0 correspond à il y a 90 jours et 90 à aujourd'hui. | [#e63440a2afd3a325-1] |
+| `frontend:components/products/ProductSparkline.tsx:66-68` | Les dates sans valeur sont ignorées, les chaînes sont converties par parseLocalDate et les dates invalides sont écartées. | [#0792c488ea730973-1] |
+| `frontend:components/products/ProductSparkline.tsx:70-72` | Un seul point est tracé par jour : une date dont l'index de jour est déjà présent dans l'ensemble seen est ignorée. | [#0792c488ea730973-2] |
+| `frontend:components/products/ProductSparkline.tsx:74-76` | Chaque point est placé à une ordonnée constante égale à la moitié de la hauteur, la sparkline ne représentant pas une valeur quantitative. | [#0792c488ea730973-3] |
+| `frontend:components/products/ProductSparkline.tsx:81` | La couleur du trait est la prop color si elle est renseignée, sinon la variable CSS --color-accent avec currentColor en repli. | [#c000fb5431f9ee8d-1] |
+| `frontend:components/products/ProductSparkline.tsx:102-110` | La polyline n'est rendue que si au moins deux points sont présents, avec un trait de 2 px et des extrémités arrondies. | [#0fef97cd18bdbcc9-1] |
+| `frontend:components/products/ProductsListView.tsx:153-157` | La recherche filtre localement les produits dont le nom contient le texte saisi, sans distinction de casse et sans appel réseau. | [#efe4a72442850905-1] |
+| `frontend:components/products/ProductsListView.tsx:166-175` | Le tri par prochain événement place les produits sans échéance en fin de liste, et départage les dates égales par nom. | [#efe4a72442850905-2] |
+| `frontend:components/products/ProductsListView.tsx:364` | Le nombre d'événements affiché par ligne exclut les événements archivés. | [#e2eb38fbdd986acc-1] |
+| `frontend:components/products/RestoreProductDialog.tsx:69-75` | À chaque réouverture du dialog, l'état d'attente et l'erreur affichée sont remis à zéro. | [#5d5284242016eda9-1] |
+| `frontend:components/products/RestoreProductDialog.tsx:84` | Une erreur HTTP 404 affiche le message notFound, toute autre erreur affiche le message générique. | [#c8e4aec3f2c5b021-1] |
+| `frontend:components/products/RestoreProductDialog.tsx:90-93` | L'annulation est ignorée pendant l'attente de la confirmation. | [#b4e9d7c5cb48bd50-1] |
+| `frontend:hooks/useArchiveProduct.ts:86-98` | Le hook renvoie vrai quand une mutation d'archivage du productId donné est en cours ou a réussi, et ignore les échecs. | [#b68bd1cb875fc113-1] |
+| `frontend:hooks/useArchivedProducts.ts:15-21` | La requête des produits archivés est désactivée tant que userId est absent. | [#f94eccf7cf7ca7a7-1] |
+| `frontend:hooks/useRestoreProduct.ts:64-68` | En cas d'erreur 404 au désarchivage, la liste des archivés est invalidée pour se recalculer, sans modification des données. | [#0b854fb2b8cfa30b-1] |
+| `frontend:services/productService.ts:78-84` | Javadoc : Selon le commentaire, archiver est un soft delete (données conservées, produit masqué des listes) et réversible, donc le verbe delete ne désigne pas une suppression définitive. | [#e3db46c52fa04385-1] |
+| `frontend:services/productService.ts:118-123` | Javadoc : Selon le commentaire, un produit inconnu, déjà actif ou appartenant à un autre utilisateur répond 404 avec une réponse unique. | [#ec6452762695546c-1] |
+| `frontend:types/product.ts:88-102` | productUpdateSchema exige qu'au moins un des champs name, categoryId, color ou clearColor soit présent pour valider le PATCH. | [#03f64069c06a0bb5-1] |
 
 ## Validations {#t-validation}
 
 | Pointeur | Énoncé | Fait |
 |---|---|---|
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/ProductCreationRequest.java:12` | Le nom de création est obligatoire et non blanc. | [#cd88dd2cf3309f34-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/ProductCreationRequest.java:13` | Le nom de création doit faire entre 1 et 100 caractères. | [#cd88dd2cf3309f34-2] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/ProductCreationRequest.java:16` | La catégorie est obligatoire à la création. | [#f063ecb315e67a4a-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/ProductCreationRequest.java:19` | L'identifiant utilisateur est obligatoire dans le corps de création. | [#0c81f2e6d6823283-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/ProductCreationRequest.java:29` | La couleur, si fournie, doit être au format hexadécimal #RRGGBB. | [#543d5111ef963789-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/ProductUpdateRequest.java:30` | Si le nom est fourni, il doit faire entre 1 et 100 caractères. | [#abbeee25671c4c8e-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/ProductUpdateRequest.java:31` | Si le nom est fourni, il doit contenir au moins un caractère non blanc. | [#abbeee25671c4c8e-2] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/ProductUpdateRequest.java:36` | Si la couleur est fournie, elle doit être au format #RRGGBB. | [#cc79bb18430a4b6d-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java:49-50` | Lève UserNotFoundException quand l'utilisateur demandé n'existe pas. | [#d037acd2b97aa575-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java:197-198` | Lève ProductNotFoundException quand aucune ligne n'a été restaurée. | [#886190a156eb7d0d-1] |
-| `mytimeline:backend/src/test/java/com/matimeline/eventmanager/application/services/ProductServiceImplTest.java:39-40` | Javadoc : Selon la javadoc, une catégorie d'autrui est traitée comme inexistante et lève CategoryNotFoundException, pour éviter l'énumération d'identifiants. | [#b140b7673eba4de9-1] |
-| `mytimeline:frontend/src/components/products/ArchivedProductsView.tsx:55` | La confirmation lève une erreur si aucun produit cible n'est mémorisé. | [#215f8472c59a65c2-1] |
-| `mytimeline:frontend/src/components/products/ProductDetailView.tsx:253` | L'archivage lève une erreur si userId ou le produit est absent, avant tout appel à la mutation. | [#489818ded7d0ce9d-1] |
-| `mytimeline:frontend/src/components/products/ProductDrawer.tsx:147-150` | Le formulaire est validé par le schéma Zod productCreateSchema réduit aux champs name et category, dans les deux modes, et firstEventDate n'est pas validé. | [#36665b5051c1ed9d-1] |
-| `mytimeline:frontend/src/components/products/ProductDrawer.tsx:195-198` | La soumission est refusée avec l'erreur errors.noUser affichée quand aucun utilisateur n'est identifié. | [#91bf6a3b3afc838d-1] |
-| `mytimeline:frontend/src/components/products/ProductDrawer.tsx:223-224` | Le patch d'édition est validé par productUpdateSchema avant l'appel de updateMutation.mutateAsync avec productId et data. | [#91bf6a3b3afc838d-2] |
-| `mytimeline:frontend/src/components/products/ProductDrawer.tsx:265` | L'archivage lève une erreur si l'utilisateur ou le produit est absent. | [#cba989e39b5ba327-1] |
-| `mytimeline:frontend/src/components/products/ProductsListView.tsx:214-219` | L'archivage lève une erreur si userId ou le produit ciblé est absent, sinon il appelle la mutation, affiche le toast de succès et ferme le dialog. | [#2f561477db7d3e69-1] |
-| `mytimeline:frontend/src/hooks/useArchiveProduct.ts:62-64` | Sans userId, la mutation d'archivage rejette avec une erreur 'userId manquant' sans appeler deleteProduct. | [#2a25f62a0b7cc915-1] |
-| `mytimeline:frontend/src/hooks/useCreateProduct.ts:25-27` | Sans userId, la mutation de création rejette avec une erreur 'userId manquant' sans appeler createProduct. | [#1738e7ad53937d1c-1] |
-| `mytimeline:frontend/src/hooks/useUpdateProduct.ts:25-27` | Sans userId, la mutation de mise à jour rejette avec une erreur 'userId manquant' sans appeler updateProduct. | [#a1b1fd48f5905438-1] |
-| `mytimeline:frontend/src/types/product.ts:9-11` | hexColorSchema accepte uniquement une chaîne au format hexadécimal #RRGGBB et rejette les autres formats avec le message « Couleur invalide (format #RRGGBB attendu) ». | [#485f8b3b418aef7b-1] |
-| `mytimeline:frontend/src/types/product.ts:28` | Le nom du produit doit contenir entre 1 et 100 caractères en lecture. | [#aaccd08badf12c95-1] |
-| `mytimeline:frontend/src/types/product.ts:88-102` | productUpdateSchema exige qu'au moins un des champs name, categoryId, color ou clearColor soit fourni, avec le message « Au moins un champ doit être fourni ». | [#ad62633669322fcc-1] |
-| `mytimeline:frontend/src/types/product.ts:93` | Le champ clearColor n'accepte que la valeur littérale true quand il est présent. | [#692e81d9cb1ca593-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/application/dtos/ProductCreationRequest.java:12` | Le nom de création ne doit pas être vide. | [#757eb13f1c44ca86-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/application/dtos/ProductCreationRequest.java:13` | Le nom de création doit compter entre 1 et 100 caractères. | [#757eb13f1c44ca86-2] |
+| `backend:src/main/java/com/matimeline/eventmanager/application/dtos/ProductCreationRequest.java:16` | La catégorie est obligatoire à la création. | [#f1ff1bcbd432dc1a-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/application/dtos/ProductCreationRequest.java:19` | L'identifiant utilisateur est obligatoire dans le corps de la requête. | [#c458a8f11ad15bc3-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/application/dtos/ProductCreationRequest.java:29` | Une couleur fournie doit respecter le format #RRGGBB, une valeur nulle est acceptée. | [#b147dbf13fec084b-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/application/dtos/ProductUpdateRequest.java:31` | Un name composé uniquement d'espaces lève l'erreur de message Name must not be blank, car la regexp exige au moins un caractère non blanc. | [#e6032e4c6921b184-2] |
+| `backend:src/main/java/com/matimeline/eventmanager/application/dtos/ProductUpdateRequest.java:36` | Quand color est présent, il doit correspondre au format hexadécimal #RRGGBB, sinon l'erreur de message Color must be a #RRGGBB hex value est levée. | [#85cfb8bf280a8bdd-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java:49-50` | Un utilisateur introuvable lève UserNotFoundException. | [#8236045f458a8db1-1] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductControllerOwnershipTest.java:172-176` | Javadoc : Selon la javadoc, un nom vide est rejeté en 400 par @Valid avec une contrainte @Size min=1, avant l'exécution du corps du contrôleur. | [#7940138603fc5dd0-1] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductControllerOwnershipTest.java:187-191` | Javadoc : Selon la javadoc, un nom composé uniquement d'espaces est rejeté en 400 par une contrainte @Pattern, car il passe @Size min=1. | [#f78d9c0de8326bdd-1] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductControllerOwnershipTest.java:223-234` | Javadoc : Selon la javadoc, un nom de plus de 100 caractères est rejeté en 400 par @Valid avec une contrainte @Size max=100. | [#e3419179e310f628-1] |
+| `frontend:components/dashboard/dashboard-landscape.test.tsx:33-41` | Chaque item icône de CompactRail doit porter un aria-label non vide et un title identique à ce label. | [#9d1b96496319356f-1] |
+| `frontend:components/products/ArchivedProductsView.tsx:54-58` | Si aucun produit cible n'est défini, la confirmation lève une erreur sans appeler la mutation. | [#be85d186b3172d5c-1] |
+| `frontend:components/products/ProductDetailView.tsx:253` | L'archivage lève une erreur si l'identifiant utilisateur ou le produit est absent. | [#17879ae6754fc617-1] |
+| `frontend:components/products/ProductDrawer.tsx:195-198` | Si userId est absent, onSubmit n'envoie rien et affiche l'erreur inline noUser. | [#53652a5bcd9a0280-1] |
+| `frontend:components/products/ProductDrawer.tsx:265` | Si userId ou product est absent, handleDeleteConfirm lève une Error et n'archive rien. | [#8779f44e96578ebd-1] |
+| `frontend:components/products/ProductsListView.tsx:215` | L'archivage lève une erreur si l'identifiant utilisateur ou le produit ciblé est absent. | [#01e7da945a589044-1] |
+| `frontend:hooks/useArchiveProduct.ts:62-64` | Sans userId, la mutation d'archivage rejette avec une erreur 'userId manquant' sans appeler le service. | [#ad4c3ea9e12f5a1f-1] |
+| `frontend:types/product.ts:9-11` | hexColorSchema accepte uniquement une chaîne au format hexadécimal #RRGGBB et lève le message 'Couleur invalide (format #RRGGBB attendu)' sinon. | [#2a824d228fa9e4b8-1] |
+| `frontend:types/product.ts:26-36` | productSchema borne le nom du produit entre 1 et 100 caractères et rend la couleur produit et la couleur de catégorie nullables. | [#6182751c045b7835-1] |
+| `frontend:types/product.ts:88-94` | productUpdateSchema valide name entre 1 et 100 caractères si présent, categoryId au format GUID si présent, color hexadécimal si présent et clearColor limité à la valeur true. | [#016901f223f53d2d-1] |
+| `frontend:types/product.ts:100-101` | Le refine de productUpdateSchema renvoie le message 'Au moins un champ doit être fourni' lorsqu'aucun champ effectif n'est présent. | [#016901f223f53d2d-2] |
 
 ## Contrôles de rôle {#t-role_check}
 
 | Pointeur | Énoncé | Fait |
 |---|---|---|
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java:52-54` | La catégorie cible doit appartenir à l'appelant ou être système pour être assignée au produit. | [#ec4e3fd3227d38b3-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java:159-162` | Une catégorie appartenant à un autre utilisateur lève CategoryNotFoundException, comme une catégorie inexistante. | [#a712e9e45d53dc59-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java:58-60` | Le contrôle d'appartenance répond 403 quand l'id du caller ne correspond pas au userId du path, ce même contrôle se répète sur les autres routes. | [#c48d5b4d8554dbc6-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java:150-152` | Un produit dont le propriétaire n'est pas le userId du path reçoit 403, contrôle répété sur PATCH, DELETE et la liste d'événements. | [#08ae0ae3e5becd01-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java:242-246` | Un produit appartient à l'utilisateur seulement si product.user.id est non null et égal au userId. | [#ba3896e449e1946e-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ProductRepositoryJpaImpl.java:250-258` | La restauration ne touche que la ligne dont l'id, le user_id et archived = true correspondent au WHERE. | [#3fbfb2966f0ed222-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java:54-60` | Sans utilisateur courant la route renvoie 401, et si le userId du chemin diffère de l'appelant elle renvoie 403. Le même contrôle se répète sur les autres routes. | [#c53e8add0d832071-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java:150-152` | Un produit dont le propriétaire n'est pas le userId du chemin renvoie 403. | [#612b7cd55d571598-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java:242-246` | productBelongsToUser compare l'id du propriétaire du produit à userId et renvoie faux si l'utilisateur ou son id est nul. | [#fa80e328df0f56b0-1] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductControllerOwnershipTest.java:44-45` | Javadoc : Selon la javadoc, un caller vide renvoie 401, un caller.id différent de userId renvoie 403, et un produit d'autrui renvoie 403 (anti-IDOR). | [#75d3ed9ec29b66ff-1] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductRestoreIntegrationTest.java:102-105` | Le helper as crée une authentification de test pour un UserEntity avec l'authority ROLE_USER. | [#4e5c71168efcfca4-1] |
+| `frontend:components/dashboard/dashboard-components.test.tsx:83-94` | Lorsque canCreateEvent vaut false, l'état vide de WeekAgenda n'affiche aucun bouton ni CTA de création. | [#6e7610f07881b1db-1] |
+| `frontend:components/dashboard/dashboard-mobile.test.tsx:113-124` | Sans produit, canCreateEvent à false, l'état vide de CompactAgenda affiche l'instruction sans bouton. | [#ac961dccc95f5868-1] |
+| `frontend:components/dashboard/dashboard-mobile.test.tsx:202-213` | MobileDrawer ne rend rien lorsque open vaut false et rend un élément role dialog avec aria-modal true lorsqu'il est ouvert. | [#ea2c1068e4742c02-1] |
+| `frontend:components/products/ArchivedProductsView.intl.test.tsx:22-24` | Le test mocke useAuth pour renvoyer un utilisateur d'identifiant user-1. | [#0a3a76eec7ca5904-1] |
 
 ## Faits suspects {#t-suspicious}
 
 | Pointeur | Énoncé | Fait |
 |---|---|---|
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/mappers/ProductMapper.java:42` | toEntity appelle getEvents().stream() sans garde null, alors que ProductResponse.fromDomain en a une. | [#4a18358aa5f8d75c-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java:38` | Le constructeur reçoit un EventRepository qui n'est ni stocké dans un champ ni utilisé. | [#88df651b8fa85b90-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java:68` | Le commentaire cite une ligne 63 qui ne correspond plus à la pose de la couleur dans createProduct, numéro obsolète. | [#fc5fea0dc91f12cf-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java:86-87` | Chaque Event est construit avec product.getId() alors que l'id du produit est encore null à cette étape. | [#fc5fea0dc91f12cf-2] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java:110-117` | Selon le commentaire, le nom getProductsWithEvents est trompeur car la méthode liste tous les produits de l'utilisateur. | [#4608c450fb19a7d8-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/models/Product.java:66-68` | La méthode addEvent ajoute à la liste sans garde de nullité, alors que hasEvents teste explicitement events != null. | [#backend-socle/e4027da2250fba89-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/ports/repositories/ProductRepository.java:8-13` | Le port ProductRepository, situé dans le package domain, importe org.springframework.stereotype.Repository et porte l'annotation @Repository. | [#af393afe6d8cdb5e-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/ports/repositories/ProductRepository.java:16` | findAllProducts reste déclarée alors que la javadoc de findByUserId indique que le filtrage en Java a été remplacé, et qu'aucun appelant n'est visible dans le lot. | [#d741470a3d0955e7-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/ports/services/ProductService.java:7-8` | Le port de domaine ProductService dépend de types du package application.dtos, ce qui contredit une séparation domaine et application stricte. | [#320ca0e55e5d619b-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/ports/services/ProductService.java:14-20` | La javadoc de ProductService est rédigée en anglais, alors que les autres ports du lot documentent leurs méthodes en français. | [#backend-socle/4a146bcc96c96774-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java:229-231` | Le endpoint répond 404 quand la liste d'événements est vide, alors que ProductServiceImpl autorise un produit sans événement. | [#d2ac56499c27c2b2-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ProductRepositoryJpaImpl.java:95-118` | Si findById ne retourne rien (produit archivé masqué par @SQLRestriction ou id absent), la méthode poursuit vers la branche de création avec un id déjà renseigné, sans contrôle préalable. | [#ee624a18d9fa7d32-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/ProductEntity.java:22` | Le commentaire indique que la liste passe par findAll, alors que le test ProductServiceImplTest.getProductsWithEvents_delegatesToFindByUserId_notFindAll (ligne 163) et ProductRepositoryJpaImpl.findByUserId (ligne 71) indiquent un filtre par findByUserId. | [#273e1cf63cf5b461-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/ProductEntity.java:38-40` | Les @ManyToOne de ProductEntity n'ont pas de fetch explicite, alors que CategoryEntity.owner déclare FetchType.LAZY. | [#backend-socle/f8f05e9e0279ea4d-1] |
-| `mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductControllerOwnershipTest.java:134-135` | L'assertion accepte n'importe quelle Exception via assertThrows(Exception.class) et ne vérifie ni le type ni le statut de l'erreur propagée, le commentaire parlant pourtant d'un non-401 explicite. | [#ef1c82a080c6849c-1] |
-| `mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductRestoreIntegrationTest.java:16` | L'import AutoConfigureMockMvc pointe vers le package org.springframework.boot.webmvc.test.autoconfigure, alors que le CLAUDE.md du projet indique Spring Boot 3.4, point à vérifier. | [#8708a38930713169-1] |
-| `mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/ProductArchivedFilterIntegrationTest.java:238-252` | Le test crée un événement pour un produit archivé, mais n'assert que l'absence du produit via findDomainProductById, sans interroger les événements eux-mêmes. | [#9e70a5666ad9005c-1] |
-| `mytimeline:frontend/src/components/dashboard/CompactAgenda.tsx:65-71` | Le paramètre now a pour valeur par défaut new Date(), recréé à chaque rendu quand la prop est absente, si bien que le mémo today se recalcule à chaque rendu dans ce cas. | [#3e8a13b463bd015a-1] |
-| `mytimeline:frontend/src/components/dashboard/DensityRibbon.tsx:160-162` | En mode scrollable, le libellé de plage va du jour 0 à rangeDays inclus, soit rangeDays plus un jours, alors que les barres couvrent rangeDays jours : l'écart est à vérifier, buildDensityBuckets n'ayant pas été lu. | [#fe8823be27d22b73-1] |
-| `mytimeline:frontend/src/components/dashboard/MobileDrawer.tsx:23` | Selon le commentaire, logout ne purge aucun storage, et le composant délègue bien la déconnexion à onLogout sans purger de storage. | [#a7c4b420c9e2e749-1] |
-| `mytimeline:frontend/src/components/dashboard/WeekAgenda.tsx:14-16` | Le commentaire de tête indique que le composant réutilise getWeekRange et getEventsInRange, alors que le code appelle currentWeekEvents importé de './kpis' (ligne 47). | [#8f8b2c37fed3a715-1] |
-| `mytimeline:frontend/src/components/dashboard/kpis.ts:38-41` | Le commentaire signale un écart assumé avec la maquette, qui compterait les 7 prochains jours, avancerait la récurrence et inclurait les durées en cours, alors que le code calcule la semaine civile. | [#2ea53c51eba05de1-1] |
-| `mytimeline:frontend/src/components/dashboard/section-titles.test.tsx:210-214` | Selon la javadoc, la regex s'arrête au premier > d'une balise, ce qui peut faire manquer un titre dont un attribut contient le caractère >, soit un faux négatif possible. | [#668a2a65bf75bc15-1] |
-| `mytimeline:frontend/src/components/products/ProductDetailView.test.tsx:91-92` | Selon le commentaire, ProductDetailView monte désormais TimelineEditHost comme surface d'édition câblée, identifiée comme gap A. | [#613ed805bf139c4c-1] |
-| `mytimeline:frontend/src/components/products/ProductDetailView.test.tsx:345-348` | Le test n'attend qu'une seule microtâche avant d'asserter l'absence de toast et de redirection, sans attendre explicitement la fin de la mutation rejetée. | [#2d34886ed40f4276-1] |
-| `mytimeline:frontend/src/components/products/ProductDrawer.tsx:174-182` | L'effet de réinitialisation du formulaire ignore form dans ses dépendances, avec une désactivation explicite de la règle react-hooks/exhaustive-deps. | [#d03c591ef42f32e1-1] |
-| `mytimeline:frontend/src/components/products/ProductSparkline.tsx:12-13` | Le commentaire annonce un point par jour calendaire, alors que le code regroupe les dates par tranches de 24 heures mesurées depuis l'instant figé au montage, ce qui peut diverger d'un jour calendaire. Le commentaire et le code ne correspondent pas exactement. | [#71bf1dbf78fedd0b-1] |
-| `mytimeline:frontend/src/components/products/ProductSparkline.tsx:58-71` | L'instant de référence reste figé à la valeur du montage, donc la fenêtre de 90 jours ne glisse pas tant que le composant reste monté. | [#71bf1dbf78fedd0b-2] |
-| `mytimeline:frontend/src/components/products/ProductsListView.test.tsx:237-262` | Le titre du test dit md, alors que les assertions vérifient la bascule xl:hidden et xl:block, avec une note de code indiquant md remplacé par xl. | [#cf72d8b53d7e0f88-1] |
-| `mytimeline:frontend/src/components/products/ProductsListView.tsx:360` | Le fichier contient un TODO de performance demandant de virtualiser la liste au-delà de 50 éléments, sans implémentation actuelle. | [#4cd0d7a20f7a7d55-1] |
-| `mytimeline:frontend/src/components/products/RestoreProductDialog.tsx:21` | La javadoc décrit un usage dans l'onglet Archivés de /products, mais ProductsListView.tsx du lot n'importe ni n'affiche RestoreProductDialog. | [#61c5225e530bda43-1] |
-| `mytimeline:frontend/src/hooks/useCreateProduct.ts:31-36` | Le code invalide products.all puis products.withEvents, alors que le préfixe products.all couvre déjà withEvents selon les commentaires de useArchiveProduct.ts, ce qui rend la seconde invalidation redondante. | [#684a83a1f2547083-1] |
-| `mytimeline:frontend/src/hooks/useMediaQuery.ts:13-16` | Le commentaire renvoie à un prop d'override du wrapper responsive qui n'existe pas dans ce fichier, la référence ne peut pas être vérifiée ici. | [#9db7bf95515a01a4-1] |
-| `mytimeline:frontend/src/hooks/useSettings.ts:29-41` | Le commentaire affirme qu'un refreshUser est appelé si disponible pour resynchroniser AuthContext, or le onSuccess de updateProfile ne fait qu'invalider auth.me sans appeler refreshUser. Le commentaire indique lui-même que AuthContext ne relit pas cette clé. | [#7e1306c8f9eeee3e-1] |
-| `mytimeline:frontend/src/hooks/useThemeChoice.ts:110-118` | La javadoc réserve useApplyAccountTheme à AuthProvider, mais le code ne contrôle pas l'appelant et n'importe quel composant peut l'utiliser. | [#adebb2ab2ca0b294-1] |
-| `mytimeline:frontend/src/types/product.ts:57-67` | Le schéma accepte events optionnel avec z.array(...).optional(), ce qui n'empêche pas un envoi null alors que la javadoc interdit explicitement cette valeur. | [#4143ff129fa65ed6-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/application/dtos/ProductUpdateRequest.java:39` | Le DTO ne contrôle pas l'exclusion entre color et clearColor, alors que la javadoc indique que clearColor prime et renvoie cette règle au service, non lu ici. | [#209894a285249512-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java:36-40` | Le constructeur reçoit un EventRepository qui n'est ni stocké ni utilisé dans la classe. | [#5b340929916c1dc5-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java:110` | Selon le commentaire, le nom getProductsWithEvents est un léger abus, la méthode listant tous les produits. | [#94c60305c01dfa59-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/domain/models/Product.java:66-68` | addEvent ajoute à la liste sans contrôle de nullité, alors que hasEvents gère le cas nul. | [#9c97333e502c0dc7-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/domain/ports/repositories/ProductRepository.java:8-13` | Le port de domaine importe org.springframework.stereotype.Repository et annote l'interface avec @Repository. | [#6f97ab5590d54345-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/domain/ports/services/ProductService.java:7-8` | Le port de domaine ProductService importe des DTO de la couche application. | [#45102f0968495934-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java:229-230` | La route renvoie 404 lorsque le produit n'a aucun événement, alors que le service autorise un produit sans événement. | [#4593c850244cd3aa-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ProductRepositoryJpaImpl.java:96-118` | Si super.findById ne retourne rien (id inconnu ou produit archivé, car @SQLRestriction filtre les archivés), la méthode ignore la branche de mise à jour et poursuit vers la branche création avec un id déjà existant. | [#ac8911acfe39ec5f-1] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductControllerOwnershipTest.java:120-134` | Le commentaire annonce une erreur 500 via GlobalExceptionHandler, mais l'assertion accepte n'importe quelle Exception sans vérifier de statut HTTP. | [#80aacdf81dad7441-1] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductRestoreIntegrationTest.java:16` | L'import pointe vers le package org.springframework.boot.webmvc.test.autoconfigure, alors que le CLAUDE.md du projet indique Spring Boot 3.4. | [#073900439f3d1290-1] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/ProductArchivedFilterIntegrationTest.java:237-253` | Le test nommé archivedProduct_eventsUnreachableThroughProductLookup persiste un événement mais n'affirme que l'absence du produit via findDomainProductById, aucune assertion ne porte sur les events. | [#ea7a4b9c5c1b2b40-1] |
+| `frontend:components/dashboard/CompactAgenda.tsx:65-71` | Le paramètre now a pour valeur par défaut new Date(), recalculée à chaque rendu, ce qui rend les useMemo dépendant de now inopérants quand l'appelant ne fournit pas now. | [#1c32bb2f54cef319-1] |
+| `frontend:components/dashboard/GreetingHeader.tsx:53-54` | Le commentaire décrit l'eyebrow comme la date au-dessus du Bonjour, mais le code rend seulement la clé i18n eyebrow sans valeur de date. | [#df94e37f5a00ffaa-1] |
+| `frontend:components/dashboard/KpiMarginalia.intl.test.tsx:135` | Le titre du test annonce singuliers et pluriels, mais le corps ne vérifie aucun texte rendu. | [#bf2c6df971ac4250-1] |
+| `frontend:components/dashboard/MobileDrawer.tsx:39-40` | Le commentaire annonce une fermeture Escape via onEscape, alors que le code passe onClose à useFocusTrap. | [#025a60152b451b33-1] |
+| `frontend:components/dashboard/WeekAgenda.tsx:115` | La prop variant est documentée comme table ou stack, mais elle ne sert qu'à poser l'attribut data-variant sur la liste, sans changer le rendu. | [#e28510139e7aae64-1] |
+| `frontend:components/dashboard/kpis.ts:74-75` | isOngoing ne teste pas le champ archived, alors que nextStartOf le transmet à nextStart ; la règle repose sur le filtrage fait en amont, comme indiqué dans la javadoc du module. | [#1360be0244afe81e-1] |
+| `frontend:components/dashboard/section-titles.test.tsx:212-213` | Le commentaire indique que la regex [^>]* s'arrête au premier > et peut rater un className contenant une flèche, produisant un faux négatif et jamais un faux positif. | [#d9efac7ad99fd0af-1] |
+| `frontend:components/products/ProductDetailView.test.tsx:46-51` | Le faux hook fakeUseArchiveProduct reçoit userId mais l'ignore via void userId, le mock ne dépend donc pas de l'utilisateur. | [#110a3fb9e429adf5-1] |
+| `frontend:components/products/ProductDetailView.test.tsx:294-298` | Le titre du test annonce un tri récent d'abord, mais le corps ne vérifie que la présence de e1 et l'absence de e-arch, sans contrôler l'ordre. | [#c7fc0710c600b8ff-1] |
+| `frontend:components/products/ProductDrawer.tsx:63-65` | La javadoc indique un swipe-down en mobile, qui ferme le drawer via Escape ou l'overlay natif Radix. | [#5304fc57ce8fb3bd-1] |
+| `frontend:components/products/ProductDrawer.tsx:174-182` | Le commentaire désactive la règle exhaustive-deps sur l'effet de réinitialisation, dont la liste de dépendances omet form. | [#621be310cabbdc3e-1] |
+| `frontend:components/products/ProductDrawer.tsx:278-281` | Le commentaire indique qu'il n'y a pas de swipe-down en mobile, ce qui contredit la javadoc de la ligne 65. | [#6c59317b9146e54c-1] |
+| `frontend:components/products/ProductsListView.test.tsx:237-263` | Le titre du test indique un passage à md (compacte sous md, pleine dès md), alors que les assertions vérifient les classes xl:hidden et xl:block, incohérence entre le titre et le code testé. | [#5c7aa9bb9f92e140-1] |
+| `frontend:components/products/ProductsListView.tsx:360` | Un TODO de performance indique que la liste devra être virtualisée au-delà de 50 éléments, sans virtualisation dans le code actuel. | [#a3f894a6afdef6e9-1] |
+| `frontend:hooks/useArchiveProduct.test.tsx:17` | Le commentaire d'en-tête demande un objet mutable plutôt qu'un let, or le fichier déclare let deleteProductMock au niveau des describe. | [#c07fa944da6eb0e5-1] |
+| `frontend:hooks/useRestoreProduct.ts:47` | La clé de mutation est écrite en ligne, sans constante exportée, alors que useArchiveProduct exporte la sienne (archiveProductMutationKey) : écart à la convention observée dans le lot. | [#frontend-core/a0e2332d942f1478-1] |
+| `frontend:hooks/useUpdateProduct.test.tsx:67` | Le commentaire indique que le rejet d'une mutation TanStack v5 n'est pas testé en isolation à cause d'une unhandled rejection dans jsdom. | [#frontend-core/46d70f075e3f275e-1] |
+| `frontend:types/product.ts:57-58` | Le commentaire indique que le backend lève une NPE sur events à null, mais le schéma Zod n'interdit pas null pour events (z.array(...).optional() le refuse en revanche), le contrôle repose sur le typage et non sur un refus explicite de null côté schéma pour la lecture. | [#bb228183b12c3998-1] |
+| `frontend:types/product.ts:76-78` | Le commentaire indique que le backend applique un @Pattern anti-blanc sur name, mais ce schéma Zod ne contient pas de contrôle équivalent (seulement min(1).max(100)). | [#e59cc3ff6f9619d7-1] |
 
 ## Méthodes de service {#t-service_method}
 
 | Pointeur | Énoncé | Fait |
 |---|---|---|
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java:48-94` | Crée un produit pour l'utilisateur, résout sa catégorie, ajoute les événements demandés puis sauvegarde le produit. | [#404568a8227181ab-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java:122-147` | Met à jour partiellement le nom, la catégorie et la couleur d'un produit, puis sauvegarde. | [#522d191440441932-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java:156-164` | Charge une catégorie par id et la retourne si elle est système ou appartient à l'appelant. | [#85b672acfc5e877a-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java:167-170` | Délègue la lecture d'un produit par id au repository, en lecture seule. | [#6855eab1ee00a544-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java:183-185` | Retourne les produits archivés de l'utilisateur via findArchivedByUserId. | [#6ae2f4b1423d90d7-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java:203-206` | Indique si un produit existe pour l'id donné, en lecture seule. | [#87c600006a7658f9-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/ports/services/ProductService.java:14-20` | Javadoc : Selon la javadoc, updateProduct applique BR-PRO-001 et BR-PRO-002 aux seuls champs fournis, et lève ProductNotFoundException si le produit n'existe pas. | [#081b123adb41844b-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ProductRepositoryJpaImpl.java:52-54` | Retourne le produit par id sous forme de domaine, via findById puis mapping, ou un Optional vide. | [#ace624d509a6ee58-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ProductRepositoryJpaImpl.java:57-59` | Retourne tous les produits visibles (hors archivés) mappés en domaine. | [#cbf7e3080a18d38f-1] |
-| `mytimeline:frontend/src/components/dashboard/kpis.ts:34-46` | Javadoc : Selon la javadoc, currentWeekEvents est la source unique de la liste de WeekAgenda et du compteur week de « En bref ». | [#e476a2c4ae65a9d4-1] |
-| `mytimeline:frontend/src/components/dashboard/kpis.ts:43-46` | currentWeekEvents renvoie les événements de la semaine ISO de now, en appelant getWeekRange puis getEventsInRange. | [#e476a2c4ae65a9d4-2] |
-| `mytimeline:frontend/src/components/dashboard/kpis.ts:59-71` | nextStartOf délègue à nextStart la prochaine occurrence à partir de startDate, archived, isRecurring, recurrenceUnit et recurrenceEndDate. | [#21f3b363f12a7f27-1] |
-| `mytimeline:frontend/src/components/dashboard/kpis.ts:158-175` | computeDashboardKpis agrège week, weekRecurring, dueSoon, ongoing et busiestCategory à partir de la liste d'événements et de now. | [#48b85cd6403250f3-1] |
-| `mytimeline:frontend/src/components/products/ProductDetailView.tsx:254-257` | Après archivage réussi, un toast de succès est affiché, le dialog se ferme et la vue revient à la liste des produits. | [#652a622f04ee3be4-1] |
-| `mytimeline:frontend/src/components/products/ProductDrawer.tsx:264-271` | L'archivage appelle archiveMutation.mutateAsync avec productId, affiche le toast productArchived, ferme la confirmation, appelle onDeleted puis ferme le drawer. | [#9adb232b04c1c291-1] |
-| `mytimeline:frontend/src/hooks/useArchiveProduct.ts:56-57` | Le hook useArchiveProduct crée une mutation TanStack qui reçoit un userId optionnel et des options d'erreur inline. | [#fb735af295fdf7c7-1] |
-| `mytimeline:frontend/src/hooks/useArchivedProducts.ts:15-21` | Le hook useArchivedProducts interroge la liste des produits archivés de l'utilisateur via getArchivedProducts. | [#ae8d10782ba95b05-1] |
-| `mytimeline:frontend/src/hooks/useAuthGuard.ts:35` | Le hook retourne user et loading issus de useAuth. | [#9811d834e1a4e391-1] |
-| `mytimeline:frontend/src/hooks/useCreateProduct.ts:20` | Le hook useCreateProduct crée une mutation qui appelle createProduct avec userId, les données et les options optionnelles. | [#02793d2566534cf3-1] |
-| `mytimeline:frontend/src/hooks/useDensity.ts:52-59` | setDensity met à jour le choix de session et persiste la densité dans localStorage, sans échouer si le stockage est bloqué. | [#5fcf8f44795a3f70-1] |
-| `mytimeline:frontend/src/hooks/useHydrated.ts:13-15` | useHydrated renvoie false au rendu serveur et pendant l'hydratation, puis true côté client. | [#f2c4351d3925718f-1] |
-| `mytimeline:frontend/src/hooks/useMediaQuery.ts:18-38` | useMediaQuery renvoie la valeur matches de matchMedia côté client et false au rendu serveur et pendant l'hydratation. | [#126f92ebf31c28a6-1] |
-| `mytimeline:frontend/src/hooks/useRestoreProduct.ts:43-53` | Le hook useRestoreProduct crée une mutation de désarchivage qui appelle restoreProduct avec userId et productId. | [#d45517856c3c5bfb-1] |
-| `mytimeline:frontend/src/hooks/useReturnFocus.ts:62-63` | Le gestionnaire annule le comportement par défaut de Radix et rend le focus à la cible capturée sans défilement. | [#9a6ed423fc2839c5-1] |
-| `mytimeline:frontend/src/hooks/useSettings.ts:25-93` | Le hook useSettings expose l'utilisateur courant de useAuth et cinq mutations TanStack Query : updateProfile, changePassword, deleteAccount, uploadAvatar et deleteAvatar. | [#8902aed74654f2b8-1] |
-| `mytimeline:frontend/src/hooks/useSettings.ts:37-42` | La mutation de mise à jour du profil appelle updateProfile du service utilisateur, puis invalide la clé de cache auth.me en cas de succès. | [#5e9081bfcfb33adb-1] |
-| `mytimeline:frontend/src/hooks/useSettings.ts:44-46` | La mutation de changement de mot de passe appelle changePassword sans onSuccess ni invalidation de cache. | [#c45a5564c245da03-1] |
-| `mytimeline:frontend/src/hooks/useSettings.ts:53-58` | La mutation de suppression de compte appelle deleteAccount avec le username et vide tout le cache TanStack Query (queryClient.clear()) en cas de succès. | [#9ca964cafd821439-1] |
-| `mytimeline:frontend/src/hooks/useSettings.ts:65-71` | La mutation d'upload d'avatar appelle uploadAvatar, puis en succès attend refreshUser et invalide la clé auth.me. | [#343552051591bdb2-1] |
-| `mytimeline:frontend/src/hooks/useSettings.ts:77-83` | La mutation de suppression d'avatar appelle deleteAvatar, puis en succès attend refreshUser et invalide la clé auth.me. | [#dca9d8423ce82973-1] |
-| `mytimeline:frontend/src/hooks/useThemeChoice.ts:134-142` | setThemeChoice appelle d'abord setTheme de next-themes avec le choix, puis appelle le persisteur de compte s'il existe, sans attendre le réseau. | [#9ea12e93143d4026-1] |
-| `mytimeline:frontend/src/hooks/useThemeChoice.ts:146-149` | toggle appelle setThemeChoice avec dark si la valeur brute resolvedTheme vaut dark, sinon avec dark en inversant vers light, sans garde de montage. | [#dac14ec42e3837c3-1] |
-| `mytimeline:frontend/src/hooks/useUpdateProduct.ts:20` | Le hook useUpdateProduct crée une mutation de mise à jour partielle qui appelle updateProduct avec userId, productId, data et options. | [#a2aa4336e4d4699f-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java:46-94` | createProduct résout l'utilisateur et la catégorie, construit le produit avec sa couleur et ses événements, puis le sauvegarde. | [#787ddafee8cb5825-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java:114-118` | getProductsWithEvents retourne tous les produits de l'utilisateur via findByUserId, avec ou sans événements. | [#df007001f59cff4d-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java:122-147` | updateProduct applique une mise à jour partielle du nom, de la catégorie et de la couleur, puis sauvegarde le produit. | [#01e0685abee3c880-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java:166-170` | findDomainProductById délègue au repository la recherche du produit par identifiant. | [#d55de907b2751421-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java:181-185` | getArchivedProducts délègue à findArchivedByUserId la liste des produits archivés de l'utilisateur. | [#16047a9dbb90deae-1] |
+| `frontend:components/dashboard/kpis.ts:43-46` | currentWeekEvents calcule la semaine courante via getWeekRange puis filtre les événements avec getEventsInRange. | [#5662f3eff57a02af-1] |
+| `frontend:components/products/ArchivedProductsView.tsx:54-58` | La confirmation appelle mutateAsync avec l'identifiant du produit cible, puis affiche le toast productRestored seulement si l'appel réussit. | [#1cfd5050ce2a9a8c-1] |
+| `frontend:components/products/ProductDrawer.tsx:224` | En édition, onSubmit envoie le patch à updateMutation avec productId et data. | [#c45a841fe99fd59c-1] |
+| `frontend:components/products/ProductDrawer.tsx:264-271` | handleDeleteConfirm archive le produit, affiche le toast productArchived, ferme la confirmation, appelle onDeleted puis ferme le drawer. | [#1f2cdf6136f0aac6-1] |
+| `frontend:hooks/useArchiveProduct.ts:56-66` | Le hook de mutation d'archivage appelle deleteProduct avec userId, productId et les options fournies. | [#aa9024b9eed88c02-1] |
+| `frontend:hooks/useArchiveProduct.ts:67-72` | Au succès de l'archivage, le produit archivé est retiré du cache de la liste produits de l'utilisateur. | [#7dab0f73d5eb5707-1] |
+| `frontend:hooks/useArchiveProduct.ts:73-74` | Au succès de l'archivage, les préfixes products.all et categories.all sont invalidés. | [#7dab0f73d5eb5707-2] |
+| `frontend:hooks/useCreateProduct.ts:20-39` | Le hook de création appelle createProduct avec userId, les données et les options, et rejette sans appel au service si userId est absent. | [#ee1884bc9ab6c49c-1] |
+| `frontend:hooks/useCreateProduct.ts:30-37` | Au succès de la création, products.all et products.withEvents(userId) sont invalidés. | [#269f6716b9f4a02d-1] |
+| `frontend:hooks/useRestoreProduct.ts:43-70` | Le hook de désarchivage appelle restoreProduct avec userId et productId, et rejette sans appel au service si userId est absent. | [#d33a67d4da454f13-1] |
+| `frontend:hooks/useRestoreProduct.ts:54-63` | Au succès du désarchivage, la ligne est retirée du cache des archivés, puis products.all et categories.all sont invalidés. | [#0d73a30b6a4cb055-1] |
+| `frontend:hooks/useUpdateProduct.ts:20-29` | Le hook de mise à jour appelle updateProduct avec userId, productId, data et options, et rejette sans appel au service si userId est absent. | [#e7b7bfe7a61b5a58-1] |
 
 ## Appels externes {#t-external_call}
 
 | Pointeur | Énoncé | Fait |
 |---|---|---|
-| `mytimeline:frontend/src/components/dashboard/CompactAgenda.tsx:78` | Les événements du jour sont obtenus par getEventsInRange, importé depuis @/components/timeline, sur les bornes du jour. | [#fe5ac9161dc2c3ad-1] |
-| `mytimeline:frontend/src/components/products/ProductDetailView.tsx:213-217` | Le désarchivage appelle setEventArchived.mutateAsync avec archived à false et la version détenue par l'événement, ou null si elle est absente. | [#f155847b8a82b3fe-1] |
-| `mytimeline:frontend/src/components/products/ProductsListView.tsx:143` | La mutation d'archivage reçoit userId et HANDLES_FORBIDDEN_INLINE, ce qui retire les réponses 403 du toast global. | [#fcc6e5d8ad133351-1] |
-| `mytimeline:frontend/src/hooks/useDashboardData.ts:41` | Le hook s'appuie sur useProductsWithEvents pour charger les produits avec leurs événements embarqués. | [#c0aa1a2d09db5b02-1] |
+| `frontend:components/products/ArchivedProductsView.tsx:33` | Javadoc : Selon la javadoc du composant, la restauration retire la ligne en place et invalide les listes produits et catégories. | [#d4d2b83d1b6744df-1] |
 
 ## Requêtes de persistance {#t-persistence_query}
 
 | Pointeur | Énoncé | Fait |
 |---|---|---|
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/ports/repositories/ProductRepository.java:18-27` | Javadoc : Selon la javadoc, findByUserId filtre en SQL sur user_id et exploite l'index idx_products_user. | [#e1bd36303816d6d7-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/ports/repositories/ProductRepository.java:24` | Javadoc : Selon la javadoc, les produits archivés sont exclus par @SQLRestriction sur ProductEntity. | [#e1bd36303816d6d7-2] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/ports/repositories/ProductRepository.java:33-39` | Javadoc : Selon la javadoc, countByCategoryId compte tous les produits de la catégorie, archivés inclus, tous utilisateurs confondus. | [#40569536f5b408f8-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/ports/repositories/ProductRepository.java:41-61` | Javadoc : Selon la javadoc, le comptage par catégorie pour un utilisateur est un SQL natif qui sépare produits actifs et archivés. | [#74bd153a15c05429-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/ports/repositories/ProductRepository.java:63-68` | Javadoc : Selon la javadoc, réassigne en masse les produits de la catégorie source, archivés inclus, par un bulk UPDATE. | [#02b99bf42bdb3eef-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/ports/repositories/ProductRepository.java:70-81` | Javadoc : Selon la javadoc, deleteAllByUserId supprime physiquement tous les produits de l'utilisateur, archivés inclus, en SQL natif. | [#c90c3822d9cc5464-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/ports/repositories/ProductRepository.java:83-95` | Javadoc : Selon la javadoc, findArchivedByUserId doit être un SQL natif qui filtre explicitement user_id et archived à true, sans filtre sur les événements. | [#3e3bbf9781172cec-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/ports/repositories/ProductRepository.java:97-104` | Javadoc : Selon la javadoc, la restauration ne réussit que si le produit appartient à userId et est archivé, dans le WHERE d'un UPDATE natif. | [#735d59e10eaa284a-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ProductRepositoryJpaImpl.java:71-82` | JPQL SELECT DISTINCT sur ProductEntity avec LEFT JOIN FETCH p.events, filtré par p.user.id, puis mappé en domaine. | [#317d1ef1ca19b818-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ProductRepositoryJpaImpl.java:139-145` | Compte en SQL natif tous les produits d'une catégorie, archivés inclus, et retourne la valeur en long. | [#326ff59e03dce0b8-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ProductRepositoryJpaImpl.java:155-175` | Compte en une requête SQL native groupée par category_id, pour un utilisateur, les produits actifs et archivés séparément via FILTER. | [#733f00088a189a52-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ProductRepositoryJpaImpl.java:189-195` | Réassigne en SQL natif tous les produits d'une catégorie source vers une catégorie cible et retourne le nombre de lignes modifiées. | [#3e2338dd3d05a6d3-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ProductRepositoryJpaImpl.java:201-207` | Supprime en SQL natif tous les produits d'un utilisateur, archivés inclus, et retourne le nombre de lignes supprimées. | [#7f9be5fdb738e55f-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ProductRepositoryJpaImpl.java:214-225` | Liste en SQL natif les produits archivés d'un utilisateur, triés par updated_at décroissant puis id, mappés sans événements. | [#ac65747e16965f1e-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ProductRepositoryJpaImpl.java:245-259` | Un UPDATE natif remet archived à false, incrémente version, pose updated_at, et retourne le nombre de lignes touchées. | [#915f5376788d598e-1] |
-| `mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductRestoreIntegrationTest.java:112-117` | Le helper isArchivedInDb lit le flag archived d'un produit par une requête SQL native SELECT sur la table products. | [#4693c1bd296011cf-1] |
-| `mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/ProductArchivedFilterIntegrationTest.java:94` | Javadoc : Selon la javadoc, findByUserId ne retourne que les produits de l'utilisateur ciblé et filtre sur user_id en SQL. | [#03675e32cd877577-1] |
-| `mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/ProductArchivedFilterIntegrationTest.java:217-218` | Le test compte, par requête SQL native, les lignes de la table products avec l'identifiant donné et archived à true. | [#0f3e017f87817474-1] |
-| `mytimeline:frontend/src/hooks/useSettings.ts:39-41` | Sur succès de la mise à jour du profil, le code invalide la clé de requête queryKeys.auth.me sans appeler refreshUser. | [#2eeaa55a1f078bb1-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/domain/ports/repositories/ProductRepository.java:18-27` | Javadoc : Selon la javadoc, findByUserId filtre en SQL sur user_id et utilise l'index idx_products_user. | [#2cf44af0f6907afa-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/domain/ports/repositories/ProductRepository.java:33-39` | Javadoc : Selon la javadoc, countByCategoryId compte les produits archivés, tous utilisateurs confondus, sans filtre soft-delete. | [#f7d2569144308aa8-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/domain/ports/repositories/ProductRepository.java:46-61` | Javadoc : Selon la javadoc, countByCategoryForUser est en SQL natif car SQLRestriction masquerait les archivés, et le filtre actifs et archivés est posé à la main. | [#40e539ee33ac7766-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/domain/ports/repositories/ProductRepository.java:50` | Javadoc : Les requêtes de comptage et de lecture qui doivent voir les lignes archivées passent par du SQL natif, car l'annotation SQLRestriction de l'entité masque les archivés aux requêtes JPQL, et le filtre utilisateur ou archivé est posé à la main dans la requête. | [#backend-core/5604227826e2474a-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/domain/ports/repositories/ProductRepository.java:63-68` | Javadoc : Selon la javadoc, updateCategoryForProducts réassigne en masse les produits archivés inclus avant suppression de la catégorie source. | [#93fdbe39065666a0-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/domain/ports/repositories/ProductRepository.java:70-81` | Javadoc : Selon la javadoc, deleteAllByUserId supprime physiquement les produits de l'utilisateur, archivés inclus, via SQL natif. | [#cb9e43de0ddcc68c-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/domain/ports/repositories/ProductRepository.java:83-95` | Javadoc : Selon la javadoc, findArchivedByUserId doit filtrer explicitement user_id et archived = true en SQL natif, sans filtre sur les événements. | [#8df38ffa1feeb5bc-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/domain/ports/repositories/ProductRepository.java:95-104` | Une opération de restauration sur un port de repository vérifie l'appartenance à l'utilisateur et l'état archivé dans le même WHERE de l'UPDATE natif, et renvoie le nombre de lignes modifiées (0 signifiant absence ou non-appartenance). | [#backend-core/f56e4e358ba66393-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/domain/ports/repositories/ProductRepository.java:97-104` | Javadoc : Selon la javadoc, restoreArchivedByIdAndUserId restaure le produit seulement si id, user_id et archivé sont réunis dans le WHERE, et renvoie 0 sinon. | [#3e052d935a2dbdca-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ProductRepositoryJpaImpl.java:71-82` | Charge les produits d'un utilisateur par JPQL avec LEFT JOIN FETCH sur events, filtre p.user.id, applique DISTINCT et mappe chaque produit en domaine. | [#a404ffbc862a833b-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ProductRepositoryJpaImpl.java:139-145` | Compte les produits d'une catégorie par SQL natif, sans filtre sur archived, donc archivés inclus. | [#6b4c701672dc27f4-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ProductRepositoryJpaImpl.java:155-175` | Calcule en une requête native groupée par category_id les compteurs de produits actifs et archivés d'un utilisateur, via FILTER (WHERE archived = ...), puis les range dans une Map. | [#9645b2f60870012d-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ProductRepositoryJpaImpl.java:189-195` | Réassigne en SQL natif category_id de tous les produits d'une catégorie source vers une catégorie cible, archivés inclus, et renvoie le nombre de lignes modifiées. | [#4b4e75c10443fd43-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ProductRepositoryJpaImpl.java:201-207` | Supprime en SQL natif tous les produits d'un utilisateur, archivés inclus, et renvoie le nombre de lignes supprimées. | [#796b2d6fe47571ce-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ProductRepositoryJpaImpl.java:215-225` | Liste les produits archivés d'un utilisateur par SQL natif trié par updated_at décroissant puis id, et les mappe sans leurs événements. | [#2f24c825d05e665c-1] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductRestoreIntegrationTest.java:112-117` | Le helper lit la colonne archived de la table products par SQL natif, filtrée sur l'id du produit. | [#df21467607bb0f43-1] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/ProductArchivedFilterIntegrationTest.java:93-94` | Javadoc : Selon la javadoc, findByUserId ne retourne que les produits du user ciblé via un filtre SQL WHERE user_id. | [#087a873a522043fd-1] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/ProductArchivedFilterIntegrationTest.java:180` | Le test appelle findAllProducts et affirme qu'un produit archivé n'apparaît pas dans le résultat. | [#bb2cfff0694605b8-1] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/ProductArchivedFilterIntegrationTest.java:217-218` | Le test vérifie la ligne archivée par une requête SQL native de comptage sur la table products. | [#468e3cba4f1ee687-1] |
+| `frontend:components/dashboard/dashboard-lib.test.ts:75-82` | getEventsInRange filtre les événements sur la plage donnée et les renvoie triés par date croissante. | [#cf6a1a7bf0b6619f-1] |
 
 ## Configuration {#t-config}
 
 | Pointeur | Énoncé | Fait |
 |---|---|---|
-| `mytimeline:frontend/src/components/dashboard/DensityRibbon.intl.test.tsx:6` | Le test importe le fichier dashboard.json de la locale fr depuis public/locales. | [#08a98ff05e072886-1] |
-| `mytimeline:frontend/src/components/dashboard/densityWindow.ts:15` | La largeur du viewport du ruban est fixée à 9 jours par défaut. | [#8c69f24af9731374-1] |
-| `mytimeline:frontend/src/components/dashboard/densityWindow.ts:18` | Le pas de graduation de la règle est fixé à 5 jours. | [#ab88447456bea6d4-1] |
-| `mytimeline:frontend/src/components/dashboard/densityWindow.ts:89` | Le pas de page clavier du viewport est fixé à 7 jours. | [#8d21724e6bf68a26-1] |
-| `mytimeline:frontend/src/components/dashboard/kpis.test.ts:19-28` | Les tests fixent le fuseau à America/New_York dans beforeAll et restaurent la valeur précédente dans afterAll. | [#697a435dc0b42d83-1] |
-| `mytimeline:frontend/src/components/dashboard/kpis.ts:31` | La constante DUE_SOON_DAYS vaut 14 et fixe l'horizon de dueSoon. | [#62ce181509ca72b8-1] |
-| `mytimeline:frontend/src/components/products/ProductDrawer.forbidden.test.tsx:42` | Le test mocke useAuth pour fournir un utilisateur d'id user-1, utilisé dans les URLs des requêtes. | [#c92f5edce9673b9f-1] |
-| `mytimeline:frontend/src/components/products/ProductSparkline.tsx:25` | La fenêtre de la sparkline est fixée à 90 jours via la constante WINDOW_DAYS. | [#c4172ca1bb56e22d-1] |
-| `mytimeline:frontend/src/components/products/ProductSparkline.tsx:26-27` | Les dimensions par défaut de la sparkline sont fixées à 220 px de largeur et 40 px de hauteur. | [#6aed300a77fa1688-1] |
-| `mytimeline:frontend/src/hooks/useRestoreProduct.ts:47` | La mutation de désarchivage porte la mutationKey ['products', 'restore']. | [#b20fe2ed2114ab50-1] |
-| `mytimeline:frontend/src/hooks/useThemeChoice.ts:63` | La clé localStorage utilisée par next-themes vaut theme. | [#f9d31b0641c07a1a-1] |
+| `frontend:components/dashboard/densityWindow.ts:15` | La largeur par défaut du viewport du ruban de densité vaut 9 jours. | [#6e2e7149538335ee-1] |
+| `frontend:components/dashboard/densityWindow.ts:18` | Le pas par défaut de la règle du ruban vaut 5 jours. | [#9d4f88709eee3589-1] |
+| `frontend:components/dashboard/kpis.test.ts:19-28` | Les tests kpis forcent le fuseau process.env.TZ à America/New_York dans beforeAll et restaurent la valeur précédente dans afterAll. | [#f4131e6c5a222cb1-1] |
+| `frontend:components/dashboard/kpis.ts:31` | La constante DUE_SOON_DAYS vaut 14 et fixe l'horizon des événements « arrivent à échéance ». | [#d26548e1bcb95ffc-1] |
+| `frontend:components/dashboard/section-counts.test.tsx:59-72` | Le helper renderIntl rend avec le fuseau Europe/Paris et collecte chaque IntlError dans un tableau d'erreurs. | [#c66da4cce43fa121-1] |
+| `frontend:components/dashboard/section-titles.test.tsx:29-35` | Le test mocke next-intl : useTranslations renvoie la clé préfixée par le namespace, et expose aussi une méthode rich identique. | [#4acbfc205e350f9b-1] |
+| `frontend:components/products/ArchivedProductsView.intl.test.tsx:33-38` | La liste LOCALES couvre fr, en, de et es avec, pour chacune, le libellé attendu du bouton de désarchivage. | [#b68c17a458ebdbbe-1] |
 
 ## Clés de traduction {#t-i18n_key}
 
 | Pointeur | Énoncé | Fait |
 |---|---|---|
-| `mytimeline:frontend/src/components/dashboard/CompactAgenda.tsx:92` | La section porte un aria-label issu de la clé label du namespace dashboard.mobile.compactAgenda. | [#fa86952202ce749c-1] |
-| `mytimeline:frontend/src/components/dashboard/CompactAgenda.tsx:124` | L'état vide affiche le titre emptyTitle lorsqu'il n'y a aucun événement aujourd'hui ni demain. | [#d35cb56fa41f7497-1] |
-| `mytimeline:frontend/src/components/dashboard/CompactAgenda.tsx:150` | Le sous-groupe Aujourd'hui affiche le message emptyToday quand il est vide alors que le groupe Demain contient des événements. | [#26076e7f498afe26-1] |
-| `mytimeline:frontend/src/components/dashboard/CompactRail.tsx:75` | Les libellés du rail (aria-label et title) sont lus dans le namespace dashboard.landscape.rail. | [#c3bd9d5301240303-1] |
-| `mytimeline:frontend/src/components/dashboard/DensityRibbon.intl.test.tsx:75` | Le test attend le libellé Ouvrir la frise pour la locale fr. | [#4e9437e462e8c665-1] |
-| `mytimeline:frontend/src/components/dashboard/DensityRibbon.tsx:222` | Le repère du jour 0 affiche la clé today, les autres repères affichent une date courte formatée. | [#8201be6af3b41edb-1] |
-| `mytimeline:frontend/src/components/dashboard/DensityRibbon.tsx:275` | Le lien affiche le libellé de la clé openTimeline, suivi d'une flèche. | [#676746658e0bc721-1] |
-| `mytimeline:frontend/src/components/dashboard/GreetingHeader.tsx:36` | Le bandeau lit ses libellés dans le namespace dashboard.greeting, avec les clés eyebrow, la clé de tranche horaire et subtitle. | [#f20c64a7475f7ad2-1] |
-| `mytimeline:frontend/src/components/dashboard/KpiMarginalia.tsx:42` | Le composant lit ses phrases et son titre dans le namespace dashboard.kpi, avec les clés week, dueSoon, ongoing, busiestCategory, busiestCategoryNone, title et label. | [#99b2ca01d45a7db5-1] |
-| `mytimeline:frontend/src/components/dashboard/MobileDrawer.tsx:35-36` | Le drawer lit ses libellés dans dashboard.mobile.drawer (title, close, language, theme) et le libellé de déconnexion dans common.buttons. | [#93cb35d63ac665d5-1] |
-| `mytimeline:frontend/src/components/dashboard/MobileDrawer.tsx:104` | Le libellé du bouton de déconnexion est la clé logout du namespace common.buttons. | [#8daaed30c1f0a2f6-1] |
-| `mytimeline:frontend/src/components/dashboard/ProductCarousel.tsx:40` | Le libellé d'accessibilité de la liste carousel provient du namespace de traduction dashboard.mobile.carousel, clé label. | [#6ade7cba1a30c859-1] |
-| `mytimeline:frontend/src/components/dashboard/section-counts.test.tsx:231` | Les clés week.count, productList.count et mobile.compactAgenda.count doivent porter un pluriel ICU avec le caractère #. | [#ee83b8a753fd86d8-1] |
-| `mytimeline:frontend/src/components/products/ArchivedProductsView.intl.test.tsx:33-38` | Les quatre locales fr, en, de et es associent chacune un libellé attendu pour le bouton de désarchivage. | [#9ed750593296ad97-1] |
-| `mytimeline:frontend/src/components/products/ProductDetailView.test.tsx:489` | Le test exige que la clé products.detail.delete soit absente de chaque locale. | [#2264d9d2b5592648-1] |
-| `mytimeline:frontend/src/components/products/ProductsListView.tsx:217` | Le toast de succès après archivage utilise la clé common.toast.productArchived. | [#9cc65799cbc6def7-1] |
-| `mytimeline:frontend/src/components/products/RestoreProductDialog.tsx:61` | Les textes du dialog sont lus dans le namespace products.restoreDialog. | [#74d9f03c771bd0c2-1] |
-| `mytimeline:frontend/src/components/products/RestoreProductDialog.tsx:119` | Le message d'erreur est choisi parmi les clés errors.notFound et errors.generic selon le kind d'erreur. | [#5b23eeab1aa386fa-1] |
+| `frontend:components/dashboard/CompactAgenda.tsx:68` | Le composant lit ses libellés dans le namespace dashboard.mobile.compactAgenda. | [#6ee155a518d51bcc-1] |
+| `frontend:components/dashboard/CompactAgenda.tsx:113` | Le compteur affiché additionne les événements d'aujourd'hui et de demain avec la clé count. | [#3d154a26584ec7b3-1] |
+| `frontend:components/dashboard/CompactAgenda.tsx:150` | Le sous-groupe aujourd'hui vide affiche la clé emptyToday, distincte de emptyTitle. | [#6dee68787eace008-1] |
+| `frontend:components/dashboard/CompactRail.tsx:75` | Le rail lit ses libellés dans le namespace dashboard.landscape.rail, la clé de chaque item étant son id. | [#15d1d34670c42dc7-1] |
+| `frontend:components/dashboard/DensityRibbon.intl.test.tsx:78` | La fixture de libellés attend 'Zeitachse öffnen' comme libellé du lien pour la locale de. | [#477a72058cb1e1b3-1] |
+| `frontend:components/dashboard/DensityRibbon.tsx:117-118` | Les libellés proviennent des namespaces dashboard.density et dashboard.mobile. | [#976f9b264441719a-1] |
+| `frontend:components/dashboard/GreetingHeader.tsx:36` | Les libellés du bandeau sont lus dans le namespace dashboard.greeting. | [#d204579dc8ad4f7e-1] |
+| `frontend:components/dashboard/KpiMarginalia.tsx:67-74` | La phrase week reçoit week, weekValue, recurring et recurringValue, ainsi que les balises weekNum et recurringNum. | [#b7008da7cf8f0acf-1] |
+| `frontend:components/dashboard/KpiMarginalia.tsx:77-84` | La phrase dueSoon rend le nombre d'échéances dans un span en text-accent mt-num font-semibold, avec le nombre de jours issu de DUE_SOON_DAYS. | [#f00826c49847a41c-1] |
+| `frontend:components/dashboard/KpiMarginalia.tsx:87-91` | La phrase ongoing rend le compteur de couvertures en cours avec la classe NUM. | [#5615d8441cb2ba4d-1] |
+| `frontend:components/dashboard/ProductCarousel.tsx:125` | Sans prochain événement, la vignette affiche la clé noUpcoming du namespace dashboard.productList. | [#c7d8254819d0bc63-1] |
+| `frontend:components/dashboard/ProductList.tsx:45-52` | Le compteur du titre affiche le nombre total de produits, et n'apparaît que si la liste n'est pas vide. | [#5521c123cfc167a3-1] |
+| `frontend:components/dashboard/WeekAgenda.tsx:44` | Les libellés de WeekAgenda proviennent du namespace dashboard.week. | [#fedc165ae6a3e807-1] |
+| `frontend:components/dashboard/dashboard-components.test.tsx:184` | Le libellé du CTA d'état vide de ProductList utilise la clé dashboard.productList.emptyCta. | [#dfdd713944800781-1] |
+| `frontend:components/products/ProductDetailView.test.tsx:489` | Le test vérifie que la clé products.detail.delete est absente dans les locales, l'ancienne action Supprimer ayant été retirée. | [#b82bc4e50dab117b-1] |
+| `frontend:components/products/ProductDetailView.tsx:318` | Le message de sous-frise vide est archivedEmpty pour le filtre archived et timelineEmpty pour les autres filtres. | [#d5976a5db5d7bc24-1] |
+| `frontend:components/products/ProductDrawer.tsx:463` | Le libellé du bouton d'archivage vient de la clé actions.archive du namespace products.drawer. | [#75a41a007f26ced8-1] |
+| `frontend:components/products/ProductsListView.tsx:85` | Les libellés de la liste sont lus dans le namespace products.list. | [#8b12b1851ca34cfe-1] |
+| `frontend:components/products/RestoreProductDialog.tsx:119` | Le message d'erreur inline est choisi entre les clés errors.notFound et errors.generic. | [#7882bea764ee117c-1] |
 
 ## Conventions {#t-convention}
 
 | Pointeur | Énoncé | Fait |
 |---|---|---|
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/dtos/ProductUpdateRequest.java:39` | Un reset explicite d'un champ optionnel passe par un booléen dédié, car la valeur null signifie déjà inchangé. | [#backend-socle/164b6d90f910bb89-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/mappers/ProductMapper.java:12-24` | Mapper Spring injecté par constructeur avec EventMapper, UserMapper et CategoryMapper. | [#13fd04183b03d087-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java:56-61` | Commentaire : Selon le commentaire, l'id du produit reste null à la création pour que @GeneratedValue et @Version s'initialisent. | [#21a0d2e87548445d-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/exceptions/ProductNotFoundException.java:5-8` | Une exception de domaine étend RuntimeException et construit son message dans le constructeur à partir de l'identifiant concerné. | [#backend-socle/7931f48ee3c6d47b-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/ports/repositories/ProductRepository.java:15` | Les ports de lecture par identifiant portent le préfixe findDomain et renvoient Optional du modèle domaine. | [#backend-socle/3c11ce3de33a73db-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java:26-32` | Javadoc : Selon la javadoc, l'identité du caller est dérivée du JWT via CallerResolver, et l'ownership du path reste contrôlé par le contrôleur. | [#b81c94270bcb4e6f-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java:33-34` | Contrôleur REST sous le préfixe /api, avec injection des services ProductService et EventService et de CallerResolver par constructeur. | [#b81c94270bcb4e6f-2] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java:88-91` | Javadoc : Selon le commentaire, la route littérale /archived est préférée à /products/{productId} et le comportement est verrouillé par ProductRestoreIntegrationTest. | [#3a8f7bfe933d6212-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ProductRepositoryJpaImpl.java:28-30` | L'adaptateur JPA étend SimpleJpaRepository<ProductEntity, UUID> et implémente le port ProductRepository. | [#7cddfd00e0e1ce58-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ProductRepositoryJpaImpl.java:66` | Commentaire : Selon le commentaire, le LEFT JOIN FETCH ramène les produits sans événement et précharge la collection pour éviter le N+1. | [#06a2be129b9cee73-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ProductRepositoryJpaImpl.java:103-104` | Lors d'une mise à jour, la catégorie cible est rattachée à l'entité gérée via entityManager.getReference sur CategoryEntity. | [#60ca166b0ae4d5a6-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ProductRepositoryJpaImpl.java:119-126` | Lors d'une création, la catégorie et l'utilisateur sont rattachés comme références gérées (getReference) avant persist via super.save. | [#60ca166b0ae4d5a6-2] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ProductRepositoryJpaImpl.java:131-136` | Commentaire : Selon le commentaire, les requêtes natives sont volontaires car @SQLRestriction masque les lignes archivées des lectures et des bulk opérations HQL. | [#7cddfd00e0e1ce58-2] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/ProductEntity.java:46-47` | La relation bidirectionnelle produit vers événements est sérialisée côté produit par @JsonManagedReference, le côté événement portant @JsonBackReference. | [#backend-socle/c93ed87912d107ff-1] |
-| `mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductControllerOwnershipTest.java:42-45` | Javadoc : Selon la javadoc, le test de slice contrôleur bypasse Spring Security et fournit l'identité du caller en mockant CallerResolver.currentUser(). | [#0f12357eec6d39c6-1] |
-| `mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductControllerOwnershipTest.java:47` | La classe de test est annotée avec MockitoExtension et déclare ProductService, EventService et CallerResolver comme mocks. | [#0f12357eec6d39c6-2] |
-| `mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductControllerOwnershipTest.java:65-66` | Le setUp instancie ProductController avec les mocks et construit MockMvc en mode standaloneSetup, sans contexte Spring. | [#6d667d8f4d3dac85-1] |
-| `mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductControllerOwnershipTest.java:371-374` | Ce test construit un second MockMvc standalone avec setControllerAdvice(new GlobalExceptionHandler()) au lieu du MockMvc partagé. | [#728af08f8f8c0d39-1] |
-| `mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductRestoreIntegrationTest.java:51-54` | La classe de test est une intégration Spring Boot avec MockMvc auto-configuré, transaction de test et hérite de AbstractPostgresIntegrationTest. | [#722dca7995fa9b10-1] |
-| `mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/ProductArchivedFilterIntegrationTest.java:35` | Javadoc : Selon la javadoc, la classe de test s'exécute sur un Postgres jetable Testcontainers avec les migrations Flyway V1 à V7. | [#integrations/60f0739998c1fedf-1] |
-| `mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/ProductArchivedFilterIntegrationTest.java:36` | Javadoc : Selon la javadoc, chaque test est annulé par rollback grâce à @Transactional, les valeurs restant uniques par UUID. | [#integrations/60f0739998c1fedf-2] |
-| `mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/ProductArchivedFilterIntegrationTest.java:40` | La classe de test étend AbstractPostgresIntegrationTest et est annotée @SpringBootTest et @Transactional, avec rollback après chaque test. | [#c02bd74aed6cb257-1] |
-| `mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/ProductArchivedFilterIntegrationTest.java:51-61` | Le helper persistUser crée un UserEntity dont name, username et email portent un suffixe UUID unique, puis le persiste. | [#0c5ae878eb3558dc-1] |
-| `mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/ProductArchivedFilterIntegrationTest.java:70-78` | Le helper persistProduct crée un ProductEntity lié à une catégorie et à un utilisateur, avec le flag archived fourni en paramètre, puis le persiste. | [#36e6222c59775e1d-1] |
-| `mytimeline:frontend/src/components/dashboard/CompactRail.tsx:50-65` | RailButton est un bouton natif de type button dont le clic appelle item.onSelect, et dont le aria-label et le title reprennent le même libellé. | [#11d4a9ca142b0414-1] |
-| `mytimeline:frontend/src/components/dashboard/DensityRibbon.window.test.tsx:6-9` | Le test importe les vrais fichiers de messages dashboard.json des locales fr, en, es et de depuis public/locales. | [#4731515ad5d537d9-1] |
-| `mytimeline:frontend/src/components/dashboard/DensityRibbon.window.test.tsx:26-41` | Le test remplace PointerEvent par une classe locale dérivée de MouseEvent via vi.stubGlobal, puis appelle vi.unstubAllGlobals en afterAll. | [#e6b2cca3a26d0465-1] |
-| `mytimeline:frontend/src/components/dashboard/DensityRibbon.window.test.tsx:63-76` | Le helper renderRibbon rend le composant dans un NextIntlClientProvider réel avec les messages dashboard des quatre locales et collecte les erreurs i18n dans un tableau. | [#80c72df718078a3e-1] |
-| `mytimeline:frontend/src/components/dashboard/GreetingHeader.tsx:53` | L'eyebrow utilise la classe de design system mt-eyebrow sans utilitaire de taille ou d'interlettrage à côté. | [#aedf86947bec4986-1] |
-| `mytimeline:frontend/src/components/dashboard/KpiMarginalia.intl.test.tsx:37-50` | Le helper renderKpis rend KpiMarginalia dans un NextIntlClientProvider réel avec les messages dashboard et collecte les IntlError via onError. | [#5f79dd880c506724-1] |
-| `mytimeline:frontend/src/components/dashboard/KpiMarginalia.tsx:38-39` | Javadoc : Selon la javadoc, la classe mt-num donne des chiffres mono, tabulaires et isolés en bidi, et la constante NUM regroupe text-ink, mt-num et font-semibold. | [#1d90a05e60f681b6-1] |
-| `mytimeline:frontend/src/components/dashboard/KpiMarginalia.tsx:39` | La constante NUM définit les classes par défaut des chiffres : text-ink, mt-num et font-semibold. | [#1d90a05e60f681b6-2] |
-| `mytimeline:frontend/src/components/dashboard/KpiMarginalia.tsx:46-53` | Le helper num renvoie une fonction de rendu pour les balises de t.rich qui enveloppe le chunk dans un span portant un data-testid et une classe. | [#0b1ea397200ac25e-1] |
-| `mytimeline:frontend/src/components/dashboard/MobileDrawer.tsx:40` | Le focus est piégé dans le panneau par le hook useFocusTrap, qui gère aussi la fermeture à la touche Escape via onClose. | [#480e6c1405079f9e-1] |
-| `mytimeline:frontend/src/components/dashboard/MobileDrawer.tsx:55-57` | Le panneau porte role dialog, aria-modal à true et un aria-labelledby pointant vers le titre du drawer. | [#480e6c1405079f9e-2] |
-| `mytimeline:frontend/src/components/dashboard/MobileDrawer.tsx:98-101` | Le bouton de déconnexion fusionne via cn la constante TOUCH_TARGET_BUTTON à ses classes locales. | [#480e6c1405079f9e-3] |
-| `mytimeline:frontend/src/components/dashboard/ProductCarousel.tsx:10` | Le carousel réutilise le composant partagé EmptyState pour son état vide. | [#687dfbe241a58558-1] |
-| `mytimeline:frontend/src/components/dashboard/ProductCarousel.tsx:14` | Javadoc : Selon la javadoc, le carousel produit est en CSS natif uniquement, sans bibliothèque Swiper. | [#c452de606c47f8ed-1] |
-| `mytimeline:frontend/src/components/dashboard/ProductList.tsx:13-17` | Javadoc : Selon la javadoc, la liste affiche la pastille, le nom, le prochain événement et le compteur d'événements non archivés, en filets sans Card shadcn. | [#8ddc15a56e927b42-1] |
-| `mytimeline:frontend/src/components/dashboard/WeekAgenda.tsx:115` | La liste porte l'attribut data-variant issu de la prop variant, valant table ou stack. | [#2e169595adebaf78-1] |
-| `mytimeline:frontend/src/components/dashboard/intl-formats.test.tsx:24-27` | Le mock de next-intl rend chaque clé préfixée par le namespace, sans résolution des messages réels. | [#7ecb115fc3e687bf-1] |
-| `mytimeline:frontend/src/components/dashboard/lib.ts:10` | Le fichier ré-exporte nextEvent depuis @/lib/next-occurrence pour conserver les imports existants. | [#b61fab3b2e179587-1] |
-| `mytimeline:frontend/src/components/dashboard/section-counts.test.tsx:76-94` | Le helper exige que le compteur porte font-mono, text-ink-muted, text-2xs et whitespace-nowrap, sans uppercase ni mt-eyebrow, et qu'il suive le h2 dans la même rangée flex. | [#6c0fda33f3f8057a-1] |
-| `mytimeline:frontend/src/components/dashboard/section-titles.test.tsx:29-35` | Le mock de next-intl expose t.rich avec le même rendu que t, pour que KpiMarginalia puisse s'exécuter. | [#a97efb8fabbb3fd2-1] |
-| `mytimeline:frontend/src/components/dashboard/section-titles.test.tsx:60` | Un titre de section doit porter les classes text-ink, font-display, text-sm et font-semibold. | [#44106f44950ee278-1] |
-| `mytimeline:frontend/src/components/dashboard/section-titles.test.tsx:62` | Les classes du style eyebrow interdites sur un titre sont uppercase, font-mono, tracking-widest, text-ink-faint et text-2xs. | [#4a070e0abb90103f-1] |
-| `mytimeline:frontend/src/components/dashboard/section-titles.test.tsx:64-71` | Le helper exige un h2 dont le texte contient la clé, portant les classes de titre et sans classe eyebrow. | [#d7aff36094704ad7-1] |
-| `mytimeline:frontend/src/components/dashboard/section-titles.test.tsx:200-208` | tsxFiles parcourt récursivement un dossier et renvoie les fichiers .tsx, en excluant les .test.tsx et .stories.tsx. | [#e2f08906ff59e506-1] |
-| `mytimeline:frontend/src/components/dashboard/section-titles.test.tsx:215-216` | La garde statique détecte les balises h1 à h6 portant uppercase, tracking-widest ou font-mono. | [#f428c499438ff266-1] |
-| `mytimeline:frontend/src/components/products/ArchivedProductsView.tsx:165` | Le composant est exporté à la fois en nommé et par défaut. | [#9527b8c3a2a3851e-1] |
-| `mytimeline:frontend/src/components/products/ProductDetailView.tsx:126` | La mutation d'archivage reçoit HANDLES_FORBIDDEN_INLINE pour que le 403 ne parte pas dans le toast global mais soit géré inline par le dialog. | [#24f8b8950e15074f-1] |
-| `mytimeline:frontend/src/components/products/ProductDrawer.forbidden.test.tsx:64-81` | Le test remplace l'adaptateur HTTP axios par un adaptateur qui rejette toute requête avec un 403 AxiosError. | [#e6dec7754e363e05-1] |
-| `mytimeline:frontend/src/components/products/ProductDrawer.tsx:133-137` | Les hooks de création, de mise à jour et d'archivage reçoivent HANDLES_FORBIDDEN_INLINE comme second argument, ce qui désactive le toast global sur 403 pour que le drawer affiche l'erreur inline. | [#d3e1e8fac50f5d4d-1] |
-| `mytimeline:frontend/src/components/products/ProductSparkline.tsx:81` | La couleur trait prend la couleur fournie, sinon la variable CSS --color-accent avec repli sur currentColor. | [#5570e117323725b5-1] |
-| `mytimeline:frontend/src/components/products/ProductSparkline.tsx:111-113` | Chaque point est un cercle de rayon 3 rempli à la couleur du trait. | [#04fe8ec806ac8a65-1] |
-| `mytimeline:frontend/src/components/products/ProductsListView.tsx:40-41` | Les en-têtes de colonne reprennent les classes du motif DS de table sans appliquer la classe .mt-table à la table. | [#9dc0560891da2c74-1] |
-| `mytimeline:frontend/src/components/products/ProductsListView.tsx:376-385` | Le handler clavier de la ligne n'agit que si la cible est la ligne elle-même, pour laisser Entrée et Espace aux boutons Éditer et Archiver. | [#18647bee9928bd97-1] |
-| `mytimeline:frontend/src/components/products/ProductsListView.tsx:535-540` | Le drawer de création est le ProductDrawer réutilisé en mode create, avec le handler de focus de fermeture propre à la liste. | [#18647bee9928bd97-2] |
-| `mytimeline:frontend/src/components/products/RestoreProductDialog.test.tsx:16-26` | Le helper renderDialog monte RestoreProductDialog ouvert avec un libellé fixe Vélo et renvoie le mock onOpenChange. | [#cdf8d7902c6f2af0-1] |
-| `mytimeline:frontend/src/components/products/RestoreProductDialog.tsx:8-18` | Le composant réutilise les primitives ui/dialog et ui/button sans les modifier. | [#0a706f47233dacef-1] |
-| `mytimeline:frontend/src/components/products/RestoreProductDialog.tsx:100-101` | Le dialog passe en bottom sheet sous 640 px (classes de base) et en modal centré à partir de sm. | [#0a706f47233dacef-2] |
-| `mytimeline:frontend/src/hooks/useAuth.ts:7` | Le fichier ré-exporte useAuth depuis @/contexts/AuthContext pour conserver l'import historique @/hooks/useAuth. | [#20304ad479c5a236-1] |
-| `mytimeline:frontend/src/hooks/useHydrated.ts:7` | Javadoc : Selon la javadoc, le hook remplace le patron useState suivi d'un useEffect pour les valeurs qui n'existent que dans le navigateur. | [#1f9fafad9a34ab59-1] |
-| `mytimeline:frontend/src/hooks/useMediaQuery.ts:26-31` | L'abonnement utilise addEventListener sur la MediaQueryList et se replie sur addListener quand addEventListener est absent. | [#7de73a8e1524cc7f-1] |
-| `mytimeline:frontend/src/hooks/useSettings.ts:17-24` | Javadoc : Selon la javadoc, la logique des Réglages est découplée de la présentation, et les erreurs axios sont propagées (rejet) pour que chaque section les mappe elle-même. | [#26aa341ee81461d8-1] |
-| `mytimeline:frontend/src/hooks/useThemeChoice.test.tsx:184-185` | Commentaire : Les tests de balayage supposent que vitest s'exécute depuis le dossier frontend, car process.cwd() sert de racine. | [#c6eab41cd890c878-1] |
-| `mytimeline:frontend/src/hooks/useThemeChoice.ts:7-20` | Javadoc : Selon la javadoc, le module useThemeChoice est le seul appelant de setTheme hors tests, et toute écriture d'un choix utilisateur doit passer par setThemeChoice. | [#3481b67110b26c09-1] |
-| `mytimeline:frontend/src/hooks/useThemeChoice.ts:93` | Le persisteur de compte est injecté par un contexte React, valeur par défaut null, afin que les bascules fonctionnent hors AuthProvider. | [#73ac4157d5d1d9cc-1] |
-| `mytimeline:frontend/src/hooks/useThemeChoice.ts:110-118` | useApplyAccountTheme renvoie une fonction qui appelle setTheme de next-themes sans passer par le persisteur de compte. | [#dbe1e11d971c38b5-1] |
-| `mytimeline:frontend/src/types/product.ts:41-46` | Javadoc : Selon la javadoc, la route GET /users/{userId}/products/archived renvoie un DTO sans events et le schéma productSchema ne doit pas être réutilisé pour lui. | [#b5fb2b7e2ae05f64-1] |
-| `mytimeline:frontend/src/types/product.ts:76-78` | Javadoc : Selon la javadoc, le champ catégorie s'appelle categoryId en PATCH alors qu'il s'appelle category en création. | [#833a134067bfe5dc-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/application/dtos/ProductCreationRequest.java:34` | Le DTO de création écrit ses getters et setters à la main, sans Lombok. | [#a9c5cfaca35510fb-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/application/dtos/ProductUpdateRequest.java:5-6` | Les contraintes du DTO sont exprimées avec les annotations jakarta.validation.constraints Pattern et Size. | [#762c701b4c6884c6-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/application/dtos/ProductUpdateRequest.java:14` | Javadoc : Selon la javadoc, @NotBlank n'est pas utilisé sur name parce que null signifie inchangé et @NotBlank rejetterait null. | [#5c345db8bb957b3f-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/application/dtos/ProductUpdateRequest.java:28` | Le DTO est une classe Java avec champs privés et accesseurs getter et setter écrits à la main, sans Lombok. | [#762c701b4c6884c6-2] |
+| `backend:src/main/java/com/matimeline/eventmanager/application/mappers/ProductMapper.java:12-13` | Le mapper est un @Component dont les dépendances EventMapper, UserMapper et CategoryMapper sont injectées par constructeur. | [#dc552118e6f1268f-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java:30-31` | ProductServiceImpl est un @Service qui implémente le port ProductService. | [#b674c00e69865daf-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java:56-61` | Commentaire : Selon le commentaire, l'identifiant du produit reste null à la création pour éviter un état détaché avec @GeneratedValue et @Version. | [#1aeb8309c0685ccd-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/domain/exceptions/ProductNotFoundException.java:5-8` | Une exception de domaine étend RuntimeException, expose un constructeur qui reçoit l'identifiant UUID et compose le message à partir de cet identifiant. | [#backend-core/ca5407cfd122e0a2-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java:33-35` | ProductController est un @RestController monté sous le préfixe /api. | [#b9a8c99ec4359487-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java:54` | Chaque route résout l'appelant via CallerResolver.currentUser. | [#007fefb0b784570b-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ProductRepositoryJpaImpl.java:28-30` | L'adaptateur JPA étend SimpleJpaRepository<ProductEntity, UUID> et implémente le port ProductRepository. | [#409912b4de4fb5f4-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ProductRepositoryJpaImpl.java:131-136` | Commentaire : Selon le commentaire, les requêtes natives sont volontaires car @SQLRestriction masque les archivés dans les lectures et bulk ops HQL, et les méthodes natives opèrent alors sur toutes les lignes. | [#409912b4de4fb5f4-2] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductControllerOwnershipTest.java:41-46` | Javadoc : Selon la javadoc, les tests sont un slice contrôleur en standaloneSetup où Spring Security est contourné, l'identité du caller étant mockée via CallerResolver.currentUser(). | [#bb92baed2e884fb1-1] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductControllerOwnershipTest.java:65-66` | Le setUp construit le contrôleur avec les mocks ProductService, EventService et CallerResolver, puis crée un MockMvc en standaloneSetup. | [#596919bec7afad40-1] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductControllerOwnershipTest.java:81` | Les tests simulent l'utilisateur connecté en stubbant CallerResolver.currentUser() avec un Optional contenant le caller. | [#bb92baed2e884fb1-2] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductControllerOwnershipTest.java:370-381` | Ce test construit un MockMvc avec GlobalExceptionHandler comme controller advice pour traduire ProductNotFoundException en 404. | [#55861200e4bc934d-1] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductRestoreIntegrationTest.java:32-36` | Javadoc : Selon la javadoc, la classe utilise la chaîne Spring Security réelle, un CallerResolver réel et un SQL natif réel, sans service mocké. | [#b804d9668fc22abb-1] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductRestoreIntegrationTest.java:33-36` | Javadoc : Selon la javadoc, le test parcourt la chaîne Spring Security réelle avec un CallerResolver réel et du SQL natif sur Postgres, sans service mocké. | [#integrations/e5717bf26868c222-1] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductRestoreIntegrationTest.java:47-48` | Javadoc : Selon la javadoc, MockMvc s'exécute dans la transaction du test, avec rollback final, et un flush puis clear est fait avant chaque requête. | [#b804d9668fc22abb-2] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductRestoreIntegrationTest.java:54` | La classe de test étend AbstractPostgresIntegrationTest pour s'exécuter sur une base Postgres jetable. | [#b804d9668fc22abb-3] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/ProductArchivedFilterIntegrationTest.java:26-29` | Javadoc : Selon la javadoc, le soft delete des produits est appliqué par l'annotation @SQLRestriction sur ProductEntity. | [#integrations/c369fbe7ea06f05b-1] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/ProductArchivedFilterIntegrationTest.java:35-36` | Javadoc : Selon la javadoc, le test s'exécute sur un Postgres jetable Testcontainers avec les migrations Flyway V1 à V7 et revient en rollback après chaque test. | [#74fe3e56a1d5597d-1] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/ProductArchivedFilterIntegrationTest.java:40` | La classe de test est annotée @SpringBootTest et @Transactional et étend AbstractPostgresIntegrationTest. | [#74fe3e56a1d5597d-2] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/ProductArchivedFilterIntegrationTest.java:51-53` | Les helpers de fixture génèrent un suffixe UUID pour rendre les valeurs uniques entre tests. | [#fb335e7c94525e76-1] |
+| `frontend:components/dashboard/CompactAgenda.tsx:19-21` | Javadoc : Selon la JSDoc, le composant porte des data-testid contractuels destinés aux tests E2E. | [#4a98fe1439d51ac2-1] |
+| `frontend:components/dashboard/CompactAgenda.tsx:131-133` | Commentaire : Le callback du bouton est enveloppé dans une fonction fléchée pour ne pas transmettre le MouseEvent à openCreateEvent. | [#4a98fe1439d51ac2-2] |
+| `frontend:components/dashboard/DensityRibbon.intl.test.tsx:37-56` | Le helper renderWithRealIntl rend DensityRibbon dans un NextIntlClientProvider réel et collecte les erreurs dans un tableau via onError. | [#ee57d790db90cd86-1] |
+| `frontend:components/dashboard/DensityRibbon.tsx:10` | Le composant réutilise buildDensityBuckets importé depuis le barrel @/components/timeline pour calculer les seaux de densité. | [#fda98a164457602e-1] |
+| `frontend:components/dashboard/DensityRibbon.tsx:67-71` | La table ANCHOR_CLASS associe l'ancrage start à une classe vide, center à -translate-x-1/2 et end à -translate-x-full. | [#3f585c89cc66ee29-1] |
+| `frontend:components/dashboard/DensityRibbon.tsx:120-121` | Commentaire : Selon le commentaire, la mémoïsation porte sur le jour civil et non sur la référence now, car le défaut recrée now à chaque rendu. | [#fda98a164457602e-2] |
+| `frontend:components/dashboard/DensityRibbon.tsx:255-264` | Le bouton Ouvrir la frise utilise la taille sm et la classe TOUCH_TARGET_HITBOX pour porter la zone tactile à 44 px sous 768 px sans changer la boîte visible. | [#fda98a164457602e-3] |
+| `frontend:components/dashboard/DensityRibbon.window.test.tsx:22-38` | Javadoc : Un polyfill local TestPointerEvent, basé sur MouseEvent, remplace PointerEvent dans cette suite quand jsdom ne le fournit pas, puis est retiré après la suite. | [#f583acd9e2784a0c-1] |
+| `frontend:components/dashboard/GreetingHeader.tsx:40-45` | Commentaire : Selon le commentaire, min-w-0 et break-words évitent qu'un nom long pousse le CTA hors de l'écran à 375 px, et le code applique min-w-0 sur l'en-tête. | [#8941b7d5c6774c51-1] |
+| `frontend:components/dashboard/KpiMarginalia.tsx:39` | La constante NUM porte les classes des chiffres : text-ink, mt-num et font-semibold. | [#3e88bb04c8ae2999-1] |
+| `frontend:components/dashboard/KpiMarginalia.tsx:44` | Les quantités sont formatées avec Intl.NumberFormat selon la locale passée en prop. | [#09a8679a6a12b99d-1] |
+| `frontend:components/dashboard/KpiMarginalia.tsx:46-53` | La fonction num renvoie un span portant le data-testid et la classe reçus, utilisé comme balise de t.rich. | [#9556798ce992b4dc-1] |
+| `frontend:components/dashboard/KpiMarginalia.tsx:83` | La balise daysNum rend le nombre de jours en text-ink mt-num, sans font-semibold. | [#5148f5c7076acd12-1] |
+| `frontend:components/dashboard/KpiMarginalia.tsx:96` | La catégorie est rendue en text-ink font-semibold, sans la classe mt-num. | [#8eec57bb200b4c40-1] |
+| `frontend:components/dashboard/MobileDrawer.tsx:40` | Le focus est géré par le hook useFocusTrap, à qui sont passés panelRef, open et onClose. | [#b71275b24442e561-1] |
+| `frontend:components/dashboard/MobileDrawer.tsx:87` | La bascule de thème est rendue avec le gabarit labeled de ThemeToggle, avec un testId dédié. | [#38bfeff93263a909-1] |
+| `frontend:components/dashboard/MobileDrawer.tsx:92-93` | Selon le commentaire, le bouton de déconnexion fait 36 px par défaut et 44 px sous 768 px grâce à TOUCH_TARGET_BUTTON. | [#3da980a04a807982-1] |
+| `frontend:components/dashboard/ProductCarousel.tsx:16` | Javadoc : Selon le commentaire, le carrousel repose sur du CSS natif, sans dépendance Swiper. | [#269b8b992643ce1f-1] |
+| `frontend:components/dashboard/ProductCarousel.tsx:42` | La date du prochain événement est formatée en jour numérique et mois court, selon la locale. | [#0762c1318573909b-1] |
+| `frontend:components/dashboard/ProductCarousel.tsx:48` | Le compteur est formaté avec Intl.NumberFormat selon la locale. | [#0d2850e8e456ed4d-1] |
+| `frontend:components/dashboard/ProductCarousel.tsx:85` | La liste est un conteneur horizontal snap-x snap-mandatory défilable, avec des classes Tailwind. | [#a03d84d2f9d84332-1] |
+| `frontend:components/dashboard/ProductList.tsx:78` | La pastille prend product.color, sinon la couleur de la catégorie, sinon la variable CSS rule-strong. | [#44e5b4c6def5befd-1] |
+| `frontend:components/dashboard/ProductList.tsx:103` | Le nom du produit n'est pas élastique : il est rogné et plafonné à 60 % de la ligne à partir du breakpoint sm. | [#1658e63329da880f-1] |
+| `frontend:components/dashboard/ProductList.tsx:110` | Le prochain événement est masqué sous sm, prend l'espace restant (flex-1) et est rogné avec une ellipse. | [#2ddf377a3e01c1ee-1] |
+| `frontend:components/dashboard/WeekAgenda.tsx:133-138` | La date de chaque ligne est affichée avec dayFmt, et la balise time reçoit dateTime via toLocalIsoDate. | [#694624634c7c00d1-1] |
+| `frontend:components/dashboard/WeekAgenda.tsx:141` | Le filet vertical de la ligne prend event.color, avec repli sur la variable rule-strong. | [#2e2de3b6eef066b9-1] |
+| `frontend:components/dashboard/dashboard-components.test.tsx:16-19` | Les tests mockent next-intl : useTranslations renvoie la clé sous la forme namespace.key, ce qui rend les assertions indépendantes de la locale. | [#ee94197e4871c467-1] |
+| `frontend:components/dashboard/dashboard-landscape.test.tsx:64-69` | CompactRail est rendu comme un élément nav portant un aria-label. | [#076ebb0675e05b62-1] |
+| `frontend:components/dashboard/lib.ts:10` | Le module lib.ts ne contient que la ré-exportation de nextEvent depuis @/lib/next-occurrence, pour les imports existants. | [#a8bb2badfd3a560d-1] |
+| `frontend:components/dashboard/section-titles.test.tsx:60-62` | Le test définit la liste des classes d'un titre de section (text-ink, font-display, text-sm, font-semibold) et la liste des classes de l'ancien style eyebrow à proscrire. | [#a67ce37fb7b263d1-1] |
+| `frontend:components/dashboard/section-titles.test.tsx:215-216` | La garde statique repère les balises h1 à h6 dont les attributs contiennent uppercase, tracking-widest ou font-mono, par une expression régulière sur la source. | [#356b08f4cf08b43e-1] |
+| `frontend:components/products/ProductDetailView.test.tsx:37` | Le fichier isole les hooks et services par vi.mock (useProductsWithEvents, useAuth, productService) au lieu d'appeler le réseau. | [#9649a125723ab6e0-1] |
+| `frontend:components/products/ProductDetailView.test.tsx:561-562` | Les tests de date figent uniquement l'objet Date à une date de référence, les timers restant réels. | [#0bc4fb4381047d4e-1] |
+| `frontend:components/products/ProductDetailView.tsx:86-90` | Javadoc : Selon le commentaire, httpStatusOf est une copie locale du helper déjà présent dans ProductDrawer, CategoryDrawer et DeleteConfirmDialog, la mutualisation étant renvoyée à un refactor séparé. | [#10a710d65aa6d08e-1] |
+| `frontend:components/products/ProductDrawer.forbidden.test.tsx:64-81` | Un adaptateur axios factice renvoie systématiquement une erreur AxiosError avec un statut 403 pour simuler le refus du serveur. | [#25d93917edd9c231-1] |
+| `frontend:components/products/ProductDrawer.test.tsx:54-56` | Le test mocke next-intl de sorte que useTranslations renvoie la chaîne namespace.key, ce qui rend les assertions indépendantes de la locale. | [#f12019ddd85b36dd-1] |
+| `frontend:components/products/ProductDrawer.tsx:133-137` | Les hooks create, update et archive reçoivent HANDLES_FORBIDDEN_INLINE en second argument pour que le 403 soit traité inline par le drawer. | [#3cfc8868348e3064-1] |
+| `frontend:components/products/ProductSparkline.tsx:7-13` | Javadoc : Selon la javadoc, la sparkline est un rendu SVG inline sans bibliothèque de charting, borné aux 90 derniers jours pour limiter le coût sur de grandes listes d'événements. | [#00aa2487ef3ca456-1] |
+| `frontend:components/products/ProductSparkline.tsx:18-22` | Javadoc : Selon la javadoc, la géométrie est recalculée à la taille demandée plutôt qu'étirée par CSS, afin que les points et le trait gardent leur taille à petite largeur. | [#00aa2487ef3ca456-2] |
+| `frontend:components/products/ProductsListView.test.tsx:20-52` | Le fichier de test mocke les hooks de données, l'authentification, la mutation d'archivage, next/navigation, next-intl et react-hot-toast, et remplace ProductDrawer et DeleteConfirmDialog par des doubles exposant leur état. | [#bb6f27de467d165d-1] |
+| `frontend:components/products/ProductsListView.tsx:562-563` | L'archivage passe par DeleteConfirmDialog en variante product, branché sur handleArchiveConfirm. | [#3902639869ef52db-1] |
+| `frontend:hooks/useArchiveProduct.ts:14` | La clé de mutation d'un hook de mutation est exportée sous forme de constante tuple en lecture seule (as const), pour être relue par d'autres hooks via useMutationState. | [#frontend-core/e3119df227f114a8-1] |
+| `frontend:hooks/useArchiveProduct.ts:49-50` | Javadoc : Un hook de mutation ne capte pas l'erreur : la promesse de mutateAsync rejette pour que le composant appelant (DeleteConfirmDialog) affiche l'erreur en ligne. | [#frontend-core/6444084be90fe31a-1] |
+| `frontend:hooks/useArchiveProduct.ts:59-76` | Un hook de mutation TanStack v5 utilise la forme objet de useMutation avec un type générique explicite, mutationKey, mutationFn et onSuccess. | [#frontend-core/6444084be90fe31a-2] |
+| `frontend:hooks/useArchiveProduct.ts:67-75` | Après succès d'une mutation, le hook met à jour le cache de liste par setQueryData avec un filtre, puis invalide les préfixes queryKeys.products.all et queryKeys.categories.all sans retourner les promesses. | [#frontend-core/6444084be90fe31a-3] |
+| `frontend:hooks/useArchiveProduct.ts:86-98` | Un hook d'état dérivé d'une mutation en cours lit useMutationState avec un filtre sur la mutationKey exportée, un predicate sur variables et un select sur le status. | [#frontend-core/d2561f92d786aa1e-1] |
+| `frontend:hooks/useArchivedProducts.ts:15-20` | Un hook de requête TanStack v5 utilise la forme objet useQuery, une clé construite par queryKeys avec userId ?? '', une queryFn qui appelle le service, et enabled: Boolean(userId) pour éviter un appel sans identifiant. | [#frontend-core/475836769764d23d-1] |
+| `frontend:hooks/useCreateProduct.ts:20-28` | Un hook de mutation accepte un paramètre options de type InlineErrorOptions et le transmet au service, ce qui permet à l'écran de choisir l'affichage inline d'une erreur HTTP. | [#frontend-core/d11a1393e21ef55a-1] |
+| `frontend:hooks/useRestoreProduct.ts:13-19` | Un hook lit le code HTTP d'une erreur par un helper défensif qui teste la présence de response.status sans utiliser any. | [#frontend-core/56e4abeb7a6a2796-1] |
+| `frontend:hooks/useUpdateProduct.ts:15` | Javadoc : Selon le commentaire, l'erreur axios est propagée telle quelle pour que le drawer et le dialog lisent le statut HTTP. | [#7fea8ee396e8916a-1] |
+| `frontend:hooks/useUpdateProduct.ts:28-34` | Après succès, un hook de mise à jour invalide products.all, products.detail(productId) et products.withEvents(userId), et transmet options au service. | [#frontend-core/0f939b2556f73c44-1] |
+| `frontend:services/productService.ts:10-15` | Les fonctions du service journalisent l'erreur via safeErrorMessage au lieu de l'objet axios brut, puis relancent l'erreur. | [#41fab18c655b623d-1] |
+| `frontend:services/productService.ts:10-13` | Commentaire : Selon le commentaire, l'objet axios brut ne doit jamais être journalisé car il contient le body et les en-têtes d'autorisation. | [#41fab18c655b623d-2] |
+| `frontend:services/productService.ts:18-39` | createProduct transmet le paramètre options comme troisième argument de apiClient.post, ce qui porte l'opt-out inline vers la configuration axios. | [#integrations/bb0850e84ca1be19-1] |
+| `frontend:services/productService.ts:25` | Commentaire : Selon le commentaire, le userId est injecté dans le body car le DTO backend le déclare @NotNull et le valide avant réécriture depuis le path. | [#f6dde99ceaec6029-1] |
+| `frontend:services/productService.ts:124-131` | restoreProduct n'accepte aucun paramètre options et appelle apiClient.post sans configuration, donc aucun statut n'y est déclaré inline. | [#integrations/145742ba350d6f89-1] |
+| `frontend:types/product.test.ts:1-2` | Les tests de schémas importent describe, expect et it depuis vitest et le schéma depuis le fichier voisin par chemin relatif. | [#frontend-core/1442e9ee19881b01-1] |
+| `frontend:types/product.ts:9-11` | Un format réutilisé en lecture et en écriture est exporté comme schéma nommé (hexColorSchema) construit avec z.string().regex et message en français. | [#frontend-core/b3f495a6c77a9387-1] |
+| `frontend:types/product.ts:14-19` | Javadoc : Selon le commentaire, la contrainte de longueur du nom est synchronisée avec le backend via @Size(min = 1, max = 100), l'ancien front ayant été corrigé de min(3). | [#0df7f49ac5e6b81a-1] |
+| `frontend:types/product.ts:26-36` | Un schéma de lecture réutilise les schémas d'entités enfants (eventSchema) dans un z.array, et les champs nullables utilisent hexColorSchema.nullable(). | [#frontend-core/c2c1cc171ba54f96-1] |
+| `frontend:types/product.ts:41-46` | Javadoc : Selon le commentaire, la route des produits archivés ne charge pas les events, et productSchema ne doit pas être réutilisé pour ce DTO. | [#9495e8a135711124-1] |
+| `frontend:types/product.ts:47` | Une variante d'un schéma existant se dérive par .omit({ ... }) plutôt que par redéclaration des champs. | [#frontend-core/baa3dabad9217424-1] |
+| `frontend:types/product.ts:63-68` | Un payload de création réutilise le schéma de création d'entité enfant (eventCreationSchema) en z.array().optional(), et les identifiants sont typés z.guid(). | [#frontend-core/ebdd4123d272c43f-1] |
+| `frontend:types/product.ts:80-86` | Javadoc : Selon le commentaire, clearColor à true réinitialise la surcharge de couleur et prime sur color côté backend, false n'étant pas envoyé. | [#522c669018564c54-1] |
+
+## Écrans {#t-ui_screen}
+
+| Pointeur | Énoncé | Fait |
+|---|---|---|
+| `frontend:components/dashboard/CompactRail.tsx:94-99` | Commentaire : Selon le commentaire, le bouton de déconnexion est en pied de rail et suit le même flux que MobileDrawer. | [#b76ab83711f0649d-2] |

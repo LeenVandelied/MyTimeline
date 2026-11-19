@@ -3,14 +3,14 @@
  "schema": 1,
  "kind": "transversal",
  "lang": "fr",
- "generated_at": "2026-11-19T10:19:38Z",
- "base_sha256": "420223323de8e9184d65ec406fc11303302b894cb52140ec6d3d4ff9374f5372",
- "pack_bytes": 10497,
- "pack_budget_bytes": 27280,
+ "generated_at": "2026-11-19T16:00:00Z",
+ "base_sha256": "e5725a063e222d9594e3df240e8af61e55eb67cccd1c4cda6b8c3c3e1b3011bb",
+ "pack_bytes": 8963,
+ "pack_budget_bytes": 26860,
  "details": [
   {
    "file": "authorization.details.md",
-   "bytes": 39777
+   "bytes": 37511
   }
  ],
  "sections": [
@@ -21,7 +21,7 @@
    "heading": "## 1. Quand activer {#activate}",
    "line_start": 17,
    "line_end": 23,
-   "bytes": 368,
+   "bytes": 346,
    "budget_bytes": 1500,
    "cut_lines": 0,
    "writer": "script",
@@ -66,9 +66,9 @@
    "title": "Règles du motif",
    "heading": "## 3. Règles du motif {#rules}",
    "line_start": 28,
-   "line_end": 45,
-   "bytes": 2370,
-   "budget_bytes": 3780,
+   "line_end": 40,
+   "bytes": 1566,
+   "budget_bytes": 3360,
    "cut_lines": 0,
    "writer": "agent",
    "kinds": [
@@ -81,41 +81,31 @@
     "convention",
     "config"
    ],
-   "facts_available": 108,
+   "facts_available": 96,
    "facts_cited": [
-    "0a82116312df662d-1",
-    "5bce4b2b35400bce-1",
-    "ad94765637b5f497-1",
-    "aad4f7e728fc2479-1",
-    "93676e7880662cfc-1",
-    "20c936dfaa725a62-1",
-    "20c936dfaa725a62-7",
-    "f6e75e0a5e5133b6-3",
-    "8f1db677a53572c6-4",
-    "78a820cabbe925f7-3",
-    "c9ffe973525260e3-2",
-    "99a5ef0b25688c6e-1",
-    "0fc229f09fd1eed3-3",
-    "9c5d8fc04a9de815-1",
-    "ef1ceb9ef6e0e2d9-3",
-    "ef1ceb9ef6e0e2d9-4",
-    "4505cafcc3a4dbe2-1",
-    "454cce6a9210f047-1",
-    "843166042d2f6a3e-1",
-    "589eeb31cac50d43-1",
-    "e752f9ef4f24e41f-1",
-    "0833c211a9b3191d-4",
-    "20c936dfaa725a62-2",
-    "session/9d1fc0fa65838096-1",
-    "session/2ef4abcad452d6cf-1"
+    "40d48297b0756461-1",
+    "006c110809de4e75-1",
+    "2acb131f0ebd7c9c-1",
+    "48e6f6949702d043-1",
+    "105846cf9aaec1b8-1",
+    "4f0198a0e07b3760-1",
+    "03b7dff5982812dc-1",
+    "1d61137988d01278-1",
+    "a45be4f888638a0b-1",
+    "c9565e3232d203cd-1",
+    "7a92a5b41b351244-1",
+    "7a92a5b41b351244-2",
+    "session/6a0da51faf97aa4c-1",
+    "session/6e267b0acf8be06d-1",
+    "20661afcf565be41-1"
    ],
    "lots": 1,
    "merged": false,
    "review": {
-    "lines": 19,
-    "kept": 18,
-    "rejected": 1,
-    "unreviewed": 4
+    "lines": 20,
+    "kept": 16,
+    "rejected": 4,
+    "unreviewed": 6
    },
    "never_truncate": false
   },
@@ -124,9 +114,9 @@
    "order": 4,
    "title": "Structure",
    "heading": "## 4. Structure {#structure}",
-   "line_start": 46,
-   "line_end": 58,
-   "bytes": 1123,
+   "line_start": 41,
+   "line_end": 52,
+   "bytes": 972,
    "budget_bytes": 2000,
    "cut_lines": 0,
    "writer": "script",
@@ -137,12 +127,11 @@
     "entity",
     "store_action"
    ],
-   "facts_available": 4,
+   "facts_available": 3,
    "facts_cited": [
-    "bfe467a84207cfa3-1",
-    "ed68a63fc2b66b67-1",
-    "10efe7ec9942ce01-1",
-    "8bc3a1ce71fe4ba9-1"
+    "899c7ea5383e6ca6-1",
+    "10ab0800c4c3ca76-1",
+    "6bf025d08b434efd-1"
    ],
    "lots": 0,
    "merged": false,
@@ -154,9 +143,9 @@
    "order": 5,
    "title": "Mise en œuvre par domaine",
    "heading": "## 5. Mise en œuvre par domaine {#surface}",
-   "line_start": 59,
-   "line_end": 63,
-   "bytes": 346,
+   "line_start": 53,
+   "line_end": 57,
+   "bytes": 373,
    "budget_bytes": 4000,
    "cut_lines": 0,
    "writer": "agent",
@@ -167,17 +156,17 @@
     "persistence_query",
     "service_method"
    ],
-   "facts_available": 1,
+   "facts_available": 2,
    "facts_cited": [
-    "8bc3a1ce71fe4ba9-1"
+    "6bf025d08b434efd-1"
    ],
    "lots": 1,
    "merged": false,
    "review": {
-    "lines": 2,
-    "kept": 2,
-    "rejected": 0,
-    "unreviewed": 1
+    "lines": 5,
+    "kept": 4,
+    "rejected": 1,
+    "unreviewed": 2
    },
    "never_truncate": false
   },
@@ -186,9 +175,9 @@
    "order": 6,
    "title": "Fichiers critiques",
    "heading": "## 6. Fichiers critiques {#files}",
-   "line_start": 64,
-   "line_end": 81,
-   "bytes": 1968,
+   "line_start": 58,
+   "line_end": 75,
+   "bytes": 1912,
    "budget_bytes": 2000,
    "cut_lines": 0,
    "writer": "script",
@@ -205,9 +194,9 @@
    "order": 7,
    "title": "Relations avec d'autres packs",
    "heading": "## 7. Relations avec d'autres packs {#relations}",
-   "line_start": 82,
-   "line_end": 94,
-   "bytes": 426,
+   "line_start": 76,
+   "line_end": 88,
+   "bytes": 425,
    "budget_bytes": 1500,
    "cut_lines": 0,
    "writer": "script",
@@ -224,38 +213,36 @@
    "order": 8,
    "title": "Tests attendus",
    "heading": "## 8. Tests attendus {#tests}",
-   "line_start": 95,
-   "line_end": 101,
-   "bytes": 964,
+   "line_start": 89,
+   "line_end": 96,
+   "bytes": 872,
    "budget_bytes": 2000,
    "cut_lines": 0,
    "writer": "agent",
    "kinds": [
     "test_case"
    ],
-   "facts_available": 54,
+   "facts_available": 49,
    "facts_cited": [
-    "1d6343583ff4cb9a-1",
-    "35c98d343af70d16-1",
-    "59230c81582d34b3-1",
-    "5d2f68edb7108f3e-1",
-    "8ae00d6ecf2dc04f-1",
-    "70d4d7a5fcf8ca5c-2",
-    "947ec0951545e427-1",
-    "029d78f2484a600b-1",
-    "b59e1cc447f03d19-1",
-    "5fd40af78c2a4f52-1",
-    "e6e137afcb49a159-1",
-    "c65fbe64d8da475f-1",
-    "e5f96f735ac2600b-1",
-    "8fd0d9f8dd6f46c8-1"
+    "f5eb141422bbbbcb-1",
+    "aae3d7977f8dcf62-1",
+    "80aae410574f341d-1",
+    "8c46899cb4ce82da-1",
+    "3c5a78a8da443252-1",
+    "f58b26a1c675bc5a-1",
+    "85caeada9614f594-1",
+    "1d2a655bc933e21a-1",
+    "d95f3adb1ce89629-1",
+    "7271124452b70525-1",
+    "2b18a3f419b512a7-1",
+    "427229d3685c539b-1"
    ],
    "lots": 1,
    "merged": false,
    "review": {
     "lines": 10,
-    "kept": 9,
-    "rejected": 1,
+    "kept": 8,
+    "rejected": 2,
     "unreviewed": 0
    },
    "never_truncate": false
@@ -265,28 +252,23 @@
    "order": 9,
    "title": "Questions ouvertes",
    "heading": "## 9. Questions ouvertes {#questions}",
-   "line_start": 102,
-   "line_end": 106,
-   "bytes": 852,
+   "line_start": 97,
+   "line_end": 100,
+   "bytes": 91,
    "budget_bytes": 1500,
    "cut_lines": 0,
    "writer": "agent",
    "kinds": [
     "suspicious"
    ],
-   "facts_available": 7,
-   "facts_cited": [
-    "41dd62aea9e27bf0-1",
-    "948cf8b91f5231d8-2",
-    "28035b740c80cb01-1",
-    "4967cc3e212efe58-1"
-   ],
+   "facts_available": 10,
+   "facts_cited": [],
    "lots": 1,
    "merged": false,
    "review": {
-    "lines": 3,
-    "kept": 3,
-    "rejected": 0,
+    "lines": 2,
+    "kept": 1,
+    "rejected": 1,
     "unreviewed": 0
    },
    "never_truncate": false
@@ -296,25 +278,27 @@
    "order": 10,
    "title": "Alertes",
    "heading": "## 10. Alertes {#alerts}",
-   "line_start": 107,
-   "line_end": 111,
-   "bytes": 931,
+   "line_start": 101,
+   "line_end": 107,
+   "bytes": 1242,
    "budget_bytes": 4000,
    "cut_lines": 0,
    "writer": "agent",
    "kinds": [
     "suspicious"
    ],
-   "facts_available": 7,
+   "facts_available": 10,
    "facts_cited": [
-    "af86537e34083429-1",
-    "7ee28be5964c768b-1"
+    "20661afcf565be41-1",
+    "dfeb9a6862fd5358-1",
+    "3d2d7f98e0c7f971-1",
+    "36aa78900fe7b738-1"
    ],
    "lots": 1,
    "merged": false,
    "review": {
-    "lines": 3,
-    "kept": 3,
+    "lines": 7,
+    "kept": 7,
     "rejected": 0,
     "unreviewed": 0
    },
@@ -325,9 +309,9 @@
    "order": 11,
    "title": "Couverture",
    "heading": "## 11. Couverture {#coverage}",
-   "line_start": 112,
-   "line_end": 119,
-   "bytes": 666,
+   "line_start": 108,
+   "line_end": 115,
+   "bytes": 667,
    "budget_bytes": 1500,
    "cut_lines": 0,
    "writer": "script",
@@ -341,16 +325,16 @@
   }
  ],
  "dedup": {
-  "base": 291,
+  "base": 301,
   "taken_in": 0,
-  "out_of_scope": 99,
-  "pool_before": 192,
-  "pool_after": 192,
-  "related_pairs": 57
+  "out_of_scope": 121,
+  "pool_before": 180,
+  "pool_after": 177,
+  "related_pairs": 63
  },
  "lint": {
   "ok": true,
   "errors": 0,
-  "warnings": 0
+  "warnings": 1
  }
 }

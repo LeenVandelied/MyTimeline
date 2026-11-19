@@ -1,16 +1,19 @@
 {
  "id": "A6",
- "question": "Session : pack propre ou fusion dans user ?",
- "decision": "session",
- "rule": "R2 séparation : deux controllers propres et 111 ko, au-dessus de pack_min_kb (15), malgré 10 imports User -> Session",
- "confidence": "medium",
+ "question": "Radical dashboard et pages settings : quel pack ?",
+ "decision": "état courant",
+ "rule": "R3 dashboard désigne plusieurs packs possibles (event, product), radical omis des alias, fichiers laissés non rattachés",
+ "confidence": "low",
  "seeds": [
-  "Session",
-  "SessionEntity",
+  "Event",
+  "Product",
   "User"
  ],
- "evidence": [],
- "falsified_if": "un ticket de session modifie systématiquement les services de User",
+ "evidence": [
+  "frontend-app:[locale]/(app)/dashboard/page.tsx",
+  "frontend-app:[locale]/(app)/settings/page.tsx"
+ ],
+ "falsified_if": "un ticket montre que le dashboard n'agrège que les événements ou que les produits",
  "status": "open",
  "opened": "2026-11-19",
  "touched_by": []

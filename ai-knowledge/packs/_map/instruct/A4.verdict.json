@@ -1,10 +1,44 @@
-{"id": "A4", "verdict": "confirmed",
- "evidence": [
-  {"file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/application/services/PasswordResetServiceImpl.java", "line_start": 103, "line_end": 103, "quote": "Optional<User> maybeUser = userRepository.findDomainUserByEmail(email);"},
-  {"file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/application/services/PasswordResetServiceImpl.java", "line_start": 147, "line_end": 147, "quote": "User user = userRepository.findDomainUserById(token.getUserId())"},
-  {"file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/application/services/PasswordResetServiceImpl.java", "line_start": 153, "line_end": 153, "quote": "String newHash = passwordEncoder.encode(newPassword);"},
-  {"file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/test/java/com/matimeline/eventmanager/application/services/PasswordResetServiceImplTest.java", "line_start": 170, "line_end": 170, "quote": "void resetPassword_validToken_reHashes_updatesUser_andConsumesToken() {"},
-  {"file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/test/java/com/matimeline/eventmanager/application/services/PasswordResetServiceImplTest.java", "line_start": 185, "line_end": 185, "quote": "verify(userRepository).save(userCaptor.capture());"}
- ],
- "statement": "Le flux de réinitialisation lit le compte utilisateur par email et par identifiant, puis réécrit son hash de mot de passe, ce qui touche bien le profil utilisateur.",
- "proposed_decision": "user"}
+{
+  "id": "A4",
+  "verdict": "confirmed",
+  "evidence": [
+    {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/components/timeline/TimelineView.tsx",
+      "line_start": 97,
+      "line_end": 97,
+      "quote": "la frise n'affiche que les events fournis en props"
+    },
+    {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/components/timeline/TimelineView.tsx",
+      "line_start": 650,
+      "line_end": 650,
+      "quote": "events: FullCalendarEvent[]"
+    },
+    {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/components/timeline/TimelineView.tsx",
+      "line_start": 740,
+      "line_end": 740,
+      "quote": "computeRange(events, now)"
+    },
+    {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/components/timeline/TimelineView.tsx",
+      "line_start": 772,
+      "line_end": 772,
+      "quote": "indexEventsByResource(events, rangeStart, now)"
+    },
+    {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/components/timeline/TimelineMobilePortrait.tsx",
+      "line_start": 317,
+      "line_end": 317,
+      "quote": "{laneEvents.map(({ item: { event }, row }) => {"
+    },
+    {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/components/timeline/TimelineEditHost.tsx",
+      "line_start": 178,
+      "line_end": 178,
+      "quote": "await deleteEvent(id, HANDLES_FORBIDDEN_INLINE)"
+    }
+  ],
+  "statement": "La frise desktop reçoit en props la liste des événements (FullCalendarEvent), calcule l'étendue temporelle et le positionnement à partir de ces événements, puis les range par produit (lane). Les vues mobiles portrait et paysage réutilisent la même chaîne de calcul, et l'édition ou la suppression d'un événement depuis la frise passe par les services d'événements.",
+  "proposed_decision": "event"
+}

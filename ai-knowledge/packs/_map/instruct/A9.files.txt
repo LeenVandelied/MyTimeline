@@ -1,0 +1,2 @@
+C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/resources/db/migration/V9__neutralize_invalid_recurrence_unit.sql
+C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/resources/db/migration/V1__baseline.sql

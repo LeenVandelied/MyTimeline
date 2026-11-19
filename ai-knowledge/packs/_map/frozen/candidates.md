@@ -1,6 +1,6 @@
 # Groupes candidats (passe déterministe)
 
-Projet mytimeline. 700 fichiers (4513 ko), 14 seeds ({'entity': 7, 'extra': 7}), 6 groupes, 37 techniques, 0 dans un foyer transversal, 290 non rattachés dont 0 à égalité de votes. Arêtes : regex.
+Projet mytimeline. 700 fichiers (4513 ko), 14 seeds ({'entity': 7, 'extra': 7}), 5 groupes, 172 techniques, 0 dans un foyer transversal, 40 non rattachés dont 0 à égalité de votes. Arêtes : regex.
 
 Seuils : pack_min_kb=15, min_seed_files=6, merge_ratio=0.9, max_merge_target=40.
 
@@ -16,193 +16,147 @@ Règles par défaut :
 - R9 : Un test sans seed suit la classe de production qu'il importe le plus ; sinon R4 (medium)
 - R10 : Un fichier technique est possédé par le pack `technical` de sa couche ; un transversal peut le revendiquer par `path_rules`, ce qui donne un recouvrement, pas un transfert (high)
 
-## Event  (131 fichiers, 1181 ko)
+## Event  (182 fichiers, 1509 ko)
 - seeds : CategoryEntity, Event, EventEntity, ProductEntity
 - entités : CategoryEntity, EventEntity, ProductEntity
-- couches : {'mytimeline/resources': 82, 'mytimeline/infrastructure': 18, 'mytimeline/domain': 15, 'mytimeline/application': 11, 'mytimeline/db': 3, 'mytimeline/utils': 2}
+- couches : {'frontend/components': 118, 'backend/infrastructure': 18, 'backend/domain': 15, 'backend/application': 11, 'frontend/hooks': 8, 'frontend/lib': 4, 'backend/db': 3, 'frontend/types': 2, 'backend/utils': 2, 'frontend/services': 1}
 - controllers : EventController, RecurrencePreviewController
 - préfixes de routes serveur : /api/events
-- services : EventService, RecurrenceExpansionService, eventService
-- motifs : {'state-machine': 3, 'authorization': 2, 'integrations': 75}
-- rattachement : {'name': 123, 'fanin': 2, 'imports': 6}
+- URL front : api/products/with-events, events/evt-desktop, events/evt-mobile, products/with-events
+- dossiers front : components, hooks, lib, services, types
+- services : EventService, RecurrenceExpansionService
+- sélecteurs : [data-testid=
+- motifs : {'state-machine': 3, 'authorization': 2, 'integrations': 95}
+- rattachement : {'name': 115, 'fanin': 31, 'imports': 36}
 
-## User  (94 fichiers, 451 ko)
-- seeds : PasswordReset, PasswordResetTokenEntity, User, UserEntity
-- entités : PasswordResetTokenEntity, UserEntity
-- couches : {'mytimeline/infrastructure': 36, 'mytimeline/application': 23, 'mytimeline/domain': 19, 'mytimeline/resources': 12, 'mytimeline/db': 4}
-- controllers : AuthController, E2eResetTokenController, UserController
-- préfixes de routes serveur : /api/auth, /api/me, /api/test-support
-- services : AvatarService, BrevoEmailService, CustomUserDetailsService, EmailService, PasswordResetService, UserService, userService
-- motifs : {'integrations': 127, 'authorization': 114, 'batch': 13, 'state-machine': 1}
-- rattachement : {'name': 73, 'fanin': 9, 'imports': 12}
+## User  (176 fichiers, 911 ko)
+- seeds : PasswordReset, PasswordResetTokenEntity, Session, SessionEntity, User, UserEntity
+- entités : PasswordResetTokenEntity, SessionEntity, UserEntity
+- couches : {'backend/infrastructure': 51, 'frontend/components': 34, 'backend/application': 30, 'backend/domain': 25, 'frontend/hooks': 9, 'frontend/lib': 9, 'backend/db': 5, 'frontend/services': 5, 'frontend/contexts': 4, 'frontend/types': 4}
+- controllers : AuthController, E2eResetTokenController, JwksController, SessionController, UserController
+- préfixes de routes serveur : /api/auth, /api/me, /api/sessions, /api/test-support
+- URL front : api/auth/me, api/export, api/export/download/abc, api/export/job-1, api/me, api/me/avatar, api/me/export, auth/me, export, export/download/abc, export/job-1, http, me, me/avatar, me/export
+- dossiers front : components, contexts, hooks, lib, services, types
+- services : AvatarService, BrevoEmailService, CustomUserDetailsService, EmailService, JwtService, PasswordResetService, SessionService, UserService
+- motifs : {'authorization': 176, 'state-machine': 2, 'integrations': 214, 'batch': 20}
+- rattachement : {'name': 132, 'fanin': 20, 'imports': 24}
 
-## Product  (45 fichiers, 376 ko)
+## Product  (68 fichiers, 531 ko)
 - seeds : Product
-- couches : {'mytimeline/resources': 29, 'mytimeline/application': 7, 'mytimeline/infrastructure': 5, 'mytimeline/domain': 4}
+- couches : {'frontend/components': 40, 'frontend/hooks': 9, 'backend/application': 7, 'backend/infrastructure': 5, 'backend/domain': 4, 'frontend/types': 2, 'frontend/services': 1}
 - controllers : ProductController
 - préfixes de routes serveur : /api
-- services : ProductService, productService
-- motifs : {'integrations': 25, 'authorization': 2}
-- rattachement : {'name': 45}
-
-## ExportJob  (42 fichiers, 170 ko)
-- seeds : ExportJob, ExportJobEntity
-- entités : ExportJobEntity
-- couches : {'mytimeline/infrastructure': 16, 'mytimeline/domain': 10, 'mytimeline/resources': 8, 'mytimeline/application': 6, 'mytimeline/db': 2}
-- controllers : ExportController
-- préfixes de routes serveur : /api/export
-- services : ExportService, ExportTokenService, exportService
-- motifs : {'integrations': 153, 'batch': 7, 'state-machine': 21, 'authorization': 22}
-- rattachement : {'name': 38, 'fanin': 1, 'imports': 3}
+- URL front : users/user-1/products, users/user-1/products/p2
+- dossiers front : components, hooks, services, types
+- services : ProductService
+- motifs : {'integrations': 44, 'authorization': 2}
+- rattachement : {'name': 45, 'imports': 13, 'fanin': 10}
 
 ## Category  (31 fichiers, 184 ko)
 - seeds : Category
-- couches : {'mytimeline/resources': 12, 'mytimeline/domain': 8, 'mytimeline/application': 6, 'mytimeline/infrastructure': 4, 'mytimeline/db': 1}
+- couches : {'backend/domain': 8, 'backend/application': 6, 'frontend/components': 5, 'frontend/hooks': 5, 'backend/infrastructure': 4, 'backend/db': 1, 'frontend/services': 1, 'frontend/types': 1}
 - controllers : CategoryController
 - préfixes de routes serveur : /api/categories
-- services : CategoryService, categoryService
-- motifs : {'integrations': 20}
+- URL front : api/categories, categories
+- dossiers front : components, hooks, services, types
+- services : CategoryService
+- motifs : {'integrations': 35}
 - rattachement : {'name': 31}
 
-## Session  (30 fichiers, 145 ko)
-- seeds : Session, SessionEntity
-- entités : SessionEntity
-- couches : {'mytimeline/infrastructure': 12, 'mytimeline/resources': 7, 'mytimeline/application': 6, 'mytimeline/domain': 4, 'mytimeline/db': 1}
-- controllers : JwksController, SessionController
-- préfixes de routes serveur : /api/sessions
-- services : JwtService, SessionService, sessionService
-- motifs : {'integrations': 30, 'authorization': 52}
-- rattachement : {'name': 30}
+## ExportJob  (31 fichiers, 92 ko)
+- seeds : ExportJob, ExportJobEntity
+- entités : ExportJobEntity
+- couches : {'backend/infrastructure': 13, 'backend/domain': 10, 'backend/application': 6, 'backend/db': 2}
+- controllers : ExportController
+- préfixes de routes serveur : /api/export
+- services : ExportService, ExportTokenService
+- motifs : {'state-machine': 17, 'integrations': 111, 'batch': 13, 'authorization': 10}
+- rattachement : {'name': 10, 'imports': 15, 'fanin': 6}
 
 ## Liens entre groupes (arêtes, top 40)
-- Event -> User : 21
-- Product -> Event : 20
+- Product -> Event : 23
+- Event -> User : 23
 - Event -> Product : 18
-- ExportJob -> User : 15
 - Product -> User : 13
 - Product -> Category : 11
-- User -> Session : 9
+- ExportJob -> User : 11
+- User -> Event : 7
+- User -> Category : 6
+- User -> Product : 6
 - Category -> User : 6
-- User -> Category : 5
-- User -> Product : 5
-- Session -> User : 5
-- ExportJob -> Event : 5
 - Category -> Event : 4
-- User -> Event : 4
+- User -> ExportJob : 4
 - Event -> Category : 4
 - Category -> Product : 3
-- User -> ExportJob : 2
 - Event -> ExportJob : 2
-- Event -> Session : 2
-- ExportJob -> Category : 1
-- ExportJob -> Product : 1
 
 ## Fusions faites par le script
-- CategoryEntity (1 fichiers) fondu dans Event : 5/12 liens
-- EventEntity (1 fichiers) fondu dans Event : 7/11 liens
+- CategoryEntity (1 fichiers) fondu dans Event : 5/11 liens
+- EventEntity (1 fichiers) fondu dans Event : 7/10 liens
 - ExportJobEntity (1 fichiers) fondu dans ExportJob : 2/2 liens
-- ProductEntity (1 fichiers) fondu dans Event : 6/12 liens
+- ProductEntity (1 fichiers) fondu dans Event : 6/11 liens
 - SessionEntity (1 fichiers) fondu dans Session : 2/2 liens
+- UserEntity (1 fichiers) fondu dans User : 8/21 liens
 - PasswordResetTokenEntity (2 fichiers) fondu dans PasswordReset : 2/2 liens
-- UserEntity (2 fichiers) fondu dans User : 6/20 liens
 - PasswordReset (21 fichiers) fondu dans User : 14/15 liens
+- Session (22 fichiers) fondu dans User : 13/14 liens
 
 ## Motifs transversaux (fichiers avec >= 3 occurrences)
-- authorization : 35 fichiers (6 à 10+), par groupe {'(tech/non rattaché)': 14, 'User': 14, 'Session': 5, 'ExportJob': 2}
+- authorization : 35 fichiers (6 à 10+), par groupe {'User': 20, '(tech/non rattaché)': 14, 'ExportJob': 1}
   top : SecurityConfig.java(19), JwtServiceRs256Test.java(16), UserRateLimitingFilterTest.java(12), JwtFilter.java(11), ExportTokenServiceTest.java(10), AuthController.java(10), CallerResolverTest.java(9), ExportTokenService.java(9), CustomUserDetailsService.java(9), JwtFilterTest.java(8), UserRateLimitingFilter.java(8), JwtService.java(8)
-- state-machine : 2 fichiers (0 à 10+), par groupe {'ExportJob': 2}
+- state-machine : 2 fichiers (0 à 10+), par groupe {'ExportJob': 1, '(tech/non rattaché)': 1}
   top : ExportJob.java(8), export.ts(4)
-- integrations : 84 fichiers (3 à 10+), par groupe {'User': 25, 'ExportJob': 18, 'Event': 15, '(tech/non rattaché)': 11, 'Session': 6, 'Product': 5, 'Category': 4}
-  top : ExportRenderersTest.java(34), ZipExportRenderer.java(18), BrevoHealthIndicatorTest.java(11), MarkdownExportRenderer.java(8), JsonExportRenderer.java(8), CsvExportRenderer.java(8), LocalStorageAdapter.java(8), BrevoHealthIndicator.java(7), ExportRendererRegistry.java(7), StorageConfigTest.java(6), UserController.java(6), E2eTestSupportProfileTest.java(5)
-- batch : 4 fichiers (0 à 10+), par groupe {'User': 2, '(tech/non rattaché)': 1, 'ExportJob': 1}
-  top : ForgotPasswordAsyncTest.java(4), PasswordResetServiceImpl.java(4), AsyncConfig.java(3), AsyncExportRunner.java(3)
+- integrations : 97 fichiers (4 à 10+), par groupe {'User': 35, '(tech/non rattaché)': 20, 'Event': 17, 'ExportJob': 12, 'Product': 7, 'Category': 6}
+  top : ExportRenderersTest.java(34), ZipExportRenderer.java(33), TimelineEditHost.forbidden.test.tsx(10), LocalStorageAdapter.java(10), apiClient.ts(9), apiClient.multipart.test.ts(9), LocalStorageAdapterTest.java(9), AuthContext.themeSaveToast.test.tsx(8), E2eTestSupportProfileTest.java(8), MarkdownExportRenderer.java(8), JsonExportRenderer.java(8), CsvExportRenderer.java(8)
+- batch : 9 fichiers (0 à 10+), par groupe {'User': 4, 'ExportJob': 3, '(tech/non rattaché)': 2}
+  top : PasswordResetTokenPurgeScheduler.java(6), ExportPurgeScheduler.java(5), ForgotPasswordAsyncTest.java(4), PasswordResetTokenPurgeSchedulerIntegrationTest.java(4), ExportPurgeSchedulerIntegrationTest.java(4), SchedulingConfig.java(4), PasswordResetServiceImpl.java(4), AsyncConfig.java(3), AsyncExportRunner.java(3)
 
-## Fichiers techniques sans seed (37)
-- par couche : {'mytimeline/infrastructure': 34, 'mytimeline/': 2, 'mytimeline/support': 1}
-- les plus importés : ThemePreferenceConverter.java[1 groupes], EventmanagerApplication.java[0 groupes], ErrorCode.java[0 groupes], BrevoHealthIndicator.java[0 groupes], E2eResetTokenFinder.java[0 groupes], E2eTestSupportSecurityConfig.java[0 groupes], AsyncConfig.java[0 groupes], ClockConfig.java[0 groupes], JpaSharedEntityManagerConfig.java[0 groupes], ProdConfigStartupLogger.java[0 groupes], ProfileSafetyGuard.java[0 groupes], SchedulingConfig.java[0 groupes], RateLimitConfig.java[0 groupes], RateLimitingFilter.java[0 groupes], RsaKeyMaterial.java[0 groupes], SecurityConfig.java[0 groupes], EventmanagerApplicationTests.java[0 groupes], LocalStorageAdapterTest.java[0 groupes], AccountDeletionIntegrationTest.java[0 groupes], GlobalExceptionHandlerValidationTest.java[0 groupes], BrevoEmailServiceLocaleTest.java[0 groupes], BrevoHealthIndicatorTest.java[0 groupes], E2eResetTokenEndpointIntegrationTest.java[0 groupes], E2eTestSupportPackageGuardTest.java[0 groupes], ProdConfigStartupLoggerTest.java[0 groupes]
+## Fichiers techniques sans seed (172)
+- par couche : {'frontend/components': 56, 'backend/infrastructure': 34, 'frontend/lib': 22, 'frontend/hooks': 13, 'frontend/services': 12, 'frontend/__tests__': 9, 'frontend/styles': 9, 'frontend-app/(root)': 8, 'frontend/contexts': 3, 'backend/': 2, 'frontend/i18n': 2, 'backend/support': 1, 'frontend/utils': 1}
+- les plus importés : inlineErrorHandling.ts[4 groupes], apiClient.ts[3 groupes], EventmanagerApplication.java[0 groupes], ErrorCode.java[0 groupes], BrevoHealthIndicator.java[0 groupes], E2eResetTokenFinder.java[0 groupes], E2eTestSupportSecurityConfig.java[0 groupes], AsyncConfig.java[0 groupes], ClockConfig.java[0 groupes], JpaSharedEntityManagerConfig.java[0 groupes], ProdConfigStartupLogger.java[0 groupes], ProfileSafetyGuard.java[0 groupes], SchedulingConfig.java[0 groupes], RateLimitConfig.java[0 groupes], RateLimitingFilter.java[0 groupes], RsaKeyMaterial.java[0 groupes], EventmanagerApplicationTests.java[0 groupes], LocalStorageAdapterTest.java[0 groupes], AccountDeletionIntegrationTest.java[0 groupes], ExportEndpointsIntegrationTest.java[0 groupes], GlobalExceptionHandlerValidationTest.java[0 groupes], BrevoEmailServiceLocaleTest.java[0 groupes], BrevoHealthIndicatorTest.java[0 groupes], E2eResetTokenEndpointIntegrationTest.java[0 groupes], E2eTestSupportPackageGuardTest.java[0 groupes]
 
-## Fichiers non rattachés (290)
-- par couche : {'mytimeline/resources': 280, 'mytimeline/db': 5, 'mytimeline/domain': 2, 'mytimeline/application': 1, 'mytimeline/architecture': 1, 'mytimeline/build': 1}
-- mytimeline:frontend/src/__tests__/e2e-rate-limit-budget.test.ts (84 ko) tokens=['e', 'e', 'rate', 'limit', 'budget'] égalité=None motifs={}
-- mytimeline:frontend/src/lib/auth-guard-paths.test.ts (39 ko) tokens=['auth', 'guard', 'path'] égalité=None motifs={}
-- mytimeline:frontend/src/components/layout/AppShell.test.tsx (35 ko) tokens=['app', 'shell'] égalité=None motifs={}
-- mytimeline:frontend/src/styles/__tests__/tsx-focus-utility.test.ts (28 ko) tokens=['tsx', 'focu', 'utility'] égalité=None motifs={}
-- mytimeline:frontend/src/styles/__tests__/base-layer.test.ts (26 ko) tokens=['base', 'layer'] égalité=None motifs={}
-- mytimeline:frontend/src/components/landing/HeaderSection.tsx (23 ko) tokens=['header', 'section'] égalité=None motifs={}
-- mytimeline:frontend/src/components/layout/AppShell.tsx (21 ko) tokens=['app', 'shell'] égalité=None motifs={}
-- mytimeline:frontend/src/services/apiClient.test.ts (20 ko) tokens=['api', 'client'] égalité=None motifs={}
-- mytimeline:frontend/src/__tests__/e2e-pixel-guards.test.ts (18 ko) tokens=['e', 'e', 'pixel', 'guard'] égalité=None motifs={}
-- mytimeline:frontend/src/components/ui/toaster.tsx (18 ko) tokens=['toaster'] égalité=None motifs={}
-- mytimeline:frontend/src/lib/color.test.ts (18 ko) tokens=['color'] égalité=None motifs={}
-- mytimeline:frontend/src/lib/auth-token-verify.test.ts (17 ko) tokens=['auth', 'token', 'verify'] égalité=None motifs={}
-- mytimeline:frontend/src/components/timeline/lib.ts (17 ko) tokens=['lib'] égalité=None motifs={}
-- mytimeline:frontend/src/components/dashboard/DensityRibbon.window.test.tsx (17 ko) tokens=['density', 'ribbon', 'window'] égalité=None motifs={}
-- mytimeline:frontend/src/styles/__tests__/control-border-tier.test.ts (16 ko) tokens=['control', 'border', 'tier'] égalité=None motifs={}
-- mytimeline:frontend/src/components/dashboard/DensityRibbon.tsx (16 ko) tokens=['density', 'ribbon'] égalité=None motifs={}
-- mytimeline:frontend/src/lib/color.ts (16 ko) tokens=['color'] égalité=None motifs={}
-- mytimeline:frontend/src/lib/legal-pages.test.ts (15 ko) tokens=['legal', 'page'] égalité=None motifs={}
-- mytimeline:frontend/src/components/shared/DeleteConfirmDialog.test.tsx (15 ko) tokens=['delete', 'confirm', 'dialog'] égalité=None motifs={}
-- mytimeline:frontend/src/components/landing/landing.hover-pairing.test.ts (15 ko) tokens=['landing', 'hover', 'pairing'] égalité=None motifs={}
-- mytimeline:frontend/src/lib/canonical-host.ts (14 ko) tokens=['canonical', 'host'] égalité=None motifs={}
-- mytimeline:frontend/src/components/__tests__/date-time-semantics.test.tsx (14 ko) tokens=['date', 'time', 'semantic'] égalité=None motifs={}
-- mytimeline:frontend/src/components/timeline/label-reserve.test.ts (14 ko) tokens=['label', 'reserve'] égalité=None motifs={}
-- mytimeline:frontend/src/lib/canonical-host.test.ts (13 ko) tokens=['canonical', 'host'] égalité=None motifs={}
-- mytimeline:frontend/src/components/shared/DeleteConfirmDialog.tsx (13 ko) tokens=['delete', 'confirm', 'dialog'] égalité=None motifs={}
-- mytimeline:frontend/src/components/ui/toaster.test.tsx (13 ko) tokens=['toaster'] égalité=None motifs={}
-- mytimeline:frontend/src/services/apiClient.ts (13 ko) tokens=['api', 'client'] égalité=None motifs={}
-- mytimeline:frontend/src/components/ui/palette-color-picker.tsx (13 ko) tokens=['palette', 'color', 'picker'] égalité=None motifs={}
-- mytimeline:frontend/src/components/ui/dropdown-menu.tsx (13 ko) tokens=['dropdown', 'menu'] égalité=None motifs={}
-- mytimeline:frontend/app/[locale]/(app)/dashboard/page.tsx (12 ko) tokens=['page'] égalité=None motifs={}
-- mytimeline:frontend/src/contexts/AuthContext.theme.test.tsx (12 ko) tokens=['auth', 'context', 'theme'] égalité=None motifs={}
-- mytimeline:frontend/src/contexts/AuthContext.tsx (12 ko) tokens=['auth', 'context'] égalité=None motifs={}
-- mytimeline:frontend/src/components/shared/ConflictDialog.tsx (11 ko) tokens=['conflict', 'dialog'] égalité=None motifs={}
-- mytimeline:frontend/src/components/landing/HeaderSection.test.tsx (11 ko) tokens=['header', 'section'] égalité=None motifs={}
-- mytimeline:frontend/src/components/timeline/virtualization.ts (11 ko) tokens=['irtualization'] égalité=None motifs={}
-- mytimeline:frontend/src/components/landing/HeroSection.tsx (11 ko) tokens=['hero', 'section'] égalité=None motifs={}
-- mytimeline:frontend/src/components/dashboard/dashboard-mobile.test.tsx (10 ko) tokens=['dashboard', 'mobile'] égalité=None motifs={}
-- mytimeline:frontend/app/[locale]/privacy/page.tsx (10 ko) tokens=['page'] égalité=None motifs={}
-- mytimeline:frontend/src/components/dashboard/section-titles.test.tsx (10 ko) tokens=['section', 'title'] égalité=None motifs={}
-- mytimeline:frontend/src/__tests__/i18n-namespaces.test.ts (10 ko) tokens=['i', 'n', 'namespace'] égalité=None motifs={}
-- mytimeline:frontend/src/lib/date-iso.local-date.test.tsx (10 ko) tokens=['date', 'iso', 'local', 'date'] égalité=None motifs={}
-- mytimeline:frontend/src/components/ui/language-selector.tsx (10 ko) tokens=['language', 'selector'] égalité=None motifs={}
-- mytimeline:frontend/src/lib/auth-token-verify.ts (10 ko) tokens=['auth', 'token', 'verify'] égalité=None motifs={}
-- mytimeline:frontend/src/components/shared/DeleteConfirmDialog.forbidden.test.tsx (10 ko) tokens=['delete', 'confirm', 'dialog', 'forbidden'] égalité=None motifs={}
-- mytimeline:frontend/src/components/ui/theme-toggle.tsx (10 ko) tokens=['theme', 'toggle'] égalité=None motifs={}
-- mytimeline:frontend/src/components/timeline/virtualization.test.ts (10 ko) tokens=['irtualization'] égalité=None motifs={}
-- mytimeline:frontend/src/components/shared/ConflictDialog.test.tsx (9 ko) tokens=['conflict', 'dialog'] égalité=None motifs={}
-- mytimeline:frontend/app/[locale]/register/page.tsx (9 ko) tokens=['page'] égalité=None motifs={}
-- mytimeline:frontend/src/components/dashboard/section-counts.test.tsx (9 ko) tokens=['section', 'count'] égalité=None motifs={}
-- mytimeline:frontend/src/components/timeline/lib-a11y.test.ts (9 ko) tokens=['lib', 'a', 'y'] égalité=None motifs={}
-- mytimeline:backend/src/test/java/com/matimeline/eventmanager/architecture/ArchitectureTest.java (8 ko) tokens=['architecture', 'test'] égalité=None motifs={}
-- mytimeline:frontend/src/styles/__tests__/i18n-intl-classes.test.ts (8 ko) tokens=['i', 'n', 'intl', 'class'] égalité=None motifs={}
-- mytimeline:frontend/src/components/timeline/label-reserve.ts (8 ko) tokens=['label', 'reserve'] égalité=None motifs={}
-- mytimeline:frontend/src/components/settings/mobile/BottomSheet.tsx (8 ko) tokens=['bottom', 'sheet'] égalité=None motifs={}
-- mytimeline:frontend/src/styles/__tests__/eyebrow-consumers.test.tsx (8 ko) tokens=['eyebrow', 'consumer'] égalité=None motifs={}
-- mytimeline:frontend/src/hooks/useMobileKeyboard.test.ts (8 ko) tokens=['use', 'mobile', 'keyboard'] égalité=None motifs={}
-- mytimeline:frontend/src/components/dashboard/KpiMarginalia.intl.test.tsx (8 ko) tokens=['kpi', 'marginalia', 'intl'] égalité=None motifs={}
-- mytimeline:frontend/src/lib/schemas/auth.ts (8 ko) tokens=['auth'] égalité=None motifs={}
-- mytimeline:frontend/app/[locale]/terms/page.tsx (8 ko) tokens=['page'] égalité=None motifs={}
-- mytimeline:frontend/src/components/dashboard/kpis.test.ts (8 ko) tokens=['kpi'] égalité=None motifs={}
-- mytimeline:frontend/src/lib/date-iso.ts (8 ko) tokens=['date', 'iso'] égalité=None motifs={}
-- mytimeline:backend/src/test/java/com/matimeline/eventmanager/build/BomDriftTest.java (8 ko) tokens=['bom', 'drift', 'test'] égalité=None motifs={'authorization': 1}
-- mytimeline:frontend/app/global-not-found-screen.tsx (8 ko) tokens=['global', 'not', 'found', 'screen'] égalité=None motifs={}
-- mytimeline:frontend/src/styles/__tests__/storybook-font-shell.test.ts (8 ko) tokens=['storybook', 'font', 'shell'] égalité=None motifs={}
-- mytimeline:frontend/src/hooks/useThemeChoice.test.tsx (8 ko) tokens=['use', 'theme', 'choice'] égalité=None motifs={}
-- mytimeline:frontend/app/[locale]/reset-password/page.tsx (8 ko) tokens=['page'] égalité=None motifs={}
-- mytimeline:frontend/src/components/landing/LandingMobileMenu.tsx (8 ko) tokens=['landing', 'mobile', 'menu'] égalité=None motifs={}
-- mytimeline:frontend/src/components/ui/dialog.tsx (7 ko) tokens=['dialog'] égalité=None motifs={}
-- mytimeline:frontend/src/lib/auth-guard-paths.ts (7 ko) tokens=['auth', 'guard', 'path'] égalité=None motifs={}
-- mytimeline:frontend/src/components/shared/StateScreen.tsx (7 ko) tokens=['state', 'screen'] égalité=None motifs={}
-- mytimeline:frontend/src/components/ui/select.tsx (7 ko) tokens=['select'] égalité=None motifs={}
-- mytimeline:frontend/src/components/dashboard/CompactAgenda.tsx (7 ko) tokens=['compact', 'agenda'] égalité=None motifs={}
-- mytimeline:frontend/src/components/ui/theme-toggle.test.tsx (7 ko) tokens=['theme', 'toggle'] égalité=None motifs={}
-- mytimeline:frontend/src/components/dashboard/WeekAgenda.tsx (7 ko) tokens=['week', 'agenda'] égalité=None motifs={}
-- mytimeline:frontend/src/hooks/useMobileKeyboard.ts (7 ko) tokens=['use', 'mobile', 'keyboard'] égalité=None motifs={}
-- mytimeline:frontend/app/global-not-found.test.tsx (7 ko) tokens=['global', 'not', 'found'] égalité=None motifs={}
-- mytimeline:frontend/src/components/dashboard/dashboard-components.test.tsx (7 ko) tokens=['dashboard', 'component'] égalité=None motifs={}
-- mytimeline:frontend/src/components/ui/palette-color-picker.test.tsx (7 ko) tokens=['palette', 'color', 'picker'] égalité=None motifs={}
-- mytimeline:frontend/app/[locale]/login/page.tsx (7 ko) tokens=['page'] égalité=None motifs={}
-- mytimeline:frontend/src/components/dashboard/kpis.ts (7 ko) tokens=['kpi'] égalité=None motifs={}
+## Fichiers non rattachés (40)
+- par couche : {'frontend-app/[locale]': 33, 'backend/db': 5, 'backend/architecture': 1, 'backend/build': 1}
+- frontend-app:[locale]/(app)/dashboard/page.tsx (12 ko) tokens=['page'] égalité=None motifs={}
+- frontend-app:[locale]/privacy/page.tsx (10 ko) tokens=['page'] égalité=None motifs={}
+- frontend-app:[locale]/register/page.tsx (9 ko) tokens=['page'] égalité=None motifs={'integrations': 3}
+- backend:src/test/java/com/matimeline/eventmanager/architecture/ArchitectureTest.java (8 ko) tokens=['architecture', 'test'] égalité=None motifs={'integrations': 2}
+- frontend-app:[locale]/terms/page.tsx (8 ko) tokens=['page'] égalité=None motifs={}
+- backend:src/test/java/com/matimeline/eventmanager/build/BomDriftTest.java (8 ko) tokens=['bom', 'drift', 'test'] égalité=None motifs={'authorization': 1}
+- frontend-app:[locale]/reset-password/page.tsx (8 ko) tokens=['page'] égalité=None motifs={'integrations': 3}
+- frontend-app:[locale]/login/page.tsx (7 ko) tokens=['page'] égalité=None motifs={'integrations': 3}
+- frontend-app:[locale]/forgot-password/page.tsx (6 ko) tokens=['page'] égalité=None motifs={}
+- frontend-app:[locale]/(app)/timeline/page.test.tsx (6 ko) tokens=['page'] égalité=None motifs={}
+- frontend-app:[locale]/(app)/dashboard/page.test.tsx (5 ko) tokens=['page'] égalité=None motifs={}
+- frontend-app:[locale]/layout.tsx (5 ko) tokens=['layout'] égalité=None motifs={'integrations': 1}
+- backend:src/main/resources/db/migration/V7__design_v3_schema.sql (5 ko) tokens=['design', 'schema'] égalité=None motifs={'state-machine': 2}
+- frontend-app:[locale]/(app)/timeline/page.tsx (5 ko) tokens=['page'] égalité=None motifs={}
+- frontend-app:[locale]/register/page.test.tsx (4 ko) tokens=['page'] égalité=None motifs={'integrations': 1}
+- frontend-app:[locale]/login/page.test.tsx (4 ko) tokens=['page'] égalité=None motifs={'integrations': 1}
+- frontend-app:[locale]/error.test.tsx (4 ko) tokens=['error'] égalité=None motifs={}
+- frontend-app:[locale]/reset-password/page.test.tsx (4 ko) tokens=['page'] égalité=None motifs={'integrations': 1}
+- frontend-app:[locale]/(app)/dashboard/loading.tsx (4 ko) tokens=['loading'] égalité=None motifs={}
+- frontend-app:[locale]/(app)/settings/page.tsx (3 ko) tokens=['page'] égalité=None motifs={}
+- frontend-app:[locale]/forgot-password/page.test.tsx (3 ko) tokens=['page'] égalité=None motifs={}
+- frontend-app:[locale]/(app)/products/page.tsx (3 ko) tokens=['page'] égalité=None motifs={}
+- frontend-app:[locale]/error.tsx (3 ko) tokens=['error'] égalité=None motifs={'integrations': 1}
+- frontend-app:[locale]/(app)/settings/loading.tsx (2 ko) tokens=['loading'] égalité=None motifs={}
+- frontend-app:[locale]/(app)/products/loading.tsx (2 ko) tokens=['loading'] égalité=None motifs={}
+- backend:src/main/resources/db/migration/V1__baseline.sql (2 ko) tokens=['baseline'] égalité=None motifs={}
+- frontend-app:[locale]/(app)/dashboard/loading.test.tsx (2 ko) tokens=['loading'] égalité=None motifs={}
+- frontend-app:[locale]/(app)/products/[productId]/page.tsx (2 ko) tokens=['page'] égalité=None motifs={}
+- frontend-app:[locale]/(app)/timeline/loading.tsx (2 ko) tokens=['loading'] égalité=None motifs={}
+- frontend-app:[locale]/(app)/settings/loading.test.tsx (1 ko) tokens=['loading'] égalité=None motifs={}
+- backend:src/main/resources/db/migration/V5__fk_indexes.sql (1 ko) tokens=['fk', 'index'] égalité=None motifs={}
+- frontend-app:[locale]/(app)/timeline/loading.test.tsx (1 ko) tokens=['loading'] égalité=None motifs={}
+- backend:src/main/resources/db/migration/V3__add_audit_columns.sql (1 ko) tokens=['add', 'audit', 'column'] égalité=None motifs={}
+- frontend-app:[locale]/(app)/products/[productId]/loading.tsx (1 ko) tokens=['loading'] égalité=None motifs={}
+- frontend-app:[locale]/(app)/products/loading.test.tsx (1 ko) tokens=['loading'] égalité=None motifs={}
+- frontend-app:[locale]/(app)/layout.tsx (1 ko) tokens=['layout'] égalité=None motifs={}
+- frontend-app:[locale]/(app)/products/[productId]/loading.test.tsx (1 ko) tokens=['loading'] égalité=None motifs={}
+- frontend-app:[locale]/page.tsx (0 ko) tokens=['page'] égalité=None motifs={}
+- backend:src/main/resources/db/migration/V2__unique_constraints.sql (0 ko) tokens=['unique', 'constraint'] égalité=None motifs={}
+- frontend-app:[locale]/home/page.tsx (0 ko) tokens=['page'] égalité=None motifs={}
 
 ## Foyers transversaux sans seed (0)
 - {}

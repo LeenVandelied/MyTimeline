@@ -1,17 +1,14 @@
 {
  "id": "A7",
- "question": "Fichiers front timeline : event ou autre domaine ?",
- "decision": "event",
- "rule": "R3 dossier d'écran sans entité : alias timeline vers event (TimelineView.tsx 94 ko, 357 fichiers non rattachés)",
+ "question": "state-machine : créer un pack transversal ?",
+ "decision": "non créé : state-machine",
+ "rule": "R5 motif mesuré sur 2 fichiers seulement (ExportJob.java et export.ts), absorbé par le domaine export",
  "confidence": "medium",
  "seeds": [
-  "Event"
+  "ExportJob"
  ],
- "evidence": [
-  "mytimeline:frontend/src/components/timeline/TimelineView.tsx",
-  "mytimeline:frontend/src/components/timeline/zoom.ts"
- ],
- "falsified_if": "un ticket de produit ou de catégorie modifie TimelineView sans toucher aux évènements",
+ "evidence": [],
+ "falsified_if": "l'extraction compte au moins 3 fichiers à forte densité d'états hors du domaine export",
  "status": "open",
  "opened": "2026-11-19",
  "touched_by": []

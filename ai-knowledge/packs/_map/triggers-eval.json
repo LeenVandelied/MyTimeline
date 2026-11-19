@@ -1,11 +1,11 @@
 {
  "scores": {
-  "requests": 30,
-  "simple": 17,
+  "requests": 33,
+  "simple": 18,
   "cross": 12,
-  "technical": 1,
+  "technical": 3,
   "simple_expected_selected": 1.0,
-  "simple_sole_domain": 1.0,
+  "simple_sole_domain": 0.944,
   "simple_by_variant": {
    "entité": {
     "n": 6,
@@ -18,15 +18,15 @@
     "sole": 1.0
    },
    "route": {
-    "n": 5,
+    "n": 6,
     "selected": 1.0,
-    "sole": 1.0
+    "sole": 0.833
    }
   },
   "cross_both_selected": 1.0,
   "technical_selected": 1.0,
-  "mean_selected_packs": 1.4,
-  "mean_selected_domains_simple": 1.0
+  "mean_selected_packs": 1.45,
+  "mean_selected_domains_simple": 1.06
  },
  "requests": [
   {
@@ -104,7 +104,7 @@
    "expected": [
     "event"
    ],
-   "text": "Ajouter un filtre sur event et évènement.",
+   "text": "Ajouter un filtre sur event et événement.",
    "selected": {
     "event": "mot-clé event"
    },
@@ -173,7 +173,7 @@
    "expected": [
     "export"
    ],
-   "text": "Ajouter un filtre sur export et exporter.",
+   "text": "Ajouter un filtre sur export et exportjob.",
    "selected": {
     "export": "mot-clé export"
    },
@@ -230,6 +230,7 @@
    ],
    "text": "Revoir la règle authorization pour export.",
    "selected": {
+    "user": "motif de nom **/*auth*",
     "export": "mot-clé export",
     "authorization": "motif authorization (domaine dans crosses)"
    },
@@ -248,6 +249,20 @@
    },
    "ok": true,
    "sole": true
+  },
+  {
+   "kind": "simple",
+   "variant": "route",
+   "expected": [
+    "product"
+   ],
+   "text": "Corriger l'écran de la route users/user-1/products.",
+   "selected": {
+    "user": "mot-clé user",
+    "product": "mot-clé product"
+   },
+   "ok": true,
+   "sole": false
   },
   {
    "kind": "simple",
@@ -355,6 +370,7 @@
    ],
    "text": "Revoir la règle authorization pour session.",
    "selected": {
+    "user": "motif de nom **/*auth*",
     "session": "mot-clé session",
     "authorization": "motif authorization (domaine dans crosses)"
    },
@@ -434,15 +450,56 @@
    "kind": "technique",
    "variant": "couche",
    "expected": [
-    "backend-socle"
+    "backend-core"
    ],
    "text": "Mettre à jour la couche infrastructure.",
    "selected": {
-    "backend-socle": "couche mytimeline/infrastructure"
+    "backend-core": "couche backend/infrastructure"
+   },
+   "ok": true,
+   "sole": false
+  },
+  {
+   "kind": "technique",
+   "variant": "couche",
+   "expected": [
+    "frontend-app"
+   ],
+   "text": "Mettre à jour la couche [locale].",
+   "selected": {
+    "frontend-app": "couche frontend-app/[locale]"
+   },
+   "ok": true,
+   "sole": false
+  },
+  {
+   "kind": "technique",
+   "variant": "couche",
+   "expected": [
+    "frontend-core"
+   ],
+   "text": "Mettre à jour la couche components.",
+   "selected": {
+    "frontend-core": "couche frontend/components"
    },
    "ok": true,
    "sole": false
   }
  ],
- "failures": []
+ "failures": [
+  {
+   "kind": "simple",
+   "variant": "route",
+   "expected": [
+    "product"
+   ],
+   "text": "Corriger l'écran de la route users/user-1/products.",
+   "selected": {
+    "user": "mot-clé user",
+    "product": "mot-clé product"
+   },
+   "ok": true,
+   "sole": false
+  }
+ ]
 }
