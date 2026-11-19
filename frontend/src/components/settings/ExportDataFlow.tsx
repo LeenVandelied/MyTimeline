@@ -22,7 +22,7 @@ import { parseServerDateTime, serverDateTime } from '@/lib/date-iso'
  * consommant le contrat backend figé #58 via `useExportFlow`.
  *
  * A11y : le focus est déplacé sur le titre de l'étape active à chaque transition
- * (gestion du focus wizard, cf. context-pack frontend). Les états de progression
+ * (gestion du focus wizard). Les états de progression
  * et d'erreur sont annoncés aux lecteurs d'écran (`role="status"` / `role="alert"`).
  */
 

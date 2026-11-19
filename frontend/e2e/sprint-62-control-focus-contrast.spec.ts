@@ -64,7 +64,7 @@ import {
  *
  * PRÉREQUIS RUNTIME : backend Spring + Postgres migré, front sur le port dont
  * l'origine est dans `app.cors.allowed-origins` (:3000 ou :3100).
- * Cf. `docs/memory/sprints/sprint-47/e2e-local-runbook.md`.
+ * Cf. `docs/runbook/e2e-local.md`.
  */
 
 test.use({ storageState: sessionState(PROD) })

@@ -99,8 +99,7 @@ import {
  * un pur re-rendu client, AUCUN refetch réseau.
  *
  * ============================================================================
- * #81 — PATTERN CLAVIER / A11Y de la frise (à formaliser par #197 dans
- * `.claude/rules-jit/ux-patterns.md`) :
+ * #81 — PATTERN CLAVIER / A11Y de la frise :
  *
  *  - REGION LANDMARK : la frise est une `<section role="region">` avec un
  *    `aria-label` descriptif + `aria-describedby` (aide clavier sr-only) → les

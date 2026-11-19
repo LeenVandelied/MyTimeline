@@ -113,7 +113,7 @@ services:
   # Lancer explicitement : `docker compose --profile e2e up backend-e2e`
   # (démarre `postgres-e2e` en dépendance). Détail complet, y compris la
   # recette alternative "jar + java local" (sans Docker) :
-  # docs/memory/sprints/sprint-47/e2e-local-runbook.md
+  # docs/runbook/e2e-local.md
   #
   # POURQUOI un service séparé plutôt que réutiliser `postgres`/`backend` :
   # - DB dédiée et jetable (`eventmanager_e2e`) : la DB `eventmanager` du service

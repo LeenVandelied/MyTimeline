@@ -1,7 +1,7 @@
 # Configuration gitleaks — job CI `secret-scan` (#362, sprint 60).
 #
 # POURQUOI CE FICHIER. Le dépôt est PUBLIC et l'audit #249 (sprint 50,
-# `docs/memory/audits/secret-exposure-audit.md`) a établi qu'un mot de passe DB et un secret
+# `docs/security/secret-exposure-audit.md`) a établi qu'un mot de passe DB et un secret
 # JWT y ont été lisibles ~16 mois. Aucun garde-fou n'empêchait leur réintroduction. Ce fichier
 # porte les SEULES exclusions, chacune adossée à un constat écrit de cet audit.
 #

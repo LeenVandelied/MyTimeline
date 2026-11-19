@@ -48,7 +48,7 @@ import { getUserId, seedCategory, seedProduct, unique } from './support/products
  * Les deux thèmes sont parcourus pour chacune.
  *
  * PRÉREQUIS RUNTIME : backend + front avec proxy `/api`
- * (`docs/memory/sprints/sprint-47/e2e-local-runbook.md`).
+ * (`docs/runbook/e2e-local.md`).
  */
 
 const SCHEMES = ['light', 'dark'] as const

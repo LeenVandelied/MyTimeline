@@ -1,54 +1,52 @@
-# MyTimeline — Instructions Claude Code
+# MyTimeline : instructions Claude Code
 
-> Fichier court par design. Les règles opérationnelles sont dans `.claude/rules/`
-> (chargées automatiquement par le plugin ai-env).
+> Fichier court par design. Le contexte métier et technique vient des context packs du plugin ai-stack, chargés à la demande.
 
 ## État du projet
 
-- Sprint en cours : voir `docs/memory/sprint-history.md` (si créé)
-- Migrations : Flyway actif (source de vérité), `backend/src/main/resources/db/migration/` contient V1..V16 (dernier : `V16__user_theme_preference.sql`) ; `ddl-auto=validate` (dev + prod). Tout changement de schéma exige une migration V{N} + un mapping entité exact, sinon `SchemaManagementException` au boot. **Prochaine migration : V17.**
+- Migrations : Flyway est la source de vérité. `backend/src/main/resources/db/migration/` contient V1 à V16 (dernière : `V16__user_theme_preference.sql`), avec `ddl-auto=validate` en dev comme en prod. Tout changement de schéma exige une migration V{N} et un mapping d'entité exact, sinon `SchemaManagementException` au démarrage. Prochaine migration : V17.
 
 ## Stack
 
-- **Backend** : Java 21 + Spring Boot 3.4.13 + Hibernate/JPA + Spring Security + JWT (JJWT)
-- **Frontend** : Next.js 16 (Turbopack en dev, `next build --webpack`) + TypeScript 5 + Tailwind CSS v4 + Radix UI
-- **Forms** : react-hook-form + Zod
-- **i18n** : next-intl + Crowdin (locale principale : `fr`)
-- **DB** : PostgreSQL (eventmanager @ localhost:5432)
-- **Tests** : JUnit (Spring Boot Test) + Playwright (E2E — à configurer)
-- **CI** : Aucun
-- **Auth** : JWT custom (JwtService, JwtFilter)
+- Backend : Java 21, Spring Boot 3.4, Hibernate/JPA, Spring Security, JWT (JJWT).
+- Frontend : Next.js 16 (Turbopack), TypeScript 5, Tailwind CSS v4, Radix UI.
+- Formulaires : react-hook-form et Zod.
+- i18n : next-intl et Crowdin (locale principale `fr`).
+- Base : PostgreSQL (`eventmanager` sur localhost:5432).
+- Tests : JUnit (Spring Boot Test), Vitest (frontend), Playwright (E2E, `npm run test:e2e`, voir `docs/runbook/e2e-local.md`).
+- CI : GitHub Actions (`.github/workflows/ci.yml`). Checks obligatoires sur `dev` : `backend`, `frontend`, `e2e`, avec une branche à jour.
+- Auth : JWT maison (`JwtService`, `JwtFilter`).
 
 ## Architecture
 
-Hexagonale stricte (backend) :
-- `domain/` — modèles métier + ports (interfaces) ; AUCUN import Spring/JPA
-- `application/` — DTOs, mappers, services (implémentations des ports)
-- `infrastructure/` — entities JPA, repositories, controllers, security
+Hexagonale stricte côté backend :
+- `domain/` porte les modèles métier et les ports (interfaces), sans import Spring ni JPA.
+- `application/` porte les DTOs, les mappers et les services qui implémentent les ports.
+- `infrastructure/` porte les entités JPA, les repositories, les controllers et la sécurité.
 
-## Stratégie de contexte
+## Plugin ai-stack
 
-JIT (Just-In-Time) : ne PAS lire `docs/memory/` au démarrage de session.
-Voir `.claude/rules/context-pack-jit.md` pour le quoi-charger-quand.
+Le projet utilise le plugin `ai-stack` (marketplace `sqli`). Ses context packs sont versionnés dans `ai-knowledge/packs/`. Leur liste et leurs déclencheurs sont dans `ai-knowledge/packs/_index.md`.
 
-## Règles (chargées automatiquement par le plugin ai-env)
+- La session principale ne lit pas les packs directement (verrou `pack-guard`). Le contexte se charge par `/ai-stack:load-context`, que les skills de cycle appellent eux-mêmes.
+- Le code passe par le sous-agent `ai-stack:dev-agent` (verrou `dev-guard`).
+- La config (`.ai-stack/workspace.json`) et la base de faits (`ai-knowledge/base/`) ne sont pas versionnées. Elles n'existent que dans le checkout principal : lancer les sessions de développement depuis ce checkout.
+- Après la fusion d'une PR qui touche le code, lancer `/ai-stack:refresh-knowledge` pour mettre les packs à jour.
 
-| Rule | Scope | Quoi |
-|---|---|---|
-| `.claude/rules/git-workflow.md` | startup | gitmoji FR, gh issue/pr workflows |
-| `.claude/rules/orchestration.md` | startup | fan-out natif, profondeur 1 |
-| `.claude/rules/mcp-usage.md` | startup | exa > WebSearch, context7 > WebFetch |
-| `.claude/rules/context-pack-jit.md` | startup | stratégie de chargement mémoire JIT |
-| `.claude/rules/conventions.md` | startup | code EN / docs FR, Java records, TS strict, i18n |
-| `.claude/rules/hexagonal.md` | startup | imports interdits par couche |
-| `.claude/rules/backend-stack.md` | `backend/**` | hexagonal, Spring Boot, tests métier |
-| `.claude/rules/frontend-stack.md` | `frontend/**` | TS strict, Zod, next-intl, Tailwind v4 |
-
-## Skills disponibles (plugin ai-env)
+Skills les plus utiles :
 
 ```bash
-/ai-env:story        /ai-env:new-feature   /ai-env:sprint
-/ai-env:fix-bug      /ai-env:review-pr     /ai-env:brainstorm
-/ai-env:memo         /ai-env:security-audit /ai-env:db-migration
-/ai-env:create-e2e   /ai-env:review-e2e    /ai-env:pack-status
+/ai-stack:new-feature   /ai-stack:fix-bug      /ai-stack:review-pr
+/ai-stack:spec          /ai-stack:brainstorm   /ai-stack:ops
+/ai-stack:sprint-plan   /ai-stack:sprint-start /ai-stack:sprint-close
+/ai-stack:recette-plan  /ai-stack:recette      /ai-stack:run-local
+/ai-stack:refresh-knowledge                    /ai-stack:capitalize
 ```
+
+La recette se connecte avec les comptes de test déclarés dans `.ai-stack/workspace.json` (`run.accounts`). Leurs mots de passe se lisent dans des variables d'environnement à définir sur le poste.
+
+## Conventions
+
+- Commits : gitmoji puis type conventionnel, en français, par exemple `:sparkles: feat(timeline): …` (motif contrôlé par `conventions.commit` dans `.ai-stack/workspace.json`).
+- Code en anglais, documentation en français.
+- Les PR visent `dev`.

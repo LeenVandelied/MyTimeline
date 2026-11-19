@@ -188,7 +188,7 @@ function registerFailure(account: E2eAccount, outcome: RegisterOutcome, statuses
       `bien AFFICHÉ, ce n'est donc PAS un échec de rendu. ${observed}. Lecture: 429 = ` +
       `rate-limit register ; 403 = CORS refusé (le profil dev fige ` +
       `app.cors.allowed-origins=http://localhost:3000, cf. ` +
-      `docs/memory/sprints/sprint-47/e2e-local-runbook.md §pièges) ; 400 = validation ; ` +
+      `docs/runbook/e2e-local.md §pièges) ; 400 = validation ; ` +
       `409 = déjà enregistré (traité comme un succès, n'apparaît ici qu'à côté d'un autre statut).`,
   )
 }
