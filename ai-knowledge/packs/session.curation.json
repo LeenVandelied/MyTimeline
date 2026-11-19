@@ -1,0 +1,3339 @@
+{
+ "pack": "session",
+ "schema": 1,
+ "curated_at": "2026-11-19T16:38:00Z",
+ "curator": "curate/1",
+ "base_sha256": "f67d2b96142b36433e4e9b1855eb77502507b6c89981bd26539dc05f67a4ae44",
+ "pack_sha256_before": "217fb74eb697fb1fa2f749a02724377a8d9927250373e813506a92dc0a6980f7",
+ "pack_sha256_after": "83383a3cb18d7bfae5ca9b0e395b7ba0755ce00ac77f52ceb337eb8f34afa1e7",
+ "criteria_sha256": "48e0e20f086c5b11deecfecdc547ba1d6115faee1597a5aaf682f6c699e92423",
+ "models": {
+  "measure": "haiku",
+  "refute": "sonnet"
+ },
+ "base_fingerprint": "861b4ea9686db2e097307c185698bfd44295bfbe9cc3278f25036767289dd946",
+ "bytes": {
+  "before": 12796,
+  "after": 12796,
+  "by_section": {
+   "activate": {
+    "before": 213,
+    "after": 213
+   },
+   "lexicon": {
+    "before": 580,
+    "after": 580
+   },
+   "rules": {
+    "before": 1902,
+    "after": 1902
+   },
+   "structure": {
+    "before": 1964,
+    "after": 1964
+   },
+   "surface": {
+    "before": 2618,
+    "after": 2618
+   },
+   "files": {
+    "before": 1922,
+    "after": 1922
+   },
+   "relations": {
+    "before": 349,
+    "after": 349
+   },
+   "tests": {
+    "before": 929,
+    "after": 929
+   },
+   "questions": {
+    "before": 562,
+    "after": 562
+   },
+   "alerts": {
+    "before": 763,
+    "after": 763
+   },
+   "coverage": {
+    "before": 613,
+    "after": 613
+   }
+  }
+ },
+ "units": [
+  {
+   "id": "session:lexicon:1",
+   "section": "lexicon",
+   "rank": 1,
+   "text": "| jti | Identifiant porté par chaque session, mappé non nul et unique dans la table sessions (pointeur `backend:src/main/java/com/matimeline/eventmanager/infrastructure/entities/SessionEntity.java:33-34`). | [#5f9266f4536bd3d7-1] [#97667c4e427f282c-1] |",
+   "fact_text": "jti : Identifiant porté par chaque session, mappé non nul et unique dans la table sessions (pointeur SessionEntity.java)",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "session/5f9266f4536bd3d7-1",
+    "session/97667c4e427f282c-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/entities/SessionEntity.java",
+    "backend:src/main/java/com/matimeline/eventmanager/domain/models/Session.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/entities/SessionEntity.java",
+     33,
+     34,
+     "debef8c516e27d7501dc11d1cbfb1d5824022417c698e7baf36dc3ff8eab4a7b"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/domain/models/Session.java",
+     18,
+     28,
+     "67b436f13c141152ff9f4b0701a238452456d817c6f1b9c6b545b9de5ad1b831"
+    ]
+   ],
+   "code_sha256": "f90c36d8e7c3d37a0a258773fa221dd6b19867b2b569b955aefac25bbda5c680",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "SessionEntity L33-34 : @Column(nullable = false, unique = true) sur jti.",
+      "SessionEntity L33-34 : @Column(nullable = false, unique = true) sur jti, table sessions.",
+      "SessionEntity l.33-34 : @Column(nullable = false, unique = true) sur jti, table sessions."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 29,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "session:lexicon:2",
+   "section": "lexicon",
+   "rank": 2,
+   "text": "| user_id (session) | Simple UUID dans l'entité de session, sans relation ManyToOne vers l'utilisateur (pointeur `backend:src/main/java/com/matimeline/eventmanager/infrastructure/entities/SessionEntity.java:24-26`). | [#8aa2c92b12bee978-1] |",
+   "fact_text": "user_id (session) : Simple UUID dans l'entité de session, sans relation ManyToOne vers l'utilisateur (pointeur SessionEntity.java)",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "session/8aa2c92b12bee978-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/entities/SessionEntity.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/entities/SessionEntity.java",
+     24,
+     26,
+     "6302fdb0b6a5100cfed440f703327fc192deb0969e37e7890a83f2861fc67504"
+    ]
+   ],
+   "code_sha256": "6302fdb0b6a5100cfed440f703327fc192deb0969e37e7890a83f2861fc67504",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Le modèle Session porte userId comme UUID ; l'entité n'a rien montré de contraire. Au doute, non réfuté.",
+      "SessionEntity L36-37 : userId est un UUID avec @Column, sans @ManyToOne (le Javadoc L18 le confirme).",
+      "SessionEntity l.36-37 : user_id est un UUID simple, sans @ManyToOne."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 30,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "session:rules:1",
+   "section": "rules",
+   "rank": 1,
+   "text": "- Le filtre JWT ignore les chemins qui commencent par /api/auth, sans contrôle de session. `backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtFilter.java:107` [#fdd139bf8bd1a5f1-1]",
+   "fact_text": "Le filtre JWT ignore les chemins qui commencent par /api/auth, sans contrôle de session. JwtFilter.java",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "session/fdd139bf8bd1a5f1-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtFilter.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtFilter.java",
+     107,
+     107,
+     "1109584340cf047a1c41a9c7a3eba31d297b3f43c9be6ac83319d19ae30cc732"
+    ]
+   ],
+   "code_sha256": "1109584340cf047a1c41a9c7a3eba31d297b3f43c9be6ac83319d19ae30cc732",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.286,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "restatement": "JwtFilter.shouldNotFilter renvoie true si le chemin servlet commence par /api/auth, ce qui exclut ces routes du filtrage JWT.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 6,
+     "within_budget": true,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtFilter.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": null,
+      "terms": 0.857,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "job": "session:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_SessionResponse.java:1",
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "JwtFilter.shouldNotFilter L107 : startsWith(\"/api/auth\").",
+      "JwtFilter.shouldNotFilter L107 renvoie startsWith(\"/api/auth\"), donc le filtre est sauté.",
+      "JwtFilter.shouldNotFilter l.107 : startsWith(\"/api/auth\") sur le servletPath."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 35,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "session:rules:2",
+   "section": "rules",
+   "rank": 2,
+   "text": "- Une session est active si son jti est null, ou si elle existe, n'est pas révoquée et n'est pas expirée (expiresAt nul compte comme non expirée). `backend:src/main/java/com/matimeline/eventmanager/application/services/SessionServiceImpl.java:55-69` [#6a0da51faf97aa4c-1]",
+   "fact_text": "Une session est active si son jti est null, ou si elle existe, n'est pas révoquée et n'est pas expirée (expiresAt nul compte comme non expirée). SessionServiceImpl.java",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "session/6a0da51faf97aa4c-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/application/services/SessionServiceImpl.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/services/SessionServiceImpl.java",
+     55,
+     69,
+     "d19ae91e1f0b8bd4fc98d6ddbd2d009e9e28ec21110bff7931d52beb8f3ff331"
+    ]
+   ],
+   "code_sha256": "d19ae91e1f0b8bd4fc98d6ddbd2d009e9e28ec21110bff7931d52beb8f3ff331",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.286,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "restatement": "SessionServiceImpl.isSessionActive renvoie true si le jti est null (token legacy, non bloqué). Sinon elle cherche la session par jti et ne renvoie true que si expiresAt est null ou postérieur à LocalDateTime.now() et si Session.isActive() est vrai. Une session introuvable donne false.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 3,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/application/services/SessionServiceImpl.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.571,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "job": "session:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_SessionResponse.java:1",
+     "rank_in_lot": 1,
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 37,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "session:rules:3",
+   "section": "rules",
+   "rank": 3,
+   "text": "- Révoquer la session courante ne fait rien si le jti est null, sinon le repository pose revokedAt sur la session. `backend:src/main/java/com/matimeline/eventmanager/application/services/SessionServiceImpl.java:77-84` [#2df1b0746c9671ed-1]",
+   "fact_text": "Révoquer la session courante ne fait rien si le jti est null, sinon le repository pose revokedAt sur la session. SessionServiceImpl.java",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "session/2df1b0746c9671ed-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/application/services/SessionServiceImpl.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/services/SessionServiceImpl.java",
+     77,
+     84,
+     "faad490a18ddfd301f82442e9cde47e9903a62f7e19c7c089e1d63855f456860"
+    ]
+   ],
+   "code_sha256": "faad490a18ddfd301f82442e9cde47e9903a62f7e19c7c089e1d63855f456860",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": null,
+      "terms": 0.167,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 6
+      }
+     },
+     "restatement": "SessionServiceImpl.revokeCurrentSession, annotée @Transactional, ne fait rien si le jti est null (logout d'un token legacy). Sinon elle appelle sessionRepository.revokeByJti(jti).",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 3,
+     "within_budget": true,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/application/services/SessionServiceImpl.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": null,
+      "terms": 0.333,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 6
+      }
+     },
+     "job": "session:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_SessionResponse.java:1",
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "revokeCurrentSession L79-84 retourne si jti null, sinon appelle revokeByJti qui pose revokedAt.",
+      "revokeCurrentSession L80-83 retourne si jti null, sinon revokeByJti, qui pose revokedAt (L92).",
+      "revokeCurrentSession l.79-84 : retour si jti null, sinon revokeByJti qui pose revokedAt."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 39,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "session:rules:4",
+   "section": "rules",
+   "rank": 4,
+   "text": "- Révoquer une session ciblée pose revokedAt par identifiant après un contrôle d'appartenance. `backend:src/main/java/com/matimeline/eventmanager/application/services/SessionServiceImpl.java:88-95` [#125aae1dafe1a7f4-1]",
+   "fact_text": "Révoquer une session ciblée pose revokedAt par identifiant après un contrôle d'appartenance. SessionServiceImpl.java",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "session/125aae1dafe1a7f4-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/application/services/SessionServiceImpl.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/services/SessionServiceImpl.java",
+     88,
+     95,
+     "3c84793218373ccc0880a789e343181218733ff71711538afc55d2758b4c04d2"
+    ]
+   ],
+   "code_sha256": "3c84793218373ccc0880a789e343181218733ff71711538afc55d2758b4c04d2",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": null,
+      "terms": 0.143,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "restatement": "SessionServiceImpl.revokeSession, annotée @Transactional sur le bloc du service, cherche la session par id et filtre sur le userId de l'appelant. Si la session est absente ou appartient à un autre utilisateur, elle lève SessionNotFoundException (404), sans distinguer les deux cas. Sinon elle appelle revokeById.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 3,
+     "within_budget": true,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/application/services/SessionServiceImpl.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.286,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "job": "session:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_SessionResponse.java:1",
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "revokeSession L91-94 filtre sur userId puis revokeById pose revokedAt par id.",
+      "revokeSession L91-94 filtre sur userId puis revokeById, qui pose revokedAt (L103).",
+      "revokeSession l.88-95 : filtre userId puis revokeById (UPDATE revokedAt par id)."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 40,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "session:rules:5",
+   "section": "rules",
+   "rank": 5,
+   "text": "- La révocation par jti est un UPDATE bulk sans effet sur une session déjà révoquée. `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/SessionRepositoryJpaImpl.java:88-97` [#ec85f981148cd5c5-1]",
+   "fact_text": "La révocation par jti est un UPDATE bulk sans effet sur une session déjà révoquée. SessionRepositoryJpaImpl.java",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "session/ec85f981148cd5c5-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/SessionRepositoryJpaImpl.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/SessionRepositoryJpaImpl.java",
+     88,
+     97,
+     "3f02c2f7f1c149322d6e51ee3185bfa77a1d9f833debe9e88fb124a645436cd8"
+    ]
+   ],
+   "code_sha256": "3f02c2f7f1c149322d6e51ee3185bfa77a1d9f833debe9e88fb124a645436cd8",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.0,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 5
+      }
+     },
+     "restatement": "SessionRepositoryJpaImpl.revokeByJti exécute une requête JPQL UPDATE qui met revokedAt à l'instant courant, uniquement pour le jti donné et seulement si revokedAt est IS NULL. L'opération est idempotente.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 5,
+     "within_budget": true,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/SessionRepositoryJpaImpl.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": null,
+      "terms": 0.8,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 5
+      }
+     },
+     "job": "session:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_SessionResponse.java:1",
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "revokeByJti L88-97 est un UPDATE bulk avec revokedAt IS NULL, donc sans effet sur une session déjà révoquée.",
+      "revokeByJti L88-97 est un UPDATE avec revokedAt IS NULL, donc sans effet sur une session déjà révoquée.",
+      "revokeByJti l.88-97 : UPDATE bulk avec revokedAt IS NULL, donc sans effet sur une session déjà révoquée."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 41,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "session:rules:6",
+   "section": "rules",
+   "rank": 6,
+   "text": "- Le champ current de la réponse vaut vrai quand le jti de la session égale le jti de la requête. `backend:src/main/java/com/matimeline/eventmanager/application/dtos/SessionResponse.java:35` [#ccf70a41239e3358-1]",
+   "fact_text": "Le champ current de la réponse vaut vrai quand le jti de la session égale le jti de la requête. SessionResponse.java",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "session/ccf70a41239e3358-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/application/dtos/SessionResponse.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/dtos/SessionResponse.java",
+     35,
+     35,
+     "42cfa2a8c2eeb82c817ba970ad887edc0b50336167456f4abf1d27be2ddbfe09"
+    ]
+   ],
+   "code_sha256": "42cfa2a8c2eeb82c817ba970ad887edc0b50336167456f4abf1d27be2ddbfe09",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.25,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 8
+      }
+     },
+     "restatement": "SessionResponse.fromDomain compare le jti de la session à currentJti avec Objects.equals, ce qui permet de marquer la session de l'appelant comme courante dans la réponse.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 8,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/application/dtos/SessionResponse.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.375,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 8
+      }
+     },
+     "job": "session:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_SessionResponse.java:1",
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "SessionResponse.fromDomain L35 utilise Objects.equals(session.getJti(), currentJti), conforme.",
+      "SessionResponse.fromDomain L35 compare session.getJti() à currentJti via Objects.equals.",
+      "SessionResponse.fromDomain l.35 : Objects.equals(session.getJti(), currentJti) correspond au constat."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 43,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "session:rules:7",
+   "section": "rules",
+   "rank": 7,
+   "text": "- SessionServiceImpl.revokeSession vérifie l'ownership (404 sinon) mais pas que la session ciblée soit la courante, donc DELETE /api/sessions/{id} peut révoquer la session de l'appelant [#125aae1dafe1a7f4-1] [#b02b89ecab5f6e75-1] `backend:src/main/java/com/matimeline/eventmanager/application/services/SessionServiceImpl.java:88-95`.",
+   "fact_text": "SessionServiceImpl.revokeSession vérifie l'ownership (404 sinon) mais pas que la session ciblée soit la courante, donc DELETE /api/sessions/{id} peut révoquer la session de l'appelant SessionServiceImpl.java",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "session/125aae1dafe1a7f4-1",
+    "session/b02b89ecab5f6e75-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/application/services/SessionServiceImpl.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/services/SessionServiceImpl.java",
+     88,
+     95,
+     "3c84793218373ccc0880a789e343181218733ff71711538afc55d2758b4c04d2"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/services/SessionServiceImpl.java",
+     88,
+     95,
+     "3c84793218373ccc0880a789e343181218733ff71711538afc55d2758b4c04d2"
+    ]
+   ],
+   "code_sha256": "1edaa5cfcaf1aa2f16832cf5ef13f1efacfb310c8d4f23d5f2bc9b8844e24094",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.667,
+      "values": 1.0,
+      "terms": 0.143,
+      "n": {
+       "identifiers": 3,
+       "values": 1,
+       "terms": 7
+      }
+     },
+     "restatement": "La méthode SessionServiceImpl.revokeSession(sessionId, userId) charge la session via findDomainSessionById puis la filtre sur s.getUserId().equals(userId). Si la session n'existe pas ou appartient à un autre utilisateur, elle lève SessionNotFoundException (même réponse 404 dans les deux cas, anti-énumération). Sinon elle appelle sessionRepository.revokeById. Le bloc de l'extrait apparaît deux fois à l'identique, ce qui ne change pas la règle.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 3,
+     "within_budget": true,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/application/services/SessionServiceImpl.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 0.429,
+      "n": {
+       "identifiers": 3,
+       "values": 1,
+       "terms": 7
+      }
+     },
+     "job": "session:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_services_SessionServiceImpl.java:1"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "revokeSession (L88-95) filtre uniquement sur s.getUserId().equals(userId) et lève SessionNotFoundException sinon, sans comparer à la session courante : la ligne est fidèle.",
+      "revokeSession (L88-95) filtre uniquement sur s.getUserId().equals(userId) et lève SessionNotFoundException sinon, sans comparer à la session courante : la ligne est fidèle.",
+      "revokeSession (L88-95) filtre uniquement sur s.getUserId().equals(userId) et lève SessionNotFoundException sinon, sans comparer à la session courante : la ligne est fidèle."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 45,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "session:surface:1",
+   "section": "surface",
+   "rank": 1,
+   "text": "- Les endpoints de session sont dans `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/SessionController.java:33-35` sous /api/sessions, et l'écran côté front est `frontend:components/settings/SessionList.tsx:72-90` [#926ad92ced25b78b-1] [#7b3376a7aed854a4-1].",
+   "fact_text": "Les endpoints de session sont dans SessionController.java sous /api/sessions, et l'écran côté front est SessionList.tsx",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "session/926ad92ced25b78b-1",
+    "session/7b3376a7aed854a4-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/SessionController.java",
+    "frontend:components/settings/SessionList.tsx"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/SessionController.java",
+     33,
+     35,
+     "d3ab4d27232dcf816c3fb93903c91ad939b78c0f0e8a1bb178388771d1a39c4f"
+    ],
+    [
+     "frontend:components/settings/SessionList.tsx",
+     72,
+     90,
+     "06e54ee35dcfa62e130d6c18dc6215b38fa44061f4e5de65ea0d283a76375291"
+    ]
+   ],
+   "code_sha256": "bfff4b735d7bfcec82dfd01a3ca3740b3596b613d3a62a55d961e5be51479f02",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.4,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 5
+      }
+     },
+     "restatement": "Le contrôleur SessionController est un @RestController mappé sur /api/sessions. Côté frontend, SessionList affiche un Spinner pendant le chargement, un paragraphe role alert en cas d'erreur, et un texte vide si la liste de sessions est vide.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 11,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/SessionController.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 1.0,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 5
+      }
+     },
+     "job": "session:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_SessionResponse.java:1",
+     "rank_in_lot": 2,
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 68,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "session:surface:2",
+   "section": "surface",
+   "rank": 2,
+   "text": "- DELETE /api/sessions/{id} révoque la session ciblée et répond 204 sans comparer l'id au jti courant, donc l'utilisateur peut révoquer sa propre session active, voir `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/SessionController.java:83-93` [#3554be20a6907020-1].",
+   "fact_text": "DELETE /api/sessions/{id} révoque la session ciblée et répond 204 sans comparer l'id au jti courant, donc l'utilisateur peut révoquer sa propre session active, voir SessionController.java",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "session/3554be20a6907020-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/SessionController.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/SessionController.java",
+     83,
+     93,
+     "f7b4ca5e0b86afdccc586af0af425ab738e0b07ce89ea5f0932cbea40f7e6674"
+    ]
+   ],
+   "code_sha256": "f7b4ca5e0b86afdccc586af0af425ab738e0b07ce89ea5f0932cbea40f7e6674",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 0.0,
+      "n": {
+       "identifiers": 2,
+       "values": 1,
+       "terms": 10
+      }
+     },
+     "restatement": "SessionController.revokeSession (DELETE /{id}) renvoie 401 si l'appelant n'est pas résolu. Sinon il délègue à sessionService.revokeSession avec l'id de l'appelant, et renvoie 204 No Content. Le contrôle d'appartenance est fait dans le service.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 4,
+     "within_budget": true,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/SessionController.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": 1.0,
+      "terms": 0.4,
+      "n": {
+       "identifiers": 2,
+       "values": 1,
+       "terms": 10
+      }
+     },
+     "job": "session:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_SessionResponse.java:1",
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "SessionController.revokeSession L83-93 ne compare pas l'id au jti courant et renvoie noContent.",
+      "SessionController.revokeSession L83-93 appelle le service avec id et userId, renvoie noContent, sans comparaison au jti courant.",
+      "SessionController.revokeSession l.83-93 ne compare pas l'id au jti courant et renvoie noContent ; le contrôle d'appartenance a lieu dans le service, ce qui n'invalide pas la ligne."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 69,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "session:surface:3",
+   "section": "surface",
+   "rank": 3,
+   "text": "- GET /api/sessions répond 401 sans corps quand aucun utilisateur n'est résolu, et résout le jti courant depuis le cookie jwt ou le header Bearer, voir `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/SessionController.java:49-63` [#5b71784eb4015ed1-1] [#f6041a5ba9631bb4-1].",
+   "fact_text": "GET /api/sessions répond 401 sans corps quand aucun utilisateur n'est résolu, et résout le jti courant depuis le cookie jwt ou le header Bearer, voir SessionController.java",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "session/5b71784eb4015ed1-1",
+    "session/f6041a5ba9631bb4-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/SessionController.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/SessionController.java",
+     49,
+     63,
+     "0a718e23c53b7b589b80080eb8fe0d6f94639a229a22457e680162891235342c"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/SessionController.java",
+     53,
+     56,
+     "4ec75da2d27523734737963d301af06075a562274b2197c0e8d55673345356d4"
+    ]
+   ],
+   "code_sha256": "4b15f5ef2b7e590c60e90d5d557f51f5f818d435224c6017171cd5cc1fb39623",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": 1.0,
+      "terms": 0.4,
+      "n": {
+       "identifiers": 2,
+       "values": 1,
+       "terms": 10
+      }
+     },
+     "restatement": "SessionController.getActiveSessions renvoie 401 si l'appelant n'est pas résolu. Sinon il extrait le jti courant via resolveToken (cookie jwt puis Authorization) et transforme chaque session active en SessionResponse.fromDomain avec ce jti, puis renvoie 200 avec la liste. Le second bloc montre seulement le contrôle 401.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 4,
+     "within_budget": true,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/SessionController.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": 1.0,
+      "terms": 0.6,
+      "n": {
+       "identifiers": 2,
+       "values": 1,
+       "terms": 10
+      }
+     },
+     "job": "session:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_SessionResponse.java:1",
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "SessionController.getActiveSessions L53-58 renvoie 401 sans corps si callerResolver.currentUser() est vide. Il résout le jti via resolveToken (cookie jwt puis Bearer). CallerResolver renvoie empty sans authentification.",
+      "SessionController.getActiveSessions (L53-62) renvoie 401 sans corps si callerResolver.currentUser() est vide, et résout le jti via resolveToken (cookie puis Bearer).",
+      "SessionController.getActiveSessions L53-56 renvoie 401 sans corps si currentUser est vide. Le jti courant vient de resolveToken (cookie jwt puis Bearer) à L58, L100-108."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "scope",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "currentUser() dans CallerResolver.java",
+         "found": "Retourne Optional.empty si pas d'authentification ou si l'utilisateur est inconnu."
+        }
+       ],
+       [
+        {
+         "tool": "Read",
+         "target": "SessionController.java",
+         "found": "Les lignes 53-58 et 100-108 confirment la ligne. Aucun autre chemin ne renvoie un autre statut dans ce handler."
+        }
+       ],
+       [
+        {
+         "tool": "Read",
+         "target": "SessionController.java",
+         "found": "Le 401 est sans corps dans les trois handlers. resolveToken prend le cookie en priorité, puis le Bearer."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "words:aucun",
+   "placed": {
+    "pack_line": 70,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "session:surface:4",
+   "section": "surface",
+   "rank": 4,
+   "text": "- DELETE /api/sessions/others révoque les sessions de l'utilisateur sauf celle du jti courant et répond 204. Si le token n'a pas de jti lisible, il révoque toutes les sessions, y compris la courante [#fe07a72c7029b105-1].",
+   "fact_text": "DELETE /api/sessions/others révoque les sessions de l'utilisateur sauf celle du jti courant et répond 204. Si le token n'a pas de jti lisible, il révoque toutes les sessions, y compris la courante",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "session/fe07a72c7029b105-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/SessionController.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/SessionController.java",
+     66,
+     81,
+     "43d54988a887b2fe4cebe19d0f06ec6421df8603acd4b8ee8f31ab506028d04f"
+    ]
+   ],
+   "code_sha256": "43d54988a887b2fe4cebe19d0f06ec6421df8603acd4b8ee8f31ab506028d04f",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": 1.0,
+      "terms": 0.4,
+      "n": {
+       "identifiers": 1,
+       "values": 1,
+       "terms": 10
+      }
+     },
+     "restatement": "La méthode SessionController.revokeOtherSessions renvoie 401 (UNAUTHORIZED) si callerResolver.currentUser() est vide. Sinon elle extrait le jti courant à partir du cookie jwt puis du header Bearer (resolveToken, puis extractJtiOrNull), et appelle sessionService.revokeOtherSessions(userId, currentJti) avant de répondre 204 (noContent). Le commentaire explique que si le jti est null, revokeAllByUserIdExcept dégénérerait en révocation totale, y compris la session de l'appelant.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 4,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/SessionController.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 0.8,
+      "n": {
+       "identifiers": 1,
+       "values": 1,
+       "terms": 10
+      }
+     },
+     "job": "session:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_services_SessionServiceImpl.java:1",
+     "rank_in_lot": 1
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "words:toutes",
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 71,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "session:surface:5",
+   "section": "surface",
+   "rank": 5,
+   "text": "- La liste ne contient que les sessions non révoquées et non expirées, triées par dernière activité décroissante, voir `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/SessionRepositoryJpaImpl.java:76` [#7ea75b50e37269a6-1].",
+   "fact_text": "La liste ne contient que les sessions non révoquées et non expirées, triées par dernière activité décroissante, voir SessionRepositoryJpaImpl.java",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "session/7ea75b50e37269a6-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/SessionRepositoryJpaImpl.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/SessionRepositoryJpaImpl.java",
+     76,
+     76,
+     "2cdb0721ace11fe0f36b2156c1c6b342cf6bd159b686e465d64c1424a1d101f9"
+    ]
+   ],
+   "code_sha256": "2cdb0721ace11fe0f36b2156c1c6b342cf6bd159b686e465d64c1424a1d101f9",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.111,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 9
+      }
+     },
+     "restatement": "La requête JPQL de SessionRepositoryJpaImpl.findActiveByUserId ne retient que les sessions du userId donné dont revokedAt est IS NULL et dont expiresAt est postérieur à :now. L'extrait ne montre que cette clause WHERE.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 5,
+     "within_budget": true,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/SessionRepositoryJpaImpl.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
+      "terms": 0.333,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 9
+      }
+     },
+     "job": "session:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_SessionResponse.java:1",
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "findActiveByUserId L71-85 filtre revokedAt IS NULL et expiresAt > now, ORDER BY lastActivity DESC.",
+      "findActiveByUserId L76-77 filtre revokedAt IS NULL et expiresAt > now, ORDER BY lastActivity DESC.",
+      "findActiveByUserId l.71-85 : revokedAt IS NULL, expiresAt > now, ORDER BY lastActivity DESC."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 72,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "session:surface:6",
+   "section": "surface",
+   "rank": 6,
+   "text": "- La révocation en masse est un UPDATE bulk qui ne touche que les sessions non révoquées, avec ou sans exclusion du jti courant, voir `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/SessionRepositoryJpaImpl.java:117-125` [#bc24459718a8de0e-1] [#bc24459718a8de0e-2].",
+   "fact_text": "La révocation en masse est un UPDATE bulk qui ne touche que les sessions non révoquées, avec ou sans exclusion du jti courant, voir SessionRepositoryJpaImpl.java",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "session/bc24459718a8de0e-1",
+    "session/bc24459718a8de0e-2"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/SessionRepositoryJpaImpl.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/SessionRepositoryJpaImpl.java",
+     117,
+     117,
+     "b2244231f70c12e07bf161c89aa4798d32acc56ba6a5e73a7c4247587571ef1e"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/SessionRepositoryJpaImpl.java",
+     125,
+     125,
+     "33acd762b9bab4d6958b5d092962e3e85787b5ea7bb4e9da4b9d0d9c8c08a430"
+    ]
+   ],
+   "code_sha256": "8c77b1b11a04897480bd13e319c69db8ee09e9e461586ec28960b5a3a3b2fc44",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": null,
+      "terms": 0.25,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 8
+      }
+     },
+     "restatement": "SessionRepositoryJpaImpl.revokeAllByUserIdExcept contient deux clauses WHERE. La première (ligne 117) cible toutes les sessions non révoquées du userId. La seconde (ligne 125) ajoute s.jti <> :exceptJti. Le choix entre les deux variantes n'apparaît pas dans l'extrait.",
+     "confidence": "medium",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 5,
+     "within_budget": true,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/SessionRepositoryJpaImpl.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": null,
+      "terms": 0.375,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 8
+      }
+     },
+     "job": "session:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_SessionResponse.java:1",
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "revokeAllByUserIdExcept L111-130 : deux UPDATE bulk avec revokedAt IS NULL, avec ou sans exclusion du jti.",
+      "revokeAllByUserIdExcept L113-129 : deux UPDATE bulk avec revokedAt IS NULL, avec ou sans jti <> exceptJti.",
+      "revokeAllByUserIdExcept l.111-130 : deux UPDATE bulk avec revokedAt IS NULL, avec ou sans jti <> exceptJti."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 73,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "session:surface:7",
+   "section": "surface",
+   "rank": 7,
+   "text": "- La révocation par jti ne touche que les sessions encore actives, donc une session déjà révoquée garde sa date de révocation d'origine, voir `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/SessionRepositoryJpaImpl.java:93` [#a50852c3ebf29c5f-1].",
+   "fact_text": "La révocation par jti ne touche que les sessions encore actives, donc une session déjà révoquée garde sa date de révocation d'origine, voir SessionRepositoryJpaImpl.java",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "session/a50852c3ebf29c5f-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/SessionRepositoryJpaImpl.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/SessionRepositoryJpaImpl.java",
+     93,
+     93,
+     "61b526109d7cb4c1ad116d39eff780151b06c63d6f9cd5d20c6898d9005806b7"
+    ]
+   ],
+   "code_sha256": "61b526109d7cb4c1ad116d39eff780151b06c63d6f9cd5d20c6898d9005806b7",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.0,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 8
+      }
+     },
+     "restatement": "La ligne 93 de SessionRepositoryJpaImpl montre la clause WHERE de revokeByJti : jti égal au paramètre et revokedAt IS NULL. Elle ne fait que compléter la méthode décrite au rules:6.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 5,
+     "within_budget": true,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/SessionRepositoryJpaImpl.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
+      "terms": 0.75,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 8
+      }
+     },
+     "job": "session:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_SessionResponse.java:1",
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "revokeByJti L93 filtre revokedAt IS NULL, la date d'origine est conservée.",
+      "revokeByJti L93 filtre revokedAt IS NULL, la date d'origine est conservée.",
+      "revokeByJti l.93 : revokedAt IS NULL, la date d'origine est conservée."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 74,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "session:surface:8",
+   "section": "surface",
+   "rank": 8,
+   "text": "- Le hook front invalide la requête des sessions après chaque révocation réussie, d'une session ou des autres, voir `frontend:hooks/useSessionManager.ts:15-42` [#1448d857bc591a84-1] [#ed56bc4fa6580877-1] [#9e02d8f81987ba08-1].",
+   "fact_text": "Le hook front invalide la requête des sessions après chaque révocation réussie, d'une session ou des autres, voir useSessionManager.ts",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "session/1448d857bc591a84-1",
+    "session/ed56bc4fa6580877-1",
+    "session/9e02d8f81987ba08-1"
+   ],
+   "files": [
+    "frontend:hooks/useSessionManager.ts"
+   ],
+   "ranges": [
+    [
+     "frontend:hooks/useSessionManager.ts",
+     15,
+     42,
+     "50d49be664c7697d2d822bbbf56ed71e1c4f8cb8b91fdc30bb76836da1a7aeb2"
+    ],
+    [
+     "frontend:hooks/useSessionManager.ts",
+     25,
+     28,
+     "30e68237e1419e401fdc93d7345c450d0a9fa7a30fb44b630a8565609e08cff9"
+    ],
+    [
+     "frontend:hooks/useSessionManager.ts",
+     30,
+     33,
+     "ace61ea3cc42775e44c08e1aa592ee276208746126324b6fbe6a088281672f3b"
+    ]
+   ],
+   "code_sha256": "d7959fb618b185b07832670ef758a63b5ac7dda018ea39fc1f512d0de4929998",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.286,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "restatement": "Le hook useSessionManager lit la liste avec useQuery sur queryKeys.sessions.all (fonction getActiveSessions) et renvoie sessions avec [] par défaut. Les mutations revokeOne et revokeOthers appellent respectivement revokeSession(id) et revokeOtherSessions(), et invalident la clé sessions.all après succès.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 9,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/hooks/useSessionManager.ts",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.143,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "job": "session:rediscover:backend_src_test_java_com_matimeline_eventmanager_application_services_SessionServiceImplTest.java:2",
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "revokeOne et revokeOthers ont tous deux onSuccess: invalidate, qui invalide queryKeys.sessions.all. Aucun contre-exemple dans useSessionManager.ts.",
+      "Les deux mutations (revokeOne, revokeOthers) ont onSuccess: invalidate sur queryKeys.sessions.all. revokeSession et revokeOtherSessions ne sont appelés que par ce hook dans le frontend.",
+      "useSessionManager.ts définit revokeOne et revokeOthers, tous deux avec onSuccess: invalidate sur queryKeys.sessions.all. Aucun autre appelant de revokeSession ou revokeOtherSessions dans frontend/src hors tests et service."
+     ],
+     "evidence": [
+      "",
+      "",
+      "onSuccess: invalidate,"
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "scope",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 24,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "invalidateQueries|useMutation|onSuccess dans useSessionManager.ts",
+         "found": "Deux mutations, chacune avec onSuccess: invalidate"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "revokeSession|revokeOtherSessions dans frontend/src",
+         "found": "appelés uniquement dans useSessionManager.ts (hors tests et définition du service)"
+        },
+        {
+         "tool": "Grep",
+         "target": "invalidateQueries dans useSessionManager.ts",
+         "found": "une seule fonction invalidate, utilisée en onSuccess par les deux mutations"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "revokeSession|revokeOtherSessions dans frontend/src",
+         "found": "seuls useSessionManager.ts, sessionService.ts et le test les utilisent, pas de contre-exemple"
+        },
+        {
+         "tool": "Grep",
+         "target": "invalidateQueries|onSuccess dans useSessionManager.ts",
+         "found": "les deux mutations passent par invalidate"
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "words:chaque",
+   "placed": {
+    "pack_line": 75,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "session:surface:9",
+   "section": "surface",
+   "rank": 9,
+   "text": "- L'écran affiche un spinner au chargement, une alerte en erreur et un message vide, puis par ligne l'appareil (ou une clé unknownDevice s'il est absent) et le libellé current sur la session courante, voir `frontend:components/settings/SessionList.tsx:97-129` [#7b3376a7aed854a4-1] [#7b3376a7aed854a4-2].",
+   "fact_text": "L'écran affiche un spinner au chargement, une alerte en erreur et un message vide, puis par ligne l'appareil (ou une clé unknownDevice s'il est absent) et le libellé current sur la session courante, voir SessionList.tsx",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "session/7b3376a7aed854a4-1",
+    "session/7b3376a7aed854a4-2"
+   ],
+   "files": [
+    "frontend:components/settings/SessionList.tsx"
+   ],
+   "ranges": [
+    [
+     "frontend:components/settings/SessionList.tsx",
+     72,
+     90,
+     "06e54ee35dcfa62e130d6c18dc6215b38fa44061f4e5de65ea0d283a76375291"
+    ],
+    [
+     "frontend:components/settings/SessionList.tsx",
+     97,
+     129,
+     "fcb32a5b0e4cab0cc5db9a1a33bd9e51dbe4819f45e71af60bf3c26a3af9c146"
+    ]
+   ],
+   "code_sha256": "5013bae1a977c431c20353ed7934587a07430fd7221a45215c123a8a6acc2cc9",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": null,
+      "terms": 0.667,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 15
+      }
+     },
+     "restatement": "SessionList applique trois retours anticipés dans l'ordre : spinner pendant le chargement (isLoading), paragraphe role=\"alert\" en cas d'erreur (isError), puis message vide si la liste est vide. Sinon, il affiche un élément de liste par session, avec le libellé de la session courante et l'IP ou la date de dernière activité.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 8,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/components/settings/SessionList.tsx",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.467,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 15
+      }
+     },
+     "job": "session:rediscover:backend_src_test_java_com_matimeline_eventmanager_application_services_SessionServiceImplTest.java:2",
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "SessionList.tsx L72-90 : spinner, alerte role=alert, message vide ; L113 deviceInfo ?? unknownDevice et L114-118 libellé current si session.current. Fidèle.",
+      "SessionList.tsx L72-90 couvre le spinner, l'alerte role=alert et le message vide. L113 utilise deviceInfo ?? unknownDevice et L114-118 affiche le libellé current. La ligne est fidèle.",
+      "SessionList.tsx L72-90 gère spinner, alerte role=alert et message vide. Aux L113-118, deviceInfo ?? unknownDevice et le libellé current sont affichés si session.current."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 76,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "session:tests:1",
+   "section": "tests",
+   "rank": 1,
+   "text": "- Les tests fixent qu'un jti révoqué ou inconnu rend la session inactive, et qu'un jti null (jeton ancien) la rend active sans appeler findByJti. [#596a893d76664618-1] [#0e8d9b8b5f7cd86a-1] [#6f80d87a0206c9ad-1]",
+   "fact_text": "Les tests fixent qu'un jti révoqué ou inconnu rend la session inactive, et qu'un jti null (jeton ancien) la rend active sans appeler findByJti",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "session/596a893d76664618-1",
+    "session/0e8d9b8b5f7cd86a-1",
+    "session/6f80d87a0206c9ad-1"
+   ],
+   "files": [
+    "backend:src/test/java/com/matimeline/eventmanager/application/services/SessionServiceImplTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/application/services/SessionServiceImplTest.java",
+     52,
+     57,
+     "f1fe87b5ac3a6c5ca3a9f5e510f9a449264fab82ce4f62883970b7db7aa7a256"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/application/services/SessionServiceImplTest.java",
+     60,
+     63,
+     "ece808a8d0ac9172935971c2732f724d98c478bf9a6980b27363d16612206cc9"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/application/services/SessionServiceImplTest.java",
+     66,
+     70,
+     "de89924bd13f3bdb98e976e6816924d6245fa775b027ddbe8954534064021437"
+    ]
+   ],
+   "code_sha256": "82af4858169d1ea9c853f5b93efb77196405f3f4c143817945e04aa3f50d95b4",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.333,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 12
+      }
+     },
+     "restatement": "Le test vérifie que isSessionActive renvoie false pour un jti révoqué (isSessionActive_revokedJti_false) et pour un jti inconnu (findByJti retourne Optional.empty). Pour un jti null (token legacy sans jti), il renvoie true sans aucun appel à findByJti.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 9,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/test/java/com/matimeline/eventmanager/application/services/SessionServiceImplTest.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.167,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 12
+      }
+     },
+     "job": "session:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_SessionResponse.java:1",
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Les tests L52-70 couvrent jti révoqué, inconnu et null sans appel à findByJti. Le helper activeSession du test révoqué n'est pas visible, donc non réfuté.",
+      "Les tests L52-70 couvrent jti révoqué (4e paramètre de l'helper = revokedAt), inconnu, et null sans appel à findByJti.",
+      "SessionServiceImplTest l.52-70 : jti révoqué ou inconnu donne faux, jti null donne vrai sans findByJti. Le test du jti révoqué utilise activeSession, mais la ligne décrit l'intention du test, reformulation acceptable."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 110,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "session:tests:2",
+   "section": "tests",
+   "rank": 2,
+   "text": "- Les tests fixent que revokeOtherSessions garde le jti courant, que revokeAllSessions passe un exceptJti null et que revokeCurrentSession sans jti ne fait rien. [#68d426f4e6c4fb80-1] [#e8ccf591a0152c42-1] [#00d153f91a247d5f-1]",
+   "fact_text": "Les tests fixent que revokeOtherSessions garde le jti courant, que revokeAllSessions passe un exceptJti null et que revokeCurrentSession sans jti ne fait rien",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "session/68d426f4e6c4fb80-1",
+    "session/e8ccf591a0152c42-1",
+    "session/00d153f91a247d5f-1"
+   ],
+   "files": [
+    "backend:src/test/java/com/matimeline/eventmanager/application/services/SessionServiceImplTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/application/services/SessionServiceImplTest.java",
+     105,
+     110,
+     "90a000ecc9f5ae88dc14793b089f2d684c3b29ef938a560c69d87da39d0e980f"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/application/services/SessionServiceImplTest.java",
+     113,
+     118,
+     "fb191c2f4277297535c0ec4e553c5ca1133731ae8af753a9e9ddcfc6e14d0528"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/application/services/SessionServiceImplTest.java",
+     121,
+     124,
+     "20bc13d04661a62bce54a33cf519b23ea60975db5f6b40ba79a83b5c09f2c862"
+    ]
+   ],
+   "code_sha256": "34161cdf8f008e628147c8cf12b1f73103c2a4a376d48aae47555a15020b23b9",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.75,
+      "values": null,
+      "terms": 0.333,
+      "n": {
+       "identifiers": 4,
+       "values": 0,
+       "terms": 6
+      }
+     },
+     "restatement": "revokeOtherSessions(userId, jti) délègue à revokeAllByUserIdExcept(userId, jti) et renvoie le nombre retourné (3 dans le test). revokeAllSessions appelle la même méthode avec null comme exception et renvoie 5. revokeCurrentSession(null) ne fait rien et n'appelle pas revokeByJti.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 5,
+     "within_budget": true,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/test/java/com/matimeline/eventmanager/application/services/SessionServiceImplTest.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": null,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 4,
+       "values": 0,
+       "terms": 6
+      }
+     },
+     "job": "session:rediscover:backend_src_test_java_com_matimeline_eventmanager_application_services_SessionServiceImplTest.java:2",
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Tests L105-124 vérifient revokeAllByUserIdExcept avec \"current\", avec null, et le no-op de revokeCurrentSession(null).",
+      "Tests L105-124 : jti courant passé, exceptJti null pour revokeAll, no-op sans jti.",
+      "Tests l.105-124 : revokeOtherSessions passe le jti courant, revokeAllSessions passe null, revokeCurrentSession(null) n'appelle pas revokeByJti."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 111,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "session:tests:3",
+   "section": "tests",
+   "rank": 3,
+   "text": "- Les tests fixent que DELETE /api/sessions/others sans authentification renvoie 401 sans appeler SessionService. [#1f9ee4243fea0596-1]",
+   "fact_text": "Les tests fixent que DELETE /api/sessions/others sans authentification renvoie 401 sans appeler SessionService",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "session/1f9ee4243fea0596-1"
+   ],
+   "files": [
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/SessionControllerTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/SessionControllerTest.java",
+     108,
+     116,
+     "a52aff71aac9554bc9e536a8817bfb4451e2dce8d9bcca0c37fca14c612eb641"
+    ]
+   ],
+   "code_sha256": "a52aff71aac9554bc9e536a8817bfb4451e2dce8d9bcca0c37fca14c612eb641",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 0.429,
+      "n": {
+       "identifiers": 2,
+       "values": 1,
+       "terms": 7
+      }
+     },
+     "restatement": "Sur DELETE /api/sessions/others, si callerResolver.currentUser() renvoie Optional.empty, la réponse est 401 Unauthorized et sessionService n'est appelé dans aucun cas (verifyNoInteractions).",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 4,
+     "within_budget": true,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/SessionControllerTest.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 0.429,
+      "n": {
+       "identifiers": 2,
+       "values": 1,
+       "terms": 7
+      }
+     },
+     "job": "session:rediscover:backend_src_test_java_com_matimeline_eventmanager_application_services_SessionServiceImplTest.java:2",
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "SessionControllerTest L108-116 : 401 et verifyNoInteractions(sessionService).",
+      "SessionControllerTest L108-116 attend 401 et verifyNoInteractions(sessionService).",
+      "SessionControllerTest l.108-116 : 401 et verifyNoInteractions(sessionService)."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 112,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "session:tests:4",
+   "section": "tests",
+   "rank": 4,
+   "text": "- Les tests fixent que GET /api/sessions ne liste que les sessions du caller et n'expose jamais la clé jti. [#96a2da2db2368e08-1]",
+   "fact_text": "Les tests fixent que GET /api/sessions ne liste que les sessions du caller et n'expose jamais la clé jti",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "session/96a2da2db2368e08-1"
+   ],
+   "files": [
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/SessionRevocationIntegrationTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/SessionRevocationIntegrationTest.java",
+     229,
+     241,
+     "36ccc76a50f436558a6056d36e036a6a9ca00ab7766ff4aa5c5da9dd7a752dc3"
+    ]
+   ],
+   "code_sha256": "36ccc76a50f436558a6056d36e036a6a9ca00ab7766ff4aa5c5da9dd7a752dc3",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.167,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 6
+      }
+     },
+     "restatement": "GET /api/sessions ne renvoie que les sessions de l'appelant (un seul élément pour userA, alors que userB a aussi une session). Le JSON produit ne doit jamais contenir le champ \"jti\".",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 12,
+     "within_budget": false,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/SessionRevocationIntegrationTest.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.667,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 6
+      }
+     },
+     "job": "session:rediscover:backend_src_test_java_com_matimeline_eventmanager_application_services_SessionServiceImplTest.java:2",
+     "rank_in_lot": 1,
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "SessionRevocationIntegrationTest L229-241 : un seul élément listé pour A et aucune clé jti sérialisée.",
+      "Test L229-241 : une seule session listée pour A et aucun \"jti\" dans le JSON.",
+      "SessionRevocationIntegrationTest l.229-241 : liste de longueur 1 pour A et absence de \"jti\" dans le JSON."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 113,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "session:tests:5",
+   "section": "tests",
+   "rank": 5,
+   "text": "- Les tests fixent que SessionList cache le bouton révoquer sur la session courante et masque « révoquer les autres » quand elle est seule. [#46bb114d3881feee-3] [#46bb114d3881feee-8]",
+   "fact_text": "Les tests fixent que SessionList cache le bouton révoquer sur la session courante et masque « révoquer les autres » quand elle est seule",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "session/46bb114d3881feee-3",
+    "session/46bb114d3881feee-8"
+   ],
+   "files": [
+    "frontend:components/settings/SessionList.test.tsx"
+   ],
+   "ranges": [
+    [
+     "frontend:components/settings/SessionList.test.tsx",
+     70,
+     87,
+     "b05722ce64ef3358c8685d8e96e8f56ff5cb6442eefbc13bad3ee2584cfe79eb"
+    ],
+    [
+     "frontend:components/settings/SessionList.test.tsx",
+     187,
+     200,
+     "a98364c87d50c4128810ca9039ef11343285d4ca0a90b6603971501d4ca637a0"
+    ]
+   ],
+   "code_sha256": "1f1bd6be5c9c7dfbcc10f672def17f4060000dececf49c10ce2caa8bb343c3f5",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 0.0,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 1,
+       "values": 1,
+       "terms": 8
+      }
+     },
+     "restatement": "Le test rendu de SessionList vérifie que la session courante est marquée par le libellé settings.security.sessions.current et n'a pas de bouton revoke-session-sess-current, alors que l'autre session a bien un bouton revoke-session-sess-other. Un second test vérifie que le bouton revoke-other-sessions est absent quand il n'y a que la session courante.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 6,
+     "within_budget": true,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/components/settings/SessionList.test.tsx",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": 1.0,
+      "terms": 0.75,
+      "n": {
+       "identifiers": 1,
+       "values": 1,
+       "terms": 8
+      }
+     },
+     "job": "session:rediscover:backend_src_test_java_com_matimeline_eventmanager_application_services_SessionServiceImplTest.java:2",
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Test L70-87 vérifie l'absence de revoke-session-sess-current et la présence sur l'autre ; test L187-200 vérifie que revoke-other-sessions est absent avec la seule session courante. Fidèle.",
+      "Test L70-87 vérifie l'absence de revoke-session-sess-current et la présence de celui de sess-other. Test L187-200 vérifie que revoke-other-sessions est absent avec la seule session courante. La ligne est fidèle.",
+      "Les tests lignes 84 et 199 (SessionList.test.tsx) vérifient bien l'absence de revoke-session-sess-current et de revoke-other-sessions quand seule la session courante existe."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 114,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "session:questions:1",
+   "section": "questions",
+   "rank": 1,
+   "text": "- Un token sans jti est-il voulu comme non révocable ? Selon le commentaire de `isSessionActive`, les tokens legacy sans jti passent sans contrôle de révocation [#6e267b0acf8be06d-1], et le filtre n'authentifie que si cette méthode renvoie vrai [#aea9c4e6ee386f14-1].",
+   "fact_text": "Un token sans jti est-il voulu comme non révocable ? Selon le commentaire de `isSessionActive`, les tokens legacy sans jti passent sans contrôle de révocation, et le filtre n'authentifie que si cette méthode renvoie vrai",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "session/6e267b0acf8be06d-1",
+    "session/aea9c4e6ee386f14-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/application/services/SessionServiceImpl.java",
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtFilter.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/services/SessionServiceImpl.java",
+     57,
+     60,
+     "6aca9037d2948c972c575ccfbcd312bbe7cefbeab35690fc2a3f6f43ed72ea67"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtFilter.java",
+     76,
+     81,
+     "4167bd5884b194c67c88581f67567b7cd7b102160e0d374a53b51f31af72a8e9"
+    ]
+   ],
+   "code_sha256": "756e237d76129bbd96359fbf0be4aa50d447df55b0e87b4b812061afc75e5f19",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [
+     {
+      "id": "session/6e267b0acf8be06d-1",
+      "verdict": "confirmed"
+     }
+    ],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "JwtService génère un jti pour tout nouveau token. isSessionActive renvoie true sans jti et JwtFilter l'accepte (L80-81). Le code applique ce comportement mais ne dit pas s'il est voulu ou transitoire.",
+      "JwtService génère toujours un jti, mais isSessionActive (L56-60) renvoie true pour un jti null et JwtFilter L80-81 authentifie. Seuls les commentaires disent que c'est voulu, donc le code ne tranche pas l'intention.",
+      "Le code laisse passer un token sans jti (SessionServiceImpl L56-60, JwtFilter L80-81), mais seuls des commentaires disent que c'est voulu. JwtService génère toujours un jti à l'émission, donc seuls les tokens antérieurs sont concernés. Le code ne tranche pas l'intention."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "open",
+     "searched": true,
+     "search": {
+      "check": "answer",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "jti dans JwtService.java",
+         "found": "Tout token émis porte un jti. L'absence de jti ne concerne que les tokens legacy pré-#73."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "jti dans JwtService.java",
+         "found": "Les nouveaux tokens embarquent toujours un jti (L168). extractJti renvoie null pour un token legacy, et un commentaire parle de non révocable."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "jti dans JwtService.java",
+         "found": "Tout token émis embarque un jti (L159-168). L'absence de jti ne concerne que les tokens legacy, et la politique n'est décrite que par commentaires."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "answer",
+   "placed": {
+    "pack_line": 118,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "session:questions:2",
+   "section": "questions",
+   "rank": 2,
+   "text": "- Le bug de persistance du flux register (`@Version` et id assigné) existe-t-il encore ? Selon le commentaire du test d'intégration, il justifie le seed des utilisateurs par `EntityManager`, aucun fait de code ne le confirme [#3806e8fd4aed6364-1].",
+   "fact_text": "Le bug de persistance du flux register (`@Version` et id assigné) existe-t-il encore ? Selon le commentaire du test d'intégration, il justifie le seed des utilisateurs par `EntityManager`, aucun fait de code ne le confirme",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "session/3806e8fd4aed6364-1"
+   ],
+   "files": [
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/SessionRevocationIntegrationTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/SessionRevocationIntegrationTest.java",
+     49,
+     53,
+     "db0b64c21eda910825fd0977c3da80b15b3266cc648603039e7a801ff2ac997b"
+    ]
+   ],
+   "code_sha256": "db0b64c21eda910825fd0977c3da80b15b3266cc648603039e7a801ff2ac997b",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [
+     {
+      "id": "session/3806e8fd4aed6364-1",
+      "verdict": "confirmed"
+     }
+    ],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "UserRepositoryJpaImpl.save force id=null à la création, ce qui contourne le bug @Version + id assigné : le code tranche, le bug est contourné.",
+      "Le code contourne le bug : UserRepositoryJpaImpl.save force id=null en création pour que @GeneratedValue et @Version s'initialisent via persist. Le bug d'origine est traité par ce contournement.",
+      "Le bug a été corrigé : UserRepositoryJpaImpl.save force entity.setId(null) à la création pour que @GeneratedValue et @Version fonctionnent, et il écrit le cas register (id généré par le domaine). Le commentaire du test est donc périmé sur ce point."
+     ],
+     "evidence": [
+      "",
+      "",
+      "entity.setId(null);"
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "resolved",
+     "searched": true,
+     "search": {
+      "check": "answer",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 2,
+      "budget": 24,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "@Version dans backend/src/main/java",
+         "found": "UserEntity porte @Version ; commentaires de UserRepositoryJpaImpl L71-77 décrivent le contournement"
+        },
+        {
+         "tool": "Read",
+         "target": "UserRepositoryJpaImpl.java L60-109",
+         "found": "save distingue mise à jour et création avec entity.setId(null)"
+        },
+        {
+         "tool": "Grep",
+         "target": "register|setId( dans application/services *User*.java",
+         "found": "rien"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "@Version dans backend/src/main",
+         "found": "UserEntity porte @Version. UserRepositoryJpaImpl.save traite le cas id assigné par le domaine (register)."
+        },
+        {
+         "tool": "Read",
+         "target": "UserRepositoryJpaImpl.java L66-140",
+         "found": "en création, entity.setId(null) avant super.save, avec commentaire PIT-S10-003 sur l'erreur Hibernate"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "@Version dans backend/src/main",
+         "found": "UserEntity porte @Version, et les commentaires de UserRepositoryJpaImpl décrivent le correctif PIT-S10-003"
+        },
+        {
+         "tool": "Read",
+         "target": "UserRepositoryJpaImpl.java L60-110",
+         "found": "save distingue mise à jour et création avec entity.setId(null)"
+        },
+        {
+         "tool": "Grep",
+         "target": "register dans backend/src/test",
+         "found": "RegisterLoginIntegrationTest et d'autres tests du flux register existent"
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 1,
+      "contradicted": 2
+     },
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "answer",
+   "placed": {
+    "pack_line": 119,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "session:alerts:1",
+   "section": "alerts",
+   "rank": 1,
+   "text": "- La javadoc de la classe de test annonce la couverture de la rotation, alors qu'aucune méthode de `backend:src/test/java/com/matimeline/eventmanager/application/services/SessionServiceImplTest.java:27` ne la couvre [#2731b3f667dbf6bb-1]. Un lecteur croit la rotation testée alors qu'elle ne l'est pas. Ajouter un test de rotation avant de la modifier, ou corriger la javadoc.",
+   "fact_text": "La javadoc de la classe de test annonce la couverture de la rotation, alors qu'aucune méthode de SessionServiceImplTest.java ne la couvre. Un lecteur croit la rotation testée alors qu'elle ne l'est pas. Ajouter un test de rotation avant de la modifier, ou corriger la javadoc",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "session/2731b3f667dbf6bb-1"
+   ],
+   "files": [
+    "backend:src/test/java/com/matimeline/eventmanager/application/services/SessionServiceImplTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/application/services/SessionServiceImplTest.java",
+     27,
+     27,
+     "ad4e7692e9924d5f73bb61318c907c1211876c728606d6e5334166976c3e88e6"
+    ]
+   ],
+   "code_sha256": "ad4e7692e9924d5f73bb61318c907c1211876c728606d6e5334166976c3e88e6",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [
+     {
+      "id": "session/2731b3f667dbf6bb-1",
+      "verdict": "unverifiable"
+     }
+    ],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "La javadoc L27 cite la rotation, mais aucune méthode de test (L43-L121) ne la couvre : le grep insensible à la casse ne trouve 'rotat' qu'en L27.",
+      "Grep 'rotat' dans SessionServiceImplTest ne renvoie que la javadoc L27 : aucune méthode de test ne couvre la rotation.",
+      "La javadoc ligne 27 cite la rotation, mais le seul résultat du Grep 'rotat' dans SessionServiceImplTest.java est cette ligne de javadoc, aucune méthode de test n'en parle."
+     ],
+     "evidence": [
+      "",
+      "",
+      "isSessionActive (révoqué/inconnu/legacy), rotation."
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "guards",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 24,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "rotat|@Test|void  dans SessionServiceImplTest.java",
+         "found": "'rotat' n'apparaît qu'à la ligne 27 (javadoc), les tests couvrent isSessionActive, revokeSession, revokeOtherSessions, revokeAllSessions, revokeCurrentSession"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "rotat (insensible à la casse) dans SessionServiceImplTest.java",
+         "found": "une seule occurrence, la javadoc L27"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "rotat (insensible à la casse) dans SessionServiceImplTest.java",
+         "found": "une seule occurrence, ligne 27 (javadoc)"
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "guards",
+   "placed": {
+    "pack_line": 123,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "session:alerts:2",
+   "section": "alerts",
+   "rank": 2,
+   "text": "- Le commentaire de `backend:src/main/resources/db/migration/V10__create_sessions.sql:30` dit que V11 est réservée à #78, alors que V11 existe déjà dans le lot . Le commentaire est périmé et peut faire croire qu'un numéro est libre ⇒ Se fier à la liste réelle des migrations et ne pas reprendre cette réserve [#backend-core/7869dc86186b76fa-1]",
+   "fact_text": "Le commentaire de V10__create_sessions.sql dit que V11 est réservée à #78, alors que V11 existe déjà dans le lot. Le commentaire est périmé et peut faire croire qu'un numéro est libre",
+   "consigne": "Se fier à la liste réelle des migrations et ne pas reprendre cette réserve",
+   "consigne_dropped": false,
+   "cites": [
+    "backend-core/7869dc86186b76fa-1"
+   ],
+   "files": [
+    "backend:src/main/resources/db/migration/V10__create_sessions.sql"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/resources/db/migration/V10__create_sessions.sql",
+     30,
+     30,
+     "352dafb84df95ab7017b3e19425accf92a59fde04a8636c2e86b63452bf5175d"
+    ]
+   ],
+   "code_sha256": "352dafb84df95ab7017b3e19425accf92a59fde04a8636c2e86b63452bf5175d",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": {
+     "fact_supported": true,
+     "consigne_supported": true,
+     "reason": "Le fait cité établit que le commentaire de V10 réserve V11 à #78 alors que V11__events_conditional_check_constraints.sql existe déjà, donc le commentaire est périmé ; le risque qu'il fasse croire qu'un numéro est libre est une lecture de ce constat, non un fait vérifié séparément. La consigne de se fier à la liste réelle des migrations découle directement de ce fait.",
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    },
+    "deduce": null,
+    "rediscover": null,
+    "comment": [
+     {
+      "id": "backend-core/7869dc86186b76fa-1",
+      "verdict": "unverifiable"
+     }
+    ],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "V10__create_sessions.sql L30 dit bien que V11 est réservée à #78, et V11__events_conditional_check_constraints.sql existe : la ligne est exacte.",
+      "Le commentaire L30 de V10 réserve V11 alors que V11__events_conditional_check_constraints.sql existe : l'alerte est exacte. La consigne est utile.",
+      "V10__create_sessions.sql L30 dit bien que V11 est réservée à #78, alors que V11__events_conditional_check_constraints.sql existe. Le constat est exact. Rien ne garantit ailleurs que la réserve soit valide."
+     ],
+     "evidence": [
+      "",
+      "",
+      "-- V11 est RÉSERVÉE à #78 — ne pas la consommer ici."
+     ],
+     "consigne_verdict": "supported",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "guards",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 24,
+      "searches": [
+       [
+        {
+         "tool": "Glob",
+         "target": "db/migration/V11*",
+         "found": "V11__events_conditional_check_constraints.sql existe, donc la réserve est périmée"
+        }
+       ],
+       [
+        {
+         "tool": "Glob",
+         "target": "db/migration/**/V11__*",
+         "found": "V11__events_conditional_check_constraints.sql existe, la réserve est périmée"
+        }
+       ],
+       [
+        {
+         "tool": "Glob",
+         "target": "db/migration/V11__*",
+         "found": "V11__events_conditional_check_constraints.sql existe, donc la réserve est périmée"
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "guards",
+   "placed": {
+    "pack_line": 124,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "session:rules:annex:e58a3f43",
+   "section": "rules",
+   "rank": 1,
+   "text": "- Une requête sans token n'est pas authentifiée et poursuit la chaîne en mode anonyme, avec un simple log debug. `backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtFilter.java:62-68` [#authorization/1c9397f1d29ff038-1]",
+   "fact_text": "Une requête sans token n'est pas authentifiée et poursuit la chaîne en mode anonyme, avec un simple log debug. JwtFilter.java",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "authorization/1c9397f1d29ff038-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtFilter.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtFilter.java",
+     62,
+     68,
+     "3797bb3387c5a5b5b184beafcaeab05797695cdd4bbd871d818b92cfe1ff26f9"
+    ]
+   ],
+   "code_sha256": "3797bb3387c5a5b5b184beafcaeab05797695cdd4bbd871d818b92cfe1ff26f9",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.556,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 9
+      }
+     },
+     "restatement": "Dans JwtFilter.doFilterInternal, si aucun token n'est trouvé, le filtre écrit un log debug (pas warn), puis transmet la requête à la chaîne et sort sans authentifier. Les requêtes anonymes passent donc sans erreur.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "session.details.md",
+     "row": 1
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-19T16:30:00Z"
+  },
+  {
+   "id": "session:rules:annex:2fe71a0c",
+   "section": "rules",
+   "rank": 9,
+   "text": "- L'écran masque le bouton révoquer pour la session courante et le désactive pendant la révocation de cette session. `frontend:components/settings/SessionList.tsx:130-147` [#f82581af56a19982-1]",
+   "fact_text": "L'écran masque le bouton révoquer pour la session courante et le désactive pendant la révocation de cette session. SessionList.tsx",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "session/f82581af56a19982-1"
+   ],
+   "files": [
+    "frontend:components/settings/SessionList.tsx"
+   ],
+   "ranges": [
+    [
+     "frontend:components/settings/SessionList.tsx",
+     130,
+     147,
+     "513acef0457fc1ff63536f77a70f6d6a6ad8618bfc44ae11a020ad20f2c77961"
+    ]
+   ],
+   "code_sha256": "513acef0457fc1ff63536f77a70f6d6a6ad8618bfc44ae11a020ad20f2c77961",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 8
+      }
+     },
+     "restatement": "Dans SessionList, le bouton de révocation d'une session n'est rendu que si session.current est faux. Il est désactivé quand revokingId vaut l'id de cette session, et affiche alors un Loader2 animé à la place du libellé. Son aria-label est security.sessions.revokeOne.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "session.details.md",
+     "row": 2
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-19T16:30:00Z"
+  },
+  {
+   "id": "session:rules:annex:2b99a5ce",
+   "section": "rules",
+   "rank": 10,
+   "text": "- Le bouton révoquer les autres n'apparaît que s'il existe une session non courante et se désactive pendant l'opération. `frontend:components/settings/SessionList.tsx:152-168` [#f82581af56a19982-2]",
+   "fact_text": "Le bouton révoquer les autres n'apparaît que s'il existe une session non courante et se désactive pendant l'opération. SessionList.tsx",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "session/f82581af56a19982-2"
+   ],
+   "files": [
+    "frontend:components/settings/SessionList.tsx"
+   ],
+   "ranges": [
+    [
+     "frontend:components/settings/SessionList.tsx",
+     152,
+     168,
+     "fb54bba6a7d0908fdd524dfaf565616855df1b3ae2959c577f14a5896271ee28"
+    ]
+   ],
+   "code_sha256": "fb54bba6a7d0908fdd524dfaf565616855df1b3ae2959c577f14a5896271ee28",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 8
+      }
+     },
+     "restatement": "Dans SessionList, le bouton « révoquer les autres » n'apparaît que si otherSessionsCount est strictement supérieur à 0. Il a la variante destructive, est désactivé pendant isRevokingOthers, et affiche un Loader2 animé pendant ce temps.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "session.details.md",
+     "row": 3
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-19T16:30:00Z"
+  },
+  {
+   "id": "session:tests:annex:78fb2136",
+   "section": "tests",
+   "rank": 2,
+   "text": "- Les tests fixent que révoquer la session d'un autre utilisateur donne 404 sans révocation, et que la session du propriétaire reste utilisable. [#cc657e2c785c1f7b-1] [#a91119d810dc7730-1]",
+   "fact_text": "Les tests fixent que révoquer la session d'un autre utilisateur donne 404 sans révocation, et que la session du propriétaire reste utilisable",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "session/cc657e2c785c1f7b-1",
+    "session/a91119d810dc7730-1"
+   ],
+   "files": [
+    "backend:src/test/java/com/matimeline/eventmanager/application/services/SessionServiceImplTest.java",
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/SessionRevocationIntegrationTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/application/services/SessionServiceImplTest.java",
+     85,
+     94,
+     "59604e98fc9fa3263c75dd9570fd0db414c7e7732063d74c199ca7568373d200"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/SessionRevocationIntegrationTest.java",
+     181,
+     194,
+     "9e40f200452cf0b3030309bdb0580000436d1e1a2e6e4ad0b1b2ee34ee4d4391"
+    ]
+   ],
+   "code_sha256": "81804f5da0d111b13ec6ced66c6dd6ee95a60a7e32bbebcf401c0f0806b91859",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": null,
+      "values": 1.0,
+      "terms": 0.7,
+      "n": {
+       "identifiers": 0,
+       "values": 1,
+       "terms": 10
+      }
+     },
+     "restatement": "Un utilisateur qui tente de révoquer une session appartenant à un autre utilisateur reçoit SessionNotFoundException et revokeById n'est jamais appelé. Le test d'intégration associé attend un 404 (jamais un 403) pour l'intrus, et la session du propriétaire reste utilisable (GET /api/sessions renvoie 200).",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "session.details.md",
+     "row": 4
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-19T16:30:00Z"
+  },
+  {
+   "id": "session:tests:annex:3483227f",
+   "section": "tests",
+   "rank": 3,
+   "text": "- Les tests fixent que le jti courant vient du cookie jwt ou du Bearer seul, et que le cookie prime quand les deux sont présents. [#ac879a4ffcbc1f3e-1] [#5762506a39094d45-1] [#923691090fc40de0-1]",
+   "fact_text": "Les tests fixent que le jti courant vient du cookie jwt ou du Bearer seul, et que le cookie prime quand les deux sont présents",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "session/ac879a4ffcbc1f3e-1",
+    "session/5762506a39094d45-1",
+    "session/923691090fc40de0-1"
+   ],
+   "files": [
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/SessionControllerTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/SessionControllerTest.java",
+     80,
+     90,
+     "d0a7cac09e3e0f07d5344bbcfc551d93017859c01c7ae066ed478ba7b2744c33"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/SessionControllerTest.java",
+     66,
+     77,
+     "0845ffbb4651ee0d01b788f922d5b5f8a40f204c5a4350b2d68895081103cc82"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/SessionControllerTest.java",
+     93,
+     104,
+     "a3220fa6133048331b1a360eaf6f8e3c806be35b2bc363c9fe658bcd78ddcc3a"
+    ]
+   ],
+   "code_sha256": "b3943b2c76313ac543ab6088836c867b1c08d6a79accc68ba47af40fa8a8c462",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 0.556,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 9
+      }
+     },
+     "restatement": "Sur DELETE /api/sessions/others, le jti courant est extrait du cookie jwt en priorité, même si un en-tête Authorization Bearer est aussi présent. La réponse est 204 et revokeOtherSessions reçoit callerId et le jti du cookie. Le test Bearer seul montre que le jti extrait de l'en-tête est aussi transmis (non null).",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "session.details.md",
+     "row": 5
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-19T16:30:00Z"
+  },
+  {
+   "id": "session:tests:annex:fe5c9aa6",
+   "section": "tests",
+   "rank": 7,
+   "text": "- Les tests fixent qu'une requête anonyme ou authentifiée ne crée ni HttpSession ni cookie JSESSIONID, contrôlé sans tenir compte de la casse. [#7cb3ad7cd9d81378-1] [#6e590d46247af55f-1] [#authorization/d0bd480ea9ec21a9-1]",
+   "fact_text": "Les tests fixent qu'une requête anonyme ou authentifiée ne crée ni HttpSession ni cookie JSESSIONID, contrôlé sans tenir compte de la casse",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "session/7cb3ad7cd9d81378-1",
+    "session/6e590d46247af55f-1",
+    "authorization/d0bd480ea9ec21a9-1"
+   ],
+   "files": [
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/StatelessSessionGuardTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/StatelessSessionGuardTest.java",
+     44,
+     52,
+     "0c791658898a23d8487d2b2800e7722032ce1cd047a468965a4ebf4bf8706b69"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/StatelessSessionGuardTest.java",
+     59,
+     68,
+     "f80974669357428e8238cb5314fb4a519e60563060b1a26378093774ef11a12f"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/StatelessSessionGuardTest.java",
+     70,
+     74,
+     "92b39b4903a48243e16a30972f076863b62de894b5bd9138345e36f8883d367f"
+    ]
+   ],
+   "code_sha256": "c6d2bc414249054455148dbf5f0d404d5fbb3c8719f32ee3255abfbc76cf2722",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.545,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 11
+      }
+     },
+     "restatement": "Les deux tests vérifient que l'application reste STATELESS : une requête GET /api/auth/me anonyme ou authentifiée ne crée aucune HttpSession serveur (getSession(false) est null) et ne pose aucun cookie JSESSIONID dans Set-Cookie. L'assertion cite CVE-2026-40973.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "session.details.md",
+     "row": 6
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-19T16:30:00Z"
+  },
+  {
+   "id": "session:tests:annex:9f65e319",
+   "section": "tests",
+   "rank": 8,
+   "text": "- Selon la javadoc, les tests d'intégration traversent la vraie chaîne Spring Security avec JwtFilter, la migration V10 et Postgres via Testcontainers. [#integrations/74670f1cc9d63a7c-1]",
+   "fact_text": "Selon la javadoc, les tests d'intégration traversent la vraie chaîne Spring Security avec JwtFilter, la migration V10 et Postgres via Testcontainers",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "integrations/74670f1cc9d63a7c-1"
+   ],
+   "files": [
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/SessionRevocationIntegrationTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/SessionRevocationIntegrationTest.java",
+     35,
+     40,
+     "146fa2f528aa65d142f2abfc33520de2d256a94906ca9a882144502bf481f420"
+    ]
+   ],
+   "code_sha256": "146fa2f528aa65d142f2abfc33520de2d256a94906ca9a882144502bf481f420",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.909,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 11
+      }
+     },
+     "restatement": "Extrait réduit à la Javadoc de la classe SessionRevocationIntegrationTest. Elle indique qu'il s'agit d'un test d'intégration de révocation par jti, qui traverse la vraie chaîne Spring Security (JwtFilter), la migration V10 (table sessions) et Postgres via Testcontainers. Aucune logique exécutable n'est visible dans cet extrait.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": null,
+    "comment": [
+     {
+      "id": "integrations/74670f1cc9d63a7c-1",
+      "verdict": "unverifiable"
+     }
+    ],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "session.details.md",
+     "row": 7
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-19T16:30:00Z"
+  }
+ ],
+ "comment_facts": [
+  {
+   "id": "session/6e267b0acf8be06d-1",
+   "verdict": "confirmed",
+   "code_says": "Quand jti est null, isSessionActive retourne true immédiatement, sans lookup en base. Un token legacy sans jti n'est donc pas bloqué et ne passe par aucun contrôle de révocation.",
+   "code_line_start": 55,
+   "code_line_end": 61,
+   "code_evidence": "        if (jti == null) {",
+   "evidence_check": null,
+   "code_file": "backend:src/main/java/com/matimeline/eventmanager/application/services/SessionServiceImpl.java",
+   "invalid": false,
+   "cache_digest": "1825eba9633c79c943ce3cd3910a84512dd3bedf623b7adea9950c0174a1bc48",
+   "reused": true,
+   "reused_from": "2026-11-19T16:30:00Z",
+   "cited_by": [
+    "session:questions:1"
+   ],
+   "structure_rows_removed": []
+  },
+  {
+   "id": "session/3806e8fd4aed6364-1",
+   "verdict": "confirmed",
+   "code_says": "La méthode seedUser crée un UserEntity, le persiste avec em.persist(user) dans une TransactionTemplate, sans assigner d'id (commentaire ligne 117). Le bug de persistance de POST /register n'est pas dans ce fichier.",
+   "code_line_start": 113,
+   "code_line_end": 126,
+   "code_evidence": "new TransactionTemplate(txManager).executeWithoutResult(status -> {",
+   "evidence_check": null,
+   "code_file": "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/SessionRevocationIntegrationTest.java",
+   "invalid": false,
+   "cache_digest": "36d360996e6e8c7a37813e7f22197575acf99c1f8eba896ef98416d9a868abe7",
+   "reused": true,
+   "reused_from": "2026-11-19T16:30:00Z",
+   "cited_by": [
+    "session:questions:2"
+   ],
+   "structure_rows_removed": []
+  },
+  {
+   "id": "session/2731b3f667dbf6bb-1",
+   "verdict": "unverifiable",
+   "code_says": "Le fichier de test contient neuf méthodes couvrant isSessionActive, revokeSession, revokeOtherSessions, revokeAllSessions et revokeCurrentSession. Aucune ne porte sur une rotation, et SessionServiceImpl ne définit aucune méthode de rotation.",
+   "code_line_start": 0,
+   "code_line_end": 0,
+   "code_evidence": "",
+   "evidence_check": null,
+   "code_file": "",
+   "invalid": false,
+   "cache_digest": "bcc18c38355c2a49e8229a8ad7b702b4def0f346a6205d8b373f5c1a28635b77",
+   "reused": true,
+   "reused_from": "2026-11-19T16:30:00Z",
+   "cited_by": [
+    "session:alerts:1"
+   ],
+   "structure_rows_removed": []
+  },
+  {
+   "id": "backend-core/7869dc86186b76fa-1",
+   "verdict": "unverifiable",
+   "code_says": "",
+   "code_line_start": 0,
+   "code_line_end": 0,
+   "code_evidence": "",
+   "evidence_check": null,
+   "code_file": "",
+   "invalid": false,
+   "cache_digest": "6a26f2dbe05d1d3a7598b285a7d24ea62398b0e187ad6b8ef3fb1e02049a2d7b",
+   "reused": true,
+   "reused_from": "2026-11-19T16:30:00Z",
+   "cited_by": [
+    "session:alerts:2"
+   ],
+   "structure_rows_removed": []
+  }
+ ],
+ "facts_validated": [
+  "session/5f9266f4536bd3d7-1",
+  "session/97667c4e427f282c-1",
+  "session/8aa2c92b12bee978-1",
+  "session/fdd139bf8bd1a5f1-1",
+  "session/2df1b0746c9671ed-1",
+  "session/125aae1dafe1a7f4-1",
+  "session/ec85f981148cd5c5-1",
+  "session/ccf70a41239e3358-1",
+  "session/b02b89ecab5f6e75-1",
+  "session/3554be20a6907020-1",
+  "session/5b71784eb4015ed1-1",
+  "session/f6041a5ba9631bb4-1",
+  "session/7ea75b50e37269a6-1",
+  "session/bc24459718a8de0e-1",
+  "session/bc24459718a8de0e-2",
+  "session/a50852c3ebf29c5f-1",
+  "session/1448d857bc591a84-1",
+  "session/ed56bc4fa6580877-1",
+  "session/9e02d8f81987ba08-1",
+  "session/7b3376a7aed854a4-1",
+  "session/7b3376a7aed854a4-2",
+  "session/596a893d76664618-1",
+  "session/0e8d9b8b5f7cd86a-1",
+  "session/6f80d87a0206c9ad-1",
+  "session/68d426f4e6c4fb80-1",
+  "session/e8ccf591a0152c42-1",
+  "session/00d153f91a247d5f-1",
+  "session/1f9ee4243fea0596-1",
+  "session/96a2da2db2368e08-1",
+  "session/46bb114d3881feee-3",
+  "session/46bb114d3881feee-8",
+  "session/6e267b0acf8be06d-1",
+  "session/aea9c4e6ee386f14-1",
+  "session/3806e8fd4aed6364-1",
+  "session/2731b3f667dbf6bb-1",
+  "backend-core/7869dc86186b76fa-1"
+ ],
+ "counts": {
+  "units": 34,
+  "admit": 27,
+  "annex": 7,
+  "drop": 0,
+  "hold": 0,
+  "pending": 0,
+  "consigne_before_unsupported": 0,
+  "consigne_after_dropped": 0,
+  "structure_rows_removed": 0,
+  "framework": 0,
+  "guarded_elsewhere": 0,
+  "resolved": 0,
+  "restricted": 0,
+  "counterexample": 0,
+  "promoted": 0,
+  "kept_for": {
+   "rediscovered": 3
+  },
+  "pointers_removed": 0,
+  "restored_alerts": 0,
+  "budget_cut": 0
+ },
+ "answers": [],
+ "budget_cut": [],
+ "structure_rows_removed": [],
+ "notes": [],
+ "base_sha256_after": "f67d2b96142b36433e4e9b1855eb77502507b6c89981bd26539dc05f67a4ae44",
+ "bases_touched": {
+  "backend-core": {
+   "fingerprint": "2110b6c913a1c83ba94694ee0006e381b98b4819ab429ebf20d111b39a4757e0",
+   "sha256_after": "cc714f0400539394ac442a11641f21490f4c91ddec666ec86d4528d46ed3eeb0"
+  },
+  "session": {
+   "fingerprint": "861b4ea9686db2e097307c185698bfd44295bfbe9cc3278f25036767289dd946",
+   "sha256_after": "f67d2b96142b36433e4e9b1855eb77502507b6c89981bd26539dc05f67a4ae44"
+  }
+ },
+ "lint": {
+  "ok": true,
+  "errors": 0,
+  "warnings": 1
+ }
+}

@@ -1,0 +1,16 @@
+{
+ "Category": "category",
+ "CategoryEntity": "category",
+ "Event": "event",
+ "EventEntity": "event",
+ "ExportJob": "export",
+ "ExportJobEntity": "export",
+ "PasswordReset": "user",
+ "PasswordResetTokenEntity": "user",
+ "Product": "product",
+ "ProductEntity": "product",
+ "Session": "session",
+ "SessionEntity": "session",
+ "User": "user",
+ "UserEntity": "user"
+}

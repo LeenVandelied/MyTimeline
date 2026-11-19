@@ -1,9 +1,9 @@
 {
- "verdict": "rattachement automatique",
+ "verdict": "rien à faire",
  "reasons": [],
- "added": 12,
+ "added": 0,
  "removed": 0,
- "modified": 122,
+ "modified": 0,
  "moved_pack": 0,
  "moved_unchanged_code": 0,
  "moved_changed_code": 0,
@@ -18,11 +18,5 @@
  "touched_without_pack": [],
  "moves_by_pack_pair": [],
  "moved_examples": [],
- "touched_by_pack": {
-  "timeline": 71,
-  "frontend-socle": 49,
-  "authorization": 7,
-  "backend-socle": 4,
-  "integrations": 3
- }
+ "touched_by_pack": {}
 }

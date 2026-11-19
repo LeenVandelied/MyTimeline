@@ -1,13 +1,15 @@
 {
  "id": "A7",
- "question": "Quelles tailles donner aux packs sans groupe (transversaux et techniques) ?",
- "decision": "nombre de fichiers du motif ou de la couche tel que donné, 0 ko tant que la taille n'est pas mesurée",
- "rule": "R10 fichiers techniques possédés par le pack de leur couche, tailles non fournies par le résumé",
- "confidence": "low",
- "seeds": [],
+ "question": "state-machine : créer un pack transversal ?",
+ "decision": "non créé : state-machine",
+ "rule": "R5 motif mesuré sur 2 fichiers seulement (ExportJob.java et export.ts), absorbé par le domaine export",
+ "confidence": "medium",
+ "seeds": [
+  "ExportJob"
+ ],
  "evidence": [],
- "falsified_if": "la porte mécanique recalcule des tailles différentes à partir de l'inventaire",
+ "falsified_if": "l'extraction compte au moins 3 fichiers à forte densité d'états hors du domaine export",
  "status": "open",
- "opened": "2026-11-17",
+ "opened": "2026-11-19",
  "touched_by": []
 }

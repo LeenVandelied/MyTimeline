@@ -1,0 +1,352 @@
+{
+ "pack": "frontend-core",
+ "schema": 1,
+ "kind": "technical",
+ "lang": "fr",
+ "generated_at": "2026-11-19T16:00:00Z",
+ "base_sha256": "5cbb13cd84656622ae9366ccb8be4209f0191a2e39c443fe30e786babb425698",
+ "pack_bytes": 8668,
+ "pack_budget_bytes": 31585,
+ "details": [
+  {
+   "file": "frontend-core.details.md",
+   "bytes": 63536
+  }
+ ],
+ "sections": [
+  {
+   "id": "activate",
+   "order": 1,
+   "title": "Quand activer",
+   "heading": "## 1. Quand activer {#activate}",
+   "line_start": 17,
+   "line_end": 22,
+   "bytes": 136,
+   "budget_bytes": 1500,
+   "cut_lines": 0,
+   "writer": "script",
+   "kinds": [],
+   "facts_available": 0,
+   "facts_cited": [],
+   "lots": 0,
+   "merged": false,
+   "review": null,
+   "never_truncate": false
+  },
+  {
+   "id": "lexicon",
+   "order": 2,
+   "title": "Lexique",
+   "heading": "## 2. Lexique {#lexicon}",
+   "line_start": 23,
+   "line_end": 26,
+   "bytes": 78,
+   "budget_bytes": 2500,
+   "cut_lines": 0,
+   "writer": "agent",
+   "kinds": [
+    "entity"
+   ],
+   "facts_available": 0,
+   "facts_cited": [],
+   "lots": 0,
+   "merged": false,
+   "review": {
+    "lines": 0,
+    "kept": 0,
+    "rejected": 0,
+    "unreviewed": 0
+   },
+   "never_truncate": false
+  },
+  {
+   "id": "rules",
+   "order": 3,
+   "title": "Conventions",
+   "heading": "## 3. Conventions {#rules}",
+   "line_start": 27,
+   "line_end": 42,
+   "bytes": 2164,
+   "budget_bytes": 8085,
+   "cut_lines": 0,
+   "writer": "agent",
+   "kinds": [
+    "convention",
+    "config",
+    "business_rule",
+    "validation"
+   ],
+   "facts_available": 231,
+   "facts_cited": [
+    "9bc256ea7132e8fc-1",
+    "2da5f9f87ce62f1b-1",
+    "2da5f9f87ce62f1b-3",
+    "6c8be478df66b45f-1",
+    "6c8be478df66b45f-2",
+    "c975e2c29b3fd7b4-1",
+    "06b87f0f578820c1-1",
+    "e3fbeeb501198437-1",
+    "b104639882753ef3-1",
+    "bfe3627981d34eda-1",
+    "286086fc8f3fe903-1",
+    "d4df35fe66efe7e4-1",
+    "cf643eba35ecaa02-1",
+    "cf643eba35ecaa02-2",
+    "6be8d774367f94d6-1",
+    "be27638d45576224-1",
+    "1ceb81ea5c54f0a5-2",
+    "1ceb81ea5c54f0a5-4",
+    "1ceb81ea5c54f0a5-5",
+    "1ceb81ea5c54f0a5-6",
+    "event/35b4d3bd0bcb3266-1"
+   ],
+   "lots": 2,
+   "merged": true,
+   "review": {
+    "lines": 34,
+    "kept": 27,
+    "rejected": 7,
+    "unreviewed": 7
+   },
+   "never_truncate": false
+  },
+  {
+   "id": "structure",
+   "order": 4,
+   "title": "Structure",
+   "heading": "## 4. Structure {#structure}",
+   "line_start": 43,
+   "line_end": 46,
+   "bytes": 82,
+   "budget_bytes": 2000,
+   "cut_lines": 0,
+   "writer": "script",
+   "kinds": [
+    "state_transition",
+    "endpoint",
+    "ui_screen",
+    "entity",
+    "store_action"
+   ],
+   "facts_available": 0,
+   "facts_cited": [],
+   "lots": 0,
+   "merged": false,
+   "review": null,
+   "never_truncate": false
+  },
+  {
+   "id": "surface",
+   "order": 5,
+   "title": "Points d'entrée du socle",
+   "heading": "## 5. Points d'entrée du socle {#surface}",
+   "line_start": 47,
+   "line_end": 50,
+   "bytes": 96,
+   "budget_bytes": 4000,
+   "cut_lines": 0,
+   "writer": "agent",
+   "kinds": [
+    "endpoint",
+    "service_method",
+    "persistence_query",
+    "external_call",
+    "ui_screen",
+    "store_action",
+    "role_check",
+    "state_transition",
+    "batch_job"
+   ],
+   "facts_available": 0,
+   "facts_cited": [],
+   "lots": 0,
+   "merged": false,
+   "review": {
+    "lines": 0,
+    "kept": 0,
+    "rejected": 0,
+    "unreviewed": 0
+   },
+   "never_truncate": false
+  },
+  {
+   "id": "files",
+   "order": 6,
+   "title": "Fichiers critiques",
+   "heading": "## 6. Fichiers critiques {#files}",
+   "line_start": 51,
+   "line_end": 69,
+   "bytes": 1164,
+   "budget_bytes": 2000,
+   "cut_lines": 0,
+   "writer": "script",
+   "kinds": [],
+   "facts_available": 0,
+   "facts_cited": [],
+   "lots": 0,
+   "merged": false,
+   "review": null,
+   "never_truncate": false
+  },
+  {
+   "id": "relations",
+   "order": 7,
+   "title": "Relations avec d'autres packs",
+   "heading": "## 7. Relations avec d'autres packs {#relations}",
+   "line_start": 70,
+   "line_end": 83,
+   "bytes": 458,
+   "budget_bytes": 1500,
+   "cut_lines": 0,
+   "writer": "script",
+   "kinds": [],
+   "facts_available": 0,
+   "facts_cited": [],
+   "lots": 0,
+   "merged": false,
+   "review": null,
+   "never_truncate": false
+  },
+  {
+   "id": "tests",
+   "order": 8,
+   "title": "Tests attendus",
+   "heading": "## 8. Tests attendus {#tests}",
+   "line_start": 84,
+   "line_end": 95,
+   "bytes": 1520,
+   "budget_bytes": 2000,
+   "cut_lines": 0,
+   "writer": "agent",
+   "kinds": [
+    "test_case"
+   ],
+   "facts_available": 73,
+   "facts_cited": [
+    "3cf5112d8e9819dd-1",
+    "a4c0295be152f9c9-1",
+    "28464135080164e4-1",
+    "954c587dc696c535-1",
+    "b624ef68e7fdbbc6-1",
+    "8a53cb094ab455c4-1",
+    "82d4c005d5ae0fe0-1",
+    "af84a31ff75e0699-1",
+    "a8a8ff297908ea82-1",
+    "e9538199f8ee2b0a-1",
+    "bc8390329b6494b1-1",
+    "0d1c19772e7e890d-1",
+    "2bced97a8b32cc87-1",
+    "b4bd62b08c16226a-1",
+    "2567fe15abe72281-1",
+    "8dd03e17489c8b12-1",
+    "3567e8ecf8cbb6a3-1",
+    "1c9687f05e1ffa3b-2",
+    "627a77b7049c5912-1",
+    "e2fe5e7fb84ac49e-1",
+    "446dfbe8ba68011e-1"
+   ],
+   "lots": 1,
+   "merged": false,
+   "review": {
+    "lines": 10,
+    "kept": 10,
+    "rejected": 0,
+    "unreviewed": 0
+   },
+   "never_truncate": false
+  },
+  {
+   "id": "questions",
+   "order": 9,
+   "title": "Questions ouvertes",
+   "heading": "## 9. Questions ouvertes {#questions}",
+   "line_start": 96,
+   "line_end": 102,
+   "bytes": 912,
+   "budget_bytes": 1500,
+   "cut_lines": 0,
+   "writer": "agent",
+   "kinds": [
+    "suspicious"
+   ],
+   "facts_available": 20,
+   "facts_cited": [
+    "075c383c8509607d-1",
+    "6ed86820a433f2e0-1",
+    "31e4140d2a82fdf7-1",
+    "5f19d1e9416bc5ba-1"
+   ],
+   "lots": 1,
+   "merged": false,
+   "review": {
+    "lines": 4,
+    "kept": 4,
+    "rejected": 0,
+    "unreviewed": 0
+   },
+   "never_truncate": false
+  },
+  {
+   "id": "alerts",
+   "order": 10,
+   "title": "Alertes",
+   "heading": "## 10. Alertes {#alerts}",
+   "line_start": 103,
+   "line_end": 108,
+   "bytes": 936,
+   "budget_bytes": 4000,
+   "cut_lines": 0,
+   "writer": "agent",
+   "kinds": [
+    "suspicious"
+   ],
+   "facts_available": 20,
+   "facts_cited": [
+    "9444328f3c65b8bc-1",
+    "fcb2319587514c3b-1",
+    "2da5f9f87ce62f1b-4"
+   ],
+   "lots": 1,
+   "merged": false,
+   "review": {
+    "lines": 4,
+    "kept": 4,
+    "rejected": 0,
+    "unreviewed": 0
+   },
+   "never_truncate": true
+  },
+  {
+   "id": "coverage",
+   "order": 11,
+   "title": "Couverture",
+   "heading": "## 11. Couverture {#coverage}",
+   "line_start": 109,
+   "line_end": 116,
+   "bytes": 717,
+   "budget_bytes": 1500,
+   "cut_lines": 0,
+   "writer": "script",
+   "kinds": [],
+   "facts_available": 0,
+   "facts_cited": [],
+   "lots": 0,
+   "merged": false,
+   "review": null,
+   "never_truncate": false
+  }
+ ],
+ "dedup": {
+  "base": 334,
+  "taken_in": 0,
+  "out_of_scope": 0,
+  "pool_before": 334,
+  "pool_after": 332,
+  "related_pairs": 71
+ },
+ "lint": {
+  "ok": true,
+  "errors": 0,
+  "warnings": 0
+ }
+}

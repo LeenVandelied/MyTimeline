@@ -4,142 +4,170 @@
 
 | Fichier | Faits | Sortes |
 |---|---|---|
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailService.java` | 12 | external_call 7, convention 4, config 1 |
-| `mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/export/ExportRenderersTest.java` | 11 | test_case 8, convention 3 |
-| `mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailServiceLocaleTest.java` | 9 | test_case 5, convention 2, external_call 2 |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapter.java` | 8 | validation 3, convention 2, other 2 |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/config/StorageConfig.java` | 6 | convention 3, config 2, other 1 |
-| `mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/email/PasswordResetEmailTemplateTest.java` | 6 | test_case 5, convention 1 |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/CsvExportRenderer.java` | 5 | convention 4, validation 1 |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/ZipExportRenderer.java` | 5 | convention 4, other 1 |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenFinderJpaAdapter.java` | 5 | convention 3, persistence_query 1, suspicious 1 |
-| `mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapterTest.java` | 5 | test_case 5 |
-| `mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoHealthIndicatorTest.java` | 5 | test_case 4, convention 1 |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportRendererRegistry.java` | 4 | convention 2, suspicious 1, validation 1 |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/JsonExportRenderer.java` | 4 | convention 2, other 2 |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/MarkdownExportRenderer.java` | 4 | convention 4 |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/PasswordResetEmailTemplate.java` | 3 | convention 3 |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoHealthIndicator.java` | 2 | config 1, other 1 |
-| `mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthControllerLegacyPasswordLoginTest.java` | 2 | convention 2 |
-| `mytimeline:frontend/src/components/categories/CategoryDrawer.forbidden.test.tsx` | 2 | external_call 2 |
-| `mytimeline:frontend/src/components/shared/DeleteConfirmDialog.forbidden.test.tsx` | 2 | convention 1, external_call 1 |
-| `mytimeline:frontend/src/components/timeline/TimelineEditHost.forbidden.test.tsx` | 2 | convention 1, external_call 1 |
-| `mytimeline:frontend/src/contexts/AuthContext.themeSaveToast.test.tsx` | 2 | convention 1, external_call 1 |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/ports/services/ExportRenderer.java` | 1 | convention 1 |
-| `mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/JwksEndpointIntegrationTest.java` | 1 | suspicious 1 |
-| `mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ThemePreferenceIntegrationTest.java` | 1 | test_case 1 |
-| `mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/PasswordResetTokenConcurrencyIntegrationTest.java` | 1 | convention 1 |
+| `frontend:services/apiClient.ts` | 14 | convention 12, config 1, validation 1 |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapter.java` | 10 | convention 6, validation 2, config 1 |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailService.java` | 9 | convention 3, external_call 3, config 2 |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenEndpointIntegrationTest.java` | 9 | convention 3, test_case 3, endpoint 2 |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/SessionRevocationIntegrationTest.java` | 8 | test_case 5, external_call 2, convention 1 |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapterTest.java` | 7 | test_case 3, validation 3, other 1 |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailServiceLocaleTest.java` | 7 | test_case 3, business_rule 1, config 1 |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/EventDeleteStatisticsIntegrationTest.java` | 7 | test_case 3, convention 2, config 1 |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/CsvExportRenderer.java` | 5 | convention 5 |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/ZipExportRenderer.java` | 5 | convention 4, external_call 1 |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductRestoreIntegrationTest.java` | 5 | test_case 4, convention 1 |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/UserRoleConstraintIntegrationTest.java` | 5 | convention 2, test_case 2, suspicious 1 |
+| `frontend:services/productService.ts` | 5 | convention 5 |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoHealthIndicator.java` | 4 | other 3, config 1 |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/JsonExportRenderer.java` | 4 | other 2, config 1, convention 1 |
+| `frontend:services/apiClient.multipart.test.ts` | 3 | test_case 3 |
+| `frontend:services/categoryService.ts` | 3 | convention 3 |
+| `backend:src/main/java/com/matimeline/eventmanager/domain/ports/services/ExportRenderer.java` | 2 | convention 2 |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/MarkdownExportRenderer.java` | 2 | convention 1, suspicious 1 |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/PasswordResetEndpointsIntegrationTest.java` | 2 | external_call 1, test_case 1 |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/ProductArchivedFilterIntegrationTest.java` | 2 | config 1, other 1 |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/PasswordResetTokenCreateStatisticsIntegrationTest.java` | 2 | convention 1, test_case 1 |
+| `frontend:components/categories/CategoryDrawer.forbidden.test.tsx` | 2 | convention 2 |
+| `backend:src/main/java/com/matimeline/eventmanager/application/services/ExportRendererRegistry.java` | 1 | convention 1 |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/ProductEventCreationIntegrationTest.java` | 1 | test_case 1 |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eTestSupportProfileTest.java` | 1 | other 1 |
+| `frontend-app:[locale]/login/page.tsx` | 1 | suspicious 1 |
+| `frontend-app:[locale]/register/page.tsx` | 1 | convention 1 |
+| `frontend-app:[locale]/reset-password/page.tsx` | 1 | convention 1 |
+| `frontend:services/inlineErrorHandling.test.ts` | 1 | test_case 1 |
+| `frontend:services/inlineErrorHandling.ts` | 1 | convention 1 |
 
 ## Lignes rétrogradées {#t-demoted_lines}
 
 | Section | Ligne | Motif |
 |---|---|---|
-| rules | - Selon la javadoc, les clés de stockage sont fail-fast sans défaut en prod, et exportStorage n'a pas de défaut dans @Value. [#0041f21f67193426-2] [#3a8615964c21dcf2-1] | deducible |
-| rules | - Le registre choisit à chaque appel le premier renderer dont supports(format) est vrai, sinon il lève ExportFormatNotSupportedException. [#9864d2d7bcca1ab3-1] [#24e00cc82b89be48-1] | deducible |
-| rules | - Nom et lien sont échappés HTML dans le payload, et le template ne les échappe pas une seconde fois. [#1c9019c73cd45014-1] [#1c9019c73cd45014-3] [#4629fb93ffcd3c8e-1] | deducible |
-| rules | - L'indicateur de santé Brevo n'est actif qu'en profil prod. [#0f6cc63a210dd110-1] | deducible |
-| tests | - Les tests fixent que le CSV contient les sections PROFILE, CATEGORIES, PRODUCTS et EVENTS, avec la colonne themePreference au profil [#e208db06d82742f5-1] [#271360493da3f939-2]. | deducible |
-| tests | - Pour prouver une contrainte CHECK, un test passe par un UPDATE natif dans une transaction et attend une exception de la base [#787bb1a4209c63cf-1]. | deducible |
+| rules | - Les routes d'authentification listées court-circuitent l'intercepteur pour tous les statuts, par pathname strict ou suffixe [#17e17e177c3c1115-1] [#371afdf6b26a2509-1]. | deducible |
+| rules | - Un 400 donne un toast global, sauf pour /me/change-password [#ebe8f14e30148918-2] [#0ef3c42e524af8fe-1]. | deducible |
+| rules | - Le nom et le lien sont échappés en HTML dans htmlContent, tandis que to.name reçoit la valeur brute [#d01536aff913607e-1] [#d01536aff913607e-2]. | deducible |
+| rules | - Le nom stocké est un UUID plus une extension de 1 à 5 caractères [a-z0-9], sinon IllegalArgumentException [#a3b8181473ac234b-1] [#eb4a963db93f2f39-1]. | deducible |
+| tests | - Les tests fixent que le stockage local garde l'extension dans la référence sans séparateur de chemin, que load d'une référence inconnue renvoie un Optional vide et que delete est idempotent [#ec871153fc886e17-1] [#eee520fee957f2b3-1] [#b194bc3ae8e99e9d-1]. | deducible |
+| tests | - Les tests fixent qu'un token au jti révoqué reçoit 401 sur GET /api/auth/me et sur POST /api/auth/refresh, avec le code unauthorized pour le refresh [#0a2bcd07e504b7e3-1] [#5a8c5980899c0905-1]. | deducible |
+| tests | - Les tests de suppression d'événement fixent une seule instruction JDBC, EventNotFoundException pour un id inconnu et strictement moins d'instructions que l'ancienne séquence [#4078bc2b0bfc6735-1] [#896e9e32d1bc49a2-1] [#e4e100bbcecb3a95-1]. | deducible |
+
+## Règles métier {#t-business_rule}
+
+| Pointeur | Énoncé | Fait |
+|---|---|---|
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailService.java:79-84` | Si la clé Brevo est absente ou vide, l'envoi est ignoré sans appel HTTP et un warning est journalisé. | [#25504d1bcaa2eac3-1] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailServiceLocaleTest.java:113-119` | Commentaire : Selon le commentaire, l'envoi de l'email de réinitialisation ne doit lever aucune exception quelle que soit la locale, pour que forgot-password réponde 200. | [#d1ec0fa0c1cb7fa1-1] |
 
 ## Validations {#t-validation}
 
 | Pointeur | Énoncé | Fait |
 |---|---|---|
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportRendererRegistry.java:36` | Si aucun renderer ne supporte le format, le code lève ExportFormatNotSupportedException avec le nom du format. | [#24e00cc82b89be48-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapter.java:87-91` | Toute référence nulle, vide, contenant un séparateur de chemin ou la séquence '..' est rejetée avec IllegalArgumentException. | [#381d4591926b8291-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapter.java:92-95` | Le chemin résolu est normalisé puis vérifié comme commençant par le répertoire de base, sinon IllegalArgumentException. | [#381d4591926b8291-2] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapter.java:100-104` | L'extension doit correspondre à [a-z0-9]{1,5}, sinon IllegalArgumentException est levée. | [#6f4983af9414aa47-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/CsvExportRenderer.java:118-128` | Un champ dont le premier caractère est un signe de formule ou un saut de ligne est préfixé d'une apostrophe avant l'échappement CSV. | [#64f39489a8c24fb5-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapter.java:86-97` | resolveWithinBase rejette les références vides, contenant un séparateur ou '..', puis vérifie que le chemin résolu reste sous le répertoire de base. | [#68cad5d7a30c3ac4-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapter.java:99-104` | sanitizeExtension rejette avec IllegalArgumentException toute extension nulle ou ne correspondant pas à l'expression [a-z0-9]{1,5}. | [#eb4a963db93f2f39-1] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapterTest.java:60-64` | Le test fixe que store lève IllegalArgumentException lorsque l'extension fournie contient des caractères de chemin (../etc), et le commentaire indique que le service ne transmet que jpg, png et webp. | [#6088a4bc8a147988-1] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapterTest.java:67-70` | Le test fixe que load lève IllegalArgumentException pour une référence contenant une remontée de répertoire (../../etc/passwd). | [#43b2edbc9209445c-1] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapterTest.java:73-76` | Le test fixe que delete lève IllegalArgumentException pour une référence contenant une remontée de répertoire (../secret). | [#c2eb98df8ec4bd71-1] |
+| `frontend:services/apiClient.ts:170` | La seule route dont les 400 sont rendus inline est /me/change-password, les autres 400 gardent le toast global. | [#0ef3c42e524af8fe-1] |
 
 ## Faits suspects {#t-suspicious}
 
 | Pointeur | Énoncé | Fait |
 |---|---|---|
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportRendererRegistry.java:28-31` | La javadoc indique que l'exception est un garde-fou qui ne devrait pas survenir, les quatre formats ayant un renderer ; cette affirmation n'est pas vérifiable dans ce lot. | [#9554238efa1f9591-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenFinderJpaAdapter.java:51-53` | Selon le commentaire, le tri secondaire sur t.id rend le résultat déterministe sans ordonner par récence, et le code signale que ce critère devra changer si la TTL devient variable. | [#bbb3d5883ae25232-1] |
-| `mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/JwksEndpointIntegrationTest.java:64-66` | Un commentaire indique que si ce test renvoie 401, la whitelist de SecurityConfig a sauté et la découverte de clé du middleware boucle, et il interdit d'adapter l'assertion. | [#4c7add49c7251530-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/MarkdownExportRenderer.java:58-66` | Le rendu Markdown insère les noms et descriptions utilisateur tels quels, sans échappement des caractères Markdown, contrairement au rendu CSV qui neutralise les formules. | [#75dbb39e88e401fb-1] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/UserRoleConstraintIntegrationTest.java:68-73` | Les tests de rejet vérifient seulement la classe générique Exception, sans contrôler la contrainte précise qui a été violée. | [#ea446db909e94ef5-1] |
+| `frontend-app:[locale]/login/page.tsx:53-59` | La page traite le 401 inline alors que la javadoc de inlineErrorHandling.ts affirme que le 401 doit toujours rediriger vers la connexion. Le lot ne contient pas l'intercepteur apiClient, donc la cohérence entre les deux n'est pas vérifiable ici. | [#40bab75854fd0729-1] |
+
+## Endpoints {#t-endpoint}
+
+| Pointeur | Énoncé | Fait |
+|---|---|---|
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenEndpointIntegrationTest.java:33-36` | Javadoc : Selon la javadoc, l'appel passe par la vraie chaîne Spring Security, et un 200 ou 404 sans cookie JWT prouve que la chaîne dédiée E2eTestSupportSecurityConfig traite la requête avant la chaîne principale. | [#544f7c4603c7da6f-1] |
 
 ## Appels externes {#t-external_call}
 
 | Pointeur | Énoncé | Fait |
 |---|---|---|
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapter.java:49-55` | Les erreurs IOException à l'écriture sont enveloppées dans UncheckedIOException avec le message générique 'stockage indisponible'. | [#54e96a576c000c98-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailService.java:55` | L'adaptateur appelle l'API Brevo en HTTPS sur l'URL fixe de l'envoi SMTP transactionnel. | [#6bf7717834e2a9ca-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailService.java:69` | Le client HTTP RestClient est construit à partir du Builder Spring avec l'URL de base Brevo fixée. | [#7ccd1bdaa8b5dd43-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailService.java:79-84` | Si la clé API est vide ou absente, l'envoi est ignoré sans appel HTTP et un warning est journalisé. | [#60b20fc9921c8347-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailService.java:82` | En l'absence de clé, le warning journalisé indique que l'envoi de réinitialisation est ignoré en no-op. | [#1e979c5fd365d269-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailService.java:92-98` | L'appel HTTP POST transmet la clé dans l'en-tête api-key et attend une réponse sans corps. | [#60b20fc9921c8347-2] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailService.java:99-105` | Une RestClientException lors de l'envoi est journalisée par le nom de classe de l'exception et n'est pas propagée à l'appelant. | [#60b20fc9921c8347-3] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailService.java:129-133` | Le corps JSON envoyé à Brevo contient l'expéditeur, le destinataire, le sujet et le contenu HTML construit à partir du template. | [#1c9019c73cd45014-2] |
-| `mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailServiceLocaleTest.java:47` | Le test attend une requête POST vers https://api.brevo.com/v3/smtp/email pour l'envoi des emails de réinitialisation. | [#9b2c1209795d3f06-2] |
-| `mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailServiceLocaleTest.java:52` | BrevoEmailService est construit avec la clé d'API, l'adresse d'expéditeur, le nom d'expéditeur et l'URL de base de réinitialisation. | [#4bc4e453a2d3e3ef-1] |
-| `mytimeline:frontend/src/components/categories/CategoryDrawer.forbidden.test.tsx:47-64` | L'adaptateur forbiddenAdapter rejette toute requête avec un AxiosError de statut 403 et le code ERR_BAD_REQUEST. | [#816c1cb363af8aec-1] |
-| `mytimeline:frontend/src/components/categories/CategoryDrawer.forbidden.test.tsx:91` | Le beforeEach remplace l'adaptateur axios de apiClient par forbiddenAdapter, et afterEach le restaure. | [#786bfd2eb21fae71-1] |
-| `mytimeline:frontend/src/components/shared/DeleteConfirmDialog.forbidden.test.tsx:87-104` | L'adaptateur forbiddenAdapter rejette chaque requête par un AxiosError portant une réponse de statut 403. | [#88e3df5307a8bf3c-1] |
-| `mytimeline:frontend/src/components/timeline/TimelineEditHost.forbidden.test.tsx:94-114` | L'adaptateur failingAdapter rejette une requête par un AxiosError dont le code vaut ERR_BAD_RESPONSE pour un statut 500 et ERR_BAD_REQUEST sinon. | [#3dfad69d1ba98704-1] |
-| `mytimeline:frontend/src/contexts/AuthContext.themeSaveToast.test.tsx:74-95` | L'adaptateur failingAdapter rejette chaque requête par un AxiosError dont le statut et le texte viennent de STATUS_TEXT, et enregistre la requête dans seenRequests. | [#e7a92c366da1b75b-1] |
-
-## Requêtes de persistance {#t-persistence_query}
-
-| Pointeur | Énoncé | Fait |
-|---|---|---|
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenFinderJpaAdapter.java:54-58` | La requête JPQL est construite à partir du nom simple de l'entité PasswordResetTokenEntity et ne projette que la colonne token. | [#0c3b8b5d276d059a-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapter.java:47-55` | En cas d'IOException lors de la création du répertoire ou de l'écriture, store relève une UncheckedIOException avec le message générique stockage indisponible. | [#b7c7165d3a6fcdda-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailService.java:55-69` | L'adapter envoie les e-mails par POST à l'URL fixe https://api.brevo.com/v3/smtp/email, via un RestClient construit à partir du builder Spring. | [#6e099f05854af74d-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailService.java:91-98` | La requête HTTP vers Brevo transmet la clé dans l'en-tête api-key et envoie le corps en JSON, sans attendre de contenu de réponse. | [#825c5740d504fe2d-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailService.java:99-105` | Toute RestClientException levée par l'appel Brevo est journalisée par le nom de sa classe, puis n'est pas propagée au contrôleur. | [#825c5740d504fe2d-2] |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/ZipExportRenderer.java:49-51` | Une IOException levée pendant l'écriture du ZIP est encapsulée dans une UncheckedIOException avec le message zip export rendering failed. | [#956bcf8c3be783c0-1] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/PasswordResetEndpointsIntegrationTest.java:24-26` | Javadoc : Selon la javadoc de la classe, les tests de mot de passe oublié n'utilisent pas Brevo réel : sans BREVO_API_KEY, BrevoEmailService est un no-op qui journalise un warning et le flux ne échoue pas. | [#f61f6c016e2d6728-1] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/SessionRevocationIntegrationTest.java:77-80` | Commentaire : Selon le commentaire, le RateLimitingFilter limite le login par IP, et le test donne une remoteAddr unique à chaque POST /login. | [#8c4feacc4e67ccaa-1] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/SessionRevocationIntegrationTest.java:132-134` | La méthode login appelle le vrai endpoint POST /api/auth/login avec une remoteAddr générée par nextIp et attend un 200. | [#490dc234907bf9ef-1] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailServiceLocaleTest.java:44-53` | Le test intercepte l'appel HTTP POST vers https://api.brevo.com/v3/smtp/email avec MockRestServiceServer branché sur le RestClient.Builder. | [#f579b806f254c425-1] |
 
 ## Configuration {#t-config}
 
 | Pointeur | Énoncé | Fait |
 |---|---|---|
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailService.java:65-68` | La clé Brevo, l'expéditeur et l'URL de base de réinitialisation sont injectés par @Value avec des valeurs par défaut. | [#6860fb2193bb56f4-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoHealthIndicator.java:25-27` | L'indicateur de santé Brevo est un composant actif uniquement en profil prod. | [#0f6cc63a210dd110-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/config/StorageConfig.java:34-35` | Le bean avatarStorage construit un LocalStorageAdapter sur le chemin lu dans la propriété app.storage.avatar-path. | [#2e4be0a23920005b-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/config/StorageConfig.java:44-45` | Le bean exportStorage construit un LocalStorageAdapter sur le chemin lu dans la propriété app.storage.export-path, sans valeur par défaut dans l'annotation @Value. | [#3a8615964c21dcf2-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapter.java:17` | Javadoc : Selon la javadoc, le répertoire des exports RGPD est piloté par la clé app.storage.export-path. | [#74e2f13b9e1f877d-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailService.java:63-68` | L'URL de base du lien de réinitialisation est lue depuis app.frontend.reset-url-base, avec http://localhost:3000/reset-password par défaut. | [#34158f5b5cd49dab-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailService.java:63-65` | La clé Brevo est lue depuis la propriété brevo.api.key, avec une valeur vide par défaut. | [#34158f5b5cd49dab-2] |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoHealthIndicator.java:25-27` | Le HealthIndicator Brevo n'est enregistré que pour le profil prod, par l'annotation Profile. | [#178a2c7117dea14c-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/JsonExportRenderer.java:28-31` | Un ObjectMapper Jackson 3 dédié est construit avec l'écriture des dates en timestamps désactivée et l'indentation activée. | [#73bcf4b0dbb4cd09-1] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailServiceLocaleTest.java:123-124` | Avec une clé API vide, le test attend qu'aucun appel HTTP ne soit émis vers Brevo, quelle que soit la langue. | [#09a37a45eae01aae-1] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/EventDeleteStatisticsIntegrationTest.java:169` | Javadoc : Selon la javadoc, spring.jpa.open-in-view est actif, et le contrôleur et le service partagent alors le même contexte de persistance sur une requête HTTP. | [#3decbad8f1653486-1] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/ProductArchivedFilterIntegrationTest.java:35` | Javadoc : Selon la javadoc, les tests s'exécutent sur un Postgres jetable Testcontainers avec les migrations Flyway V1 à V7. | [#17ce43a8f74ebddd-1] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenEndpointIntegrationTest.java:43` | La classe active le profil e2e, qui s'ajoute au profil test hérité de AbstractPostgresIntegrationTest. | [#44932808c858ddf9-1] |
+| `frontend:services/apiClient.ts:15` | Le timeout par défaut de l'instance axios est fixé à 15 000 ms. | [#99da2bca3c86383d-1] |
 
 ## Conventions {#t-convention}
 
 | Pointeur | Énoncé | Fait |
 |---|---|---|
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportRendererRegistry.java:19-26` | Le registre est un @Component qui reçoit par injection une List<ExportRenderer> et la conserve telle quelle, sans résolution à la construction. | [#0f95d74bdc01daf9-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportRendererRegistry.java:32-38` | La résolution du renderer se fait à chaque appel par filtrage du flux sur renderer.supports(format), premier élément retenu, puis délégation à render(data). | [#9864d2d7bcca1ab3-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/domain/ports/services/ExportRenderer.java:14-20` | Le port est une interface à deux méthodes, supports(ExportFormat) et render(UserDataExport), sans dépendance technique dans sa signature. | [#5a6eff9a9f7b280a-2] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapter.java:29-40` | L'adapter de stockage local reçoit son répertoire de base en constructeur, le normalise en chemin absolu, et n'est pas annoté @Component (déclaration par StorageConfig selon la javadoc). | [#ce5f0740bbba8c0f-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapter.java:44-46` | Le nom de fichier stocké est généré par UUID suivi d'une extension, et jamais dérivé du nom client. | [#1a1fec74340ec77e-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailService.java:23-24` | Javadoc : Selon la javadoc, la clé API provient uniquement de la variable d'environnement BREVO_API_KEY et n'est jamais loggée. | [#5476099830e8d246-2] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailService.java:51` | L'adaptateur d'envoi d'email implémente le port domaine EmailService, placé dans le package infrastructure/adapters. | [#5476099830e8d246-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailService.java:120` | Le nom du destinataire est échappé HTML avant insertion dans le contenu HTML de l'email. | [#1c9019c73cd45014-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailService.java:124` | Le lien de réinitialisation est lui aussi échappé HTML avant insertion dans l'attribut href. | [#1c9019c73cd45014-3] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/PasswordResetEmailTemplate.java:66` | Le template de repli pour les locales absentes ou non supportées est le français. | [#2a75f7941ba689a8-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/PasswordResetEmailTemplate.java:85-96` | La résolution de locale ignore la casse et la sous-étiquette régionale, et retombe sur DEFAULT si aucune langue ne correspond. | [#424bd631166a816d-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/PasswordResetEmailTemplate.java:123-125` | Le rendu HTML insère le nom et le lien tels que fournis par l'appelant, sans les échapper à nouveau. | [#4629fb93ffcd3c8e-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/CsvExportRenderer.java:22` | Le renderer CSV implémente le port ExportRenderer et s'exécute comme composant Spring. | [#4f234ecd904073db-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/CsvExportRenderer.java:25-27` | Le renderer déclare ne supporter que le format CSV. | [#fa6fafef55f2cd1c-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/CsvExportRenderer.java:37-39` | Le contenu est encodé en UTF-8, puis le résultat porte le content type CSV et un nom de fichier produit par ExportFilenames. | [#7c87246f87425fe4-2] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/CsvExportRenderer.java:81-108` | L'échappement suit la convention RFC 4180, avec guillemets autour des champs contenant virgule, guillemet ou saut de ligne, et doublement des guillemets. | [#8b52ae90d30c1625-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/JsonExportRenderer.java:28-31` | Le renderer JSON construit un ObjectMapper dédié qui désactive l'écriture des dates en timestamps et active l'indentation. | [#fc2be60cf9bf7155-2] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/JsonExportRenderer.java:34-35` | Le renderer JSON déclare supporter uniquement le format ExportFormat.JSON. | [#1114fc5bba66c80e-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/MarkdownExportRenderer.java:17-18` | Javadoc : Selon la javadoc, le rendu Markdown est une construction de chaîne pure, sans bibliothèque externe. | [#1d96fec676022681-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/MarkdownExportRenderer.java:27` | Le renderer Markdown déclare supporter uniquement le format ExportFormat.MARKDOWN. | [#c4c80ba2f8748bd7-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/MarkdownExportRenderer.java:40` | Le rendu Markdown encode le document assemblé avec un StringBuilder en UTF-8 avant de produire le contenu. | [#0658ceb4cf11f4e3-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/MarkdownExportRenderer.java:112-115` | Le helper nz convertit une valeur null en chaîne vide pour l'affichage Markdown. | [#b8abbd0945ce595b-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/ZipExportRenderer.java:17-20` | Javadoc : Selon la javadoc, l'archive utilise java.util.zip.ZipOutputStream du JDK, sans dépendance externe. | [#9cb35dfd95c0c498-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/ZipExportRenderer.java:39` | Le renderer ZIP déclare supporter uniquement le format ExportFormat.ZIP. | [#f2cde3f78a600e26-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/ZipExportRenderer.java:44-54` | Le renderer ZIP construit l'archive entièrement en mémoire avec un ZipOutputStream sur un ByteArrayOutputStream. | [#35a51e5f0043333c-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/ZipExportRenderer.java:46-48` | Le renderer ZIP compose les rendus JSON, Markdown et CSV produits par les renderers dédiés, sous les noms data.json, data.md et data.csv, sans logique de rendu propre. | [#35a51e5f0043333c-3] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenFinderJpaAdapter.java:26-28` | L'adaptateur est annoté @Repository et @Profile("e2e") et implémente l'interface E2eResetTokenFinder. | [#1d2cefdb40c7b688-2] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenFinderJpaAdapter.java:37` | La lecture du token est encapsulée dans une transaction en lecture seule. | [#65c39a1eccedc90c-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenFinderJpaAdapter.java:63-64` | Commentaire : Selon le commentaire, setMaxResults est préféré à un get(0) sur la liste complète, et le code applique setMaxResults(1). | [#65c39a1eccedc90c-2] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/config/StorageConfig.java:11` | Javadoc : Selon la javadoc, les beans de stockage local sont câblés à raison d'un bean par usage, chacun sur un répertoire distinct. | [#0041f21f67193426-1] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/config/StorageConfig.java:21` | Javadoc : Selon la javadoc, chaque clé de configuration de stockage suit la convention fail-fast sans valeur par défaut en prod. | [#0041f21f67193426-2] |
-| `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/config/StorageConfig.java:26-27` | Javadoc : Selon la javadoc, deux beans de type StoragePort coexistent et chaque injection doit être désambiguïsée par un qualifier. | [#0041f21f67193426-3] |
-| `mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthControllerLegacyPasswordLoginTest.java:100-114` | Le compte de test est persisté dans une transaction committée via TransactionTemplate avant la requête de login. | [#ff6366e3eec33e46-1] |
-| `mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthControllerLegacyPasswordLoginTest.java:237-249` | La sonde de lignes committées s'exécute dans une TransactionTemplate distincte, configurée en lecture seule. | [#a308d2b3168c037c-1] |
-| `mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailServiceLocaleTest.java:44-53` | Le test construit BrevoEmailService sur un RestClient.Builder lié à un MockRestServiceServer, qui intercepte le corps de la requête sans appel réseau. | [#9b2c1209795d3f06-1] |
-| `mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailServiceLocaleTest.java:103-104` | Commentaire : Selon le commentaire, le champ to.name du payload Brevo reste brut et seul le corps HTML est échappé. | [#4559bbd1bd2631a7-1] |
-| `mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoHealthIndicatorTest.java:1` | La classe de test est déclarée dans le package infrastructure.adapters.email, comme le code testé. | [#563b745f049158f8-1] |
-| `mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/email/PasswordResetEmailTemplateTest.java:71-81` | Commentaire : Selon le commentaire, le nom est échappé en amont par BrevoEmailService, et le template ne le désèchappe ni ne le réinterprète. | [#c98d746fbad5bc42-1] |
-| `mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/export/ExportRenderersTest.java:58` | Convention : chaque renderer d'export expose render(UserDataExport) et renvoie un RenderedExport portant le contenu, le contentType et le filename. | [#4ee17d496acc51ca-2] |
-| `mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/export/ExportRenderersTest.java:167-168` | Le renderer ZIP est construit par injection par constructeur des trois renderers JSON, Markdown et CSV. | [#6d2409d878898434-1] |
-| `mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/export/ExportRenderersTest.java:195-199` | Convention : chaque renderer déclare supports(ExportFormat) et ne répond que pour son propre format, le renderer ZIP étant construit avec les trois autres renderers. | [#153b31b2dc43fcf8-1] |
-| `mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/PasswordResetTokenConcurrencyIntegrationTest.java:69-76` | Le seed du user est committé via TransactionTemplate.execute, car un appel direct au repository hors transaction ne persisterait pas. | [#02eb3824da89c300-1] |
-| `mytimeline:frontend/src/components/shared/DeleteConfirmDialog.forbidden.test.tsx:135` | Le beforeEach remplace seulement l'adaptateur HTTP d'apiClient, si bien que l'intercepteur et les services réels sont exécutés. | [#e65dbfcdd2a02b5d-1] |
-| `mytimeline:frontend/src/components/timeline/TimelineEditHost.forbidden.test.tsx:136` | Le beforeEach remplace seulement l'adaptateur HTTP d'apiClient par forbiddenAdapter, avec l'intercepteur réel en place. | [#309404f585113b26-1] |
-| `mytimeline:frontend/src/contexts/AuthContext.themeSaveToast.test.tsx:146` | Chaque cas installe failingAdapter avec le statut testé sur apiClient, sans mocker le service de préférences. | [#e99e519a0b0bae53-3] |
+| `backend:src/main/java/com/matimeline/eventmanager/application/services/ExportRendererRegistry.java:32-37` | Le registre choisit le renderer en filtrant la liste injectée par Spring avec ExportRenderer.supports, puis délègue le rendu au premier renderer retenu. | [#93753e4c74dda84a-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/domain/ports/services/ExportRenderer.java:8-12` | Javadoc : Selon la javadoc, chaque format a son implémentation de rendu côté infrastructure, car elle dépend de bibliothèques techniques. | [#918b649e6b91fa71-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/domain/ports/services/ExportRenderer.java:17` | Le port déclare la méthode supports(ExportFormat) qui indique si un renderer gère un format donné. | [#39d194a0d0d72617-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapter.java:17` | Javadoc : Selon la javadoc, l'exportStorage et l'avatarStorage utilisent des répertoires distincts, sans hypothèse partagée. | [#4f47db1f17f1bf57-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapter.java:18-19` | Javadoc : Selon la javadoc, les beans sont déclarés par StorageConfig et chaque clé suit la convention #34, sans valeur par défaut en prod. | [#2b6d73515c064a0a-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapter.java:38-40` | Le constructeur normalise le chemin de base en chemin absolu normalisé à partir de basePath. | [#1029068ca3950c15-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapter.java:46` | La méthode store génère le nom de fichier avec un UUID suivi de l'extension validée, sans reprendre le nom fourni par le client. | [#a3b8181473ac234b-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapter.java:60-66` | load renvoie un Optional vide si le fichier n'existe pas, sinon lit tous les octets, et enveloppe une IOException dans UncheckedIOException. | [#2dff3849dfa0b56d-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapter.java:73-79` | delete supprime le fichier de façon idempotente avec Files.deleteIfExists et enveloppe une IOException dans UncheckedIOException. | [#7e28ee75a601515f-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailService.java:86-88` | Commentaire : Selon le commentaire, la locale nulle, vide ou inconnue retombe sur le français via PasswordResetEmailTemplate.resolve. | [#5051ad54cf7f58e0-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailService.java:115-120` | Le nom du destinataire est échappé en HTML par HtmlUtils.htmlEscape avant insertion dans htmlContent, tandis que le champ JSON to.name reçoit la valeur brute. | [#d01536aff913607e-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailService.java:121-124` | Le lien de réinitialisation est échappé en HTML par HtmlUtils.htmlEscape avant insertion dans htmlContent. | [#d01536aff913607e-2] |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/CsvExportRenderer.java:25-27` | Le renderer CSV déclare un seul format via supports(ExportFormat), en comparant à ExportFormat.CSV. | [#56c3efc7de673567-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/CsvExportRenderer.java:37-39` | Le contenu CSV est encodé en UTF-8, et le nom de fichier est produit par ExportFilenames.forFormat. | [#93efbe870a5e7725-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/CsvExportRenderer.java:101` | Le rendu CSV passe chaque valeur par neutralizeFormula avant l'échappement RFC 4180. | [#1323a64f4a7c32e4-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/CsvExportRenderer.java:102-107` | Un champ contenant une virgule, un guillemet, un saut de ligne ou un retour chariot est entouré de guillemets, et les guillemets internes sont doublés. | [#1323a64f4a7c32e4-2] |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/CsvExportRenderer.java:118-126` | Une valeur commençant par = + - @, une tabulation, un retour chariot ou un saut de ligne reçoit une apostrophe en préfixe. | [#0bcf5a6ce1ee7408-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/JsonExportRenderer.java:34-36` | Le renderer JSON déclare un seul format via supports(ExportFormat), en comparant à ExportFormat.JSON. | [#0e52202a33fe7ef5-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/MarkdownExportRenderer.java:41-42` | Le rendu Markdown produit son nom de fichier via ExportFilenames.forFormat, comme les autres renderers. | [#9957b692e263dfee-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/ZipExportRenderer.java:20` | Javadoc : Selon la javadoc, l'archive ZIP est produite avec java.util.zip.ZipOutputStream du JDK, sans dépendance externe. | [#1fa3a7d69ef2dbc2-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/ZipExportRenderer.java:38-40` | supports n'accepte que le format ExportFormat.ZIP, ce qui fait de ce renderer le choix pour le format ZIP. | [#2d889486849da46c-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/ZipExportRenderer.java:46-48` | render délègue à trois renderers existants (JSON, Markdown, CSV) et écrit chaque rendu comme une entrée data.json, data.md et data.csv de la même archive. | [#19b3fc4ec346a739-1] |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/ZipExportRenderer.java:52-53` | Le résultat est un RenderedExport portant le contenu binaire, le type MIME de ExportFormat.ZIP et un nom de fichier produit par ExportFilenames.forFormat. | [#19b3fc4ec346a739-2] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductRestoreIntegrationTest.java:33-36` | Javadoc : Selon la javadoc, le test parcourt la chaîne Spring Security réelle avec un CallerResolver réel et du SQL natif sur Postgres, sans service mocké. | [#e5717bf26868c222-1] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/SessionRevocationIntegrationTest.java:245-246` | Commentaire : Selon le commentaire, JwtFilter ignore /api/auth/**, donc GET /me doit vérifier lui-même la révocation du jti. | [#c7f72c46ae6db822-1] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/EventDeleteStatisticsIntegrationTest.java:49-51` | Les tests de ce fichier étendent AbstractPostgresIntegrationTest et sont annotés @SpringBootTest et @Transactional. | [#1bdc8dc5c45d822e-1] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/EventDeleteStatisticsIntegrationTest.java:70-71` | Une implémentation concrète EventRepositoryJpaImpl est injectée uniquement pour le contrôle négatif, afin d'accéder aux méthodes héritées de SimpleJpaRepository. | [#c32c8b7a4fe1d4b5-1] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/UserRoleConstraintIntegrationTest.java:38-41` | Javadoc : Selon la javadoc, l'insertion en SQL natif contourne les validations JPA pour frapper directement les contraintes de la base. | [#f2815b194b4973c2-1] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/UserRoleConstraintIntegrationTest.java:42-55` | La méthode insertUser insère un utilisateur par EntityManager.createNativeQuery, puis appelle flush. | [#f2815b194b4973c2-2] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/PasswordResetTokenCreateStatisticsIntegrationTest.java:68-73` | L'appel tokenRepository.create est exécuté dans un TransactionTemplate distinct de celui qui committe le seed utilisateur. | [#a3b6870a1696bb9b-1] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenEndpointIntegrationTest.java:63-64` | Les dates de référence des tokens sont calculées à partir du bean Clock injecté, et non via LocalDateTime.now() sans argument. | [#9fab6efb3012109b-1] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenEndpointIntegrationTest.java:115` | Commentaire : Selon le commentaire, l'id d'un User créé reste null, car @GeneratedValue refuse un id pré-assigné au persist. | [#9f4165a4a9055c11-1] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenEndpointIntegrationTest.java:126-129` | Commentaire : Selon le commentaire, seedToken reproduit la construction de PasswordResetServiceImpl, avec un id UUID assigné applicativement. | [#1fc3552c7ac7fc5a-1] |
+| `frontend-app:[locale]/register/page.tsx:48-62` | La page d'inscription distingue le 409 par axios.isAxiosError et error.response?.status, puis le rattache au champ username via form.setError, sans passer d'option d'opt-out. | [#64e89ce12c6df323-1] |
+| `frontend-app:[locale]/reset-password/page.tsx:47-62` | La page de réinitialisation distingue le 400 par axios.isAxiosError et error.response?.status, puis affiche un message inline, et appelle resetPassword sans option d'opt-out. | [#c0c5452783be8e61-1] |
+| `frontend:components/categories/CategoryDrawer.forbidden.test.tsx:46-64` | Le test définit un adaptateur axios qui rejette toute requête avec une AxiosError portant une réponse de statut 403. | [#4a673f4c70063ebf-1] |
+| `frontend:components/categories/CategoryDrawer.forbidden.test.tsx:91` | Le test remplace l'adaptateur de transport de apiClient par forbiddenAdapter, et afterEach restaure l'adaptateur d'origine. | [#778f32aa13a579b0-1] |
+| `frontend:services/apiClient.ts:17-24` | Le client axios unique est créé avec baseURL issue de NEXT_PUBLIC_API_URL, withCredentials activé, le timeout par défaut et un en-tête Content-Type application/json au niveau de l'instance. | [#4406c434ee5030c8-1] |
+| `frontend:services/apiClient.ts:54-61` | Un intercepteur de requête détecte un corps FormData, passe son timeout à 0 et retire l'en-tête Content-Type de l'instance pour les envois multipart. | [#708cf9ff39788961-1] |
+| `frontend:services/apiClient.ts:77-88` | Un rafraîchissement périodique du token est lancé par setInterval toutes les 6 heures, uniquement côté navigateur, et ses erreurs sont journalisées en debug sans toast. | [#9bce6d27ef674db6-1] |
+| `frontend:services/apiClient.ts:114-120` | Une liste de routes d'authentification (login, register, mot de passe oublié ou réinitialisé, me) court-circuite le traitement global de l'intercepteur de réponse pour tous les statuts. | [#17e17e177c3c1115-1] |
+| `frontend:services/apiClient.ts:143` | La correspondance des routes d'authentification se fait sur le pathname, par égalité stricte ou par suffixe ancré, et non par sous-chaîne. | [#371afdf6b26a2509-1] |
+| `frontend:services/apiClient.ts:202-212` | Un timeout (code ECONNABORTED) appelle networkStatusStore.reportTimeout, et un statut 5xx appelle networkStatusStore.reportServerError, sauf un 500 que la requête déclare traiter inline. | [#ebe8f14e30148918-1] |
+| `frontend:services/apiClient.ts:217-222` | Un 400 déclenche un toast global de validation, sauf si l'URL figure dans la liste des routes à validation inline. | [#ebe8f14e30148918-2] |
+| `frontend:services/apiClient.ts:223-232` | Un 401 affiche un toast de session expirée puis redirige vers la page de login de la locale courante après 1 500 ms, avec un verrou isRedirecting qui évite les redirections multiples. | [#ebe8f14e30148918-3] |
+| `frontend:services/apiClient.ts:233-248` | Commentaire : Un 403 ne déclenche ni déconnexion ni redirection vers /login et ne prend pas le verrou isRedirecting, selon le commentaire de la branche. | [#ebe8f14e30148918-4] |
+| `frontend:services/apiClient.ts:262-269` | Le 403 est journalisé avec console.error uniquement avec url, method et data, sans les en-têtes de la requête, selon le commentaire qui interdit de logger les en-têtes. | [#ebe8f14e30148918-5] |
+| `frontend:services/apiClient.ts:270-272` | Le toast d'accès refusé d'un 403 n'est pas affiché lorsque la configuration de la requête déclare traiter le 403 inline. | [#ebe8f14e30148918-6] |
+| `frontend:services/apiClient.ts:273-281` | Le toast de erreur serveur d'un 500 n'est pas affiché lorsque la configuration de la requête déclare traiter le 500 inline. | [#ebe8f14e30148918-7] |
+| `frontend:services/categoryService.ts:27-31` | Les erreurs inattendues sont journalisées via safeErrorMessage et jamais avec l'objet axios brut. | [#0d952a09524edf62-1] |
+| `frontend:services/categoryService.ts:59-66` | createCategory transmet un paramètre options optionnel à apiClient.post, puis valide la réponse avec categorySchema.parse. | [#cd5e05d5c5026de5-1] |
+| `frontend:services/categoryService.ts:104-113` | deleteCategory étale les options dans la configuration axios de apiClient.delete et ajoute le paramètre reassignToCategoryId seulement s'il est fourni. | [#af898f016c5f4e41-1] |
+| `frontend:services/inlineErrorHandling.ts:35-43` | Le fichier étend l'interface AxiosRequestConfig d'axios par augmentation de module pour ajouter le champ optionnel inlineHandledStatuses. | [#327d68bab6520eaf-1] |
+| `frontend:services/productService.ts:11-14` | Commentaire : Selon le commentaire, l'objet axios brut ne doit jamais être journalisé, et la fonction ne journalise qu'un message assaini via safeErrorMessage avant de relancer l'erreur. | [#bdb861ee54c6c577-2] |
+| `frontend:services/productService.ts:18-39` | createProduct transmet le paramètre options comme troisième argument de apiClient.post, ce qui porte l'opt-out inline vers la configuration axios. | [#bb0850e84ca1be19-1] |
+| `frontend:services/productService.ts:55-66` | updateProduct transmet le paramètre options comme troisième argument de apiClient.patch. | [#0f7befc796712e2e-1] |
+| `frontend:services/productService.ts:91-97` | deleteProduct transmet le paramètre options comme second argument de apiClient.delete. | [#38fe9f77232a7cff-1] |
+| `frontend:services/productService.ts:124-131` | restoreProduct n'accepte aucun paramètre options et appelle apiClient.post sans configuration, donc aucun statut n'y est déclaré inline. | [#145742ba350d6f89-1] |

@@ -2,17 +2,45 @@
  "project": "mytimeline",
  "repos": [
   {
-   "name": "mytimeline",
-   "root": "../../..",
+   "name": "backend",
+   "root": "../../../backend",
    "language": "java",
    "include": [
-    "backend/src/main/java/**/*.java",
-    "backend/src/test/java/**/*.java",
-    "backend/src/main/resources/db/**/*.sql",
-    "frontend/src/**/*.ts",
-    "frontend/src/**/*.tsx",
-    "frontend/app/**/*.ts",
-    "frontend/app/**/*.tsx"
+    "src/main/java/**/*.java",
+    "src/test/java/**/*.java",
+    "src/main/resources/db/**/*.sql"
+   ],
+   "exclude": [
+    "**/.env*",
+    "**/application*.properties",
+    "**/application*.y*ml",
+    "**/*.pem",
+    "**/*secret*"
+   ]
+  },
+  {
+   "name": "frontend",
+   "root": "../../../frontend/src",
+   "language": "typescript",
+   "include": [
+    "**/*.ts",
+    "**/*.tsx"
+   ],
+   "exclude": [
+    "**/.env*",
+    "**/application*.properties",
+    "**/application*.y*ml",
+    "**/*.pem",
+    "**/*secret*"
+   ]
+  },
+  {
+   "name": "frontend-app",
+   "root": "../../../frontend/app",
+   "language": "typescript",
+   "include": [
+    "**/*.ts",
+    "**/*.tsx"
    ],
    "exclude": [
     "**/.env*",
@@ -26,17 +54,32 @@
  "seeds": {
   "entities": true,
   "routed_folders": true,
-  "extra": []
+  "extra": [
+   "Event",
+   "Category",
+   "Product",
+   "Session",
+   "ExportJob",
+   "PasswordReset",
+   "User"
+  ]
  },
  "edges": {
   "source": "regex"
  },
- "tech_folders": [],
+ "tech_folders": [
+  "__tests__",
+  "components",
+  "contexts",
+  "hooks",
+  "styles",
+  "types"
+ ],
  "thresholds": {
   "min_seed_files": 6,
-  "merge_ratio": 0.6,
+  "merge_ratio": 0.9,
   "max_merge_target": 40,
-  "pack_min_kb": 60,
+  "pack_min_kb": 15,
   "replay_agent_new_leftover": 10
  },
  "motifs_file": "motifs.json",

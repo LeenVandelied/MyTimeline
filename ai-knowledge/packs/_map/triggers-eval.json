@@ -1,43 +1,43 @@
 {
  "scores": {
-  "requests": 8,
-  "simple": 3,
-  "cross": 2,
+  "requests": 33,
+  "simple": 18,
+  "cross": 12,
   "technical": 3,
   "simple_expected_selected": 1.0,
-  "simple_sole_domain": 1.0,
+  "simple_sole_domain": 0.944,
   "simple_by_variant": {
    "entité": {
-    "n": 1,
+    "n": 6,
     "selected": 1.0,
     "sole": 1.0
    },
    "mots-clés": {
-    "n": 1,
+    "n": 6,
     "selected": 1.0,
     "sole": 1.0
    },
    "route": {
-    "n": 1,
+    "n": 6,
     "selected": 1.0,
-    "sole": 1.0
+    "sole": 0.833
    }
   },
   "cross_both_selected": 1.0,
   "technical_selected": 1.0,
-  "mean_selected_packs": 1.12,
-  "mean_selected_domains_simple": 1.0
+  "mean_selected_packs": 1.45,
+  "mean_selected_domains_simple": 1.06
  },
  "requests": [
   {
    "kind": "simple",
    "variant": "mots-clés",
    "expected": [
-    "timeline"
+    "category"
    ],
-   "text": "Ajouter un filtre sur user et utilisateur.",
+   "text": "Ajouter un filtre sur category et catégorie.",
    "selected": {
-    "timeline": "mot-clé user"
+    "category": "mot-clé category"
    },
    "ok": true,
    "sole": true
@@ -46,11 +46,11 @@
    "kind": "simple",
    "variant": "route",
    "expected": [
-    "timeline"
+    "category"
    ],
-   "text": "Corriger l'écran de la route /api/auth.",
+   "text": "Corriger l'écran de la route /api/categories.",
    "selected": {
-    "timeline": "motif de nom **/*auth*"
+    "category": "mot-clé category"
    },
    "ok": true,
    "sole": true
@@ -59,11 +59,11 @@
    "kind": "simple",
    "variant": "entité",
    "expected": [
-    "timeline"
+    "category"
    ],
-   "text": "Ajouter un champ à l'entité UserEntity.",
+   "text": "Ajouter un champ à l'entité CategoryEntity.",
    "selected": {
-    "timeline": "mot-clé user"
+    "category": "mot-clé category"
    },
    "ok": true,
    "sole": true
@@ -72,12 +72,13 @@
    "kind": "croisée",
    "variant": "deux domaines",
    "expected": [
-    "timeline",
-    "timeline"
+    "category",
+    "event"
    ],
-   "text": "Afficher user dans l'écran user.",
+   "text": "Afficher category dans l'écran event.",
    "selected": {
-    "timeline": "mot-clé user"
+    "event": "mot-clé event",
+    "category": "mot-clé category"
    },
    "ok": true,
    "sole": false
@@ -86,12 +87,360 @@
    "kind": "croisée",
    "variant": "domaine et transversal",
    "expected": [
-    "timeline",
+    "category",
+    "integrations"
+   ],
+   "text": "Revoir la règle integrations pour category.",
+   "selected": {
+    "category": "mot-clé category",
+    "integrations": "motif integrations (domaine dans crosses)"
+   },
+   "ok": true,
+   "sole": false
+  },
+  {
+   "kind": "simple",
+   "variant": "mots-clés",
+   "expected": [
+    "event"
+   ],
+   "text": "Ajouter un filtre sur event et événement.",
+   "selected": {
+    "event": "mot-clé event"
+   },
+   "ok": true,
+   "sole": true
+  },
+  {
+   "kind": "simple",
+   "variant": "route",
+   "expected": [
+    "event"
+   ],
+   "text": "Corriger l'écran de la route /api/events.",
+   "selected": {
+    "event": "mot-clé event"
+   },
+   "ok": true,
+   "sole": true
+  },
+  {
+   "kind": "simple",
+   "variant": "entité",
+   "expected": [
+    "event"
+   ],
+   "text": "Ajouter un champ à l'entité EventEntity.",
+   "selected": {
+    "event": "mot-clé event"
+   },
+   "ok": true,
+   "sole": true
+  },
+  {
+   "kind": "croisée",
+   "variant": "deux domaines",
+   "expected": [
+    "event",
+    "export"
+   ],
+   "text": "Afficher event dans l'écran export.",
+   "selected": {
+    "event": "mot-clé event",
+    "export": "mot-clé export"
+   },
+   "ok": true,
+   "sole": false
+  },
+  {
+   "kind": "croisée",
+   "variant": "domaine et transversal",
+   "expected": [
+    "event",
+    "integrations"
+   ],
+   "text": "Revoir la règle integrations pour event.",
+   "selected": {
+    "event": "mot-clé event",
+    "integrations": "motif integrations (domaine dans crosses)"
+   },
+   "ok": true,
+   "sole": false
+  },
+  {
+   "kind": "simple",
+   "variant": "mots-clés",
+   "expected": [
+    "export"
+   ],
+   "text": "Ajouter un filtre sur export et exportjob.",
+   "selected": {
+    "export": "mot-clé export"
+   },
+   "ok": true,
+   "sole": true
+  },
+  {
+   "kind": "simple",
+   "variant": "route",
+   "expected": [
+    "export"
+   ],
+   "text": "Corriger l'écran de la route /api/export.",
+   "selected": {
+    "export": "mot-clé export"
+   },
+   "ok": true,
+   "sole": true
+  },
+  {
+   "kind": "simple",
+   "variant": "entité",
+   "expected": [
+    "export"
+   ],
+   "text": "Ajouter un champ à l'entité ExportJobEntity.",
+   "selected": {
+    "export": "mot-clé export"
+   },
+   "ok": true,
+   "sole": true
+  },
+  {
+   "kind": "croisée",
+   "variant": "deux domaines",
+   "expected": [
+    "export",
+    "product"
+   ],
+   "text": "Afficher export dans l'écran product.",
+   "selected": {
+    "product": "mot-clé product",
+    "export": "mot-clé export"
+   },
+   "ok": true,
+   "sole": false
+  },
+  {
+   "kind": "croisée",
+   "variant": "domaine et transversal",
+   "expected": [
+    "export",
+    "authorization"
+   ],
+   "text": "Revoir la règle authorization pour export.",
+   "selected": {
+    "user": "motif de nom **/*auth*",
+    "export": "mot-clé export",
+    "authorization": "motif authorization (domaine dans crosses)"
+   },
+   "ok": true,
+   "sole": false
+  },
+  {
+   "kind": "simple",
+   "variant": "mots-clés",
+   "expected": [
+    "product"
+   ],
+   "text": "Ajouter un filtre sur product et produit.",
+   "selected": {
+    "product": "mot-clé product"
+   },
+   "ok": true,
+   "sole": true
+  },
+  {
+   "kind": "simple",
+   "variant": "route",
+   "expected": [
+    "product"
+   ],
+   "text": "Corriger l'écran de la route users/user-1/products.",
+   "selected": {
+    "user": "mot-clé user",
+    "product": "mot-clé product"
+   },
+   "ok": true,
+   "sole": false
+  },
+  {
+   "kind": "simple",
+   "variant": "entité",
+   "expected": [
+    "product"
+   ],
+   "text": "Ajouter un champ à l'entité ProductEntity.",
+   "selected": {
+    "product": "mot-clé product"
+   },
+   "ok": true,
+   "sole": true
+  },
+  {
+   "kind": "croisée",
+   "variant": "deux domaines",
+   "expected": [
+    "product",
+    "session"
+   ],
+   "text": "Afficher product dans l'écran session.",
+   "selected": {
+    "product": "mot-clé product",
+    "session": "mot-clé session"
+   },
+   "ok": true,
+   "sole": false
+  },
+  {
+   "kind": "croisée",
+   "variant": "domaine et transversal",
+   "expected": [
+    "product",
+    "integrations"
+   ],
+   "text": "Revoir la règle integrations pour product.",
+   "selected": {
+    "product": "mot-clé product",
+    "integrations": "motif integrations (domaine dans crosses)"
+   },
+   "ok": true,
+   "sole": false
+  },
+  {
+   "kind": "simple",
+   "variant": "mots-clés",
+   "expected": [
+    "session"
+   ],
+   "text": "Ajouter un filtre sur session et jwt.",
+   "selected": {
+    "session": "mot-clé session"
+   },
+   "ok": true,
+   "sole": true
+  },
+  {
+   "kind": "simple",
+   "variant": "route",
+   "expected": [
+    "session"
+   ],
+   "text": "Corriger l'écran de la route /api/sessions.",
+   "selected": {
+    "session": "mot-clé session"
+   },
+   "ok": true,
+   "sole": true
+  },
+  {
+   "kind": "simple",
+   "variant": "entité",
+   "expected": [
+    "session"
+   ],
+   "text": "Ajouter un champ à l'entité SessionEntity.",
+   "selected": {
+    "session": "mot-clé session"
+   },
+   "ok": true,
+   "sole": true
+  },
+  {
+   "kind": "croisée",
+   "variant": "deux domaines",
+   "expected": [
+    "session",
+    "user"
+   ],
+   "text": "Afficher session dans l'écran user.",
+   "selected": {
+    "user": "mot-clé user",
+    "session": "mot-clé session"
+   },
+   "ok": true,
+   "sole": false
+  },
+  {
+   "kind": "croisée",
+   "variant": "domaine et transversal",
+   "expected": [
+    "session",
+    "authorization"
+   ],
+   "text": "Revoir la règle authorization pour session.",
+   "selected": {
+    "user": "motif de nom **/*auth*",
+    "session": "mot-clé session",
+    "authorization": "motif authorization (domaine dans crosses)"
+   },
+   "ok": true,
+   "sole": false
+  },
+  {
+   "kind": "simple",
+   "variant": "mots-clés",
+   "expected": [
+    "user"
+   ],
+   "text": "Ajouter un filtre sur user et utilisateur.",
+   "selected": {
+    "user": "mot-clé user"
+   },
+   "ok": true,
+   "sole": true
+  },
+  {
+   "kind": "simple",
+   "variant": "route",
+   "expected": [
+    "user"
+   ],
+   "text": "Corriger l'écran de la route /api/auth.",
+   "selected": {
+    "user": "mot-clé auth"
+   },
+   "ok": true,
+   "sole": true
+  },
+  {
+   "kind": "simple",
+   "variant": "entité",
+   "expected": [
+    "user"
+   ],
+   "text": "Ajouter un champ à l'entité UserEntity.",
+   "selected": {
+    "user": "mot-clé user"
+   },
+   "ok": true,
+   "sole": true
+  },
+  {
+   "kind": "croisée",
+   "variant": "deux domaines",
+   "expected": [
+    "user",
+    "category"
+   ],
+   "text": "Afficher user dans l'écran category.",
+   "selected": {
+    "user": "mot-clé user",
+    "category": "mot-clé category"
+   },
+   "ok": true,
+   "sole": false
+  },
+  {
+   "kind": "croisée",
+   "variant": "domaine et transversal",
+   "expected": [
+    "user",
     "authorization"
    ],
    "text": "Revoir la règle authorization pour user.",
    "selected": {
-    "timeline": "mot-clé user",
+    "user": "mot-clé user",
     "authorization": "motif authorization (domaine dans crosses)"
    },
    "ok": true,
@@ -101,11 +450,11 @@
    "kind": "technique",
    "variant": "couche",
    "expected": [
-    "backend-socle"
+    "backend-core"
    ],
    "text": "Mettre à jour la couche infrastructure.",
    "selected": {
-    "backend-socle": "couche mytimeline/infrastructure"
+    "backend-core": "couche backend/infrastructure"
    },
    "ok": true,
    "sole": false
@@ -114,11 +463,11 @@
    "kind": "technique",
    "variant": "couche",
    "expected": [
-    "frontend-socle"
+    "frontend-app"
    ],
-   "text": "Mettre à jour la couche resources.",
+   "text": "Mettre à jour la couche [locale].",
    "selected": {
-    "frontend-socle": "couche mytimeline/resources"
+    "frontend-app": "couche frontend-app/[locale]"
    },
    "ok": true,
    "sole": false
@@ -127,15 +476,30 @@
    "kind": "technique",
    "variant": "couche",
    "expected": [
-    "migrations"
+    "frontend-core"
    ],
-   "text": "Mettre à jour la couche db.",
+   "text": "Mettre à jour la couche components.",
    "selected": {
-    "migrations": "couche mytimeline/db"
+    "frontend-core": "couche frontend/components"
    },
    "ok": true,
    "sole": false
   }
  ],
- "failures": []
+ "failures": [
+  {
+   "kind": "simple",
+   "variant": "route",
+   "expected": [
+    "product"
+   ],
+   "text": "Corriger l'écran de la route users/user-1/products.",
+   "selected": {
+    "user": "mot-clé user",
+    "product": "mot-clé product"
+   },
+   "ok": true,
+   "sole": false
+  }
+ ]
 }

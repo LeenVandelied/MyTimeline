@@ -1,0 +1,9 @@
+{"id": "A7", "verdict": "confirmed",
+ "evidence": [
+  {"file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/domain/models/export/ExportJob.java", "line_start": 60, "line_end": 60, "quote": "this.status = ExportJobStatus.FAILED;"},
+  {"file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/domain/models/export/ExportJob.java", "line_start": 66, "line_end": 66, "quote": "return status == ExportJobStatus.COMPLETED"},
+  {"file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ExportJobRepositoryJpaImpl.java", "line_start": 50, "line_end": 50, "quote": "// Transitions de statut : seuls ces champs évoluent après création."},
+  {"file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/application/services/AsyncExportRunner.java", "line_start": 82, "line_end": 82, "quote": "job.markFailed(\"GENERATION_ERROR\");"}
+ ],
+ "statement": "Les 13 fichiers lus portent les transitions d'un seul cycle de vie, celui du job d'export (PENDING, RUNNING, COMPLETED, FAILED), et aucun fichier lu hors du domaine export n'y porte de machine d'états.",
+ "proposed_decision": "non créé : state-machine, la machine d'états du job d'export reste absorbée par le domaine export"}

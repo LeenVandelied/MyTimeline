@@ -1,60 +1,27 @@
 [
  {
-  "id": "A1",
-  "seeds": [
-   "CategoryEntity",
-   "EventEntity",
-   "ExportJobEntity",
-   "PasswordResetTokenEntity",
-   "ProductEntity",
-   "SessionEntity",
-   "UserEntity"
-  ],
-  "confidence": "medium",
-  "decision": "un seul pack domain timeline, pivot UserEntity",
-  "rule": "R2 imports 37/37 (CategoryEntity), 16/16 (EventEntity), 9/10 (ProductEntity), 8/",
-  "files": 12,
-  "tests": 0,
-  "evidence_unresolved": [],
-  "status": "prepared"
- },
- {
-  "id": "A2",
-  "seeds": [
-   "ProductEntity"
-  ],
-  "confidence": "medium",
-  "decision": "fondu dans timeline",
-  "rule": "R7 pack sous pack_min_kb=60, liens 9/10 vers UserEntity",
-  "files": 3,
-  "tests": 8,
-  "evidence_unresolved": [],
-  "status": "prepared"
- },
- {
   "id": "A3",
   "seeds": [
-   "ExportJobEntity"
+   "PasswordReset",
+   "PasswordResetTokenEntity"
   ],
   "confidence": "medium",
-  "decision": "fondu dans timeline",
-  "rule": "R7 pack sous pack_min_kb=60, liens 2/2 vers UserEntity",
-  "files": 1,
-  "tests": 0,
+  "decision": "user",
+  "rule": "R3 fusion par le script à 13 liens sur 14 vers User, PasswordReset ne dépasse pa",
+  "files": 12,
+  "tests": 7,
   "evidence_unresolved": [],
   "status": "prepared"
  },
  {
   "id": "A4",
   "seeds": [
-   "EventEntity",
-   "CategoryEntity",
-   "ProductEntity"
+   "Event"
   ],
   "confidence": "low",
-  "decision": "les composants nommés timeline, event, product, category, auth, theme ou conflict vont à timeline par alias, le reste (ui, layout, styles, lib générique) reste au socle frontend",
-  "rule": "R3 aucun import mesuré (arêtes de groupe vides), décision par noms de fichiers",
-  "files": 6,
+  "decision": "event",
+  "rule": "R3 dossier d'écran sans entité, alias timeline rattaché au pack qui porte la chr",
+  "files": 12,
   "tests": 8,
   "evidence_unresolved": [],
   "status": "prepared"
@@ -62,40 +29,68 @@
  {
   "id": "A5",
   "seeds": [
-   "PasswordResetTokenEntity",
-   "ExportJobEntity"
+   "User",
+   "Session"
   ],
-  "confidence": "low",
-  "decision": "oui, pack transversal batch",
-  "rule": "R5 motif mesuré (14 fichiers à 3 occurrences ou plus)",
-  "files": 3,
-  "tests": 0,
+  "confidence": "medium",
+  "decision": "user",
+  "rule": "R3 écrans d'authentification sans entité, suivent le pack qui porte AuthControll",
+  "files": 12,
+  "tests": 8,
   "evidence_unresolved": [],
   "status": "prepared"
  },
  {
   "id": "A6",
   "seeds": [
-   "ExportJobEntity",
-   "UserEntity"
+   "Event",
+   "Product",
+   "User"
   ],
   "confidence": "low",
-  "decision": "revendiqués par le transversal state-machine via path_rules, sans retirer leur propriétaire",
-  "rule": "R10 recouvrement par path_rules, pas de transfert",
+  "decision": "état courant",
+  "rule": "R3 dashboard désigne plusieurs packs possibles (event, product), radical omis de",
   "files": 12,
-  "tests": 0,
+  "tests": 8,
   "evidence_unresolved": [],
   "status": "prepared"
  },
  {
   "id": "A7",
+  "seeds": [
+   "ExportJob"
+  ],
+  "confidence": "medium",
+  "decision": "non créé : state-machine",
+  "rule": "R5 motif mesuré sur 2 fichiers seulement (ExportJob.java et export.ts), absorbé ",
+  "files": 12,
+  "tests": 1,
+  "evidence_unresolved": [],
+  "status": "prepared"
+ },
+ {
+  "id": "A8",
+  "seeds": [
+   "User",
+   "UserEntity"
+  ],
+  "confidence": "medium",
+  "decision": "user",
+  "rule": "R9 test sans seed suivant la classe de production la plus probable (préférence p",
+  "files": 12,
+  "tests": 8,
+  "evidence_unresolved": [],
+  "status": "prepared"
+ },
+ {
+  "id": "A9",
   "seeds": [],
-  "confidence": "low",
-  "decision": "nombre de fichiers du motif ou de la couche tel que donné, 0 ko tant que la taille n'est pas mesurée",
-  "rule": "R10 fichiers techniques possédés par le pack de leur couche, tailles non fournie",
-  "files": 0,
+  "confidence": "medium",
+  "decision": "état courant",
+  "rule": "R10 fichiers techniques possédés par le pack de leur couche, couverts par la règ",
+  "files": 2,
   "tests": 0,
   "evidence_unresolved": [],
-  "status": "no_files"
+  "status": "prepared"
  }
 ]

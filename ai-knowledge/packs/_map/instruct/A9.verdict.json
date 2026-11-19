@@ -1,0 +1,8 @@
+{"id": "A9", "verdict": "refuted",
+ "evidence": [
+  {"file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/resources/db/migration/V9__neutralize_invalid_recurrence_unit.sql", "line_start": 3, "line_end": 3, "quote": "recurrence_unit invalides résiduelles (issue #54, BR-EVE-006)"},
+  {"file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/resources/db/migration/V9__neutralize_invalid_recurrence_unit.sql", "line_start": 38, "line_end": 38, "quote": "set recurrence_unit = case lower(trim(recurrence_unit))"},
+  {"file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/resources/db/migration/V1__baseline.sql", "line_start": 6, "line_end": 6, "quote": "entités UserEntity / ProductEntity / EventEntity / CategoryEntity."}
+ ],
+ "statement": "V9 réécrit les valeurs de events.recurrence_unit, supprime puis repose le CHECK ck_events_recurrence_unit, et se rattache explicitement à l'issue #54 et à la règle BR-EVE-006 du domaine événements. V1 crée d'un seul bloc les tables categories, users, products et events, pour les entités de plusieurs domaines.",
+ "proposed_decision": "Pour V9, le pack du domaine events (récurrence des événements, falsifié par la migration elle-même). V1 reste rattaché à backend-core, car il couvre plusieurs entités."}

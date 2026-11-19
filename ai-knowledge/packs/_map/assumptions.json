@@ -1,232 +1,167 @@
 {
- "generated_at": "2026-11-17",
+ "generated_at": "2026-11-19",
  "assumptions": [
   {
    "id": "A1",
-   "question": "Les six seeds fondus par le script dans UserEntity forment-ils un seul pack, ou faut-il séparer événements, catégories et comptes ?",
-   "decision": "un seul pack domain timeline, pivot UserEntity",
-   "rule": "R2 imports 37/37 (CategoryEntity), 16/16 (EventEntity), 9/10 (ProductEntity), 8/8, 4/4, 2/2 vers UserEntity",
+   "question": "ProductEntity : fondu dans Event par le script ou dans product ?",
+   "decision": "product",
+   "rule": "R1 satellite suivant le pivot dont il porte le nom (liens 6/11 vers Event, pas le double vers un autre pivot)",
+   "confidence": "high",
+   "seeds": [
+    "ProductEntity"
+   ],
+   "evidence": [],
+   "falsified_if": "un ticket sur les événements modifie ProductEntity sans toucher au catalogue de produits",
+   "status": "open",
+   "opened": "2026-11-19",
+   "touched_by": []
+  },
+  {
+   "id": "A2",
+   "question": "CategoryEntity : fondu dans Event par le script ou dans category ?",
+   "decision": "category",
+   "rule": "R1 satellite suivant le pivot dont il porte le nom (liens 5/11 vers Event, pas le double vers un autre pivot)",
+   "confidence": "high",
+   "seeds": [
+    "CategoryEntity"
+   ],
+   "evidence": [],
+   "falsified_if": "un ticket sur les événements modifie CategoryEntity sans toucher aux catégories",
+   "status": "open",
+   "opened": "2026-11-19",
+   "touched_by": []
+  },
+  {
+   "id": "A3",
+   "question": "PasswordReset (22 fichiers) : pack propre ou dans user ?",
+   "decision": "user",
+   "rule": "R3 fusion par le script à 13 liens sur 14 vers User, PasswordReset ne dépasse pas pack_min_kb seul sans écran propre",
    "confidence": "medium",
    "seeds": [
-    "CategoryEntity",
-    "EventEntity",
-    "ExportJobEntity",
-    "PasswordResetTokenEntity",
-    "ProductEntity",
-    "SessionEntity",
-    "UserEntity"
+    "PasswordReset",
+    "PasswordResetTokenEntity"
    ],
    "evidence": [
-    "mytimeline:frontend/src/components/categories/CategoryDrawer.tsx",
-    "mytimeline:frontend/src/components/EventEditForm.tsx",
-    "mytimeline:frontend/src/components/products/ProductsListView.tsx"
+    "backend:src/main/java/com/matimeline/eventmanager/application/validation/StrongPasswordValidator.java"
    ],
-   "falsified_if": "un ticket sur les événements ou les catégories n'a jamais besoin des fichiers du compte ou de la session, ou l'inverse, sur plusieurs tickets",
+   "falsified_if": "un ticket de réinitialisation de mot de passe évolue sans toucher aux comptes utilisateur",
    "status": "undecidable",
-   "opened": "2026-11-17",
+   "opened": "2026-11-19",
    "touched_by": [],
    "instruction": {
-    "date": "2026-11-17",
-    "verdict": "undecidable",
-    "statement": "Les fichiers lus font dépendre la frise, la liste produits, le détail produit et l'édition d'événement de l'utilisateur connecté (useAuth et filtrage amont). Aucun fichier lu ne relie CategoryEntity, ExportJobEntity ni les autres seeds à UserEntity, et le test d'authentification ne couvre que le cookie de session.",
+    "date": "2026-11-19",
+    "verdict": "refuted",
+    "statement": "Le service de réinitialisation lit et écrit les comptes via le dépôt utilisateur à trois endroits, tandis que le planificateur de purge n'agit que sur le dépôt des tokens et le template d'email n'importe que java.util.Locale.",
     "verified": [
      {
-      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/frontend/src/components/timeline/TimelineView.tsx",
-      "line_start": 94,
-      "line_end": 95,
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/application/services/PasswordResetServiceImpl.java",
+      "line_start": 147,
+      "line_end": 147,
+      "quote": "User user = userRepository.findDomainUserById(token.getUserId())",
+      "check": "exact"
+     },
+     {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/application/services/PasswordResetServiceImpl.java",
+      "line_start": 162,
+      "line_end": 162,
+      "quote": "userRepository.save(updated);",
+      "check": "exact"
+     },
+     {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/application/services/PasswordResetTokenPurgeScheduler.java",
+      "line_start": 37,
+      "line_end": 37,
+      "quote": "Couche APPLICATION : ne dépend que du port {@link PasswordResetTokenRepository} et de",
+      "check": "exact"
+     },
+     {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/application/services/PasswordResetTokenPurgeScheduler.java",
+      "line_start": 75,
+      "line_end": 75,
+      "quote": "int purged = tokenRepository.deleteConsumedOrExpiredBefore(expiredBefore);",
+      "check": "exact"
+     },
+     {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/resources/db/migration/V6__create_password_reset_tokens.sql",
+      "line_start": 42,
+      "line_end": 42,
+      "quote": "foreign key (user_id) references users (id) on delete cascade;",
+      "check": "exact"
+     },
+     {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/PasswordResetEmailTemplate.java",
+      "line_start": 3,
+      "line_end": 3,
+      "quote": "import java.util.Locale;",
+      "check": "exact"
+     }
+    ],
+    "rejected": []
+   },
+   "reason": "verdict refuted sans décision applicable"
+  },
+  {
+   "id": "A4",
+   "question": "Pages timeline : event ou autre pack ?",
+   "decision": "event",
+   "rule": "R3 dossier d'écran sans entité, alias timeline rattaché au pack qui porte la chronologie d'événements",
+   "confidence": "low",
+   "seeds": [
+    "Event"
+   ],
+   "evidence": [
+    "frontend-app:[locale]/(app)/timeline/page.tsx",
+    "frontend-app:[locale]/(app)/timeline/page.test.tsx"
+   ],
+   "falsified_if": "la page timeline consomme surtout des données produit ou utilisateur sans les événements",
+   "status": "confirmed",
+   "opened": "2026-11-19",
+   "touched_by": [],
+   "instruction": {
+    "date": "2026-11-19",
+    "verdict": "confirmed",
+    "statement": "La frise desktop reçoit en props la liste des événements (FullCalendarEvent), calcule l'étendue temporelle et le positionnement à partir de ces événements, puis les range par produit (lane). Les vues mobiles portrait et paysage réutilisent la même chaîne de calcul, et l'édition ou la suppression d'un événement depuis la frise passe par les services d'événements.",
+    "verified": [
+     {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/components/timeline/TimelineView.tsx",
+      "line_start": 97,
+      "line_end": 97,
       "quote": "la frise n'affiche que les events fournis en props",
       "check": "exact"
      },
      {
-      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/frontend/src/components/timeline/TimelineEditHost.test.tsx",
-      "line_start": 17,
-      "line_end": 17,
-      "quote": "`TimelineEditHost` monte `useEventEditConflict`, qui appelle `useAuth()`",
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/components/timeline/TimelineView.tsx",
+      "line_start": 650,
+      "line_end": 650,
+      "quote": "events: FullCalendarEvent[]",
       "check": "exact"
      },
      {
-      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/frontend/src/components/products/ProductDetailView.tsx",
-      "line_start": 104,
-      "line_end": 104,
-      "quote": "const { user } = useAuth()",
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/components/timeline/TimelineView.tsx",
+      "line_start": 740,
+      "line_end": 740,
+      "quote": "computeRange(events, now)",
       "check": "exact"
      },
      {
-      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/frontend/src/components/products/ProductsListView.tsx",
-      "line_start": 45,
-      "line_end": 45,
-      "quote": "le listing n'affiche QUE les produits du user connecté",
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/components/timeline/TimelineView.tsx",
+      "line_start": 772,
+      "line_end": 772,
+      "quote": "indexEventsByResource(events, rangeStart, now)",
       "check": "exact"
      },
      {
-      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/frontend/src/lib/auth-guard-paths.test.ts",
-      "line_start": 369,
-      "line_end": 369,
-      "quote": "nomme le cookie exactement comme JwtFilter.java:48",
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/components/timeline/TimelineMobilePortrait.tsx",
+      "line_start": 317,
+      "line_end": 317,
+      "quote": "{laneEvents.map(({ item: { event }, row }) => {",
       "check": "exact"
      },
      {
-      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/frontend/src/components/categories/CategoryDrawer.test.tsx",
-      "line_start": 37,
-      "line_end": 37,
-      "quote": "vi.mock('@/hooks/useCreateCategory', () => ({",
-      "check": "exact"
-     }
-    ],
-    "rejected": []
-   },
-   "reason": "verdict undecidable sans décision applicable"
-  },
-  {
-   "id": "A2",
-   "question": "ProductEntity (1 fichier) reste-t-il dans le pack timeline ou forme-t-il un pack à part ?",
-   "decision": "fondu dans timeline",
-   "rule": "R7 pack sous pack_min_kb=60, liens 9/10 vers UserEntity",
-   "confidence": "medium",
-   "seeds": [
-    "ProductEntity"
-   ],
-   "evidence": [
-    "mytimeline:frontend/src/components/products/ProductDetailView.tsx",
-    "mytimeline:frontend/src/components/products/ProductsListView.tsx"
-   ],
-   "falsified_if": "les écrans de produits évoluent seuls, sans toucher aux événements, aux catégories ni au compte",
-   "status": "confirmed",
-   "opened": "2026-11-17",
-   "touched_by": [],
-   "instruction": {
-    "date": "2026-11-17",
-    "verdict": "confirmed",
-    "statement": "ProductEntity porte une CategoryEntity obligatoire, une UserEntity et une liste d'EventEntity en cascade. Les écrans produit importent le composant de frise d'événements, le hook d'archivage d'événement et les données de catégorie, et les tests d'intégration produit s'appuient sur les événements, les catégories et le compte utilisateur.",
-    "verified": [
-     {
-      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/ProductEntity.java",
-      "line_start": 39,
-      "line_end": 40,
-      "quote": "@JoinColumn(name = \"category_id\", nullable = false)",
-      "check": "exact"
-     },
-     {
-      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/ProductEntity.java",
-      "line_start": 46,
-      "line_end": 48,
-      "quote": "@OneToMany(mappedBy = \"product\", cascade = CascadeType.ALL, orphanRemoval = true)",
-      "check": "exact"
-     },
-     {
-      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/frontend/src/components/products/ProductDetailView.tsx",
-      "line_start": 19,
-      "line_end": 19,
-      "quote": "import { TimelineEditHost } from '@/components/timeline'",
-      "check": "exact"
-     },
-     {
-      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/frontend/src/components/products/ProductDetailView.tsx",
-      "line_start": 22,
-      "line_end": 22,
-      "quote": "import { useSetEventArchived } from '@/hooks/useSetEventArchived'",
-      "check": "exact"
-     },
-     {
-      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/CategoryDeleteReassignIntegrationTest.java",
-      "line_start": 164,
-      "line_end": 164,
-      "quote": "assertThat(productRepository.countByCategoryId(source.getId())).isZero();",
-      "check": "exact"
-     },
-     {
-      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AccountDeletionIntegrationTest.java",
-      "line_start": 198,
-      "line_end": 198,
-      "quote": "assertEquals(0, countRow(\"products\", \"user_id\", s.userId()),",
-      "check": "exact"
-     }
-    ],
-    "rejected": []
-   }
-  },
-  {
-   "id": "A3",
-   "question": "ExportJobEntity (1 fichier) appartient-il au pack timeline ou à un pack d'export séparé ?",
-   "decision": "fondu dans timeline",
-   "rule": "R7 pack sous pack_min_kb=60, liens 2/2 vers UserEntity",
-   "confidence": "medium",
-   "seeds": [
-    "ExportJobEntity"
-   ],
-   "evidence": [],
-   "falsified_if": "un ticket d'export modifie ExportJob et ses moteurs de rendu sans toucher au compte ni aux événements",
-   "status": "undecidable",
-   "opened": "2026-11-17",
-   "touched_by": [],
-   "instruction": {
-    "date": "2026-11-17",
-    "verdict": "refuted",
-    "statement": "ExportJobEntity est une entité JPA autonome : user_id est une colonne UUID sans association @ManyToOne vers UserEntity, et la clé étrangère vers users n'est portée que par le DDL V13.",
-    "verified": [
-     {
-      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/ExportJobEntity.java",
-      "line_start": 20,
-      "line_end": 20,
-      "quote": "{@code user_id} est une colonne UUID simple (pas une association {@code @ManyToOne})",
-      "check": "exact"
-     },
-     {
-      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/ExportJobEntity.java",
-      "line_start": 21,
-      "line_end": 21,
-      "quote": "la FK {@code → users(id) ON DELETE CASCADE} est portée par le DDL.",
-      "check": "exact"
-     }
-    ],
-    "rejected": []
-   },
-   "reason": "comment_only"
-  },
-  {
-   "id": "A4",
-   "question": "Les fichiers frontend non rattachés vont-ils au pack timeline (par alias) ou au socle frontend ?",
-   "decision": "les composants nommés timeline, event, product, category, auth, theme ou conflict vont à timeline par alias, le reste (ui, layout, styles, lib générique) reste au socle frontend",
-   "rule": "R3 aucun import mesuré (arêtes de groupe vides), décision par noms de fichiers",
-   "confidence": "low",
-   "seeds": [
-    "EventEntity",
-    "CategoryEntity",
-    "ProductEntity"
-   ],
-   "evidence": [
-    "mytimeline:frontend/src/components/timeline/TimelineView.tsx",
-    "mytimeline:frontend/src/components/layout/AppShell.tsx",
-    "mytimeline:frontend/src/components/ui/toaster.tsx"
-   ],
-   "falsified_if": "un ticket sur un composant de timeline ou d'événement ne charge pas le pack timeline, ou un composant d'ui générique y est rattaché à tort",
-   "status": "confirmed",
-   "opened": "2026-11-17",
-   "touched_by": [],
-   "instruction": {
-    "date": "2026-11-17",
-    "verdict": "confirmed",
-    "statement": "TimelineView.tsx est dans le dossier timeline et importe ses composants frères (Minimap, EventDrawer, EventPill). AppShell.tsx et toaster.tsx n'ont pas de nom de domaine et sont montés pour toute l'application, le shell enveloppant dashboard, timeline, produits et réglages. AppShell.tsx importe aussi NewEventDrawer depuis components/events sans que son nom le rattache au domaine event.",
-    "verified": [
-     {
-      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/frontend/src/components/timeline/TimelineView.tsx",
-      "line_start": 31,
-      "line_end": 31,
-      "quote": "import { Minimap } from './Minimap'",
-      "check": "exact"
-     },
-     {
-      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/frontend/src/components/layout/AppShell.tsx",
-      "line_start": 37,
-      "line_end": 37,
-      "quote": "Segments enveloppés par le shell (sous `(app)/`) : dashboard, timeline,",
-      "check": "exact"
-     },
-     {
-      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/frontend/src/components/ui/toaster.tsx",
-      "line_start": 16,
-      "line_end": 16,
-      "quote": "#621 — HÔTE UNIQUE des toasts de l'application (monté une fois, `app/[locale]/layout.tsx`).",
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/components/timeline/TimelineEditHost.tsx",
+      "line_start": 178,
+      "line_end": 178,
+      "quote": "await deleteEvent(id, HANDLES_FORBIDDEN_INLINE)",
       "check": "exact"
      }
     ],
@@ -235,91 +170,318 @@
   },
   {
    "id": "A5",
-   "question": "Le motif batch (14 fichiers) justifie-t-il un pack transversal ?",
-   "decision": "oui, pack transversal batch",
-   "rule": "R5 motif mesuré (14 fichiers à 3 occurrences ou plus)",
-   "confidence": "low",
+   "question": "Pages login, register, forgot-password, reset-password : user ou session ?",
+   "decision": "user",
+   "rule": "R3 écrans d'authentification sans entité, suivent le pack qui porte AuthController et PasswordReset",
+   "confidence": "medium",
    "seeds": [
-    "PasswordResetTokenEntity",
-    "ExportJobEntity"
+    "User",
+    "Session"
    ],
-   "evidence": [],
-   "falsified_if": "après extraction, le pack batch contient moins de faits que son budget minimal et se fond mieux dans le pack timeline",
-   "status": "undecidable",
-   "opened": "2026-11-17",
+   "evidence": [
+    "frontend-app:[locale]/login/page.tsx",
+    "frontend-app:[locale]/register/page.tsx",
+    "frontend-app:[locale]/reset-password/page.tsx",
+    "frontend-app:[locale]/forgot-password/page.tsx"
+   ],
+   "falsified_if": "un ticket de jetons ou de sessions modifie ces pages sans toucher au compte utilisateur",
+   "status": "confirmed",
+   "opened": "2026-11-19",
    "touched_by": [],
    "instruction": {
-    "date": "2026-11-17",
-    "verdict": "undecidable",
-    "statement": "Les trois fichiers lus (entité ExportJobEntity, adaptateur E2eResetTokenFinderJpaAdapter, entité PasswordResetTokenEntity) ne contiennent aucun traitement batch : ils décrivent un job d'export asynchrone à writer unique, une requête JPQL de lecture e2e et une entité de token de réinitialisation, ce qui ne permet ni de confirmer ni de réfuter le motif de 14 fichiers.",
+    "date": "2026-11-19",
+    "verdict": "confirmed",
+    "statement": "La page register appelle la création de compte puis redirige vers /login sans ouvrir de session, et AuthController crée le User via userService.createUser tandis que reset-password est délégué à PasswordResetService sans appel au SessionService.",
     "verified": [
      {
-      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/ExportJobEntity.java",
-      "line_start": 18,
-      "line_end": 18,
-      "quote": "Pas de {@code @Version} (à l'image de {@code SessionEntity}) : un job a un unique",
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java",
+      "line_start": 230,
+      "line_end": 230,
+      "quote": "userService.createUser(newUser);",
+      "check": "exact"
+     },
+     {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java",
+      "line_start": 364,
+      "line_end": 364,
+      "quote": "non consommé) -> met à jour le hash BCrypt + marque consommé -> 200. Token",
+      "check": "exact"
+     },
+     {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java",
+      "line_start": 370,
+      "line_end": 370,
+      "quote": "passwordResetService.resetPassword(request.getToken(), request.getNewPassword());",
+      "check": "exact"
+     },
+     {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/app/[locale]/register/page.tsx",
+      "line_start": 51,
+      "line_end": 51,
+      "quote": "await register(data.name, data.username, data.email, data.password)",
+      "check": "exact"
+     },
+     {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/app/[locale]/register/page.tsx",
+      "line_start": 53,
+      "line_end": 53,
+      "quote": "router.push(`/${locale}/login`)",
+      "check": "exact"
+     },
+     {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/contexts/AuthContext.tsx",
+      "line_start": 65,
+      "line_end": 65,
+      "quote": "(le compte reste `null`). `register` n'ouvre pas de session (le backend ne",
+      "check": "exact"
+     }
+    ],
+    "rejected": []
+   }
+  },
+  {
+   "id": "A6",
+   "question": "Radical dashboard et pages settings : quel pack ?",
+   "decision": "état courant",
+   "rule": "R3 dashboard désigne plusieurs packs possibles (event, product), radical omis des alias, fichiers laissés non rattachés",
+   "confidence": "low",
+   "seeds": [
+    "Event",
+    "Product",
+    "User"
+   ],
+   "evidence": [
+    "frontend-app:[locale]/(app)/dashboard/page.tsx",
+    "frontend-app:[locale]/(app)/settings/page.tsx"
+   ],
+   "falsified_if": "un ticket montre que le dashboard n'agrège que les événements ou que les produits",
+   "status": "confirmed",
+   "opened": "2026-11-19",
+   "touched_by": [],
+   "instruction": {
+    "date": "2026-11-19",
+    "verdict": "confirmed",
+    "statement": "La frise que le tableau de bord embarque en layout embedded reçoit à la fois des événements et des produits en lanes, et l'AppShell enveloppe les segments dashboard, timeline, produits et réglages.",
+    "verified": [
+     {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/components/timeline/TimelineView.tsx",
+      "line_start": 662,
+      "line_end": 662,
+      "quote": "frise incrustée dans un autre écran (dashboard,",
+      "check": "exact"
+     },
+     {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/components/timeline/TimelineView.test.tsx",
+      "line_start": 1224,
+      "line_end": 1224,
+      "quote": "embedded (dashboard, fiche produit) : AUCUN des deux boutons, même sous le shell",
+      "check": "exact"
+     },
+     {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/components/timeline/TimelineView.tsx",
+      "line_start": 1362,
+      "line_end": 1362,
+      "quote": "`useDashboardData` n'a pas encore répondu.",
+      "check": "exact"
+     },
+     {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/components/products/ProductDetailView.tsx",
+      "line_start": 35,
+      "line_end": 35,
+      "quote": "composant central du dashboard, risque de régression",
+      "check": "exact"
+     },
+     {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/components/products/ProductDetailView.tsx",
+      "line_start": 235,
+      "line_end": 235,
+      "quote": "même dérivation que `useDashboardData`.",
+      "check": "exact"
+     },
+     {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/components/products/ProductsListView.tsx",
+      "line_start": 57,
+      "line_end": 57,
+      "quote": "du détail produit et du tableau de bord).",
+      "check": "exact"
+     },
+     {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/components/layout/AppShell.tsx",
+      "line_start": 37,
+      "line_end": 37,
+      "quote": "Segments enveloppés par le shell (sous `(app)/`) : dashboard, timeline,",
+      "check": "exact"
+     },
+     {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/components/layout/AppShell.tsx",
+      "line_start": 306,
+      "line_end": 306,
+      "quote": "href={`/${locale}/settings`}",
+      "check": "exact"
+     }
+    ],
+    "rejected": []
+   }
+  },
+  {
+   "id": "A7",
+   "question": "state-machine : créer un pack transversal ?",
+   "decision": "non créé : state-machine",
+   "rule": "R5 motif mesuré sur 2 fichiers seulement (ExportJob.java et export.ts), absorbé par le domaine export",
+   "confidence": "medium",
+   "seeds": [
+    "ExportJob"
+   ],
+   "evidence": [],
+   "falsified_if": "l'extraction compte au moins 3 fichiers à forte densité d'états hors du domaine export",
+   "status": "confirmed",
+   "opened": "2026-11-19",
+   "touched_by": [],
+   "instruction": {
+    "date": "2026-11-19",
+    "verdict": "confirmed",
+    "statement": "Les 13 fichiers lus portent les transitions d'un seul cycle de vie, celui du job d'export (PENDING, RUNNING, COMPLETED, FAILED), et aucun fichier lu hors du domaine export n'y porte de machine d'états.",
+    "verified": [
+     {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/domain/models/export/ExportJob.java",
+      "line_start": 60,
+      "line_end": 60,
+      "quote": "this.status = ExportJobStatus.FAILED;",
+      "check": "exact"
+     },
+     {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/domain/models/export/ExportJob.java",
+      "line_start": 66,
+      "line_end": 66,
+      "quote": "return status == ExportJobStatus.COMPLETED",
+      "check": "exact"
+     },
+     {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ExportJobRepositoryJpaImpl.java",
+      "line_start": 50,
+      "line_end": 50,
+      "quote": "// Transitions de statut : seuls ces champs évoluent après création.",
+      "check": "exact"
+     },
+     {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/application/services/AsyncExportRunner.java",
+      "line_start": 82,
+      "line_end": 82,
+      "quote": "job.markFailed(\"GENERATION_ERROR\");",
+      "check": "exact"
+     }
+    ],
+    "rejected": []
+   }
+  },
+  {
+   "id": "A8",
+   "question": "ThemePreference et rôle utilisateur : user ou socle ?",
+   "decision": "user",
+   "rule": "R9 test sans seed suivant la classe de production la plus probable (préférence portée par le compte, migration V16 user_theme_preference)",
+   "confidence": "medium",
+   "seeds": [
+    "User",
+    "UserEntity"
+   ],
+   "evidence": [
+    "backend:src/test/java/com/matimeline/eventmanager/domain/models/ThemePreferenceTest.java",
+    "backend:src/main/java/com/matimeline/eventmanager/domain/models/Role.java",
+    "backend:src/main/java/com/matimeline/eventmanager/application/dtos/AuthResponse.java"
+   ],
+   "falsified_if": "un ticket d'interface modifie la préférence de thème sans toucher au compte utilisateur",
+   "status": "confirmed",
+   "opened": "2026-11-19",
+   "touched_by": [],
+   "instruction": {
+    "date": "2026-11-19",
+    "verdict": "confirmed",
+    "statement": "Le code stocke la préférence de thème sur le compte utilisateur : PUT /api/me/preferences la pose sur l'utilisateur courant via userService.updateThemePreference, et le front l'écrit sur le compte dès qu'un utilisateur est authentifié, le mode anonyme restant local.",
+    "verified": [
+     {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/UserController.java",
+      "line_start": 147,
+      "line_end": 147,
+      "quote": "PUT /api/me/preferences — pose la préférence de thème du compte courant (#653,",
+      "check": "exact"
+     },
+     {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/UserController.java",
+      "line_start": 168,
+      "line_end": 168,
+      "quote": "User saved = userService.updateThemePreference(callerOpt.get(), preference);",
+      "check": "exact"
+     },
+     {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/contexts/AuthContext.tsx",
+      "line_start": 60,
+      "line_end": 60,
+      "quote": "#653 — PRÉFÉRENCE DE THÈME DU COMPTE (ADR-010, BR-AUT-013).",
+      "check": "exact"
+     },
+     {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/components/ui/theme-toggle.tsx",
+      "line_start": 41,
+      "line_end": 41,
+      "quote": "de l'application, où #653 branche la persistance sur le compte.",
+      "check": "exact"
+     },
+     {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/contexts/AuthContext.theme.test.tsx",
+      "line_start": 131,
+      "line_end": 131,
+      "quote": "compte avec préférence : appliquée localement, JAMAIS réécrite (choix local ignoré)",
+      "check": "exact"
+     }
+    ],
+    "rejected": []
+   }
+  },
+  {
+   "id": "A9",
+   "question": "Migrations non rattachées (V1 à V9) : quel propriétaire ?",
+   "decision": "état courant",
+   "rule": "R10 fichiers techniques possédés par le pack de leur couche, couverts par la règle backend-core (6 fichiers backend/db sans seed)",
+   "confidence": "medium",
+   "seeds": [],
+   "evidence": [
+    "backend:src/main/resources/db/migration/V1__baseline.sql",
+    "backend:src/main/resources/db/migration/V9__neutralize_invalid_recurrence_unit.sql"
+   ],
+   "falsified_if": "une migration est modifiée par un ticket d'un seul domaine (V9 touche la récurrence des événements)",
+   "status": "undecidable",
+   "opened": "2026-11-19",
+   "touched_by": [],
+   "instruction": {
+    "date": "2026-11-19",
+    "verdict": "refuted",
+    "statement": "V9 réécrit les valeurs de events.recurrence_unit, supprime puis repose le CHECK ck_events_recurrence_unit, et se rattache explicitement à l'issue #54 et à la règle BR-EVE-006 du domaine événements. V1 crée d'un seul bloc les tables categories, users, products et events, pour les entités de plusieurs domaines.",
+    "verified": [
+     {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/resources/db/migration/V9__neutralize_invalid_recurrence_unit.sql",
+      "line_start": 3,
+      "line_end": 3,
+      "quote": "recurrence_unit invalides résiduelles (issue #54, BR-EVE-006)",
+      "check": "exact"
+     },
+     {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/resources/db/migration/V9__neutralize_invalid_recurrence_unit.sql",
+      "line_start": 38,
+      "line_end": 38,
+      "quote": "set recurrence_unit = case lower(trim(recurrence_unit))",
+      "check": "exact"
+     },
+     {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/resources/db/migration/V1__baseline.sql",
+      "line_start": 6,
+      "line_end": 6,
+      "quote": "entités UserEntity / ProductEntity / EventEntity / CategoryEntity.",
       "check": "exact"
      }
     ],
     "rejected": []
    },
-   "reason": "verdict undecidable sans décision applicable"
-  },
-  {
-   "id": "A6",
-   "question": "Les foyers state-machine sans seed (Role, ThemePreferenceTest, ExportJobTest) relèvent-ils du transversal ou du domaine ?",
-   "decision": "revendiqués par le transversal state-machine via path_rules, sans retirer leur propriétaire",
-   "rule": "R10 recouvrement par path_rules, pas de transfert",
-   "confidence": "low",
-   "seeds": [
-    "ExportJobEntity",
-    "UserEntity"
-   ],
-   "evidence": [],
-   "falsified_if": "un ticket sur le rôle ou la préférence de thème ne concerne jamais les états d'export ni de session",
-   "status": "undecidable",
-   "opened": "2026-11-17",
-   "touched_by": [],
-   "instruction": {
-    "date": "2026-11-17",
-    "verdict": "undecidable",
-    "statement": "Les douze fichiers lus (vue et hôte de la frise, formulaires d'événement, garde des chemins d'authentification, fiches et listes produit, drawer de catégorie, hook mobile) ne contiennent aucun code ni test portant sur les rôles, la préférence de thème ou les états d'export ou de session, donc ils ne tranchent pas la question.",
-    "verified": [],
-    "rejected": []
-   },
-   "reason": "aucune preuve vérifiée"
-  },
-  {
-   "id": "A7",
-   "question": "Quelles tailles donner aux packs sans groupe (transversaux et techniques) ?",
-   "decision": "nombre de fichiers du motif ou de la couche tel que donné, 0 ko tant que la taille n'est pas mesurée",
-   "rule": "R10 fichiers techniques possédés par le pack de leur couche, tailles non fournies par le résumé",
-   "confidence": "low",
-   "seeds": [],
-   "evidence": [],
-   "falsified_if": "la porte mécanique recalcule des tailles différentes à partir de l'inventaire",
-   "status": "undecidable",
-   "opened": "2026-11-17",
-   "touched_by": [],
-   "reason": "aucun fichier à lire",
-   "instruction": {
-    "date": "2026-11-17",
-    "verdict": null,
-    "evidence_unresolved": []
-   }
-  },
-  {
-   "id": "A8",
-   "question": "Les fichiers sans seed vont-ils aux packs techniques par chemin (backend, frontend, base) ?",
-   "decision": "trois packs techniques par règle de chemin : backend-socle, frontend-socle, migrations",
-   "rule": "R10 fichier technique possédé par le pack technique de sa couche",
-   "confidence": "high",
-   "seeds": [],
-   "evidence": [],
-   "falsified_if": "un chemin de dépôt réel ne commence pas par mytimeline:backend/ ou mytimeline:frontend/ et reste non rattaché",
-   "status": "open",
-   "opened": "2026-11-17",
-   "touched_by": []
+   "reason": "verdict refuted sans décision applicable"
   }
  ]
 }

@@ -1,0 +1,63 @@
+{
+ "mode": "rejeu",
+ "errors": [],
+ "warnings": [],
+ "invented": {},
+ "leftover": [],
+ "leftover_rate": 0.0,
+ "assigned": 700,
+ "total": 700,
+ "sizes": {
+  "event": {
+   "files": 180,
+   "kb": 1502
+  },
+  "user": {
+   "files": 154,
+   "kb": 826
+  },
+  "frontend-core": {
+   "files": 127,
+   "kb": 778
+  },
+  "product": {
+   "files": 69,
+   "kb": 535
+  },
+  "backend-core": {
+   "files": 44,
+   "kb": 326
+  },
+  "category": {
+   "files": 32,
+   "kb": 187
+  },
+  "frontend-app": {
+   "files": 41,
+   "kb": 179
+  },
+  "export": {
+   "files": 31,
+   "kb": 92
+  },
+  "session": {
+   "files": 22,
+   "kb": 84
+  }
+ },
+ "small_domain_packs_R7": {},
+ "giant_domain_packs_R8": {},
+ "median_domain_kb": 361,
+ "overlay_claims": {
+  "batch": 7,
+  "authorization": 10,
+  "integrations": 13
+ },
+ "by_how": {
+  "seed": 488,
+  "path_rule": 212
+ },
+ "assumptions": {
+  "open": 9
+ }
+}

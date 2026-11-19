@@ -1,0 +1,2543 @@
+{
+ "pack": "frontend-app",
+ "schema": 1,
+ "curated_at": "2026-11-19T16:38:00Z",
+ "curator": "curate/1",
+ "base_sha256": "fad31d53ef31e06dcc0b3fe4ae5d592841e0dd8c9a9be9271af4aa98c60c77d2",
+ "pack_sha256_before": "47af81ef47bf47cf23de55db9b1addde9e5aff14e241c17addbfe78070c91a03",
+ "pack_sha256_after": "7fac67019db399c19f17b3ed92cb6c92c7e345b33948c61ad9b68fe87ead9fa2",
+ "criteria_sha256": "48e0e20f086c5b11deecfecdc547ba1d6115faee1597a5aaf682f6c699e92423",
+ "models": {
+  "measure": "haiku",
+  "refute": "sonnet"
+ },
+ "base_fingerprint": "72acfb3db7fff7454a31795bd61880ca9edda70eeb73bd34a04a0cc597c20d67",
+ "bytes": {
+  "before": 6943,
+  "after": 6943,
+  "by_section": {
+   "activate": {
+    "before": 140,
+    "after": 140
+   },
+   "lexicon": {
+    "before": 78,
+    "after": 78
+   },
+   "rules": {
+    "before": 1757,
+    "after": 1757
+   },
+   "structure": {
+    "before": 82,
+    "after": 82
+   },
+   "surface": {
+    "before": 96,
+    "after": 96
+   },
+   "files": {
+    "before": 1093,
+    "after": 1093
+   },
+   "relations": {
+    "before": 104,
+    "after": 104
+   },
+   "tests": {
+    "before": 1439,
+    "after": 1439
+   },
+   "questions": {
+    "before": 587,
+    "after": 587
+   },
+   "alerts": {
+    "before": 452,
+    "after": 452
+   },
+   "coverage": {
+    "before": 707,
+    "after": 707
+   }
+  }
+ },
+ "units": [
+  {
+   "id": "frontend-app:rules:1",
+   "section": "rules",
+   "rank": 1,
+   "text": "- Selon le commentaire de products/loading, un `loading.tsx` enveloppe aussi les segments enfants, donc chaque enfant à fallback différent a son propre fichier. [#de7e2f0ed7095ba3-1]",
+   "fact_text": "Selon le commentaire de products/loading, un `loading.tsx` enveloppe aussi les segments enfants, donc chaque enfant à fallback différent a son propre fichier",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-app/de7e2f0ed7095ba3-1"
+   ],
+   "files": [
+    "frontend-app:[locale]/(app)/products/loading.tsx"
+   ],
+   "ranges": [
+    [
+     "frontend-app:[locale]/(app)/products/loading.tsx",
+     20,
+     21,
+     "692a3eec5fe449a96129ea4c6d5bc83dfa70baf887e6ae3bdf87860d8283fd91"
+    ]
+   ],
+   "code_sha256": "692a3eec5fe449a96129ea4c6d5bc83dfa70baf887e6ae3bdf87860d8283fd91",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [
+     {
+      "id": "frontend-app/de7e2f0ed7095ba3-1",
+      "verdict": "unverifiable"
+     }
+    ],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Le commentaire de products/loading.tsx L20-21 est cité fidèlement, et les 5 loading.tsx de la portée (dashboard, products, products/[productId], settings, timeline) correspondent bien à des segments à fallback distinct.",
+      "products/loading.tsx L20-21 porte bien ce commentaire, et [productId]/loading.tsx existe. Aucun autre segment enfant à fallback distinct n'a été trouvé sans fichier propre.",
+      "Ligne attribuée au commentaire (products/loading.tsx L20-21); [productId]/loading.tsx existe, pas de contre-exemple."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "scope",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Glob",
+         "target": "**/loading.tsx dans frontend/app",
+         "found": "5 fichiers loading.tsx : dashboard, products, products/[productId], settings, timeline"
+        }
+       ],
+       [
+        {
+         "tool": "Glob",
+         "target": "**/loading.tsx dans frontend/app",
+         "found": "5 loading.tsx: dashboard, products, products/[productId], settings, timeline"
+        }
+       ],
+       [
+        {
+         "tool": "Glob",
+         "target": "frontend/app/**/loading.tsx",
+         "found": "5 loading.tsx: dashboard, products, products/[productId], settings, timeline"
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "words:chaque",
+   "placed": {
+    "pack_line": 30,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "frontend-app:rules:2",
+   "section": "rules",
+   "rank": 2,
+   "text": "- Les fallbacks loading.tsx de la couche (app) sont des composants client qui lisent leurs libellés avec useTranslations, le plus souvent dans le namespace de leur segment, le dashboard utilisant le namespace commun [#de7e2f0ed7095ba3-2] [#f6fc1f69dbd3ffb6-2] [#6c6a5005a986a168-2]",
+   "fact_text": "Les fallbacks loading.tsx de la couche (app) sont des composants client qui lisent leurs libellés avec useTranslations, le plus souvent dans le namespace de leur segment, le dashboard utilisant le namespace commun",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-app/de7e2f0ed7095ba3-2",
+    "frontend-app/f6fc1f69dbd3ffb6-2",
+    "frontend-app/6c6a5005a986a168-2"
+   ],
+   "files": [
+    "frontend-app:[locale]/(app)/products/loading.tsx",
+    "frontend-app:[locale]/(app)/settings/loading.tsx",
+    "frontend-app:[locale]/(app)/timeline/loading.tsx"
+   ],
+   "ranges": [
+    [
+     "frontend-app:[locale]/(app)/products/loading.tsx",
+     23,
+     24,
+     "c24b5cb4246c14d9e1acdeff8399453945cb20677c74d5b7dbaa726f3cf1de89"
+    ],
+    [
+     "frontend-app:[locale]/(app)/settings/loading.tsx",
+     27,
+     28,
+     "8bd5f714d3df648dd3faad05ea6fe196f348b8e1dd765ce832dcd1442c49bf50"
+    ],
+    [
+     "frontend-app:[locale]/(app)/timeline/loading.tsx",
+     26,
+     27,
+     "01dc2ac11e7aa76e09815b2f09c42695687425e2dc76307300c83410841607f7"
+    ]
+   ],
+   "code_sha256": "6a3c1dd9c6ed78822b3ccf1d33844d42562160856f69fcdf2702d0e001c4e648",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": null,
+      "terms": 0.182,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 11
+      }
+     },
+     "restatement": "Les trois composants de chargement (ProductsLoading, SettingsLoading, TimelineLoading) exportent chacun une fonction par défaut qui appelle useTranslations avec un namespace fixe : 'products', 'settings' et 'shell.timeline'. L'extrait ne montre que la première ligne de chaque fonction, donc le rendu et le reste du corps ne sont pas visibles.",
+     "confidence": "medium",
+     "files_read_missing": true
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 5,
+     "within_budget": true,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/app/[locale]/(app)/dashboard/loading.tsx",
+     "file_ok": false,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": null,
+      "terms": 0.636,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 11
+      }
+     },
+     "job": "frontend-app:rediscover:frontend-app_locale_app_products_loading.tsx:1"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Les cinq loading.tsx de (app) appellent useTranslations : dashboard 'common', products et products/[productId] 'products', settings 'settings', timeline 'shell.timeline'. Aucun contre-exemple.",
+      "Les cinq loading.tsx de (app) appellent useTranslations : dashboard avec 'common', products et products/[productId] avec 'products', settings avec 'settings', timeline avec 'shell.timeline'. Aucun contre-exemple.",
+      "Les 5 loading.tsx de la couche (app) portent 'use client' et useTranslations : dashboard 'common', products 'products', products/[productId] 'products', settings 'settings', timeline 'shell.timeline'. Aucun contre-exemple."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "scope",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 12,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "useTranslations|export default dans **/loading.tsx sous frontend/app",
+         "found": "5 fichiers loading.tsx, tous avec useTranslations, namespaces conformes à la ligne (dashboard=common)"
+        }
+       ],
+       [
+        {
+         "tool": "Glob",
+         "target": "**/loading.tsx dans frontend/app",
+         "found": "5 fichiers, tous sous (app)"
+        },
+        {
+         "tool": "Grep",
+         "target": "useTranslations dans loading.tsx",
+         "found": "les 5 l'utilisent, dashboard avec common"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "useTranslations dans **/loading.tsx de frontend/app",
+         "found": "5 fichiers, tous avec useTranslations, namespaces conformes à la ligne"
+        },
+        {
+         "tool": "Grep",
+         "target": "use client dans **/loading.tsx",
+         "found": "présent dans les 5 fichiers"
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     }
+    }
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "placed": {
+    "pack_line": 31,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "frontend-app:rules:3",
+   "section": "rules",
+   "rank": 3,
+   "text": "- Selon le commentaire de timeline/loading, le testid du fallback reste distinct de celui de la page et l'ancien `timeline-loading` ne revient pas. [#6c6a5005a986a168-1]",
+   "fact_text": "Selon le commentaire de timeline/loading, le testid du fallback reste distinct de celui de la page et l'ancien `timeline-loading` ne revient pas",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-app/6c6a5005a986a168-1"
+   ],
+   "files": [
+    "frontend-app:[locale]/(app)/timeline/loading.tsx"
+   ],
+   "ranges": [
+    [
+     "frontend-app:[locale]/(app)/timeline/loading.tsx",
+     18,
+     19,
+     "b504fc6777ccdca95cbfdb37ddb81428f1289807b826fe4d3fe1303d1eee2b14"
+    ]
+   ],
+   "code_sha256": "b504fc6777ccdca95cbfdb37ddb81428f1289807b826fe4d3fe1303d1eee2b14",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [
+     {
+      "id": "frontend-app/6c6a5005a986a168-1",
+      "verdict": "confirmed"
+     }
+    ],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Le commentaire de timeline/loading.tsx L19-21 affirme le testid distinct timeline-loading-skeleton et la suppression de timeline-loading. La ligne est formulée 'selon le commentaire', et le test loading.test.tsx L34-37 vérifie l'absence de l'ancien testid.",
+      "timeline/loading.tsx utilise testId=\"timeline-loading-skeleton\" (L46), le commentaire L19-21 interdit le retour de l'ancien timeline-loading, et loading.test.tsx L37 vérifie son absence. Aucun contre-exemple trouvé.",
+      "Ligne attribuée au commentaire; le testid timeline-loading-skeleton existe et un test vérifie l'absence de timeline-loading."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "scope",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "timeline-loading dans frontend",
+         "found": "loading.tsx utilise timeline-loading-skeleton. loading.test.tsx vérifie l'absence de timeline-loading. Les specs e2e assertent à 0 l'ancien testid."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "timeline-loading|data-testid dans frontend/app",
+         "found": "page.tsx timeline-screen, loading timeline-loading-skeleton, ancien testid seulement dans commentaires et test d'absence"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "timeline-loading",
+         "found": "loading.tsx utilise timeline-loading-skeleton, loading.test.tsx vérifie l'absence de l'ancien testid"
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "placed": {
+    "pack_line": 32,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "frontend-app:rules:4",
+   "section": "rules",
+   "rank": 4,
+   "text": "- Les composants qui rendent leur propre document sont des composants client qui importent `globals.css`, et leurs libellés sont inlinés car ils vivent hors du fournisseur next-intl. [#a9a3bfc89eae1e73-1] [#35eb2e637ab761d4-1]",
+   "fact_text": "Les composants qui rendent leur propre document sont des composants client qui importent `globals.css`, et leurs libellés sont inlinés car ils vivent hors du fournisseur next-intl",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-app/a9a3bfc89eae1e73-1",
+    "frontend-app/35eb2e637ab761d4-1"
+   ],
+   "files": [
+    "frontend-app:global-error.tsx"
+   ],
+   "ranges": [
+    [
+     "frontend-app:global-error.tsx",
+     1,
+     3,
+     "89086275e117c931a2565b0fd0a46244e81aea65e227cefe32ec145d8fa3dcd6"
+    ],
+    [
+     "frontend-app:global-error.tsx",
+     66,
+     66,
+     "e2c1db056889586c279ef896089372318e81ed1142619ea34b423921971537cb"
+    ]
+   ],
+   "code_sha256": "d9a3441912251da79076d86fd225441ab976e293231e2783b30b3141e81a5d85",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.167,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 12
+      }
+     },
+     "restatement": "global-error.tsx est un composant client ('use client') qui importe la feuille de style globals.css. L'extrait ne montre pas le reste du composant.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 5,
+     "within_budget": true,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/app/global-error.tsx",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.417,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 12
+      }
+     },
+     "job": "frontend-app:rediscover:frontend-app_locale_app_dashboard_loading.test.tsx:1",
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Les deux composants qui rendent leur propre document (global-error.tsx et global-not-found-screen.tsx) portent 'use client' et importent globals.css (l.1-3). Leurs MESSAGES sont inlinés, hors NextIntlClientProvider. Le layout [locale] est un layout, pas un de ces écrans de secours, donc pas un contre-exemple net.",
+      "global-error.tsx et global-not-found-screen.tsx sont 'use client', importent globals.css (L3) et inlinent leurs MESSAGES. Aucun contre-exemple lu dans la portée.",
+      "global-error.tsx et global-not-found-screen.tsx sont des composants client ('use client') qui importent globals.css. Leurs libellés sont inlinés (MESSAGES) car ils sont hors NextIntlClientProvider. Aucun contre-exemple dans la portée."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "scope",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "<html dans frontend/app",
+         "found": "Neuf fichiers : les deux écrans, les layouts, fonts.ts, des tests et privacy/page.tsx. Aucun autre composant d'écran de secours."
+        },
+        {
+         "tool": "Read",
+         "target": "global-error.tsx et global-not-found-screen.tsx",
+         "found": "'use client', import globals.css, MESSAGES inlinés."
+        }
+       ],
+       [
+        {
+         "tool": "Read",
+         "target": "global-error.tsx et global-not-found-screen.tsx",
+         "found": "'use client', import globals.css, MESSAGES inlinés, commentaires sur l'absence de NextIntlClientProvider"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "globals.css|NextIntlClientProvider|useTranslations dans frontend/app *.tsx",
+         "found": "Les deux écrans importent globals.css, sont hors provider et inlinent leurs messages. Les autres pages sont sous le provider du layout."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "placed": {
+    "pack_line": 34,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "frontend-app:rules:5",
+   "section": "rules",
+   "rank": 5,
+   "text": "- Les libellés 404 copient `errors.json` et se resynchronisent à la main quand ils changent. [#da27a7b668cd53e5-1]",
+   "fact_text": "Les libellés 404 copient `errors.json` et se resynchronisent à la main quand ils changent",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-app/da27a7b668cd53e5-1"
+   ],
+   "files": [
+    "frontend-app:global-not-found-screen.tsx"
+   ],
+   "ranges": [
+    [
+     "frontend-app:global-not-found-screen.tsx",
+     93,
+     93,
+     "25cfd3d7eea6bf6838d42218a3bca68b8f26ff25c874cdda1833d047a7a7104c"
+    ]
+   ],
+   "code_sha256": "25cfd3d7eea6bf6838d42218a3bca68b8f26ff25c874cdda1833d047a7a7104c",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": 0.0,
+      "terms": 0.0,
+      "n": {
+       "identifiers": 1,
+       "values": 1,
+       "terms": 5
+      }
+     },
+     "restatement": "MESSAGES est un Record<Locale, NotFoundMessages> dans global-not-found-screen.tsx, qui associe un jeu de textes typé à chaque locale. Seule la déclaration est visible, pas les valeurs.",
+     "confidence": "medium",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 7,
+     "within_budget": false,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/app/global-not-found-screen.tsx",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 0.6,
+      "n": {
+       "identifiers": 1,
+       "values": 1,
+       "terms": 5
+      }
+     },
+     "job": "frontend-app:rediscover:frontend-app_locale_app_dashboard_loading.test.tsx:1",
+     "rank_in_lot": 1,
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "global-not-found-screen.tsx l.88-93 le dit : « Copie conforme de public/locales/<locale>/errors.json → notFound.* … À resynchroniser si les libellés y changent ». Aucun contre-exemple n'a été lu dans la portée.",
+      "global-not-found-screen.tsx L88-92 déclare MESSAGES comme copie conforme de errors.json, à resynchroniser à la main. La ligne est fidèle.",
+      "MESSAGES de global-not-found-screen.tsx (L93) est un dictionnaire inliné, hors provider next-intl, qui doit être resynchronisé à la main avec errors.json. Rien dans la portée ne contredit cela."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "scope",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Read",
+         "target": "global-not-found-screen.tsx",
+         "found": "Les MESSAGES sont inlinés, avec le commentaire de resynchronisation manuelle avec errors.json."
+        }
+       ],
+       [
+        {
+         "tool": "Read",
+         "target": "global-not-found-screen.tsx L88-93",
+         "found": "commentaire « Copie conforme de errors.json → notFound.* », « À resynchroniser »"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "globals.css|NextIntlClientProvider|useTranslations dans frontend/app",
+         "found": "global-not-found-screen.tsx L25-26 : messages inlinés car pas de useTranslations hors segment [locale]"
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "placed": {
+    "pack_line": 35,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "frontend-app:rules:6",
+   "section": "rules",
+   "rank": 6,
+   "text": "- L'error boundary écrit l'erreur réelle dans la console sans l'afficher, et les écrans d'état passent par `StateScreen`. [#4b4fee94969264b8-1] [#61b77c57cf76feed-1]",
+   "fact_text": "L'error boundary écrit l'erreur réelle dans la console sans l'afficher, et les écrans d'état passent par `StateScreen`",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-app/4b4fee94969264b8-1",
+    "frontend-app/61b77c57cf76feed-1"
+   ],
+   "files": [
+    "frontend-app:[locale]/error.tsx"
+   ],
+   "ranges": [
+    [
+     "frontend-app:[locale]/error.tsx",
+     50,
+     50,
+     "7dd045d31f4ac015c3e6567c65672522587eb43418373b6ce8afdd6b53e2849a"
+    ],
+    [
+     "frontend-app:[locale]/error.tsx",
+     53,
+     59,
+     "d423c1ea387777bc6f1fa01b13bb3b6b1131eae6252b39ea16e65eec4914f7e0"
+    ]
+   ],
+   "code_sha256": "d12d85a4cd4793339d652a5ca236cb963432ce9cb2f5b4b49df1ca0cb1c52da0",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.1,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 10
+      }
+     },
+     "restatement": "Dans LocaleError, useEffect appelle console.error(error). Le composant passe à StateScreen un testId forbidden-screen avec le code 403 et l'icône ShieldAlert si forbidden est vrai, sinon error-screen avec le code 500 et l'icône AlertTriangle. Le titre et la description viennent de t('title') et t('description'). L'extrait est tronqué, donc la valeur de forbidden n'est pas visible.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 16,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/app/[locale]/error.tsx",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 10
+      }
+     },
+     "job": "frontend-app:rediscover:frontend-app_locale_app_dashboard_loading.test.tsx:1",
+     "rank_in_lot": 4,
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 36,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "frontend-app:rules:7",
+   "section": "rules",
+   "rank": 7,
+   "text": "- La page 404 est un Server Component sans logique, qui délègue à un composant client `-screen.tsx`. [#286ccab6e67ed391-1] [#286ccab6e67ed391-2]",
+   "fact_text": "La page 404 est un Server Component sans logique, qui délègue à un composant client `-screen.tsx`",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-app/286ccab6e67ed391-1",
+    "frontend-app/286ccab6e67ed391-2"
+   ],
+   "files": [
+    "frontend-app:global-not-found.tsx"
+   ],
+   "ranges": [
+    [
+     "frontend-app:global-not-found.tsx",
+     3,
+     3,
+     "0755f1c8b6bf5dde4fc823e60aa314058c0a827642cf8499a3ee3ec32166ce66"
+    ],
+    [
+     "frontend-app:global-not-found.tsx",
+     62,
+     64,
+     "812697f3291ea7e05af8d727e25831e811b447e56267a76216afc96b06d28f50"
+    ]
+   ],
+   "code_sha256": "00488a11dd28783de8a8ac1156b86675e63f29bdb36e672df96a3e3ae0876ade",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": 0.0,
+      "terms": 0.0,
+      "n": {
+       "identifiers": 1,
+       "values": 1,
+       "terms": 7
+      }
+     },
+     "restatement": "placeholder",
+     "confidence": "low",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 6,
+     "within_budget": true,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/app/global-not-found.tsx",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": 0.0,
+      "terms": 0.571,
+      "n": {
+       "identifiers": 1,
+       "values": 1,
+       "terms": 7
+      }
+     },
+     "job": "frontend-app:rediscover:frontend-app_locale_app_dashboard_loading.test.tsx:1",
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "global-not-found.tsx (L62-64) renvoie seulement <GlobalNotFoundScreen />, et global-not-found-screen.tsx commence par 'use client'. Il exporte aussi metadata, mais c'est une constante sans logique. Il n'existe pas d'autre fichier not-found dans app.",
+      "global-not-found.tsx (L57-64) n'a pas 'use client', exporte metadata et rend seulement <GlobalNotFoundScreen />. global-not-found-screen.tsx commence par 'use client'. Aucun autre fichier not-found dans app/ ne contredit la règle.",
+      "global-not-found.tsx (L62-64) renvoie seulement <GlobalNotFoundScreen />, sans 'use client' ; global-not-found-screen.tsx commence par 'use client'. Le fichier exporte aussi `metadata`, ce qui reste sans logique. Aucun autre fichier 404 dans la portée (Glob : seulement global-not-found, -screen, test)."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "scope",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 6,
+      "searches": [
+       [
+        {
+         "tool": "Glob",
+         "target": "**/*not-found* dans frontend/app",
+         "found": "Seuls global-not-found.tsx, global-not-found-screen.tsx et le test existent, donc il n'y a pas d'autre page 404."
+        },
+        {
+         "tool": "Grep",
+         "target": "use client dans global-not-found-screen.tsx",
+         "found": "'use client' à la ligne 1."
+        }
+       ],
+       [
+        {
+         "tool": "Glob",
+         "target": "**/not-found*.tsx dans frontend/app",
+         "found": "aucun fichier not-found.tsx, donc pas d'autre page 404"
+        },
+        {
+         "tool": "Grep",
+         "target": "use client|notFound( dans *not-found* de frontend/app",
+         "found": "global-not-found-screen.tsx L1 'use client', global-not-found.tsx sans directive client"
+        }
+       ],
+       [
+        {
+         "tool": "Glob",
+         "target": "**/*not-found* dans frontend/app",
+         "found": "Seulement global-not-found.tsx, global-not-found-screen.tsx et le test ; pas d'autre page 404 qui contredirait la règle."
+        },
+        {
+         "tool": "Grep",
+         "target": "use client dans global-not-found-screen.tsx",
+         "found": "Ligne 1 : 'use client', donc le composant enfant est bien client."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "placed": {
+    "pack_line": 37,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "frontend-app:rules:8",
+   "section": "rules",
+   "rank": 8,
+   "text": "- Une page d'auth client reçoit `params` en `Promise` et lit la locale avec `use(params)`. [#161671a13789cc97-1] [#f4a196fc94aea5ef-1]",
+   "fact_text": "Une page d'auth client reçoit `params` en `Promise` et lit la locale avec `use(params)`",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-app/161671a13789cc97-1",
+    "frontend-app/f4a196fc94aea5ef-1"
+   ],
+   "files": [
+    "frontend-app:[locale]/forgot-password/page.tsx",
+    "frontend-app:[locale]/login/page.tsx"
+   ],
+   "ranges": [
+    [
+     "frontend-app:[locale]/forgot-password/page.tsx",
+     26,
+     32,
+     "3ad43e6102ca3705c8df2ef00395bc7c2c66113eb72fc7b23315e4d1f219e3fa"
+    ],
+    [
+     "frontend-app:[locale]/login/page.tsx",
+     27,
+     33,
+     "3ccdf30e77996b527ce963c9824d5c30c20baaa93c8665f8ab5ca303fb7bd6c8"
+    ]
+   ],
+   "code_sha256": "e4985202ee1e9dffcc3ffd93277a14690b9badc855ff9f4529d93a6bbc691437",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": null,
+      "values": 1.0,
+      "terms": 0.429,
+      "n": {
+       "identifiers": 0,
+       "values": 3,
+       "terms": 7
+      }
+     },
+     "restatement": "Les signatures de ForgotPasswordPage et LoginPage reçoivent params sous forme de Promise<{ locale }> lue avec use(params). Elles déclarent des états locaux (loading, submitted ou serverError) et LoginPage récupère login, loading et user depuis useAuth. L'extrait ne montre que des déclarations, sans logique de rendu.",
+     "confidence": "medium",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 14,
+     "within_budget": false,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/app/[locale]/login/page.tsx",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": null,
+      "values": 1.0,
+      "terms": 0.571,
+      "n": {
+       "identifiers": 0,
+       "values": 3,
+       "terms": 7
+      }
+     },
+     "job": "frontend-app:rediscover:frontend-app_locale_app_dashboard_loading.test.tsx:1",
+     "rank_in_lot": 2,
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Les pages d'auth login, register, reset-password et forgot-password reçoivent params en Promise et lisent la locale avec use(params). Aucun contre-exemple dans les pages d'auth.",
+      "login, register, forgot-password et reset-password (pages d'auth client) lisent la locale par use(params). Le type Promise a été lu sur login et forgot-password, sans contre-exemple dans les pages d'auth.",
+      "login, register, forgot-password et reset-password utilisent tous use(params)."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "scope",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "use\\(params\\)|useLocale dans frontend/app",
+         "found": "use(params) dans forgot-password, login, register, reset-password. useLocale uniquement dans error.tsx et les pages de la couche (app)."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "use\\(params\\)|useLocale dans frontend/app",
+         "found": "use(params) dans login, register, forgot-password, reset-password. useLocale dans error, settings, dashboard, timeline, [productId]/page"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "useLocale|use\\(params\\)",
+         "found": "use(params) dans les 4 pages d'auth, useLocale dans les pages (app) et error.tsx"
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "placed": {
+    "pack_line": 39,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "frontend-app:rules:9",
+   "section": "rules",
+   "rank": 9,
+   "text": "- La variable --font-ui se dérive dans fonts.ts, partagé par le layout [locale] et Storybook sans recopie. Les deux écrans global-error et global-not-found-screen en gardent une copie locale [#dada10d09df46167-1]",
+   "fact_text": "La variable --font-ui se dérive dans fonts.ts, partagé par le layout [locale] et Storybook sans recopie. Les deux écrans global-error et global-not-found-screen en gardent une copie locale",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-app/dada10d09df46167-1"
+   ],
+   "files": [
+    "frontend-app:fonts.ts"
+   ],
+   "ranges": [
+    [
+     "frontend-app:fonts.ts",
+     57,
+     65,
+     "3e0faf5708dd8ff5ff056d4907ce78568b35e7ee530bba8a1de1574e068c7505"
+    ]
+   ],
+   "code_sha256": "3e0faf5708dd8ff5ff056d4907ce78568b35e7ee530bba8a1de1574e068c7505",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
+      "terms": 0.067,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 15
+      }
+     },
+     "restatement": "fontUiStyle est un objet de style inline créé avec une clé calculée : la variable CSS '--font-ui' (FONT_UI_VARIABLE) reçoit la valeur 'var(--font-display)' (FONT_UI_VALUE). L'objet est casté en CSSProperties, cast nécessaire selon le commentaire parce que CSSProperties ne déclare pas les propriétés personnalisées '--*'. Le cast porte sur la clé littérale, pas sur une signature d'index.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 3,
+     "within_budget": true,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/app/fonts.ts",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.2,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 15
+      }
+     },
+     "job": "frontend-app:rediscover:frontend-app_locale_app_products_loading.tsx:1"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "fonts.ts exporte FONT_UI_VARIABLE et fontUiStyle (L57-65). global-error.tsx L123 et global-not-found-screen.tsx L144 gardent le littéral local '--font-ui': 'var(--font-display)'. Le layout et Storybook sont couverts par un test anti-recopie.",
+      "fonts.ts exporte FONT_UI_VARIABLE et fontUiStyle (L57-65). global-error.tsx L123 et global-not-found-screen.tsx L144 réécrivent '--font-ui': 'var(--font-display)' en dur. Le layout et Storybook s'y réfèrent (commentaires et test storybook-font-shell).",
+      "fonts.ts exporte FONT_UI_VARIABLE/FONT_UI_VALUE/fontUiStyle, importés par [locale]/layout.tsx et .storybook/preview.ts ; global-error.tsx:123 et global-not-found-screen.tsx:144 gardent une copie locale en littéral."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "scope",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 12,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "font-ui dans frontend (hors node_modules)",
+         "found": "copies locales seulement dans global-error.tsx et global-not-found-screen.tsx ; fonts.ts source unique ; test storybook-font-shell interdit la recopie ailleurs"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "font-ui dans frontend",
+         "found": "copies locales dans global-error et global-not-found-screen, source unique dans fonts.ts"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "font-ui|fontUiStyle|FONT_UI dans frontend",
+         "found": "imports dans layout et preview Storybook, littéraux locaux dans global-error et global-not-found-screen"
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     }
+    }
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "placed": {
+    "pack_line": 41,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "frontend-app:tests:1",
+   "section": "tests",
+   "rank": 1,
+   "text": "- Les tests fixent que global-error rend les balises html et body, que l'attribut lang suit le chemin d'URL (table de cas) et que les libellés inlinés restent identiques aux clés errors.json en fr, en, es et de [#45631dfc69ab60a1-1] [#7635e3cab4ddf4b5-1] [#7635e3cab4ddf4b5-2].",
+   "fact_text": "Les tests fixent que global-error rend les balises html et body, que l'attribut lang suit le chemin d'URL (table de cas) et que les libellés inlinés restent identiques aux clés errors.json en fr, en, es et de",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-app/45631dfc69ab60a1-1",
+    "frontend-app/7635e3cab4ddf4b5-1",
+    "frontend-app/7635e3cab4ddf4b5-2"
+   ],
+   "files": [
+    "frontend-app:global-error.test.tsx"
+   ],
+   "ranges": [
+    [
+     "frontend-app:global-error.test.tsx",
+     44,
+     56,
+     "0dd702effcdbf70399991f4792d7844eb1da672c7638528d7df9822aec25cf7d"
+    ],
+    [
+     "frontend-app:global-error.test.tsx",
+     67,
+     77,
+     "629b548cc2f805d1dd9a8845a9e6f375c670222901ccc289fbf9365f1814d21d"
+    ],
+    [
+     "frontend-app:global-error.test.tsx",
+     113,
+     123,
+     "fa7e1c2cb1df5c34286a2e2db83f40db42476fee96068fdc5874efa19c1032d9"
+    ]
+   ],
+   "code_sha256": "a79fde440882d6a896d9ff7ec146a89ced71e890e13fd276a52050261baf1da3",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": null,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 18
+      }
+     },
+     "restatement": "Le test de GlobalError vérifie que le rendu contient global-error-screen dans un body, que renderToStaticMarkup produit un document html et body complet, et que state-screen-code vaut 500 avec les boutons global-error-retry et global-error-home-link. Le it.each vérifie l'attribut lang de html selon le chemin : fr, en, es et de restent tels quels, et /zz/ retombe sur fr. Le dernier it.each vérifie que global-error-incident-ref vaut le incidentRef de errors.json suivi du digest.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 4,
+     "within_budget": true,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/app/global-error.test.tsx",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
+      "terms": 0.444,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 18
+      }
+     },
+     "job": "frontend-app:rediscover:frontend-app_locale_app_dashboard_loading.test.tsx:1",
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "global-error.test.tsx vérifie html/body (L49-51), la table de cas lang (L67-77) et l'égalité avec errors.json en fr/en/es/de (L113-123). Seul le libellé incidentRef est comparé à errors.json, pas tous les libellés, mais c'est un raccourci et non une fausseté.",
+      "global-error.test.tsx vérifie html/body (L49-51), lang selon le chemin via it.each (L67-77) et incidentRef identique à errors.json pour fr/en/es/de (L113-123). Pas de contre-exemple net.",
+      "global-error.test.tsx L49-51 vérifie html et body, L67-77 la table de cas pour lang, L113-123 l'égalité avec errors.json en fr, en, es, de."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 76,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "frontend-app:tests:2",
+   "section": "tests",
+   "rank": 2,
+   "text": "- Les tests fixent que le fallback d'un segment enfant n'affiche pas les testids du fallback parent ni les anciens testids de chargement [#65cd834a45a106b5-2] [#711e6b2b55e3971f-2].",
+   "fact_text": "Les tests fixent que le fallback d'un segment enfant n'affiche pas les testids du fallback parent ni les anciens testids de chargement",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-app/65cd834a45a106b5-2",
+    "frontend-app/711e6b2b55e3971f-2"
+   ],
+   "files": [
+    "frontend-app:[locale]/(app)/products/[productId]/loading.test.tsx",
+    "frontend-app:[locale]/(app)/timeline/loading.test.tsx"
+   ],
+   "ranges": [
+    [
+     "frontend-app:[locale]/(app)/products/[productId]/loading.test.tsx",
+     22,
+     25,
+     "f0cf0f76bd8c97c8505543da87891c813ea7faadc56c71cfddad501adcfdbe93"
+    ],
+    [
+     "frontend-app:[locale]/(app)/timeline/loading.test.tsx",
+     34,
+     38,
+     "77f85035139bdb7c04b95a4bb0c42444a6782d6614415b26c60730e91830c1b4"
+    ]
+   ],
+   "code_sha256": "c4ebd7cf66a1f21cca38e899cee55ad917b8208c773ab99a19f8522df0c36415",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 0.3,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 10
+      }
+     },
+     "restatement": "Le test de ProductDetailLoading vérifie qu'il ne rend pas le testid products-loading-skeleton de la liste. Le test de TimelineLoading vérifie qu'il ne rend ni timeline-data-loading ni l'ancien timeline-loading (référence DEC-S56-003).",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 9,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/app/[locale]/(app)/timeline/loading.test.tsx",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 0.4,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 10
+      }
+     },
+     "job": "frontend-app:rediscover:frontend-app_locale_app_dashboard_loading.test.tsx:1",
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "products/[productId]/loading.test.tsx L24 et timeline/loading.test.tsx L36-37 vérifient l'absence des testids parent et anciens.",
+      "Les tests products/[productId] L24 et timeline L36-37 vérifient l'absence des testids parent et anciens (queryByTestId ... not.toBeInTheDocument).",
+      "products/[productId]/loading.test.tsx L24 et timeline/loading.test.tsx L36-37 vérifient l'absence des testids parent et ancien."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 77,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "frontend-app:tests:3",
+   "section": "tests",
+   "rank": 3,
+   "text": "- Les tests fixent que la variante timeline pose la hauteur de lane du design system en style inline (`frontend-app:[locale]/(app)/products/[productId]/loading.test.tsx:11-20`), et selon le commentaire du test, elle seule le fait [#65cd834a45a106b5-1] [#711e6b2b55e3971f-1].",
+   "fact_text": "Les tests fixent que la variante timeline pose la hauteur de lane du design system en style inline (loading.test.tsx), et selon le commentaire du test, elle seule le fait",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-app/65cd834a45a106b5-1",
+    "frontend-app/711e6b2b55e3971f-1"
+   ],
+   "files": [
+    "frontend-app:[locale]/(app)/products/[productId]/loading.test.tsx",
+    "frontend-app:[locale]/(app)/timeline/loading.test.tsx"
+   ],
+   "ranges": [
+    [
+     "frontend-app:[locale]/(app)/products/[productId]/loading.test.tsx",
+     11,
+     20,
+     "01fea7db4fe23168b8df0b7112a9be456e4ba71e2f702070c8608306de0ad25c"
+    ],
+    [
+     "frontend-app:[locale]/(app)/timeline/loading.test.tsx",
+     16,
+     26,
+     "30d95d519a72988986a21c4a48b65766339f480e4e1ceb6dc9745c591512317b"
+    ]
+   ],
+   "code_sha256": "e9e8f6489ec2401749e7627edc906644a550b907637a3f4c025112eb5dcb9c50",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
+      "terms": 0.417,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 12
+      }
+     },
+     "restatement": "Le test de ProductDetailLoading attend un élément product-detail-loading-skeleton avec role='status', le libellé products.detail.loading et exactement 3 lanes dont la hauteur inline vaut var(--lane-height). Le test de TimelineLoading attend un élément timeline-loading-skeleton avec role='status', sans aria-busy, le libellé shell.timeline.loading et exactement 6 lanes à hauteur var(--lane-height).",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 9,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/app/[locale]/(app)/timeline/loading.test.tsx",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
+      "terms": 0.75,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 12
+      }
+     },
+     "job": "frontend-app:rediscover:frontend-app_locale_app_dashboard_loading.test.tsx:1",
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    },
+    "comment": [
+     {
+      "id": "frontend-app/711e6b2b55e3971f-1",
+      "verdict": "confirmed"
+     }
+    ],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "timeline/loading.test.tsx L24-25 porte le commentaire « Seule la variante timeline… » et teste var(--lane-height) en style inline, ce que la ligne attribue au commentaire. Le test produit L19 vérifie la même hauteur, ce qui est compatible si ce squelette utilise la variante timeline.",
+      "timeline/loading.test.tsx L24-25 pose la hauteur var(--lane-height) en inline et le commentaire dit que seule la variante timeline le fait, ce que la ligne attribue explicitement au commentaire.",
+      "timeline/loading.test.tsx L24-25 pose la hauteur var(--lane-height) en inline et le commentaire dit que seule la variante timeline le fait. La ligne le formule comme tel (selon le commentaire)."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 78,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "frontend-app:tests:4",
+   "section": "tests",
+   "rank": 4,
+   "text": "- Un test de loading mocke next-intl pour que useTranslations renvoie namespace.key, et les assertions portent donc sur les clés i18n (`frontend-app:[locale]/(app)/dashboard/loading.test.tsx:11-13`) [#d679d18eecb2b3a9-1].",
+   "fact_text": "Un test de loading mocke next-intl pour que useTranslations renvoie namespace.key, et les assertions portent donc sur les clés i18n (loading.test.tsx)",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-app/d679d18eecb2b3a9-1"
+   ],
+   "files": [
+    "frontend-app:[locale]/(app)/dashboard/loading.test.tsx"
+   ],
+   "ranges": [
+    [
+     "frontend-app:[locale]/(app)/dashboard/loading.test.tsx",
+     11,
+     13,
+     "6c654c014724b84e839bbd7b1612fa9f1173f1429cc59c15b88be541143d64d0"
+    ]
+   ],
+   "code_sha256": "6c654c014724b84e839bbd7b1612fa9f1173f1429cc59c15b88be541143d64d0",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.25,
+      "values": null,
+      "terms": 0.556,
+      "n": {
+       "identifiers": 4,
+       "values": 0,
+       "terms": 9
+      }
+     },
+     "restatement": "Le bloc vi.mock de next-intl remplace useTranslations par une fonction qui renvoie `${namespace}.${key}`, donc les libellés affichés dans les tests sont les clés de traduction préfixées par leur namespace.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 9,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/app/[locale]/(app)/timeline/loading.test.tsx",
+     "file_ok": false,
+     "overlap": {
+      "identifiers": 0.25,
+      "values": null,
+      "terms": 0.889,
+      "n": {
+       "identifiers": 4,
+       "values": 0,
+       "terms": 9
+      }
+     },
+     "job": "frontend-app:rediscover:frontend-app_locale_app_dashboard_loading.test.tsx:1",
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "dashboard/loading.test.tsx L11-13 mocke next-intl avec useTranslations renvoyant `${namespace}.${key}`, et les autres tests de loading assertent sur ces clés (products.detail.loading).",
+      "vi.mock('next-intl') L11-13 de dashboard/loading.test.tsx renvoie `${namespace}.${key}`, conforme au constat.",
+      "dashboard/loading.test.tsx L11-13 mocke next-intl avec useTranslations renvoyant `${namespace}.${key}`, conforme à la ligne."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 79,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "frontend-app:tests:5",
+   "section": "tests",
+   "rank": 5,
+   "text": "- Un test de composant qui importe globals.css le stube par vi.mock vers un module vide, et les tests de global-error coupent console.error et réinitialisent lang et URL entre les cas [#e4e73302877cbf54-1] [#dcb1935fd6f371ee-1].",
+   "fact_text": "Un test de composant qui importe globals.css le stube par vi.mock vers un module vide, et les tests de global-error coupent console.error et réinitialisent lang et URL entre les cas",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-app/e4e73302877cbf54-1",
+    "frontend-app/dcb1935fd6f371ee-1"
+   ],
+   "files": [
+    "frontend-app:global-error.test.tsx"
+   ],
+   "ranges": [
+    [
+     "frontend-app:global-error.test.tsx",
+     11,
+     11,
+     "ba9044fc30d15c5ee558ebf4ca08a4fc429f782461b9f371323680570e25796e"
+    ],
+    [
+     "frontend-app:global-error.test.tsx",
+     34,
+     42,
+     "cf5048efc39b30a0411e717a991cc412f4de80076c9c6890d43ada914849c665"
+    ]
+   ],
+   "code_sha256": "83cddc09e567e63c11458e29ccf354babe41464da5f9cd1b8c5e9cc7a46a6d4d",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.182,
+      "n": {
+       "identifiers": 4,
+       "values": 0,
+       "terms": 11
+      }
+     },
+     "restatement": "Le vi.mock neutralise globals.css en objet vide. Le beforeEach espionne console.error en le rendant silencieux et supprime l'attribut lang de documentElement. Le afterEach restaure le spy et remet l'URL à '/' via history.pushState.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 4,
+     "within_budget": true,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/app/global-error.test.tsx",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.75,
+      "values": null,
+      "terms": 0.273,
+      "n": {
+       "identifiers": 4,
+       "values": 0,
+       "terms": 11
+      }
+     },
+     "job": "frontend-app:rediscover:frontend-app_locale_app_dashboard_loading.test.tsx:1",
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "global-error.test.tsx L11 stube globals.css par `() => ({})`. Les L34-42 coupent console.error (spy mockImplementation) et réinitialisent lang (L36) et l'URL (L41).",
+      "vi.mock globals.css vers {} (L11), console.error coupé (L35), lang retiré (L36) et URL réinitialisée (L41) comme décrit.",
+      "global-error.test.tsx L11 stube globals.css par un module vide, L35-41 coupe console.error et réinitialise lang et URL."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 80,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "frontend-app:tests:6",
+   "section": "tests",
+   "rank": 6,
+   "text": "- Les tests de date utilisent des faux timers limités à Date, restaurés après chaque test, et les messages viennent directement de public/locales/<locale>/errors.json [#ed6723b14e16397e-1] [#b8f51fa1d0d0a684-1].",
+   "fact_text": "Les tests de date utilisent des faux timers limités à Date, restaurés après chaque test, et les messages viennent directement de public/locales/<locale>/errors.json",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-app/ed6723b14e16397e-1",
+    "frontend-app/b8f51fa1d0d0a684-1"
+   ],
+   "files": [
+    "frontend-app:global-not-found.test.tsx",
+    "frontend-app:global-error.test.tsx"
+   ],
+   "ranges": [
+    [
+     "frontend-app:global-not-found.test.tsx",
+     44,
+     54,
+     "0deb90909c5b8b6a7dcf792929b40e6a76a3284948465df9474fef18a5b1702d"
+    ],
+    [
+     "frontend-app:global-error.test.tsx",
+     14,
+     17,
+     "a5c29c13ffc691584c7340a7fa650aa518d5918511f18e45ee54a45089bbff7c"
+    ]
+   ],
+   "code_sha256": "0082b02d0dc5cce0c93e44742b21d698fea31073957078287f5a1ba44228d67b",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
+      "terms": 0.0,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 12
+      }
+     },
+     "restatement": "placeholder",
+     "confidence": "low",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 15,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/app/global-not-found.test.tsx",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 12
+      }
+     },
+     "job": "frontend-app:rediscover:frontend-app_locale_app_dashboard_loading.test.tsx:1",
+     "rank_in_lot": 3,
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 81,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "frontend-app:questions:1",
+   "section": "questions",
+   "rank": 1,
+   "text": "- La locale doit-elle se lire par use(params) ou par useLocale dans la couche des pages ? La page `frontend-app:[locale]/forgot-password/page.tsx:32` lit la locale par use(params), alors que error.tsx et timeline/page.tsx la lisent par useLocale [#799f6e4da3288542-1].",
+   "fact_text": "La locale doit-elle se lire par use(params) ou par useLocale dans la couche des pages ? La page page.tsx lit la locale par use(params), alors que error.tsx et timeline/page.tsx la lisent par useLocale",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-app/799f6e4da3288542-1"
+   ],
+   "files": [
+    "frontend-app:[locale]/forgot-password/page.tsx"
+   ],
+   "ranges": [
+    [
+     "frontend-app:[locale]/forgot-password/page.tsx",
+     32,
+     32,
+     "2f2caafc3e8646e597c4b243991a0d9c57b47b433388b79ae766251ec4923665"
+    ]
+   ],
+   "code_sha256": "2f2caafc3e8646e597c4b243991a0d9c57b47b433388b79ae766251ec4923665",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Le code montre deux conventions qui coexistent : les pages d'auth hors (app) utilisent use(params), tandis que error.tsx et les pages (app) (dashboard, settings, timeline, products/[productId]) utilisent useLocale. Rien ne tranche laquelle est la règle voulue.",
+      "Le code montre deux usages coexistants: use(params) dans les pages d'auth (login, register, forgot-password, reset-password) et useLocale dans error.tsx et dans les pages de l'espace (app) (settings, dashboard, timeline, [productId]). Rien ne désigne un choix unique, donc la question reste ouverte.",
+      "Les deux usages coexistent: use(params) dans les pages d'auth, useLocale dans les pages (app) et error.tsx. Le code ne tranche pas laquelle choisir."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "open",
+     "searched": true,
+     "search": {
+      "check": "answer",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "use\\(params\\)|useLocale dans frontend/app",
+         "found": "Répartition par couche : use(params) dans les pages d'auth, useLocale dans error.tsx et les pages (app). Aucun code ne tranche."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "use\\(params\\)|useLocale dans frontend/app",
+         "found": "Répartition: use(params) côté auth, useLocale côté (app) et error.tsx"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "useLocale|use\\(params\\) dans frontend/app",
+         "found": "use(params) dans login, register, forgot-password, reset-password. useLocale dans error, dashboard, timeline, settings, products/[productId]"
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "answer",
+   "placed": {
+    "pack_line": 85,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "frontend-app:questions:2",
+   "section": "questions",
+   "rank": 2,
+   "text": "- Selon le commentaire de `frontend-app:[locale]/forgot-password/page.tsx:43-44`, la locale de la route est transmise au service pour choisir la langue de l'email de réinitialisation, sans qu'un fait de code côté service ne le confirme dans cette base [#161671a13789cc97-3].",
+   "fact_text": "Selon le commentaire de page.tsx, la locale de la route est transmise au service pour choisir la langue de l'email de réinitialisation, sans qu'un fait de code côté service ne le confirme dans cette base",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-app/161671a13789cc97-3"
+   ],
+   "files": [
+    "frontend-app:[locale]/forgot-password/page.tsx"
+   ],
+   "ranges": [
+    [
+     "frontend-app:[locale]/forgot-password/page.tsx",
+     43,
+     44,
+     "4121400e94290917d2c489fcd5073021793f538aa5a44cba97fa2f2d36b42ed7"
+    ]
+   ],
+   "code_sha256": "4121400e94290917d2c489fcd5073021793f538aa5a44cba97fa2f2d36b42ed7",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [
+     {
+      "id": "frontend-app/161671a13789cc97-3",
+      "verdict": "confirmed"
+     }
+    ],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Le code côté service confirme : PasswordResetServiceImpl.requestReset relaie la locale au port email (l.126) et PasswordResetEmailTemplate résout la langue avec repli sur FR. La ligne n'est pas fausse, mais la question est tranchée.",
+      "La ligne dit « selon le commentaire », donc ne prête rien au code. Le code backend confirme pourtant la chaîne : BrevoEmailService L88 résout le modèle par locale.",
+      "La ligne est fidèle au commentaire (page.tsx L43-44). Le code la confirme : authService.forgotPassword envoie la locale dans le payload et PasswordResetServiceImpl.requestReset la relaie à l'email."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "resolved",
+     "searched": true,
+     "search": {
+      "check": "answer",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 3,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "forgotPassword dans frontend/src",
+         "found": "authService.forgotPassword(email, locale?) accepte la locale."
+        },
+        {
+         "tool": "Grep",
+         "target": "forgot|Locale dans backend *Password*",
+         "found": "ForgotPasswordRequest.locale optionnel, requestReset relaie la locale à EmailService, PasswordResetEmailTemplate résout la langue avec repli sur FR."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "forgotPassword|forgot-password (frontend/src)",
+         "found": "authService.forgotPassword(email, locale) poste sur /auth/forgot-password"
+        },
+        {
+         "tool": "Grep",
+         "target": "forgot-password|Accept-Language|locale (backend, *Password*/*Auth*)",
+         "found": "tests PasswordResetServiceImplTest et PasswordResetEmailTemplateTest sur la locale"
+        },
+        {
+         "tool": "Grep",
+         "target": "PasswordResetEmailTemplate.resolve (backend/src/main)",
+         "found": "appelé dans BrevoEmailService L88"
+        },
+        {
+         "tool": "Read",
+         "target": "BrevoEmailService.java L80-95",
+         "found": "resolve(locale) puis buildPayload avec le modèle"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "forgotPassword|forgot-password dans frontend/src",
+         "found": "authService.ts L49 transmet locale dans le payload si supportée"
+        },
+        {
+         "tool": "Grep",
+         "target": "forgot-password|ForgotPassword dans backend *.java",
+         "found": "AuthController et PasswordResetServiceImpl, tests de locale"
+        },
+        {
+         "tool": "Grep",
+         "target": "locale dans PasswordResetServiceImpl",
+         "found": "L93 et L126 : locale relayée à EmailService"
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0,
+      "contradicted": 3
+     },
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "answer",
+   "placed": {
+    "pack_line": 86,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "frontend-app:alerts:1",
+   "section": "alerts",
+   "rank": 1,
+   "text": "- Le style du html de `frontend-app:global-error.tsx:123` et celui de `frontend-app:global-not-found-screen.tsx:141-144` recopient à la main la dérivation de --font-ui, alors que fonts.ts la déclare source unique [#27d6940a021f46a6-1] [#4a72ffec01bdd565-1]. Si cette dérivation change, ces deux écrans d'erreur divergent du reste de l'application, donc importez fontUiStyle dans les deux au lieu de modifier les copies.",
+   "fact_text": "Le style du html de global-error.tsx et celui de global-not-found-screen.tsx recopient à la main la dérivation de --font-ui, alors que fonts.ts la déclare source unique. Si cette dérivation change, ces deux écrans d'erreur divergent du reste de l'application, donc importez fontUiStyle dans les deux au lieu de modifier les copies",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-app/27d6940a021f46a6-1",
+    "frontend-app/4a72ffec01bdd565-1"
+   ],
+   "files": [
+    "frontend-app:global-error.tsx",
+    "frontend-app:global-not-found-screen.tsx"
+   ],
+   "ranges": [
+    [
+     "frontend-app:global-error.tsx",
+     123,
+     123,
+     "c932d841fc1d16d9e2de2626ad0155b9910083398c3789627b4ab6a856290c8f"
+    ],
+    [
+     "frontend-app:global-not-found-screen.tsx",
+     141,
+     144,
+     "1eed266a13647ca5adfea55dd4af042049448befd6b69a842c4b6ca0e156c922"
+    ]
+   ],
+   "code_sha256": "9f885907e0a57169a4849415db92de1edf9697ed89ee7a081bca47c802e2ff54",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Les copies manuelles existent bien (global-error.tsx:123, global-not-found-screen.tsx:144). Le test storybook-font-shell ne vérifie que le layout [locale] et preview.ts, donc rien ne garantit que ces deux écrans suivent fonts.ts.",
+      "Les deux copies existent bien (global-error.tsx L123, global-not-found-screen.tsx L144), et le test de parité ne les couvre pas. Le risque reste réel.",
+      "Les copies manuelles de --font-ui existent bien (global-error.tsx L123, global-not-found-screen.tsx L144) alors que fonts.ts L65 exporte fontUiStyle. Aucun garde-fou ne les synchronise. La consigne d'importer fontUiStyle est motivée par le code."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "supported",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "guards",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "fontUiStyle|--font-ui dans frontend",
+         "found": "Les deux écrans gardent un littéral en dur, sans import de fontUiStyle."
+        },
+        {
+         "tool": "Read",
+         "target": "storybook-font-shell.test.ts l.55-114",
+         "found": "CONSUMERS ne liste que app/[locale]/layout.tsx et .storybook/preview.ts : aucune garde sur les deux écrans."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "fontUiStyle|--font-ui (frontend)",
+         "found": "les deux écrans recopient le littéral, sans import de fontUiStyle"
+        },
+        {
+         "tool": "Read",
+         "target": "storybook-font-shell.test.ts",
+         "found": "la garde ne vise que layout.tsx et preview.ts, pas les deux écrans"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "fontUiStyle|--font-ui dans frontend/app",
+         "found": "Seul [locale]/layout.tsx importe fontUiStyle. Rien ne force les deux écrans d'erreur à rester alignés."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-19T16:30:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "guards",
+   "placed": {
+    "pack_line": 90,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "frontend-app:rules:annex:7dcd798b",
+   "section": "rules",
+   "rank": 3,
+   "text": "- Selon le commentaire du dashboard, un fallback garde une seule région `role=\"status\"` et les blocs décoratifs sont `aria-hidden`. [#32dff7774a310336-1] [#b5cbb7f28ce9879c-1]",
+   "fact_text": "Selon le commentaire du dashboard, un fallback garde une seule région `role=\"status\"` et les blocs décoratifs sont `aria-hidden`",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-app/32dff7774a310336-1",
+    "frontend-app/b5cbb7f28ce9879c-1"
+   ],
+   "files": [
+    "frontend-app:[locale]/(app)/dashboard/loading.tsx"
+   ],
+   "ranges": [
+    [
+     "frontend-app:[locale]/(app)/dashboard/loading.tsx",
+     26,
+     28,
+     "7830e65ddea78c6e2287d1b0d76909c10987168821e7c999d88dbf53931dd05c"
+    ],
+    [
+     "frontend-app:[locale]/(app)/dashboard/loading.tsx",
+     30,
+     34,
+     "146f73e6a6cbc0e489384415ff0cdeff424fa6d829a5580d1c0f0e4afe52f33e"
+    ]
+   ],
+   "code_sha256": "42ab8c0d6a9c1bddb4219101fd92c4b66080aad3d18eb867529d7f784d6c51c5",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": null,
+      "values": 0.667,
+      "terms": 0.727,
+      "n": {
+       "identifiers": 0,
+       "values": 3,
+       "terms": 11
+      }
+     },
+     "restatement": "Le commentaire de LoadingSkeleton indique qu'une seule région role='status' doit exister, celle de LoadingSkeleton, avec le testid dashboard-loading-skeleton. Le composant Block rend un div avec aria-hidden='true' et les classes bg-surface-2, animate-pulse et rounded-md, pour que ces blocs ne soient pas annoncés.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": null,
+    "comment": [
+     {
+      "id": "frontend-app/32dff7774a310336-1",
+      "verdict": "unverifiable"
+     }
+    ],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "frontend-app.details.md",
+     "row": 1
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-19T16:30:00Z"
+  },
+  {
+   "id": "frontend-app:rules:annex:4a4590e5",
+   "section": "rules",
+   "rank": 10,
+   "text": "- Un échec de connexion affiche `invalidCredentials` pour un statut 401 et `generic` dans tous les autres cas. [#4169eeab8b96e08e-1]",
+   "fact_text": "Un échec de connexion affiche `invalidCredentials` pour un statut 401 et `generic` dans tous les autres cas",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-app/4169eeab8b96e08e-1"
+   ],
+   "files": [
+    "frontend-app:[locale]/login/page.tsx"
+   ],
+   "ranges": [
+    [
+     "frontend-app:[locale]/login/page.tsx",
+     49,
+     59,
+     "2f849dd7cd9df475b24dc4b6ca73afb1058e1b050351bf0307ac2b15f4de55c6"
+    ]
+   ],
+   "code_sha256": "2f849dd7cd9df475b24dc4b6ca73afb1058e1b050351bf0307ac2b15f4de55c6",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 0.6,
+      "n": {
+       "identifiers": 1,
+       "values": 2,
+       "terms": 5
+      }
+     },
+     "restatement": "LoginPage.onSubmit remet serverError à null, puis appelle login(data.username, data.password). En cas d'erreur Axios avec un statut 401, il affiche common.login.errors.invalidCredentials. Pour toute autre erreur, il affiche common.login.errors.generic.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "words:tous",
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "frontend-app.details.md",
+     "row": 2
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-19T16:30:00Z"
+  },
+  {
+   "id": "frontend-app:tests:annex:e21c93f2",
+   "section": "tests",
+   "rank": 4,
+   "text": "- Les tests fixent que le fallback products garde un titre réel, sans onglets réels ni aria-busy, avec six items de squelette [#98b1a65dc3f3bcba-1] [#98b1a65dc3f3bcba-2].",
+   "fact_text": "Les tests fixent que le fallback products garde un titre réel, sans onglets réels ni aria-busy, avec six items de squelette",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-app/98b1a65dc3f3bcba-1",
+    "frontend-app/98b1a65dc3f3bcba-2"
+   ],
+   "files": [
+    "frontend-app:[locale]/(app)/products/loading.test.tsx"
+   ],
+   "ranges": [
+    [
+     "frontend-app:[locale]/(app)/products/loading.test.tsx",
+     12,
+     18,
+     "9839fcdd788b059e87e5e3b4cc70c56c1591e23ca271cd19615d70e4201088c6"
+    ],
+    [
+     "frontend-app:[locale]/(app)/products/loading.test.tsx",
+     21,
+     27,
+     "fc41b761a0111fb072eea49267a08cb0b8312c6f9dcc747a3ef5344875a407bc"
+    ]
+   ],
+   "code_sha256": "7c63c9ac7db8a44e12c4a0749f54acf60e8eafa48ca922aa31f3d07650edeef1",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 0.667,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 12
+      }
+     },
+     "restatement": "Le test de ProductsLoading attend un élément products-loading-skeleton avec role='status', sans aria-busy, le libellé products.list.loading et 6 items de squelette. Le second test attend un h1 avec products.list.title, le sous-titre products.list.subtitle, aucun role tab et aucun testid products-tabs, car les onglets sont décoratifs.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "frontend-app.details.md",
+     "row": 3
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-19T16:30:00Z"
+  },
+  {
+   "id": "frontend-app:tests:annex:dbb7b411",
+   "section": "tests",
+   "rank": 5,
+   "text": "- Les tests fixent le nombre de régions status et le libellé sr-only du dashboard, ainsi que le placeholder aria-hidden de réservation de place dans settings [#d0b6197e7ba40a12-2] [#bdb2f28c8bff0c1c-1].",
+   "fact_text": "Les tests fixent le nombre de régions status et le libellé sr-only du dashboard, ainsi que le placeholder aria-hidden de réservation de place dans settings",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-app/d0b6197e7ba40a12-2",
+    "frontend-app/bdb2f28c8bff0c1c-1"
+   ],
+   "files": [
+    "frontend-app:[locale]/(app)/dashboard/loading.test.tsx",
+    "frontend-app:[locale]/(app)/settings/loading.test.tsx"
+   ],
+   "ranges": [
+    [
+     "frontend-app:[locale]/(app)/dashboard/loading.test.tsx",
+     45,
+     50,
+     "35ac9629d8581ed9c4750e34338123228048bb5097a565702bda8ceda982f6e4"
+    ],
+    [
+     "frontend-app:[locale]/(app)/settings/loading.test.tsx",
+     31,
+     38,
+     "6f7c7533a9969f147a42be11d9d708085408926cf0a749fe33691ae47f800af8"
+    ]
+   ],
+   "code_sha256": "c238225bcc4a098abf7ed74eb3ff8c0226e420ac10d1ce0a5a72469bd6abe8c0",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 0.571,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 14
+      }
+     },
+     "restatement": "Le test de DashboardLoading vérifie qu'un seul élément au rôle status est rendu, avec le data-testid dashboard-loading-skeleton, et que le texte common.spinner.loading porte la classe sr-only. Le test de SettingsLoading vérifie que le slot settings-back-placeholder porte les classes h-11, w-11 et lg:hidden, n'a pas h-9, et possède aria-hidden='true'.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "frontend-app.details.md",
+     "row": 4
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-19T16:30:00Z"
+  }
+ ],
+ "comment_facts": [
+  {
+   "id": "frontend-app/de7e2f0ed7095ba3-1",
+   "verdict": "unverifiable",
+   "code_says": "Le fichier rend un squelette de liste avec en-tête titre et sous-titre, onglets inertes en aria-hidden, barre de recherche et tri, puis LoadingSkeleton variant list avec rows 6. Il ne contient aucune logique de découpage par segment.",
+   "code_line_start": 0,
+   "code_line_end": 0,
+   "code_evidence": "",
+   "evidence_check": null,
+   "code_file": "",
+   "invalid": false,
+   "cache_digest": "65c0d274bafb2985314f6fa6dd6686bd1c934a02d68f65cdbe3f5c72ab7cca28",
+   "reused": true,
+   "reused_from": "2026-11-19T16:30:00Z",
+   "cited_by": [
+    "frontend-app:rules:1"
+   ],
+   "structure_rows_removed": []
+  },
+  {
+   "id": "frontend-app/6c6a5005a986a168-1",
+   "verdict": "confirmed",
+   "code_says": "Le composant TimelineLoading rend un LoadingSkeleton avec testId=\"timeline-loading-skeleton\", distinct de l'ancien testid. Il reproduit l'enveloppe de la page (section px-6 py-8, en-tête eyebrow et h1), ce qui correspond au commentaire.",
+   "code_line_start": 41,
+   "code_line_end": 47,
+   "code_evidence": "testId=\"timeline-loading-skeleton\"",
+   "evidence_check": null,
+   "code_file": "frontend-app:[locale]/(app)/timeline/loading.tsx",
+   "invalid": false,
+   "cache_digest": "a751f0171812d1b4edfeff4cb92a7944df920165ace3910f6d2069cc3296df62",
+   "reused": true,
+   "reused_from": "2026-11-19T16:30:00Z",
+   "cited_by": [
+    "frontend-app:rules:3"
+   ],
+   "structure_rows_removed": []
+  },
+  {
+   "id": "frontend-app/711e6b2b55e3971f-1",
+   "verdict": "confirmed",
+   "code_says": "Le test récupère les lanes avec getAllByTestId('loading-skeleton-item'), vérifie qu'il y en a 6, puis contrôle que la hauteur inline de chacune vaut var(--lane-height). Il vérifie aussi le role=status du conteneur timeline-loading-skeleton.",
+   "code_line_start": 22,
+   "code_line_end": 25,
+   "code_evidence": "const lanes = screen.getAllByTestId('loading-skeleton-item')",
+   "evidence_check": null,
+   "code_file": "frontend-app:[locale]/(app)/timeline/loading.test.tsx",
+   "invalid": false,
+   "cache_digest": "0fe238f3bf08a46c1c98b412c30a7dbd9ad1604b942e338a7df722b02afdefa3",
+   "reused": true,
+   "reused_from": "2026-11-19T16:30:00Z",
+   "cited_by": [
+    "frontend-app:tests:3"
+   ],
+   "structure_rows_removed": []
+  },
+  {
+   "id": "frontend-app/161671a13789cc97-3",
+   "verdict": "confirmed",
+   "code_says": "La page ForgotPasswordPage récupère la locale depuis params via use(params), puis appelle forgotPassword(data.email, locale), en transmettant la locale de la route en second argument.",
+   "code_line_start": 43,
+   "code_line_end": 44,
+   "code_evidence": "await forgotPassword(data.email, locale)",
+   "evidence_check": null,
+   "code_file": "frontend-app:[locale]/forgot-password/page.tsx",
+   "invalid": false,
+   "cache_digest": "9016b1ccbca79e34072af5007c9503bb1a389f01e36b4a589cb27c1080eed0c7",
+   "reused": true,
+   "reused_from": "2026-11-19T16:30:00Z",
+   "cited_by": [
+    "frontend-app:questions:2"
+   ],
+   "structure_rows_removed": []
+  }
+ ],
+ "facts_validated": [
+  "frontend-app/de7e2f0ed7095ba3-1",
+  "frontend-app/de7e2f0ed7095ba3-2",
+  "frontend-app/f6fc1f69dbd3ffb6-2",
+  "frontend-app/6c6a5005a986a168-2",
+  "frontend-app/6c6a5005a986a168-1",
+  "frontend-app/a9a3bfc89eae1e73-1",
+  "frontend-app/35eb2e637ab761d4-1",
+  "frontend-app/da27a7b668cd53e5-1",
+  "frontend-app/286ccab6e67ed391-1",
+  "frontend-app/286ccab6e67ed391-2",
+  "frontend-app/161671a13789cc97-1",
+  "frontend-app/f4a196fc94aea5ef-1",
+  "frontend-app/dada10d09df46167-1",
+  "frontend-app/45631dfc69ab60a1-1",
+  "frontend-app/7635e3cab4ddf4b5-1",
+  "frontend-app/7635e3cab4ddf4b5-2",
+  "frontend-app/65cd834a45a106b5-2",
+  "frontend-app/711e6b2b55e3971f-2",
+  "frontend-app/65cd834a45a106b5-1",
+  "frontend-app/711e6b2b55e3971f-1",
+  "frontend-app/d679d18eecb2b3a9-1",
+  "frontend-app/e4e73302877cbf54-1",
+  "frontend-app/dcb1935fd6f371ee-1",
+  "frontend-app/799f6e4da3288542-1",
+  "frontend-app/161671a13789cc97-3",
+  "frontend-app/27d6940a021f46a6-1",
+  "frontend-app/4a72ffec01bdd565-1"
+ ],
+ "counts": {
+  "units": 22,
+  "admit": 18,
+  "annex": 4,
+  "drop": 0,
+  "hold": 0,
+  "pending": 0,
+  "consigne_before_unsupported": 0,
+  "consigne_after_dropped": 0,
+  "structure_rows_removed": 0,
+  "framework": 0,
+  "guarded_elsewhere": 0,
+  "resolved": 0,
+  "restricted": 0,
+  "counterexample": 0,
+  "promoted": 0,
+  "kept_for": {
+   "rediscovered": 2
+  },
+  "pointers_removed": 0,
+  "restored_alerts": 0,
+  "budget_cut": 0
+ },
+ "answers": [],
+ "budget_cut": [],
+ "structure_rows_removed": [],
+ "notes": [],
+ "base_sha256_after": "fad31d53ef31e06dcc0b3fe4ae5d592841e0dd8c9a9be9271af4aa98c60c77d2",
+ "bases_touched": {
+  "frontend-app": {
+   "fingerprint": "72acfb3db7fff7454a31795bd61880ca9edda70eeb73bd34a04a0cc597c20d67",
+   "sha256_after": "fad31d53ef31e06dcc0b3fe4ae5d592841e0dd8c9a9be9271af4aa98c60c77d2"
+  }
+ },
+ "lint": {
+  "ok": true,
+  "errors": 0,
+  "warnings": 0
+ }
+}

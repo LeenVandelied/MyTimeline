@@ -1,1 +1,44 @@
-{"id": "A4", "verdict": "confirmed", "evidence": [{"file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/frontend/src/components/timeline/TimelineView.tsx", "line_start": 31, "line_end": 31, "quote": "import { Minimap } from './Minimap'"}, {"file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/frontend/src/components/layout/AppShell.tsx", "line_start": 37, "line_end": 37, "quote": "Segments enveloppés par le shell (sous `(app)/`) : dashboard, timeline,"}, {"file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/ai-stack-setup-fa6701/frontend/src/components/ui/toaster.tsx", "line_start": 16, "line_end": 16, "quote": "#621 — HÔTE UNIQUE des toasts de l'application (monté une fois, `app/[locale]/layout.tsx`)."}], "statement": "TimelineView.tsx est dans le dossier timeline et importe ses composants frères (Minimap, EventDrawer, EventPill). AppShell.tsx et toaster.tsx n'ont pas de nom de domaine et sont montés pour toute l'application, le shell enveloppant dashboard, timeline, produits et réglages. AppShell.tsx importe aussi NewEventDrawer depuis components/events sans que son nom le rattache au domaine event.", "proposed_decision": "les composants nommés timeline, event, product, category, auth, theme ou conflict vont à timeline par alias, le reste (ui, layout, styles, lib générique) reste au socle frontend"}
+{
+  "id": "A4",
+  "verdict": "confirmed",
+  "evidence": [
+    {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/components/timeline/TimelineView.tsx",
+      "line_start": 97,
+      "line_end": 97,
+      "quote": "la frise n'affiche que les events fournis en props"
+    },
+    {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/components/timeline/TimelineView.tsx",
+      "line_start": 650,
+      "line_end": 650,
+      "quote": "events: FullCalendarEvent[]"
+    },
+    {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/components/timeline/TimelineView.tsx",
+      "line_start": 740,
+      "line_end": 740,
+      "quote": "computeRange(events, now)"
+    },
+    {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/components/timeline/TimelineView.tsx",
+      "line_start": 772,
+      "line_end": 772,
+      "quote": "indexEventsByResource(events, rangeStart, now)"
+    },
+    {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/components/timeline/TimelineMobilePortrait.tsx",
+      "line_start": 317,
+      "line_end": 317,
+      "quote": "{laneEvents.map(({ item: { event }, row }) => {"
+    },
+    {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/components/timeline/TimelineEditHost.tsx",
+      "line_start": 178,
+      "line_end": 178,
+      "quote": "await deleteEvent(id, HANDLES_FORBIDDEN_INLINE)"
+    }
+  ],
+  "statement": "La frise desktop reçoit en props la liste des événements (FullCalendarEvent), calcule l'étendue temporelle et le positionnement à partir de ces événements, puis les range par produit (lane). Les vues mobiles portrait et paysage réutilisent la même chaîne de calcul, et l'édition ou la suppression d'un événement depuis la frise passe par les services d'événements.",
+  "proposed_decision": "event"
+}

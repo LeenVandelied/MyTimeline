@@ -1,27 +1,22 @@
 {
-  "UserEntity": [
-    "user",
-    "utilisateur",
-    "event",
-    "événement",
-    "evenement",
-    "category",
-    "catégorie",
-    "categorie",
-    "product",
-    "produit",
-    "session",
-    "export",
-    "password",
-    "mot de passe",
-    "timeline",
-    "chronologie",
-    "recurrence",
-    "récurrence",
-    "auth",
-    "theme",
-    "thème",
-    "conflict",
-    "conflit"
-  ]
+ "Event": [
+  "timeline",
+  "recurrence"
+ ],
+ "User": [
+  "login",
+  "register",
+  "password",
+  "forgot-password",
+  "reset-password",
+  "auth",
+  "role",
+  "theme",
+  "preference",
+  "settings"
+ ],
+ "Product": [
+  "products",
+  "productId"
+ ]
 }
