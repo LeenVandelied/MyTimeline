@@ -2,7 +2,7 @@
 
 > Ce document décrit le harnais ajouté par #337 (Sprint 49). Pour la recette de
 > lancement de la suite en local, voir
-> `docs/memory/sprints/sprint-47/e2e-local-runbook.md` — elle documente 4 réglages
+> `docs/runbook/e2e-local.md` — elle documente 4 réglages
 > non devinables (CORS, `--workers=1`, base `eventmanager_e2e`, port `:3100`).
 
 ## Pourquoi

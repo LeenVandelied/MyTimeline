@@ -299,7 +299,7 @@ cd frontend && npm run lint        # eslint .
 
 Avant de lancer la suite E2E, **lire** :
 
-- [`docs/memory/sprints/sprint-47/e2e-local-runbook.md`](docs/memory/sprints/sprint-47/e2e-local-runbook.md)
+- [`docs/runbook/e2e-local.md`](docs/runbook/e2e-local.md)
   — les 4 réglages non devinables (frontend sur `:3100`, override CORS, base dédiée
   `eventmanager_e2e`, `--workers=1`) et les deux modes de défaillance du serveur de dev ;
 - [`frontend/e2e/README.md`](frontend/e2e/README.md) — harnais de contrôle de contraste et de
@@ -326,7 +326,7 @@ partagé, cela tue sans avertissement un `next dev` tenu par un autre agent : ut
 `frontend-unit` quand un serveur Next tourne à côté.
 
 La CI ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) rejoue les jobs `backend`,
-`frontend`, `e2e`, `flyway-smoke`, `security`, `secret-scan` et `ai-env-packs` à chaque push.
+`frontend`, `e2e`, `flyway-smoke`, `security` et `secret-scan` à chaque push.
 
 ## Mise en production
 

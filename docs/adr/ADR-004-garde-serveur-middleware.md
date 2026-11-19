@@ -332,7 +332,7 @@ aux deux points d'émission. Ancré par test des deux côtés.
   l'atteint.**
 
 **Rotation et distribution des clés.** Procédure opérationnelle complète :
-`docs/memory/devops/secret-rotation-runbook.md §2`. En résumé : la clé privée
+`docs/runbook/rotation-secrets.md §2`. En résumé : la clé privée
 (`JWT_PRIVATE_KEY`) est un secret de plateforme au même titre que `DB_PASSWORD` ; la
 clé publique n'en est pas un — et depuis #358 elle ne se déploie plus du tout : le
 frontend la découvre sur le JWKS du backend. Seule `AUTH_JWKS_URL` (une URL, pas une clé)

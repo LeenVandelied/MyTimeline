@@ -102,8 +102,6 @@ node_modules/
 # === Config MCP locale (contient des clés API — ne jamais committer) ===
 .mcp.json
 
-# === State local du plugin ai-env (régénérable, non projet) ===
-frontend/.ai-env/
 # ai-stack (config locale, porte la clé du tracker et l'équipe)
 .ai-stack/
 # ai-stack : base de faits et rejeux, hors git (install.py)

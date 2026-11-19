@@ -191,7 +191,7 @@ Checklist par secret :
       dashboard Brevo, en générer une nouvelle, mettre à jour l'env. (À confirmer via section 4.)
 
 **Procédure de rotation par service :** le référentiel global mentionne
-`docs/memory/devops/external-services-inventory.md` (§3quater) — **ce fichier est ABSENT du
+`docs/runbook/services-externes.md` (§3quater) — **ce fichier est ABSENT du
 dépôt à date.** À créer (inventaire des services externes + procédure de rotation) ou à pointer
 s'il est ajouté ultérieurement. En attendant, rotation manuelle par service ci-dessus.
 

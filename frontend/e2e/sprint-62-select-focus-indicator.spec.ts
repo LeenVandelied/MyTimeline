@@ -105,7 +105,7 @@ import {
  *
  * PRÉREQUIS RUNTIME : backend Spring + Postgres migré, front servi depuis une
  * origine présente dans `app.cors.allowed-origins` (:3000 ou :3100).
- * Cf. `docs/memory/sprints/sprint-47/e2e-local-runbook.md`.
+ * Cf. `docs/runbook/e2e-local.md`.
  *
  * ─────────────────────────────────────────────────────────────────────────────
  * #472 (Sprint 80) — INSTABILITÉ DE CE FICHIER : DEUX CAUSES, UNE CORRIGÉE, UNE
