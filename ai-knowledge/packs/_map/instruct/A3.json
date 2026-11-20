@@ -1,18 +1,15 @@
 {
  "id": "A3",
- "question": "PasswordReset (22 fichiers) : pack propre ou dans user ?",
- "decision": "user",
- "rule": "R3 fusion par le script à 13 liens sur 14 vers User, PasswordReset ne dépasse pas pack_min_kb seul sans écran propre",
- "confidence": "medium",
+ "question": "PasswordResetToken (14 fichiers) : fondu dans Event par le script, dans user ou pack propre ?",
+ "decision": "event",
+ "rule": "R11 User est un hub, aucun groupe n'y est fondu ; la fusion du script dans Event (1 lien sur 1) est conservée faute de pack propre (14 fichiers)",
+ "confidence": "low",
  "seeds": [
-  "PasswordReset",
-  "PasswordResetTokenEntity"
+  "PasswordResetToken"
  ],
- "evidence": [
-  "backend:src/main/java/com/matimeline/eventmanager/application/validation/StrongPasswordValidator.java"
- ],
- "falsified_if": "un ticket de réinitialisation de mot de passe évolue sans toucher aux comptes utilisateur",
+ "evidence": [],
+ "falsified_if": "un ticket de réinitialisation de mot de passe modifie PasswordResetToken sans toucher aux événements, ou son poids dépasse pack_min_kb seul",
  "status": "open",
- "opened": "2026-11-19",
+ "opened": "2026-11-20",
  "touched_by": []
 }

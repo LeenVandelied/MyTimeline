@@ -1,0 +1,294 @@
+{
+ "schema": 1,
+ "generated_at": "2026-11-20T09:54:20Z",
+ "inventory_sha256": "bd9302d68a35dc3944cb57e9de60465969d3d33105bec858a6ae060a9607c5af",
+ "config_sha256": "4172abc27ebdec7320d7c95070cf876884ecd5c32e876852959d2eba55c59000",
+ "thresholds": {
+  "min_seeds": 3,
+  "min_domain_packs": 2,
+  "max_domain_share": 0.5,
+  "max_layer_orphans": 0.1,
+  "layer_min_files": 10,
+  "tech_min_files": 3,
+  "tech_owner_share": 0.9,
+  "foreign_share": 0.1
+ },
+ "repos": [
+  {
+   "name": "backend",
+   "language": "java",
+   "files": 270,
+   "multi_folder": false,
+   "folders": [
+    "src"
+   ],
+   "by_language": {
+    "java": 254,
+    "neutral": 16
+   },
+   "foreign": null
+  },
+  {
+   "name": "frontend",
+   "language": "typescript",
+   "files": 389,
+   "multi_folder": true,
+   "folders": [
+    "__tests__",
+    "components",
+    "contexts",
+    "hooks",
+    "i18n",
+    "lib",
+    "services",
+    "styles",
+    "types",
+    "utils"
+   ],
+   "by_language": {
+    "typescript": 389
+   },
+   "foreign": null
+  },
+  {
+   "name": "frontend-app",
+   "language": "typescript",
+   "files": 41,
+   "multi_folder": false,
+   "folders": [
+    "[locale]"
+   ],
+   "by_language": {
+    "typescript": 41
+   },
+   "foreign": null
+  }
+ ],
+ "domain": {
+  "seeds": 7,
+  "min_packs": 2,
+  "max_share": 0.5
+ },
+ "layers": [
+  {
+   "layer": "backend",
+   "repo": "backend",
+   "folder": null,
+   "files": 270,
+   "language": "java",
+   "max_orphan_share": 0.1
+  },
+  {
+   "layer": "frontend-app",
+   "repo": "frontend-app",
+   "folder": null,
+   "files": 41,
+   "language": "typescript",
+   "max_orphan_share": 0.1
+  },
+  {
+   "layer": "frontend/components",
+   "repo": "frontend",
+   "folder": "components",
+   "files": 253,
+   "language": "typescript",
+   "max_orphan_share": 0.1
+  },
+  {
+   "layer": "frontend/hooks",
+   "repo": "frontend",
+   "folder": "hooks",
+   "files": 44,
+   "language": "typescript",
+   "max_orphan_share": 0.1
+  },
+  {
+   "layer": "frontend/lib",
+   "repo": "frontend",
+   "folder": "lib",
+   "files": 35,
+   "language": "typescript",
+   "max_orphan_share": 0.1
+  },
+  {
+   "layer": "frontend/services",
+   "repo": "frontend",
+   "folder": "services",
+   "files": 20,
+   "language": "typescript",
+   "max_orphan_share": 0.1
+  }
+ ],
+ "tech_dirs": [
+  {
+   "kind": "migrations",
+   "repo": "backend",
+   "dir": "backend:src/main/resources/db/migration/",
+   "files": 16,
+   "probe": "backend:src/main/resources/db/migration/V16__user_theme_preference.sql",
+   "slug": "migrations"
+  },
+  {
+   "kind": "ui_socle",
+   "repo": "frontend",
+   "dir": "frontend:components/ui/",
+   "files": 45,
+   "probe": "frontend:components/ui/avatar.stories.tsx",
+   "slug": "components-socle",
+   "tech_folder": "components/ui"
+  },
+  {
+   "kind": "ui_socle",
+   "repo": "frontend",
+   "dir": "frontend:lib/",
+   "files": 20,
+   "probe": "frontend:lib/auth-guard-paths.ts",
+   "slug": "lib-socle",
+   "tech_folder": "lib"
+  }
+ ],
+ "trials": [
+  {
+   "id": "T1",
+   "kind": "tech_dir",
+   "dir": "backend:src/main/resources/db/migration/",
+   "text": "Revoir la migration V16__user_theme_preference.sql.",
+   "files": [
+    "backend:src/main/resources/db/migration/V16__user_theme_preference.sql"
+   ]
+  },
+  {
+   "id": "T2",
+   "kind": "tech_dir",
+   "dir": "frontend:components/ui/",
+   "text": "Revoir le composant avatar.stories.tsx.",
+   "files": [
+    "frontend:components/ui/avatar.stories.tsx"
+   ]
+  },
+  {
+   "id": "T3",
+   "kind": "tech_dir",
+   "dir": "frontend:lib/",
+   "text": "Revoir le composant auth-guard-paths.ts.",
+   "files": [
+    "frontend:lib/auth-guard-paths.ts"
+   ]
+  },
+  {
+   "id": "T4",
+   "kind": "front_layer",
+   "layer": "frontend-app",
+   "text": "Revoir l'écran loading.",
+   "files": [
+    "frontend-app:[locale]/(app)/dashboard/loading.tsx"
+   ]
+  },
+  {
+   "id": "T5",
+   "kind": "front_layer",
+   "layer": "frontend/components",
+   "text": "Revoir l'écran EventEditForm.",
+   "files": [
+    "frontend:components/EventEditForm.tsx"
+   ]
+  },
+  {
+   "id": "T6",
+   "kind": "front_layer",
+   "layer": "frontend/hooks",
+   "text": "Revoir l'écran useArchiveProduct.",
+   "files": [
+    "frontend:hooks/useArchiveProduct.ts"
+   ]
+  },
+  {
+   "id": "T7",
+   "kind": "front_layer",
+   "layer": "frontend/lib",
+   "text": "Revoir l'écran auth-guard-paths.",
+   "files": [
+    "frontend:lib/auth-guard-paths.ts"
+   ]
+  },
+  {
+   "id": "T8",
+   "kind": "front_layer",
+   "layer": "frontend/services",
+   "text": "Revoir l'écran ApiErrorTranslatorBridge.",
+   "files": [
+    "frontend:services/ApiErrorTranslatorBridge.tsx"
+   ]
+  },
+  {
+   "id": "T9",
+   "kind": "entity_seed",
+   "seed": "Category",
+   "entity": "CategoryEntity",
+   "text": "Revoir la classe CategoryEntity.",
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/entities/CategoryEntity.java"
+   ]
+  },
+  {
+   "id": "T10",
+   "kind": "entity_seed",
+   "seed": "Event",
+   "entity": "EventEntity",
+   "text": "Revoir la classe EventEntity.",
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/entities/EventEntity.java"
+   ]
+  },
+  {
+   "id": "T11",
+   "kind": "entity_seed",
+   "seed": "ExportJob",
+   "entity": "ExportJobEntity",
+   "text": "Revoir la classe ExportJobEntity.",
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/entities/ExportJobEntity.java"
+   ]
+  },
+  {
+   "id": "T12",
+   "kind": "entity_seed",
+   "seed": "PasswordResetToken",
+   "entity": "PasswordResetTokenEntity",
+   "text": "Revoir la classe PasswordResetTokenEntity.",
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/entities/PasswordResetTokenEntity.java"
+   ]
+  },
+  {
+   "id": "T13",
+   "kind": "entity_seed",
+   "seed": "Product",
+   "entity": "ProductEntity",
+   "text": "Revoir la classe ProductEntity.",
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/entities/ProductEntity.java"
+   ]
+  },
+  {
+   "id": "T14",
+   "kind": "entity_seed",
+   "seed": "Session",
+   "entity": "SessionEntity",
+   "text": "Revoir la classe SessionEntity.",
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/entities/SessionEntity.java"
+   ]
+  },
+  {
+   "id": "T15",
+   "kind": "entity_seed",
+   "seed": "User",
+   "entity": "UserEntity",
+   "text": "Revoir la classe UserEntity.",
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/entities/UserEntity.java"
+   ]
+  }
+ ]
+}

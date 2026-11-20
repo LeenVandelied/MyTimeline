@@ -7,29 +7,31 @@
   "frontend-app": 41
  },
  "entities": 7,
- "seeds": 14,
+ "seeds": 7,
+ "hubs": [
+  "User"
+ ],
  "seeds_by_origin": {
-  "entity": 7,
-  "extra": 7
+  "entity": 7
  },
  "seeds_from_folders": [],
  "folders_on_entity_seeds": [],
- "groups": 5,
- "groups_with_files": 5,
- "labelled": 488,
+ "groups": 4,
+ "groups_with_files": 4,
+ "labelled": 237,
  "by_how": {
-  "name": 333,
-  "fanin": 67,
-  "imports": 88
+  "name": 179,
+  "fanin": 21,
+  "imports": 37
  },
- "tech": 172,
+ "tech": 423,
  "transversal_home": 0,
  "ambiguous": 0,
  "unassigned": 40,
  "unassigned_rate": 0.0571,
  "unassigned_bytes_rate": 0.0384,
  "edges_source": "regex",
- "file_edges": 1075,
+ "file_edges": 1684,
  "graphify": {},
  "motifs": [
   "authorization",
@@ -38,12 +40,5 @@
   "state-machine"
  ],
  "notes": [],
- "duration_s": 1.15,
- "phase3_instability": {
-  "first_diff": "instabilité",
-  "moved_pack": 73,
-  "alias_moves": 50,
-  "unexplained": 23,
-  "replay": "phase 2 rejouée une fois (map.py relit aliases.json), second diff rien à faire, état figé tel quel"
- }
+ "duration_s": 0.97
 }

@@ -1,18 +1,20 @@
 # Index des packs : mytimeline
 
-12 packs, 700 fichiers sur 700 rattachés, 0 restants. Chargé en phase 1 des skills ; les déclencheurs sont dans `_triggers.json`, les annexes ne se chargent que depuis leur pack.
+14 packs, 700 fichiers sur 700 rattachés, 0 restants. Chargé en phase 1 des skills ; les déclencheurs sont dans `_triggers.json`, les annexes ne se chargent que depuis leur pack.
 
 | Pack | Sorte | En une phrase | Taille | Fichier | Annexe | Hypothèses open |
 |---|---|---|---|---|---|---|
-| event | domain | Charger quand la demande touche event, recurrence, timeline, les routes /api/events, events/evt-desktop, ou les entités EventEntity. | 180 fichiers, 1502 ko | domains/event.md | domains/event.details.md | 1 |
-| user | domain | Charger quand la demande touche user, utilisateur, mot de passe, les routes /api/auth, /api/me, ou les entités UserEntity, PasswordResetTokenEntity. | 154 fichiers, 826 ko | domains/user.md | domains/user.details.md | 3 |
-| product | domain | Charger quand la demande touche product, ou les entités ProductEntity. | 69 fichiers, 535 ko | domains/product.md | domains/product.details.md | 1 |
-| session | domain | Charger quand la demande touche session, jwt, token, les routes /api/sessions, ou les entités SessionEntity. | 22 fichiers, 84 ko | domains/session.md | domains/session.details.md | 0 |
-| category | domain | Charger quand la demande touche category, les routes /api/categories, api/categories, ou les entités CategoryEntity. | 32 fichiers, 187 ko | domains/category.md | domains/category.details.md | 1 |
-| export | domain | Charger quand la demande touche export, zip, téléchargement, les routes /api/export, ou les entités ExportJobEntity. | 31 fichiers, 92 ko | domains/export.md | domains/export.details.md | 0 |
-| authorization | transversal | Charger quand un fichier du périmètre porte le motif authorization (densité ≥ 3) ou quand la demande touche authorization dans user, session, export. | 0 fichiers, 0 ko | transversal/authorization.md |  | 0 |
-| integrations | transversal | Charger quand un fichier du périmètre porte le motif integrations (densité ≥ 3) ou quand la demande touche integrations dans user, event, export. | 0 fichiers, 0 ko | transversal/integrations.md |  | 0 |
-| batch | transversal | Charger quand un fichier du périmètre porte le motif batch (densité ≥ 3) ou quand la demande touche batch dans user, export. | 0 fichiers, 0 ko | transversal/batch.md |  | 0 |
-| backend-core | technical | Charger quand le diff touche backend/infrastructure, backend/db, backend/ ou qu'un bloc backend est prévu. | 44 fichiers, 326 ko | technical/backend-core.md |  | 0 |
-| frontend-core | technical | Charger quand le diff touche frontend/components, frontend/lib, frontend/hooks ou qu'un bloc frontend est prévu. | 127 fichiers, 778 ko | technical/frontend-core.md |  | 0 |
-| frontend-app | technical | Charger quand le diff touche frontend-app/[locale], frontend-app/(root) ou qu'un bloc frontend est prévu. | 41 fichiers, 179 ko | technical/frontend-app.md |  | 0 |
+| event | domain | Charger quand la demande touche event, recurrence, passwordresettoken, les routes /api/events, ou les entités EventEntity, PasswordResetTokenEntity. | 49 fichiers, 255 ko | event.instructions.md | event.details.md | 0 |
+| user | domain | Charger quand la demande touche user, utilisateur, mot de passe, les routes /api/auth, /api/me, ou les entités UserEntity. | 81 fichiers, 397 ko | user.instructions.md | user.details.md | 2 |
+| product | domain | Charger quand la demande touche product, ou les entités ProductEntity. | 18 fichiers, 129 ko | product.instructions.md | product.details.md | 0 |
+| session | domain | Charger quand la demande touche session, jwt, token, les routes /api/sessions, ou les entités SessionEntity. | 23 fichiers, 108 ko | session.instructions.md | session.details.md | 0 |
+| category | domain | Charger quand la demande touche category, les routes /api/categories, ou les entités CategoryEntity. | 20 fichiers, 93 ko | category.instructions.md | category.details.md | 0 |
+| export | domain | Charger quand la demande touche export, zip, téléchargement, les routes /api/export, ou les entités ExportJobEntity. | 35 fichiers, 107 ko | export.instructions.md | export.details.md | 0 |
+| authorization | transversal | Charger quand un fichier du périmètre porte le motif authorization (densité ≥ 3) ou quand la demande touche authorization dans user, session, export. | 35 fichiers, 313 ko | authorization.instructions.md | authorization.details.md | 0 |
+| integrations | transversal | Charger quand un fichier du périmètre porte le motif integrations (densité ≥ 3) ou quand la demande touche integrations dans user, event, export. | 98 fichiers, 767 ko | integrations.instructions.md | integrations.details.md | 0 |
+| batch | transversal | Charger quand un fichier du périmètre porte le motif batch (densité ≥ 3) ou quand la demande touche batch dans user, export. | 9 fichiers, 42 ko | batch.instructions.md | batch.details.md | 0 |
+| backend-core | technical | Charger quand le diff touche backend/infrastructure, backend/(root), backend/support ou qu'un bloc backend est prévu. | 38 fichiers, 318 ko | backend-core.instructions.md | backend-core.details.md | 0 |
+| frontend-core | technical | Charger quand le diff touche frontend/components/components, frontend/hooks/hooks, frontend/services/services ou qu'un bloc frontend est prévu. | 344 fichiers, 2598 ko | frontend-core.instructions.md | frontend-core.details.md | 0 |
+| frontend-app | technical | Charger quand le diff touche frontend-app/[locale], frontend-app/(root) ou qu'un bloc frontend est prévu. | 41 fichiers, 179 ko | frontend-app.instructions.md | frontend-app.details.md | 0 |
+| lib-socle | technical | Charger quand le diff touche frontend/lib/lib ou qu'un bloc frontend est prévu. | 35 fichiers, 277 ko | lib-socle.instructions.md | lib-socle.details.md | 0 |
+| migrations | technical | Charger quand le diff touche backend/db ou qu'un bloc base est prévu. | 16 fichiers, 47 ko | migrations.instructions.md | migrations.details.md | 0 |

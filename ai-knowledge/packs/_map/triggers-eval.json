@@ -1,11 +1,15 @@
 {
  "scores": {
-  "requests": 33,
-  "simple": 18,
-  "cross": 12,
-  "technical": 3,
+  "requests": 50,
+  "simple": 17,
+  "cross": 18,
+  "technical": 5,
+  "file": 10,
+  "file_expected_selected": 1.0,
+  "single_domain_pack": false,
+  "distinct_entities": 7,
   "simple_expected_selected": 1.0,
-  "simple_sole_domain": 0.944,
+  "simple_sole_domain": 1.0,
   "simple_by_variant": {
    "entité": {
     "n": 6,
@@ -18,15 +22,15 @@
     "sole": 1.0
    },
    "route": {
-    "n": 6,
+    "n": 5,
     "selected": 1.0,
-    "sole": 0.833
+    "sole": 1.0
    }
   },
   "cross_both_selected": 1.0,
   "technical_selected": 1.0,
-  "mean_selected_packs": 1.45,
-  "mean_selected_domains_simple": 1.06
+  "mean_selected_packs": 1.44,
+  "mean_selected_domains_simple": 1.0
  },
  "requests": [
   {
@@ -252,20 +256,6 @@
   },
   {
    "kind": "simple",
-   "variant": "route",
-   "expected": [
-    "product"
-   ],
-   "text": "Corriger l'écran de la route users/user-1/products.",
-   "selected": {
-    "user": "mot-clé user",
-    "product": "mot-clé product"
-   },
-   "ok": true,
-   "sole": false
-  },
-  {
-   "kind": "simple",
    "variant": "entité",
    "expected": [
     "product"
@@ -447,6 +437,97 @@
    "sole": false
   },
   {
+   "kind": "croisée",
+   "variant": "seeds",
+   "expected": [
+    "category",
+    "event"
+   ],
+   "text": "Lier Category à Event.",
+   "selected": {
+    "event": "mot-clé event",
+    "category": "mot-clé category"
+   },
+   "ok": true,
+   "sole": false
+  },
+  {
+   "kind": "croisée",
+   "variant": "seeds",
+   "expected": [
+    "event",
+    "export"
+   ],
+   "text": "Lier Event à ExportJob.",
+   "selected": {
+    "event": "mot-clé event",
+    "export": "mot-clé export"
+   },
+   "ok": true,
+   "sole": false
+  },
+  {
+   "kind": "croisée",
+   "variant": "seeds",
+   "expected": [
+    "export",
+    "product"
+   ],
+   "text": "Lier ExportJob à Product.",
+   "selected": {
+    "product": "mot-clé product",
+    "export": "mot-clé export"
+   },
+   "ok": true,
+   "sole": false
+  },
+  {
+   "kind": "croisée",
+   "variant": "seeds",
+   "expected": [
+    "product",
+    "session"
+   ],
+   "text": "Lier Product à Session.",
+   "selected": {
+    "product": "mot-clé product",
+    "session": "mot-clé session"
+   },
+   "ok": true,
+   "sole": false
+  },
+  {
+   "kind": "croisée",
+   "variant": "seeds",
+   "expected": [
+    "session",
+    "user"
+   ],
+   "text": "Lier Session à PasswordResetToken.",
+   "selected": {
+    "user": "mot-clé password",
+    "session": "mot-clé session"
+   },
+   "ok": true,
+   "sole": false
+  },
+  {
+   "kind": "croisée",
+   "variant": "seeds",
+   "expected": [
+    "user",
+    "category"
+   ],
+   "text": "Lier PasswordResetToken à Category.",
+   "selected": {
+    "user": "mot-clé password",
+    "session": "mot-clé token",
+    "category": "mot-clé category"
+   },
+   "ok": true,
+   "sole": false
+  },
+  {
    "kind": "technique",
    "variant": "couche",
    "expected": [
@@ -480,26 +561,198 @@
    ],
    "text": "Mettre à jour la couche components.",
    "selected": {
-    "frontend-core": "couche frontend/components"
+    "frontend-core": "couche frontend/components/components"
+   },
+   "ok": true,
+   "sole": false
+  },
+  {
+   "kind": "technique",
+   "variant": "couche",
+   "expected": [
+    "lib-socle"
+   ],
+   "text": "Mettre à jour la couche lib.",
+   "selected": {
+    "lib-socle": "couche frontend/lib/lib"
+   },
+   "ok": true,
+   "sole": false
+  },
+  {
+   "kind": "technique",
+   "variant": "couche",
+   "expected": [
+    "migrations"
+   ],
+   "text": "Mettre à jour la couche db.",
+   "selected": {
+    "migrations": "couche backend/db"
+   },
+   "ok": true,
+   "sole": false
+  },
+  {
+   "kind": "fichier",
+   "variant": "règle 1 bis",
+   "expected": [
+    "backend-core"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/EventmanagerApplication.java"
+   ],
+   "text": "Modifier le fichier backend:src/main/java/com/matimeline/eventmanager/EventmanagerApplication.java.",
+   "selected": {
+    "backend-core": "fichier affecté"
+   },
+   "ok": true,
+   "sole": false
+  },
+  {
+   "kind": "fichier",
+   "variant": "règle 1 bis",
+   "expected": [
+    "backend-core"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/application/dtos/ArchivedProductResponse.java"
+   ],
+   "text": "Modifier le fichier backend:src/main/java/com/matimeline/eventmanager/application/dtos/ArchivedProductResponse.java.",
+   "selected": {
+    "product": "fichier affecté",
+    "backend-core": "path_rules ^backend:(?!src/main/resources/db/migration/)src/(main|test)/(java|resources)/"
+   },
+   "ok": true,
+   "sole": false
+  },
+  {
+   "kind": "fichier",
+   "variant": "règle 1 bis",
+   "expected": [
+    "frontend-app"
+   ],
+   "files": [
+    "frontend-app:[locale]/(app)/dashboard/loading.test.tsx"
+   ],
+   "text": "Modifier le fichier frontend-app:[locale]/(app)/dashboard/loading.test.tsx.",
+   "selected": {
+    "frontend-app": "fichier affecté"
+   },
+   "ok": true,
+   "sole": false
+  },
+  {
+   "kind": "fichier",
+   "variant": "règle 1 bis",
+   "expected": [
+    "frontend-app"
+   ],
+   "files": [
+    "frontend-app:[locale]/(app)/dashboard/loading.tsx"
+   ],
+   "text": "Modifier le fichier frontend-app:[locale]/(app)/dashboard/loading.tsx.",
+   "selected": {
+    "frontend-app": "fichier affecté"
+   },
+   "ok": true,
+   "sole": false
+  },
+  {
+   "kind": "fichier",
+   "variant": "règle 1 bis",
+   "expected": [
+    "frontend-core"
+   ],
+   "files": [
+    "frontend:__tests__/console-error-guard.test.ts"
+   ],
+   "text": "Modifier le fichier frontend:__tests__/console-error-guard.test.ts.",
+   "selected": {
+    "frontend-core": "fichier affecté"
+   },
+   "ok": true,
+   "sole": false
+  },
+  {
+   "kind": "fichier",
+   "variant": "règle 1 bis",
+   "expected": [
+    "frontend-core"
+   ],
+   "files": [
+    "frontend:__tests__/ds-type-scale.test.ts"
+   ],
+   "text": "Modifier le fichier frontend:__tests__/ds-type-scale.test.ts.",
+   "selected": {
+    "frontend-core": "fichier affecté"
+   },
+   "ok": true,
+   "sole": false
+  },
+  {
+   "kind": "fichier",
+   "variant": "règle 1 bis",
+   "expected": [
+    "lib-socle"
+   ],
+   "files": [
+    "frontend:lib/auth-guard-paths.test.ts"
+   ],
+   "text": "Modifier le fichier frontend:lib/auth-guard-paths.test.ts.",
+   "selected": {
+    "lib-socle": "fichier affecté"
+   },
+   "ok": true,
+   "sole": false
+  },
+  {
+   "kind": "fichier",
+   "variant": "règle 1 bis",
+   "expected": [
+    "lib-socle"
+   ],
+   "files": [
+    "frontend:lib/auth-guard-paths.ts"
+   ],
+   "text": "Modifier le fichier frontend:lib/auth-guard-paths.ts.",
+   "selected": {
+    "lib-socle": "fichier affecté"
+   },
+   "ok": true,
+   "sole": false
+  },
+  {
+   "kind": "fichier",
+   "variant": "règle 1 bis",
+   "expected": [
+    "migrations"
+   ],
+   "files": [
+    "backend:src/main/resources/db/migration/V10__create_sessions.sql"
+   ],
+   "text": "Modifier le fichier backend:src/main/resources/db/migration/V10__create_sessions.sql.",
+   "selected": {
+    "migrations": "fichier affecté"
+   },
+   "ok": true,
+   "sole": false
+  },
+  {
+   "kind": "fichier",
+   "variant": "règle 1 bis",
+   "expected": [
+    "migrations"
+   ],
+   "files": [
+    "backend:src/main/resources/db/migration/V11__events_conditional_check_constraints.sql"
+   ],
+   "text": "Modifier le fichier backend:src/main/resources/db/migration/V11__events_conditional_check_constraints.sql.",
+   "selected": {
+    "migrations": "fichier affecté"
    },
    "ok": true,
    "sole": false
   }
  ],
- "failures": [
-  {
-   "kind": "simple",
-   "variant": "route",
-   "expected": [
-    "product"
-   ],
-   "text": "Corriger l'écran de la route users/user-1/products.",
-   "selected": {
-    "user": "mot-clé user",
-    "product": "mot-clé product"
-   },
-   "ok": true,
-   "sole": false
-  }
- ]
+ "failures": []
 }

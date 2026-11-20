@@ -56,11 +56,11 @@
 "how": "seed"
 },
 "backend:src/main/java/com/matimeline/eventmanager/application/dtos/JwkResponse.java": {
-"pack": "user",
+"pack": "session",
 "how": "seed"
 },
 "backend:src/main/java/com/matimeline/eventmanager/application/dtos/JwksResponse.java": {
-"pack": "user",
+"pack": "session",
 "how": "seed"
 },
 "backend:src/main/java/com/matimeline/eventmanager/application/dtos/ProductCreationRequest.java": {
@@ -136,7 +136,7 @@
 "how": "seed"
 },
 "backend:src/main/java/com/matimeline/eventmanager/application/services/AvatarServiceImpl.java": {
-"pack": "user",
+"pack": "export",
 "how": "seed"
 },
 "backend:src/main/java/com/matimeline/eventmanager/application/services/CategoryServiceImpl.java": {
@@ -196,11 +196,11 @@
 "how": "seed"
 },
 "backend:src/main/java/com/matimeline/eventmanager/domain/exceptions/AccountDeletionMismatchException.java": {
-"pack": "user",
+"pack": "event",
 "how": "seed"
 },
 "backend:src/main/java/com/matimeline/eventmanager/domain/exceptions/AvatarNotFoundException.java": {
-"pack": "user",
+"pack": "export",
 "how": "seed"
 },
 "backend:src/main/java/com/matimeline/eventmanager/domain/exceptions/CategoryInUseException.java": {
@@ -236,11 +236,11 @@
 "how": "seed"
 },
 "backend:src/main/java/com/matimeline/eventmanager/domain/exceptions/InvalidAvatarException.java": {
-"pack": "user",
+"pack": "export",
 "how": "seed"
 },
 "backend:src/main/java/com/matimeline/eventmanager/domain/exceptions/InvalidCredentialsException.java": {
-"pack": "user",
+"pack": "event",
 "how": "seed"
 },
 "backend:src/main/java/com/matimeline/eventmanager/domain/exceptions/InvalidDurationUnitException.java": {
@@ -280,7 +280,7 @@
 "how": "seed"
 },
 "backend:src/main/java/com/matimeline/eventmanager/domain/models/AvatarContent.java": {
-"pack": "user",
+"pack": "export",
 "how": "seed"
 },
 "backend:src/main/java/com/matimeline/eventmanager/domain/models/Category.java": {
@@ -384,7 +384,7 @@
 "how": "seed"
 },
 "backend:src/main/java/com/matimeline/eventmanager/domain/ports/services/AvatarService.java": {
-"pack": "user",
+"pack": "export",
 "how": "seed"
 },
 "backend:src/main/java/com/matimeline/eventmanager/domain/ports/services/CategoryService.java": {
@@ -460,7 +460,7 @@
 "how": "seed"
 },
 "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/JwksController.java": {
-"pack": "user",
+"pack": "session",
 "how": "seed"
 },
 "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java": {
@@ -620,7 +620,7 @@
 "how": "seed"
 },
 "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/CallerResolver.java": {
-"pack": "user",
+"pack": "event",
 "how": "seed"
 },
 "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/ClientIpAnonymizer.java": {
@@ -644,7 +644,7 @@
 "how": "seed"
 },
 "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtService.java": {
-"pack": "user",
+"pack": "session",
 "how": "seed"
 },
 "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/RateLimitConfig.java": {
@@ -660,7 +660,7 @@
 "how": "path_rule:tech"
 },
 "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/SecurityConfig.java": {
-"pack": "user",
+"pack": "session",
 "how": "seed"
 },
 "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/UserRateLimitingFilter.java": {
@@ -672,68 +672,68 @@
 "how": "seed"
 },
 "backend:src/main/resources/db/migration/V10__create_sessions.sql": {
-"pack": "session",
-"how": "seed"
+"pack": "migrations",
+"how": "path_rule:R12"
 },
 "backend:src/main/resources/db/migration/V11__events_conditional_check_constraints.sql": {
-"pack": "event",
-"how": "seed"
+"pack": "migrations",
+"how": "path_rule:R12"
 },
 "backend:src/main/resources/db/migration/V12__users_role_not_null_check.sql": {
-"pack": "user",
-"how": "seed"
+"pack": "migrations",
+"how": "path_rule:R12"
 },
 "backend:src/main/resources/db/migration/V13__export_jobs.sql": {
-"pack": "export",
-"how": "seed"
+"pack": "migrations",
+"how": "path_rule:R12"
 },
 "backend:src/main/resources/db/migration/V14__idx_export_jobs_expires_at.sql": {
-"pack": "export",
-"how": "seed"
+"pack": "migrations",
+"how": "path_rule:R12"
 },
 "backend:src/main/resources/db/migration/V15__password_reset_tokens_version.sql": {
-"pack": "user",
-"how": "seed"
+"pack": "migrations",
+"how": "path_rule:R12"
 },
 "backend:src/main/resources/db/migration/V16__user_theme_preference.sql": {
-"pack": "user",
-"how": "seed"
+"pack": "migrations",
+"how": "path_rule:R12"
 },
 "backend:src/main/resources/db/migration/V1__baseline.sql": {
-"pack": "backend-core",
+"pack": "migrations",
 "how": "path_rule:unassigned"
 },
 "backend:src/main/resources/db/migration/V2__unique_constraints.sql": {
-"pack": "backend-core",
+"pack": "migrations",
 "how": "path_rule:unassigned"
 },
 "backend:src/main/resources/db/migration/V3__add_audit_columns.sql": {
-"pack": "backend-core",
+"pack": "migrations",
 "how": "path_rule:unassigned"
 },
 "backend:src/main/resources/db/migration/V4__reconcile_events_constraints.sql": {
-"pack": "event",
-"how": "seed"
+"pack": "migrations",
+"how": "path_rule:R12"
 },
 "backend:src/main/resources/db/migration/V5__fk_indexes.sql": {
-"pack": "backend-core",
+"pack": "migrations",
 "how": "path_rule:unassigned"
 },
 "backend:src/main/resources/db/migration/V6__create_password_reset_tokens.sql": {
-"pack": "user",
-"how": "seed"
+"pack": "migrations",
+"how": "path_rule:R12"
 },
 "backend:src/main/resources/db/migration/V7__design_v3_schema.sql": {
-"pack": "backend-core",
+"pack": "migrations",
 "how": "path_rule:unassigned"
 },
 "backend:src/main/resources/db/migration/V8__category_ownership.sql": {
-"pack": "category",
-"how": "seed"
+"pack": "migrations",
+"how": "path_rule:R12"
 },
 "backend:src/main/resources/db/migration/V9__neutralize_invalid_recurrence_unit.sql": {
-"pack": "event",
-"how": "seed"
+"pack": "migrations",
+"how": "path_rule:R12"
 },
 "backend:src/test/java/com/matimeline/eventmanager/EventmanagerApplicationTests.java": {
 "pack": "backend-core",
@@ -744,7 +744,7 @@
 "how": "seed"
 },
 "backend:src/test/java/com/matimeline/eventmanager/application/services/AvatarServiceImplTest.java": {
-"pack": "user",
+"pack": "export",
 "how": "seed"
 },
 "backend:src/test/java/com/matimeline/eventmanager/application/services/CategoryServiceImplTest.java": {
@@ -872,11 +872,11 @@
 "how": "seed"
 },
 "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/GlobalExceptionHandlerValidationTest.java": {
-"pack": "backend-core",
-"how": "path_rule:tech"
+"pack": "event",
+"how": "seed"
 },
 "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/JwksEndpointIntegrationTest.java": {
-"pack": "user",
+"pack": "session",
 "how": "seed"
 },
 "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/PasswordResetEndpointsIntegrationTest.java": {
@@ -928,8 +928,8 @@
 "how": "seed"
 },
 "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/export/ExportRenderersTest.java": {
-"pack": "user",
-"how": "seed"
+"pack": "backend-core",
+"how": "path_rule:tech"
 },
 "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/CategoryDeleteReassignIntegrationTest.java": {
 "pack": "category",
@@ -972,8 +972,8 @@
 "how": "seed"
 },
 "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenEndpointIntegrationTest.java": {
-"pack": "backend-core",
-"how": "path_rule:tech"
+"pack": "user",
+"how": "seed"
 },
 "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eTestSupportPackageGuardTest.java": {
 "pack": "backend-core",
@@ -1280,180 +1280,180 @@
 "how": "path_rule:tech"
 },
 "frontend:components/EventEditForm.debounce.test.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/EventEditForm.test.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/EventEditForm.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/__tests__/date-time-semantics.test.tsx": {
 "pack": "frontend-core",
 "how": "path_rule:tech"
 },
 "frontend:components/categories/CategoryDrawer.forbidden.test.tsx": {
-"pack": "category",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/categories/CategoryDrawer.test.tsx": {
-"pack": "category",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/categories/CategoryDrawer.tsx": {
-"pack": "category",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/dashboard/CompactAgenda.tsx": {
-"pack": "product",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/dashboard/CompactRail.tsx": {
-"pack": "product",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/dashboard/DensityRibbon.intl.test.tsx": {
-"pack": "product",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/dashboard/DensityRibbon.tsx": {
-"pack": "product",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/dashboard/DensityRibbon.window.test.tsx": {
-"pack": "product",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/dashboard/GreetingHeader.tsx": {
-"pack": "product",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/dashboard/KpiMarginalia.intl.test.tsx": {
-"pack": "product",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/dashboard/KpiMarginalia.tsx": {
-"pack": "product",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/dashboard/MobileDrawer.tsx": {
-"pack": "product",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/dashboard/ProductCarousel.tsx": {
-"pack": "product",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/dashboard/ProductList.test.tsx": {
-"pack": "product",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/dashboard/ProductList.tsx": {
-"pack": "product",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/dashboard/WeekAgenda.tsx": {
-"pack": "product",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/dashboard/dashboard-components.test.tsx": {
-"pack": "product",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/dashboard/dashboard-landscape.test.tsx": {
-"pack": "product",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/dashboard/dashboard-lib.test.ts": {
-"pack": "product",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/dashboard/dashboard-mobile.test.tsx": {
-"pack": "product",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/dashboard/densityWindow.test.ts": {
-"pack": "product",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/dashboard/densityWindow.ts": {
-"pack": "product",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/dashboard/index.ts": {
-"pack": "product",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/dashboard/intl-formats.test.tsx": {
-"pack": "product",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/dashboard/kpis.test.ts": {
-"pack": "product",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/dashboard/kpis.ts": {
-"pack": "product",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/dashboard/lib.ts": {
-"pack": "product",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/dashboard/section-counts.test.tsx": {
-"pack": "product",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/dashboard/section-titles.test.tsx": {
-"pack": "product",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/events/ArchiveConfirmDialog.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/events/EventCategoryField.test.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/events/EventCategoryField.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/events/EventFormDrawer.test.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/events/EventFormDrawer.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/events/EventPreviewTimeline.test.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/events/EventPreviewTimeline.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/events/NewEventDrawer.test.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/events/NewEventDrawer.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/events/previewTimeline.test.ts": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/events/previewTimeline.ts": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/landing/CtaSection.test.tsx": {
 "pack": "frontend-core",
@@ -1492,12 +1492,12 @@
 "how": "path_rule:tech"
 },
 "frontend:components/landing/HeroTimelineAnimation.test.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/landing/HeroTimelineAnimation.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/landing/HowItWorksSection.test.tsx": {
 "pack": "frontend-core",
@@ -1520,20 +1520,20 @@
 "how": "path_rule:tech"
 },
 "frontend:components/layout/AppShell.test.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/layout/AppShell.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/layout/CreateEventContext.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/layout/index.ts": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/legal/legal-disclaimer.tsx": {
 "pack": "frontend-core",
@@ -1544,232 +1544,232 @@
 "how": "path_rule:tech"
 },
 "frontend:components/pages/HomePage.accent-roles.test.tsx": {
-"pack": "user",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/pages/HomePage.test.tsx": {
-"pack": "user",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/pages/HomePage.tsx": {
-"pack": "user",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/products/ArchivedProductsView.intl.test.tsx": {
-"pack": "product",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/products/ArchivedProductsView.test.tsx": {
-"pack": "product",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/products/ArchivedProductsView.tsx": {
-"pack": "product",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/products/CategoriesView.test.tsx": {
-"pack": "category",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/products/CategoriesView.tsx": {
-"pack": "category",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/products/ProductDetailView.test.tsx": {
-"pack": "product",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/products/ProductDetailView.tsx": {
-"pack": "product",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/products/ProductDrawer.forbidden.test.tsx": {
-"pack": "product",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/products/ProductDrawer.test.tsx": {
-"pack": "product",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/products/ProductDrawer.tsx": {
-"pack": "product",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/products/ProductSparkline.test.tsx": {
-"pack": "product",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/products/ProductSparkline.tsx": {
-"pack": "product",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/products/ProductsListView.test.tsx": {
-"pack": "product",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/products/ProductsListView.tsx": {
-"pack": "product",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/products/RestoreProductDialog.test.tsx": {
-"pack": "product",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/products/RestoreProductDialog.tsx": {
-"pack": "product",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/products/eventSpan.test.ts": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/products/eventSpan.ts": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/products/isPastEvent.test.ts": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/products/isPastEvent.ts": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/settings/AccountSection.test.tsx": {
-"pack": "user",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/settings/AccountSection.tsx": {
-"pack": "user",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/settings/AvatarUpload.tsx": {
-"pack": "user",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/settings/DeleteAccountSteps.tsx": {
-"pack": "user",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/settings/ExportDataFlow.intl.test.tsx": {
-"pack": "user",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/settings/ExportDataFlow.test.tsx": {
-"pack": "user",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/settings/ExportDataFlow.tsx": {
-"pack": "user",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/settings/PasswordStrength.test.tsx": {
-"pack": "user",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/settings/PasswordStrength.tsx": {
-"pack": "user",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/settings/PreferencesSection.tsx": {
-"pack": "user",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/settings/ProfileSection.test.tsx": {
-"pack": "user",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/settings/ProfileSection.tsx": {
-"pack": "user",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/settings/SecuritySection.test.tsx": {
-"pack": "user",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/settings/SecuritySection.tsx": {
-"pack": "user",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/settings/SessionList.test.tsx": {
-"pack": "session",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/settings/SessionList.tsx": {
-"pack": "session",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/settings/SettingsShell.test.tsx": {
-"pack": "user",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/settings/SettingsShell.tsx": {
-"pack": "user",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/settings/mobile/BottomSheet.test.tsx": {
-"pack": "user",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/settings/mobile/BottomSheet.tsx": {
-"pack": "user",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/settings/mobile/MobileSettings.test.tsx": {
-"pack": "user",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/settings/mobile/MobileSettings.tsx": {
-"pack": "user",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/settings/mobile/SettingsIndex.test.tsx": {
-"pack": "user",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/settings/mobile/SettingsIndex.tsx": {
-"pack": "user",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/settings/mobile/chapters.ts": {
-"pack": "user",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/settings/touchTarget.ts": {
-"pack": "user",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/settings/useDeleteAccountFlow.ts": {
-"pack": "user",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/shared/ConflictDialog.intl.test.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/shared/ConflictDialog.test.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/shared/ConflictDialog.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/shared/DeleteConfirmDialog.forbidden.test.tsx": {
 "pack": "frontend-core",
 "how": "path_rule:tech"
 },
 "frontend:components/shared/DeleteConfirmDialog.intl.test.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/shared/DeleteConfirmDialog.test.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/shared/DeleteConfirmDialog.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/shared/EmptyState.test.tsx": {
 "pack": "frontend-core",
@@ -1816,496 +1816,496 @@
 "how": "path_rule:tech"
 },
 "frontend:components/theme-provider.tsx": {
-"pack": "user",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/timeline/Cursor.stories.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/timeline/Cursor.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/timeline/DateStamp.stories.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/timeline/DateStamp.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/timeline/EventDrawer.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/timeline/EventPill.stories.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/timeline/EventPill.test.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/timeline/EventPill.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/timeline/EventPin.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/timeline/Minimap.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/timeline/RecurrenceMarks.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/timeline/Ruler.stories.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/timeline/Ruler.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/timeline/TimelineActionSheet.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/timeline/TimelineBottomSheet.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/timeline/TimelineEditHost.forbidden.test.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/timeline/TimelineEditHost.test.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/timeline/TimelineEditHost.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/timeline/TimelineGroupHead.test.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/timeline/TimelineLandscapeDrawer.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/timeline/TimelineMobileLandscape.stories.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/timeline/TimelineMobileLandscape.test.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/timeline/TimelineMobileLandscape.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/timeline/TimelineMobilePortrait.stories.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/timeline/TimelineMobilePortrait.test.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/timeline/TimelineMobilePortrait.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/timeline/TimelineResponsive.rotation.test.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/timeline/TimelineResponsive.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/timeline/TimelineSidebar.test.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/timeline/TimelineSidebar.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/timeline/TimelineStacking.test.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/timeline/TimelineToolbarActions.test.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/timeline/TimelineView.fit-shortcut.test.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/timeline/TimelineView.fullscreen-overlays.test.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/timeline/TimelineView.modal-shortcuts.test.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/timeline/TimelineView.perf.stories.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/timeline/TimelineView.test.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/timeline/TimelineView.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/timeline/TimelineView.zoom-cache.test.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/timeline/fixtures.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/timeline/index.ts": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/timeline/label-reserve.test.ts": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/timeline/label-reserve.ts": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/timeline/lane-layout.test.ts": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/timeline/lane-layout.ts": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/timeline/lib-a11y.test.ts": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/timeline/lib.ts": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/timeline/mobile-zoom-anchor.test.ts": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/timeline/mobile-zoom-anchor.ts": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/timeline/recurrence-marks.test.ts": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/timeline/recurrence-marks.ts": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/timeline/stress-fixtures.ts": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/timeline/useFocusTrap.test.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/timeline/useFocusTrap.ts": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/timeline/useTimelineMobileGestures.ts": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/timeline/useTimelineMobileSelection.ts": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/timeline/useTimelineMobileState.ts": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/timeline/useTimelineViewport.scroll.test.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/timeline/useTimelineViewport.ts": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/timeline/virtualization.test.ts": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/timeline/virtualization.ts": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/timeline/zoom-incremental.test.ts": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/timeline/zoom.test.ts": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/timeline/zoom.ts": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:components/ui/avatar.stories.tsx": {
 "pack": "frontend-core",
-"how": "path_rule:tech"
+"how": "R10"
 },
 "frontend:components/ui/avatar.tsx": {
 "pack": "frontend-core",
-"how": "path_rule:tech"
+"how": "R10"
 },
 "frontend:components/ui/badge.stories.tsx": {
 "pack": "frontend-core",
-"how": "path_rule:tech"
+"how": "R10"
 },
 "frontend:components/ui/badge.tsx": {
 "pack": "frontend-core",
-"how": "path_rule:tech"
+"how": "R10"
 },
 "frontend:components/ui/button.hover-pairing.test.ts": {
 "pack": "frontend-core",
-"how": "path_rule:tech"
+"how": "R10"
 },
 "frontend:components/ui/button.stories.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "R10"
 },
 "frontend:components/ui/button.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "R10"
 },
 "frontend:components/ui/card.stories.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "R10"
 },
 "frontend:components/ui/card.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "R10"
 },
 "frontend:components/ui/checkbox.stories.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "R10"
 },
 "frontend:components/ui/checkbox.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "R10"
 },
 "frontend:components/ui/dialog.stories.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "R10"
 },
 "frontend:components/ui/dialog.test.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "R10"
 },
 "frontend:components/ui/dialog.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "R10"
 },
 "frontend:components/ui/dropdown-menu.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "R10"
 },
 "frontend:components/ui/footer-app.tsx": {
 "pack": "frontend-core",
-"how": "path_rule:tech"
+"how": "R10"
 },
 "frontend:components/ui/form.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "R10"
 },
 "frontend:components/ui/icon-button.stories.tsx": {
 "pack": "frontend-core",
-"how": "path_rule:tech"
+"how": "R10"
 },
 "frontend:components/ui/icon-button.tsx": {
 "pack": "frontend-core",
-"how": "path_rule:tech"
+"how": "R10"
 },
 "frontend:components/ui/input.stories.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "R10"
 },
 "frontend:components/ui/input.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "R10"
 },
 "frontend:components/ui/label.tsx": {
 "pack": "frontend-core",
-"how": "path_rule:tech"
+"how": "R10"
 },
 "frontend:components/ui/language-selector.a11y.test.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "R10"
 },
 "frontend:components/ui/language-selector.i18n.test.ts": {
 "pack": "frontend-core",
-"how": "path_rule:tech"
+"how": "R10"
 },
 "frontend:components/ui/language-selector.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "R10"
 },
 "frontend:components/ui/palette-color-picker.test.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "R10"
 },
 "frontend:components/ui/palette-color-picker.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "R10"
 },
 "frontend:components/ui/popover.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "R10"
 },
 "frontend:components/ui/popoverPicker.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "R10"
 },
 "frontend:components/ui/radio.stories.tsx": {
 "pack": "frontend-core",
-"how": "path_rule:tech"
+"how": "R10"
 },
 "frontend:components/ui/radio.tsx": {
 "pack": "frontend-core",
-"how": "path_rule:tech"
+"how": "R10"
 },
 "frontend:components/ui/select.stories.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "R10"
 },
 "frontend:components/ui/select.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "R10"
 },
 "frontend:components/ui/spinner.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "R10"
 },
 "frontend:components/ui/switch.stories.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "R10"
 },
 "frontend:components/ui/switch.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "R10"
 },
 "frontend:components/ui/table.stories.tsx": {
 "pack": "frontend-core",
-"how": "path_rule:tech"
+"how": "R10"
 },
 "frontend:components/ui/table.tsx": {
 "pack": "frontend-core",
-"how": "path_rule:tech"
+"how": "R10"
 },
 "frontend:components/ui/tabs.stories.tsx": {
 "pack": "frontend-core",
-"how": "path_rule:tech"
+"how": "R10"
 },
 "frontend:components/ui/tabs.test.tsx": {
 "pack": "frontend-core",
-"how": "path_rule:tech"
+"how": "R10"
 },
 "frontend:components/ui/tabs.tsx": {
 "pack": "frontend-core",
-"how": "path_rule:tech"
+"how": "R10"
 },
 "frontend:components/ui/tag.stories.tsx": {
 "pack": "frontend-core",
-"how": "path_rule:tech"
+"how": "R10"
 },
 "frontend:components/ui/tag.tsx": {
 "pack": "frontend-core",
-"how": "path_rule:tech"
+"how": "R10"
 },
 "frontend:components/ui/textarea.stories.tsx": {
 "pack": "frontend-core",
-"how": "path_rule:tech"
+"how": "R10"
 },
 "frontend:components/ui/textarea.tsx": {
 "pack": "frontend-core",
-"how": "path_rule:tech"
+"how": "R10"
 },
 "frontend:components/ui/theme-toggle.i18n.test.ts": {
-"pack": "user",
-"how": "seed"
+"pack": "frontend-core",
+"how": "R10"
 },
 "frontend:components/ui/theme-toggle.test.tsx": {
-"pack": "user",
-"how": "seed"
+"pack": "frontend-core",
+"how": "R10"
 },
 "frontend:components/ui/theme-toggle.tsx": {
-"pack": "user",
-"how": "seed"
+"pack": "frontend-core",
+"how": "R10"
 },
 "frontend:components/ui/toast.stories.tsx": {
 "pack": "frontend-core",
-"how": "path_rule:tech"
+"how": "R10"
 },
 "frontend:components/ui/toast.tsx": {
 "pack": "frontend-core",
-"how": "path_rule:tech"
+"how": "R10"
 },
 "frontend:components/ui/toaster.test.tsx": {
 "pack": "frontend-core",
-"how": "path_rule:tech"
+"how": "R10"
 },
 "frontend:components/ui/toaster.tsx": {
 "pack": "frontend-core",
-"how": "path_rule:tech"
+"how": "R10"
 },
 "frontend:components/ui/tooltip.stories.tsx": {
 "pack": "frontend-core",
-"how": "path_rule:tech"
+"how": "R10"
 },
 "frontend:components/ui/tooltip.tsx": {
 "pack": "frontend-core",
-"how": "path_rule:tech"
+"how": "R10"
 },
 "frontend:contexts/AuthContext.test.tsx": {
-"pack": "user",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:contexts/AuthContext.theme.test.tsx": {
-"pack": "user",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:contexts/AuthContext.themeSaveToast.test.tsx": {
-"pack": "user",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:contexts/AuthContext.tsx": {
-"pack": "user",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:contexts/NetworkStatusContext.test.tsx": {
 "pack": "frontend-core",
@@ -2320,64 +2320,64 @@
 "how": "path_rule:tech"
 },
 "frontend:hooks/useArchiveProduct.test.tsx": {
-"pack": "product",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:hooks/useArchiveProduct.ts": {
-"pack": "product",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:hooks/useArchivedProducts.ts": {
-"pack": "product",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:hooks/useAuth.ts": {
-"pack": "user",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:hooks/useAuthGuard.ts": {
-"pack": "user",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:hooks/useCategories.ts": {
-"pack": "category",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:hooks/useCreateCategory.ts": {
-"pack": "category",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:hooks/useCreateEvent.ts": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:hooks/useCreateProduct.test.tsx": {
-"pack": "product",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:hooks/useCreateProduct.ts": {
-"pack": "product",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:hooks/useCurrentUser.test.tsx": {
-"pack": "user",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:hooks/useCurrentUser.ts": {
-"pack": "user",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:hooks/useDashboardData.ts": {
 "pack": "frontend-core",
 "how": "path_rule:tech"
 },
 "frontend:hooks/useDeleteCategory.test.tsx": {
-"pack": "category",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:hooks/useDeleteCategory.ts": {
-"pack": "category",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:hooks/useDensity.test.tsx": {
 "pack": "frontend-core",
@@ -2388,12 +2388,12 @@
 "how": "path_rule:tech"
 },
 "frontend:hooks/useEventEditConflict.test.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:hooks/useEventEditConflict.ts": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:hooks/useExportFlow.test.ts": {
 "pack": "frontend-core",
@@ -2420,24 +2420,24 @@
 "how": "path_rule:tech"
 },
 "frontend:hooks/useProductsWithEvents.test.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:hooks/useProductsWithEvents.ts": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:hooks/useRecurrencePreview.ts": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:hooks/useRestoreProduct.test.tsx": {
-"pack": "product",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:hooks/useRestoreProduct.ts": {
-"pack": "product",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:hooks/useReturnFocus.test.tsx": {
 "pack": "frontend-core",
@@ -2456,191 +2456,191 @@
 "how": "path_rule:tech"
 },
 "frontend:hooks/useSessionManager.test.tsx": {
-"pack": "session",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:hooks/useSessionManager.ts": {
-"pack": "session",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:hooks/useSetEventArchived.test.tsx": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:hooks/useSetEventArchived.ts": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:hooks/useSettings.ts": {
-"pack": "user",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:hooks/useThemeChoice.test.tsx": {
-"pack": "user",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:hooks/useThemeChoice.ts": {
-"pack": "user",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:hooks/useUpdateCategory.ts": {
-"pack": "category",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:hooks/useUpdateProduct.test.tsx": {
-"pack": "product",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:hooks/useUpdateProduct.ts": {
-"pack": "product",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:i18n/locales.test.ts": {
-"pack": "frontend-core",
-"how": "path_rule:tech"
+"pack": "user",
+"how": "seed"
 },
 "frontend:i18n/locales.ts": {
-"pack": "frontend-core",
-"how": "path_rule:tech"
+"pack": "user",
+"how": "seed"
 },
 "frontend:lib/auth-guard-paths.test.ts": {
-"pack": "user",
-"how": "seed"
+"pack": "lib-socle",
+"how": "path_rule:tech"
 },
 "frontend:lib/auth-guard-paths.ts": {
-"pack": "user",
-"how": "seed"
+"pack": "lib-socle",
+"how": "path_rule:tech"
 },
 "frontend:lib/auth-jwks.test.ts": {
-"pack": "user",
-"how": "seed"
+"pack": "lib-socle",
+"how": "path_rule:tech"
 },
 "frontend:lib/auth-jwks.ts": {
-"pack": "user",
-"how": "seed"
+"pack": "lib-socle",
+"how": "path_rule:tech"
 },
 "frontend:lib/auth-token-verify.test.ts": {
-"pack": "user",
-"how": "seed"
+"pack": "lib-socle",
+"how": "path_rule:tech"
 },
 "frontend:lib/auth-token-verify.ts": {
-"pack": "user",
-"how": "seed"
+"pack": "lib-socle",
+"how": "path_rule:tech"
 },
 "frontend:lib/canonical-host.test.ts": {
-"pack": "frontend-core",
+"pack": "lib-socle",
 "how": "path_rule:tech"
 },
 "frontend:lib/canonical-host.ts": {
-"pack": "frontend-core",
+"pack": "lib-socle",
 "how": "path_rule:tech"
 },
 "frontend:lib/color.test.ts": {
-"pack": "frontend-core",
+"pack": "lib-socle",
 "how": "path_rule:tech"
 },
 "frontend:lib/color.ts": {
-"pack": "frontend-core",
+"pack": "lib-socle",
 "how": "path_rule:tech"
 },
 "frontend:lib/date-iso.local-date.test.tsx": {
-"pack": "frontend-core",
+"pack": "lib-socle",
 "how": "path_rule:tech"
 },
 "frontend:lib/date-iso.ts": {
-"pack": "frontend-core",
+"pack": "lib-socle",
 "how": "path_rule:tech"
 },
 "frontend:lib/density.test.ts": {
-"pack": "frontend-core",
+"pack": "lib-socle",
 "how": "path_rule:tech"
 },
 "frontend:lib/density.ts": {
-"pack": "frontend-core",
+"pack": "lib-socle",
 "how": "path_rule:tech"
 },
 "frontend:lib/ephemeris.test.ts": {
-"pack": "frontend-core",
+"pack": "lib-socle",
 "how": "path_rule:tech"
 },
 "frontend:lib/ephemeris.ts": {
-"pack": "frontend-core",
+"pack": "lib-socle",
 "how": "path_rule:tech"
 },
 "frontend:lib/event-palette.test.ts": {
-"pack": "event",
-"how": "seed"
+"pack": "lib-socle",
+"how": "path_rule:tech"
 },
 "frontend:lib/event-palette.ts": {
-"pack": "event",
-"how": "seed"
+"pack": "lib-socle",
+"how": "path_rule:tech"
 },
 "frontend:lib/legal-pages.test.ts": {
-"pack": "frontend-core",
+"pack": "lib-socle",
 "how": "path_rule:tech"
 },
 "frontend:lib/legal-pages.ts": {
-"pack": "frontend-core",
+"pack": "lib-socle",
 "how": "path_rule:tech"
 },
 "frontend:lib/next-occurrence.test.ts": {
-"pack": "frontend-core",
+"pack": "lib-socle",
 "how": "path_rule:tech"
 },
 "frontend:lib/next-occurrence.ts": {
-"pack": "frontend-core",
+"pack": "lib-socle",
 "how": "path_rule:tech"
 },
 "frontend:lib/query-keys.ts": {
-"pack": "frontend-core",
+"pack": "lib-socle",
 "how": "path_rule:tech"
 },
 "frontend:lib/recurrence.test.ts": {
-"pack": "event",
-"how": "seed"
+"pack": "lib-socle",
+"how": "path_rule:tech"
 },
 "frontend:lib/recurrence.ts": {
-"pack": "event",
-"how": "seed"
+"pack": "lib-socle",
+"how": "path_rule:tech"
 },
 "frontend:lib/safe-error.ts": {
-"pack": "frontend-core",
+"pack": "lib-socle",
 "how": "path_rule:tech"
 },
 "frontend:lib/schemas/auth.ts": {
-"pack": "user",
-"how": "seed"
+"pack": "lib-socle",
+"how": "path_rule:tech"
 },
 "frontend:lib/schemas/export.ts": {
-"pack": "frontend-core",
+"pack": "lib-socle",
 "how": "path_rule:tech"
 },
 "frontend:lib/schemas/password-policy.test.ts": {
-"pack": "user",
-"how": "seed"
+"pack": "lib-socle",
+"how": "path_rule:tech"
 },
 "frontend:lib/schemas/settings.ts": {
-"pack": "user",
-"how": "seed"
+"pack": "lib-socle",
+"how": "path_rule:tech"
 },
 "frontend:lib/state-errors.test.ts": {
-"pack": "frontend-core",
+"pack": "lib-socle",
 "how": "path_rule:tech"
 },
 "frontend:lib/state-errors.ts": {
-"pack": "frontend-core",
+"pack": "lib-socle",
 "how": "path_rule:tech"
 },
 "frontend:lib/touchTarget.test.ts": {
-"pack": "frontend-core",
+"pack": "lib-socle",
 "how": "path_rule:tech"
 },
 "frontend:lib/touchTarget.ts": {
-"pack": "frontend-core",
+"pack": "lib-socle",
 "how": "path_rule:tech"
 },
 "frontend:lib/utils.ts": {
-"pack": "frontend-core",
+"pack": "lib-socle",
 "how": "path_rule:tech"
 },
 "frontend:services/ApiErrorTranslatorBridge.intl.test.tsx": {
@@ -2760,40 +2760,40 @@
 "how": "path_rule:tech"
 },
 "frontend:types/auth.ts": {
-"pack": "user",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:types/category.ts": {
-"pack": "category",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:types/event.test.ts": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:types/event.ts": {
-"pack": "event",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:types/product.test.ts": {
-"pack": "product",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:types/product.ts": {
-"pack": "product",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:types/settings.ts": {
-"pack": "user",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:types/user.test.ts": {
-"pack": "user",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:types/user.ts": {
-"pack": "user",
-"how": "seed"
+"pack": "frontend-core",
+"how": "path_rule:tech"
 },
 "frontend:utils/time-utils.ts": {
 "pack": "frontend-core",

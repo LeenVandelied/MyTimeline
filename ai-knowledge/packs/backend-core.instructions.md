@@ -2,23 +2,23 @@
 pack: backend-core
 kind: technical
 name: Socle backend
-generated_at: 2026-11-19T16:00:00Z
+generated_at: 2026-11-20T11:40:00Z
 generator: synth/1
-base_sha256: e1ea87e2dd05bcf9876e84433aef1dedf88fe8b45a674ccc924d9b74474c8cec
-facts_in_base: 201
-facts_in_pool: 201
-facts_cited: 43
+base_sha256: e1b69d5d3c529efb408f83164b8be221e2e9be3cb2b8569c62b0d354187698c0
+facts_in_base: 171
+facts_in_pool: 170
+facts_cited: 42
 sections: backend-core.sections.json
 details: [backend-core.details.md]
 lang: fr
-curated_at: 2026-11-19T16:38:00Z
+curated_at: 2026-11-20T12:45:00Z
 curation: backend-core.curation.json
 ---
 ## 1. Quand activer {#activate}
 
 Ce pack s'active quand la demande ou le code touche l'un de ces éléments.
 
-- Chemins : `^backend:src/(main|test)/(java|resources)/`
+- Chemins : `^backend:(?!src/main/resources/db/migration/)src/(main|test)/(java|resources)/`
 
 ## 2. Lexique {#lexicon}
 
@@ -27,25 +27,22 @@ Aucun fait de la base ne relève de cette section.
 ## 3. Conventions {#rules}
 
 ### Invariants
-- Selon le commentaire de V15, une migration Flyway déjà appliquée ne s'édite jamais (checksum mismatch), chaque évolution est un nouveau fichier V{N}__description.sql. [#0f78e3c2ecbf6a01-1]
-- Selon le commentaire de V10, le DDL doit refléter exactement l'entité JPA, sinon ddl-auto=validate fait échouer le démarrage. [#769931702f98c49a-1] [#94a4128b06913755-1]
-- Les migrations à partir de V4 (sauf exceptions éventuelles) finissent par un bloc ROLLBACK en commentaire, car Flyway Community ne rejoue pas les undo. V1 à V3 n'en ont pas [#6263eaed3b52418b-1]
-### Migrations SQL
-- Quand des lignes existantes ont une valeur NULL ou invalide, la migration les corrige d'abord par un UPDATE, puis pose NOT NULL et CHECK. Pour une nouvelle colonne, un DEFAULT suffit [#aec478e7c872ec76-1]
-- Certains durcissements de données existantes (V4, V7) commencent par un bloc DO qui compte les lignes non conformes et lève une exception avant les ALTER, d'autres (V12) assainissent par UPDATE [#df9c3b50b0236da0-1]
-### Entités et domaine
-- Un port de repository écrit un champ à écriture restreinte par une méthode dédiée, save ne le recopie pas en mise à jour. [#c3d2971633861966-1]
-- Une validation métier avant persistance lève une exception de domaine dédiée, sans laisser la contrainte base remonter. [#4ff3b3eb5d8b58c4-3]
-### DTOs et validation
-- Sur les PATCH de produit et d'évènement, null signifie inchangé (pas de NotBlank), et le produit utilise un booléen clearColor pour réinitialiser la couleur ; les PATCH de compte et de catégorie exigent des champs @NotBlank [#e5c0483643898852-1] [#00242f1143423b22-1]
-- La politique de mot de passe vit dans une annotation unique, selon la javadoc elle se réplique dans les schémas frontend et ne se pose pas sur AuthRequest. [#a8f3d3adead0954d-1] [#a8f3d3adead0954d-2]
-- Selon la javadoc, les réponses n'exposent jamais le jti ni le hash du mot de passe. [#795dadaac9fca189-1] [#5042f4433ac0d445-1]
-### Sécurité JWT
-- Une clé privée vide déclenche une paire éphémère au démarrage, une clé mal formée lève une erreur sans la valeur. [#891330b9b1514b8d-1] [#1e299e939b17e348-1]
-### Tests
-- Chaque plancher de BomDriftTest est un supérieur ou égal, et la plupart sont fixés à la version corrective d'une CVE, flyway et spring-framework étant fixés par alignement sur le BOM [#816187975718291a-2]
-### Vérifié dans le code
-- CustomUserDetails.isAccountNonExpired, isAccountNonLocked, isCredentialsNonExpired et isEnabled renvoient toujours true : aucun statut de compte n'est appliqué par UserDetails [#authorization/3b1625b23c885c9c-1] [#0322518d1bd1aa5e-1] [#user/b13f9b62a1d0f815-1] `backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/CustomUserDetails.java:40-59`.
+- Les ports de service du domaine prennent et renvoient des commandes et modèles du domaine, comme EventService, sauf ProductService qui prend encore les DTO ProductCreationRequest et ProductUpdateRequest [#3649497eed73f9f7-1]
+- Les tests d'intégration étendent la classe de base PostgreSQL, avec profil test et conteneur singleton partagé. [#784c974edb4c82c0-3] [#9b3b36b46f6db347-2]
+- Selon la javadoc, ces tests n'utilisent pas H2, Flyway rejoue les migrations depuis V1 et Hibernate valide le schéma. [#b103523302cefc64-1]
+### Jeton JWT et appelant
+- Sans jwt.private-key, le service génère une paire RS256 éphémère. [#891330b9b1514b8d-1]
+- Une clé mal formée lève IllegalStateException sans reprendre la valeur configurée. [#1e299e939b17e348-1]
+- currentUser ne lève jamais d'exception et renvoie Optional vide pour un contexte anonyme, l'appelant choisit le statut HTTP. [#9db0c0fc888c044b-1] [#9db0c0fc888c044b-2]
+### Persistance
+- Le soft delete par SQLRestriction masque les archivés à toute lecture Hibernate, donc purge et restauration passent par du SQL natif qui filtre archived et user_id, voir `backend:src/main/java/com/matimeline/eventmanager/domain/ports/repositories/ProductRepository.java:70-104`. [#1cde148ce35ea68c-1] [#b6b8faa3d2da2ac9-1] [#f56e4e358ba66393-1]
+- Les entités utilisateur, produit, événement et catégorie ont un UUID généré, des dates d'audit et une version. Le jeton de réinitialisation a une version mais son UUID est assigné par l'application. Les entités de session et de job d'export n'ont pas de version [#cbc477c31e33275c-1] [#be53be0d97652fd1-1] [#46119bdcfa9f904b-1]
+- Un champ écrit par un chemin dédié est exclu de save et mis à jour par une méthode de port propre. [#c3d2971633861966-1]
+### DTO et validation
+- Une mise à jour partielle utilise null pour inchangé, donc @Pattern au lieu de @NotBlank et un booléen clearColor pour effacer la couleur. [#e5c0483643898852-1] [#00242f1143423b22-1]
+- La plupart des DTO de requête sont des classes avec getters et setters écrits à la main, sauf UpdatePreferencesRequest qui est un record, et la plupart des réponses sont Lombok avec fromDomain [#573a55d2f0e0cdad-4] [#301896c782a8b85e-1] [#9f00547b4339b55b-1]
+- Selon la javadoc, StrongPassword se pose sur création et modification de mot de passe, jamais sur AuthRequest. [#a8f3d3adead0954d-2]
+- Selon la javadoc, l'identité de l'appelant vient du JWT, le username du corps ne sert qu'à confirmer. [#d6d5911c6a9ed32f-1]
 
 ## 4. Structure {#structure}
 
@@ -57,22 +54,22 @@ Aucun fait de la base ne relève de cette section.
 
 ## 6. Fichiers critiques {#files}
 
-Fichiers du pool au poids le plus élevé (12 sur 79), le poids étant la somme des scores de spécificité de leurs faits. Liste complète : annexe.
+Fichiers du pool au poids le plus élevé (12 sur 63), le poids étant la somme des scores de spécificité de leurs faits. Liste complète : annexe.
 
 | Fichier | Faits | Sortes dominantes |
 |---|---|---|
-| `backend:src/test/java/com/matimeline/eventmanager/build/BomDriftTest.java` | 17 | convention 13, suspicious 2, other 1 |
-| `backend:src/test/java/com/matimeline/eventmanager/architecture/ArchitectureTest.java` | 18 | convention 13, other 2, test_case 2 |
-| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtService.java` | 12 | convention 8, config 2, other 1 |
+| `backend:src/test/java/com/matimeline/eventmanager/build/BomDriftTest.java` | 14 | convention 8, suspicious 3, other 2 |
+| `backend:src/test/java/com/matimeline/eventmanager/architecture/ArchitectureTest.java` | 15 | convention 8, other 4, config 1 |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtService.java` | 11 | convention 7, config 2, other 1 |
 | `backend:src/main/java/com/matimeline/eventmanager/utils/Utils.java` | 8 | convention 7, suspicious 1 |
-| `backend:src/test/java/com/matimeline/eventmanager/support/AbstractPostgresIntegrationTest.java` | 9 | convention 6, config 1, other 1 |
-| `backend:src/test/java/com/matimeline/eventmanager/utils/UtilsTest.java` | 8 | convention 6, other 2 |
-| `backend:src/main/java/com/matimeline/eventmanager/application/dtos/CategoryRequest.java` | 5 | convention 5 |
+| `backend:src/test/java/com/matimeline/eventmanager/support/AbstractPostgresIntegrationTest.java` | 7 | convention 5, config 1, other 1 |
 | `backend:src/main/java/com/matimeline/eventmanager/application/validation/StrongPassword.java` | 4 | convention 3, suspicious 1 |
-| `backend:src/main/java/com/matimeline/eventmanager/domain/ports/repositories/ProductRepository.java` | 3 | persistence_query 2, suspicious 1 |
-| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/entities/CategoryEntity.java` | 4 | convention 4 |
-| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/RateLimitingDisabledIntegrationTest.java` | 3 | config 1, suspicious 1, test_case 1 |
-| `backend:src/main/java/com/matimeline/eventmanager/application/dtos/AuthResponse.java` | 2 | convention 1, suspicious 1 |
+| `backend:src/main/java/com/matimeline/eventmanager/domain/ports/repositories/ProductRepository.java` | 4 | convention 3, suspicious 1 |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/entities/CategoryEntity.java` | 5 | convention 5 |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/entities/EventEntity.java` | 3 | suspicious 2, convention 1 |
+| `backend:src/main/java/com/matimeline/eventmanager/domain/models/Event.java` | 3 | convention 2, suspicious 1 |
+| `backend:src/main/java/com/matimeline/eventmanager/domain/models/export/ExportJob.java` | 4 | convention 4 |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/CallerResolver.java` | 4 | convention 4 |
 
 ## 7. Relations avec d'autres packs {#relations}
 
@@ -80,45 +77,42 @@ Packs liés par des faits repris, des faits équivalents écartés à la dédupl
 
 | Pack | Faits repris | Faits équivalents | Catalogue |
 |---|---|---|---|
-| user | 55 | 27 |  |
-| event | 36 | 19 |  |
-| product | 11 | 10 |  |
-| category | 16 | 3 |  |
-| session | 11 | 5 |  |
-| export | 7 | 6 |  |
+| user | 33 | 16 |  |
+| event | 34 | 14 |  |
+| session | 19 | 10 |  |
+| product | 13 | 7 |  |
+| category | 12 | 5 |  |
+| export | 8 | 4 |  |
 
-- Faits du pool par pack d'origine : backend-core 65, user 55, event 36, category 16, product 11, session 11, export 7
+- Faits du pool par pack d'origine : backend-core 51, event 34, user 33, session 19, product 13, category 12, export 8
 
 ## 8. Tests attendus {#tests}
 
-- Les tests fixent que les chemins de référence contenant des segments de traversée sont rejetés par une IllegalArgumentException dans l'adaptateur de stockage local, et que le cycle store puis load restitue le contenu [#71532eb6a4bff389-1] [#cb0b5254f4e4ac26-1].
-- Les tests fixent que le health indicator Brevo ne laisse jamais la clé API apparaître dans les valeurs de ses détails, un changement de ces détails doit re-prouver ce point [#2ed7f484b7341552-1] [#eaae94db71d3c395-1].
-- Les tests fixent le comportement de ClientIpAnonymizer.anonymize par comparaison de valeurs, y compris le cas nul, voir `backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/ClientIpAnonymizerTest.java:13-51` [#d8047dd30843e60e-1].
-- Les tests fixent que la révocation d'une session appartenant à un autre utilisateur lève l'exception attendue et n'appelle jamais revokeById, avec un contrôle par verify never [#d4caeca2588b62df-1].
-- Les tests fixent que markCompleted prend la date de complétion fournie et ne la déduit pas du TTL, avec un message d'assertion explicite [#16b553bae5d184fe-1].
-- Un test d'intégration Spring ou HTTP étend AbstractPostgresIntegrationTest, et un test HTTP ajoute @AutoConfigureMockMvc avec MockMvc injecté par @Autowired [#27686d618290701e-1] [#d9aaaab667e49289-1].
-- Selon la javadoc, le test d'architecture est une analyse bytecode pure sans contexte Spring, et la règle contre HttpSession appelle rule.check sans FreezingArchRule, donc elle échoue dès la première occurrence [#6e4864d81232c39c-1] [#bee8bdb67d6f58ab-1].
-- Selon la javadoc, le test de dérive de BOM est un test unitaire pur sans @SpringBootTest ni base, qui lit des versions sur le classpath [#4804f2a414ef6f01-1].
-- Les noms de test suivent le motif methode_condition_resultat avec underscores, et les cas multiples du domaine passent par @ParameterizedTest avec @ValueSource [#679bb4ab96bd83c2-1] [#f3c01a490edf8a25-1].
+- Les tests fixent que le stockage local rejette les références de type path-traversal sur store, load et delete par IllegalArgumentException [#71532eb6a4bff389-1]. Ils travaillent sur un répertoire temporaire réel injecté dans l'adaptateur avant chaque test [#bf9a385a27b5a2f4-1].
+- Les tests fixent que la préférence de thème rejette toute valeur hors liste exacte (casse, espaces, vide, valeurs inconnues) par IllegalArgumentException, via un test paramétré [#205634fdc51ed73d-1].
+- Un test d'agrégat de domaine passe par la fabrique pending, appelle la transition mark* puis vérifie chaque champ, avec un message explicite quand la date doit être celle fournie et non dérivée du TTL [#16b553bae5d184fe-1].
+- Un test de contrat DTO n'a pas de contexte Spring et désérialise un JSON littéral avec un ObjectMapper instancié directement [#f8c15a124e9472b2-2].
+- Un test d'intégration est annoté SpringBootTest et AutoConfigureMockMvc, étend AbstractPostgresIntegrationTest et injecte un MockMvc [#d9aaaab667e49289-1].
+- Selon la javadoc, les tests d'architecture ArchUnit analysent le bytecode sans contexte Spring pour rester rapides en CI [#6e4864d81232c39c-1]. Selon la javadoc, BomDriftTest est un test unitaire pur qui lit les versions de libs du classpath [#4804f2a414ef6f01-1].
+- Les méthodes de test se nomment sujet_situation_résultat [#dc1833af13b82e2d-1] [#cb0b5254f4e4ac26-1].
 
 ## 9. Questions ouvertes {#questions}
 
-Aucun fait de la base ne relève de cette section.
+- Le contrôle de format du champ color doit-il être ajouté côté serveur ? Le commentaire dit que le refine Zod du frontend reste à répercuter, et le DTO n'a aucune contrainte hex, ce que le code documente par BR-EVE-009 [#1cfdbb8136494b7c-1] [#af3d8994f27f9508-1].
+- La javadoc de validateEventType dit qu'une DataIntegrityViolationException est masquée en 401 par le dispatch /error, mais aucun fait de code ne le confirme ici. Seule la levée d'InvalidEventTypeException avant persistance est établie [#b88b2f870d7e4421-1] [#4ff3b3eb5d8b58c4-3].
 
 ## 10. Alertes {#alerts}
 
-- generateToken(String) n'ajoute ni claim jti ni claim role, alors que generateToken(Authentication) ajoute les deux, donc un jeton émis par la première surcharge n'a pas de rôle. Avant de modifier l'émission ou la lecture des jetons ⇒ vérifier quelle surcharge est appelée (`backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtService.java:145-174`) [#46b3392f051dc8d7-1]
-- Selon la javadoc de validateEventType, une DataIntegrityViolationException non gérée est masquée en 401 par le dispatch /error. Le code lève une exception de domaine dédiée avant la persistance, donc pour une nouvelle règle de métier ⇒ lever une exception du package domain.exceptions plutôt que de laisser la contrainte base remonter [#b88b2f870d7e4421-1] [#4ff3b3eb5d8b58c4-3]
-- Le port ProductRepository, dans domain, importe et applique l'annotation Spring Repository, et ProductService importe des DTO de la couche application. Cela contredit la règle hexagonale du projet et UserRepository ou EventService ne le font pas ⇒ ne pas copier ce modèle, ne pas ajouter d'import Spring ni de DTO dans domain [#f5728797d94e6d35-1] [#54c376e6a3ecbd60-1]
-- Selon le commentaire de ArchitectureTest, chaîner andShould avec une dépendance générique neutralise l'exception à la règle (relevé en review #166). Le code exprime l'exception en un prédicat unique combiné avec and(not(...)) : pour ajouter une exception ⇒ modifier ce prédicat et ne pas chaîner un second dependOnClassesThat [#b6122e0a1a910aff-1] [#005e9b3100070e4b-3]
-- Le test Flyway lit la version via VersionPrinter, de l'API interne de Flyway, et le commentaire admet qu'un bump majeur peut casser la compilation. Lors d'une montée de version Flyway ⇒ vérifier d'abord que ce test compile encore [#34e020d21533d9ac-2] [#6445289775462dbb-1]
-- Le setter setProduct(UUID) de Event écrit le champ productId, sans le préfixe setProductId des autres accesseurs. Chercher setProduct et non setProductId dans les appelants [#92290e00ccdddfec-1].
+- La surcharge de génération de token à partir d'un nom d'utilisateur n'ajoute pas de claim jti, alors que la surcharge sur Authentication en ajoute un et que la javadoc affirme qu'aucun token n'est émis sans jti. Un token issu de la première surcharge peut échapper à tout mécanisme fondé sur le jti, donc appelle la surcharge Authentication ou ajoute le jti avant d'utiliser l'autre, voir `backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtService.java:145-156` [#46b3392f051dc8d7-1].
+- Le champ events de la création de produit n'a pas d'annotation de validation en cascade dans cette classe. Les contraintes des EventCreationRequest imbriqués ne sont pas déclenchées par ce DTO seul, donc ajoute la cascade ou valide ailleurs avant de compter sur elles, voir `backend:src/main/java/com/matimeline/eventmanager/application/dtos/ProductCreationRequest.java:32` [#d58358f7f920e99c-1].
+- La règle 5 d'ArchUnit (pas de HttpSession en production) n'est pas enveloppée dans FreezingArchRule.freeze, contrairement aux autres. Toute violation fait échouer le test sans baseline, donc corrige la violation au lieu de geler, voir `backend:src/test/java/com/matimeline/eventmanager/architecture/ArchitectureTest.java:183` [#642150eaacf772b5-1].
+- Trois fichiers du domaine importent du Spring ou de la couche application, en écart avec la règle hexagonale. Il s'agit de l'enum Role, du port ProductRepository (annotation Repository, absente de UserRepository) et du port ProductService (DTO application, alors qu'EventService prend des commandes du domaine). Ne copie pas ce patron dans un nouveau port, voir `backend:src/main/java/com/matimeline/eventmanager/domain/models/Role.java:3-5` [#d4207acb24ab9af6-1] [#f5728797d94e6d35-1] [#54c376e6a3ecbd60-1].
 
 ## 11. Couverture {#coverage}
 
-- Fichiers du pack : 270 ; avec au moins un fait en base : 79 ; sans fait après remise en file : 0.
-- Faits en base : 201, repris d'autres packs : +0, hors périmètre : -0, doublons écartés à la déduplication : -0, soit 201 dans le pool.
-- Faits du pool venus d'un autre pack : 136 (par pack : section Relations).
-- Destination des 201 faits du pool : Conventions 150 ; Points d'entrée du socle 1 ; Tests attendus 16 ; Alertes / Questions ouvertes 16 ; annexe seule 5 ; écartés (sorte `other` ou inconnue) 13.
-- Passe technique : scope 270 fichiers, lus 79 (29 %), non lus 191 : ce pack décrit le socle sur un échantillon, pas sur tout son scope.
-- Base : sha256 e1ea87e2dd05…, générée le 2026-11-19.
+- Fichiers du pack : 254 ; avec au moins un fait en base : 63 ; sans fait après remise en file : 0.
+- Faits en base : 171, repris d'autres packs : +0, hors périmètre : -0, doublons écartés à la déduplication : -1, soit 170 dans le pool.
+- Faits du pool venus d'un autre pack : 119 (par pack : section Relations).
+- Destination des 170 faits du pool : Conventions 117 ; Tests attendus 18 ; Alertes / Questions ouvertes 24 ; annexe seule 1 ; écartés (sorte `other` ou inconnue) 10.
+- Passe technique : scope 254 fichiers, lus 64 (25 %), non lus 190 : ce pack décrit le socle sur un échantillon, pas sur tout son scope.
+- Base : sha256 e1b69d5d3c52…, générée le 2026-11-20.

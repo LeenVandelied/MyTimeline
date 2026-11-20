@@ -54,33 +54,72 @@
  "seeds": {
   "entities": true,
   "routed_folders": true,
-  "extra": [
-   "Event",
-   "Category",
-   "Product",
-   "Session",
-   "ExportJob",
-   "PasswordReset",
-   "User"
+  "extra": [],
+  "strip_suffixes": [
+   "JpaEntity",
+   "Entity",
+   "Jpa",
+   "Model",
+   "Record",
+   "Document",
+   "Table"
   ]
  },
  "edges": {
   "source": "regex"
  },
- "tech_folders": [
-  "__tests__",
-  "components",
-  "contexts",
-  "hooks",
-  "styles",
-  "types"
+ "tech_folders": {
+  "backend": [
+   "__tests__",
+   "components",
+   "contexts",
+   "hooks",
+   "styles",
+   "types"
+  ],
+  "frontend": [
+   "__tests__",
+   "components",
+   "contexts",
+   "hooks",
+   "lib",
+   "styles",
+   "types"
+  ],
+  "frontend-app": [
+   "__tests__",
+   "components",
+   "contexts",
+   "hooks",
+   "styles",
+   "types"
+  ]
+ },
+ "tech_packs": [
+  {
+   "slug": "lib-socle",
+   "name": "Socle d'interface (frontend)",
+   "path_rules": [
+    "^frontend:lib/"
+   ]
+  },
+  {
+   "slug": "migrations",
+   "name": "Migrations de base",
+   "path_rules": [
+    "^backend:src/main/resources/db/migration/"
+   ]
+  }
  ],
  "thresholds": {
   "min_seed_files": 6,
   "merge_ratio": 0.9,
   "max_merge_target": 40,
   "pack_min_kb": 15,
-  "replay_agent_new_leftover": 10
+  "replay_agent_new_leftover": 10,
+  "hub_share": 0.5,
+  "giant_share": 0.4,
+  "giant_min_seeds": 4
  },
  "motifs_file": "motifs.json",
  "aliases_file": "aliases.json",
