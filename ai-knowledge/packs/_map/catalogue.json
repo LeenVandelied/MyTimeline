@@ -1,7 +1,7 @@
 {
  "schema": 1,
  "project": "mytimeline",
- "generated_at": "2026-11-19",
+ "generated_at": "2026-11-20T10:00:00Z",
  "candidates_sha256": "",
  "packs": [
   {
@@ -9,8 +9,7 @@
    "name": "Événement",
    "kind": "domain",
    "seeds": [
-    "Event",
-    "EventEntity"
+    "Event"
    ],
    "pivot_entity": "EventEntity",
    "path_rules": [],
@@ -33,15 +32,15 @@
      "evenement",
      "recurrence",
      "récurrence",
-     "timeline"
+     "timeline",
+     "passwordresettoken"
     ],
     "routes": [
-     "/api/events",
-     "events/evt-desktop",
-     "events/evt-mobile"
+     "/api/events"
     ],
     "entities": [
-     "EventEntity"
+     "EventEntity",
+     "PasswordResetTokenEntity"
     ]
    },
    "aliases": [
@@ -50,10 +49,10 @@
    ],
    "crosses": [],
    "motif": null,
-   "rationale": "Le groupe Event pèse 178 fichiers et 1498 ko (118 composants front) avec son controller /api/events et un service de récurrence propres.",
+   "rationale": "Le groupe Event compte 135 fichiers et 590 ko, avec EventController et RecurrencePreviewController sur /api/events. La taille du groupe entier est portée par ce pack pivot, les packs session et export (fondus dans ce groupe) sont à 0.",
    "size": {
-    "files": 176,
-    "kb": 1491
+    "files": 74,
+    "kb": 366
    }
   },
   {
@@ -62,9 +61,7 @@
    "kind": "domain",
    "seeds": [
     "User",
-    "UserEntity",
-    "PasswordReset",
-    "PasswordResetTokenEntity"
+    "PasswordResetToken"
    ],
    "pivot_entity": "UserEntity",
    "path_rules": [],
@@ -103,12 +100,15 @@
      "/api/auth",
      "/api/me",
      "/api/test-support",
+     "api/me",
+     "api/me/avatar",
+     "api/me/export",
+     "me",
      "me/avatar",
      "me/export"
     ],
     "entities": [
-     "UserEntity",
-     "PasswordResetTokenEntity"
+     "UserEntity"
     ]
    },
    "aliases": [
@@ -120,15 +120,14 @@
     "auth",
     "role",
     "theme",
-    "preference",
-    "settings"
+    "preference"
    ],
    "crosses": [],
    "motif": null,
-   "rationale": "Le groupe User compte 87 fichiers et 430 ko, avec 3 controllers (/api/auth, /api/me, /api/test-support) et PasswordReset fondu à 13 liens sur 14.",
+   "rationale": "Le groupe User compte 80 fichiers et 480 ko, avec 3 controllers (/api/auth, /api/me, /api/test-support) et 41 liens entrants depuis Event.",
    "size": {
-    "files": 87,
-    "kb": 430
+    "files": 80,
+    "kb": 480
    }
   },
   {
@@ -136,8 +135,7 @@
    "name": "Produit",
    "kind": "domain",
    "seeds": [
-    "Product",
-    "ProductEntity"
+    "Product"
    ],
    "pivot_entity": "ProductEntity",
    "path_rules": [],
@@ -157,10 +155,7 @@
      "produit",
      "products"
     ],
-    "routes": [
-     "users/user-1/products",
-     "users/user-1/products/p2"
-    ],
+    "routes": [],
     "entities": [
      "ProductEntity"
     ]
@@ -171,10 +166,10 @@
    ],
    "crosses": [],
    "motif": null,
-   "rationale": "Le groupe Product pèse 68 fichiers et 531 ko, dont 40 composants front, avec un ProductController et un ProductService propres.",
+   "rationale": "Le groupe Product compte 18 fichiers et 129 ko (au-dessus de pack_min_kb=15) avec un ProductController et un ProductService propres.",
    "size": {
-    "files": 69,
-    "kb": 535
+    "files": 18,
+    "kb": 129
    }
   },
   {
@@ -182,8 +177,7 @@
    "name": "Session et jetons",
    "kind": "domain",
    "seeds": [
-    "Session",
-    "SessionEntity"
+    "Session"
    ],
    "pivot_entity": "SessionEntity",
    "path_rules": [],
@@ -217,10 +211,10 @@
    "aliases": [],
    "crosses": [],
    "motif": null,
-   "rationale": "Le groupe Session compte 52 fichiers et 232 ko, avec le controller /api/sessions, JwksController et JwtService, et 36 occurrences du motif authorization.",
+   "rationale": "Le seed Session pèse 24 fichiers (fondus par le script dans Event à 4 liens sur 4) avec SessionController, JwksController et JwtService sur /api/sessions. Sa taille est comptée dans le pack event, d'où 0 ici.",
    "size": {
-    "files": 52,
-    "kb": 232
+    "files": 24,
+    "kb": 111
    }
   },
   {
@@ -228,8 +222,7 @@
    "name": "Catégorie",
    "kind": "domain",
    "seeds": [
-    "Category",
-    "CategoryEntity"
+    "Category"
    ],
    "pivot_entity": "CategoryEntity",
    "path_rules": [],
@@ -251,8 +244,7 @@
      "categories"
     ],
     "routes": [
-     "/api/categories",
-     "api/categories"
+     "/api/categories"
     ],
     "entities": [
      "CategoryEntity"
@@ -261,10 +253,10 @@
    "aliases": [],
    "crosses": [],
    "motif": null,
-   "rationale": "Le groupe Category compte 31 fichiers et 184 ko (au-dessus de pack_min_kb=15) avec un CategoryController sur /api/categories et un front propre de 5 composants.",
+   "rationale": "Le groupe Category compte 21 fichiers et 97 ko (au-dessus de pack_min_kb=15) avec un CategoryController sur /api/categories.",
    "size": {
-    "files": 32,
-    "kb": 187
+    "files": 21,
+    "kb": 97
    }
   },
   {
@@ -272,8 +264,7 @@
    "name": "Export de données",
    "kind": "domain",
    "seeds": [
-    "ExportJob",
-    "ExportJobEntity"
+    "ExportJob"
    ],
    "pivot_entity": "ExportJobEntity",
    "path_rules": [],
@@ -307,10 +298,10 @@
    "aliases": [],
    "crosses": [],
    "motif": null,
-   "rationale": "Le groupe ExportJob compte 31 fichiers et 92 ko avec 17 occurrences du motif state-machine et 111 du motif integrations (renderers).",
+   "rationale": "Le seed ExportJob pèse 37 fichiers (fondus par le script dans Event à 5 liens sur 5) avec ExportController sur /api/export et une machine d'états propre (ExportJob.java, 8 occurrences). Sa taille est comptée dans le pack event, d'où 0 ici.",
    "size": {
-    "files": 31,
-    "kb": 92
+    "files": 37,
+    "kb": 111
    }
   },
   {
@@ -320,7 +311,7 @@
    "seeds": [],
    "pivot_entity": null,
    "path_rules": [
-    "^backend:src/(main|test)/(java|resources)/"
+    "^backend:(?!src/main/resources/db/migration/)src/(main|test)/(java|resources)/"
    ],
    "entry_points": {
     "controllers": [],
@@ -336,7 +327,7 @@
    "aliases": [],
    "crosses": [],
    "motif": null,
-   "rationale": "41 fichiers techniques backend sans seed (38 en infrastructure : configuration, sécurité, filtres, tests d'intégration), plus les migrations non rattachées.",
+   "rationale": "36 fichiers techniques backend sans seed (33 en infrastructure, 2 à la racine, 1 de support), plus 2 tests non rattachés (ArchitectureTest, BomDriftTest), migrations exclues. Taille en ko inconnue, mise à 0.",
    "size": {
     "files": 0,
     "kb": 0
@@ -349,7 +340,7 @@
    "seeds": [],
    "pivot_entity": null,
    "path_rules": [
-    "^frontend:"
+    "^frontend:(?!(src/)?(components/ui|lib)/)"
    ],
    "entry_points": {
     "controllers": [],
@@ -365,7 +356,7 @@
    "aliases": [],
    "crosses": [],
    "motif": null,
-   "rationale": "159 fichiers techniques frontend sans seed (63 composants, 33 lib, 19 hooks, 14 services, 9 styles).",
+   "rationale": "344 fichiers techniques frontend sans seed hors lib (253 composants, 44 hooks, 12 services, 9 styles), components/ui restant à retirer par configuration. Taille en ko inconnue, mise à 0.",
    "size": {
     "files": 0,
     "kb": 0
@@ -394,7 +385,7 @@
    "aliases": [],
    "crosses": [],
    "motif": null,
-   "rationale": "8 fichiers techniques à la racine de l'app router plus 33 fichiers de pages et layouts non rattachés sous [locale].",
+   "rationale": "8 fichiers techniques à la racine de l'app router plus 33 fichiers de pages et layouts non rattachés sous [locale], soit 41 fichiers. Taille en ko inconnue, mise à 0.",
    "size": {
     "files": 0,
     "kb": 0
@@ -407,7 +398,7 @@
    "seeds": [],
    "pivot_entity": null,
    "path_rules": [
-    "^backend:src/.*/(SecurityConfig|JwtFilter|JwtService|RateLimitingFilter|UserRateLimitingFilter|CustomUserDetailsService)[^/]*\\.java$"
+    "^backend:src/.*/(SecurityConfig|JwtFilter|JwtService|UserRateLimitingFilter|CustomUserDetailsService|ExportTokenService)[^/]*\\.java$"
    ],
    "entry_points": {
     "controllers": [],
@@ -435,10 +426,10 @@
     "export"
    ],
    "motif": "authorization",
-   "rationale": "Le motif authorization touche 35 fichiers (SecurityConfig 19 occurrences, JwtFilter 11), répartis entre User (14), Session (4) et le socle (16).",
+   "rationale": "Le motif authorization touche 35 fichiers (SecurityConfig 19 occurrences, JwtFilter 11), répartis entre User (14), Event (7) et le socle (14). Taille en ko inconnue, mise à 0.",
    "size": {
     "files": 35,
-    "kb": null
+    "kb": 0
    }
   },
   {
@@ -480,10 +471,10 @@
     "category"
    ],
    "motif": "integrations",
-   "rationale": "Le motif integrations touche 97 fichiers (ZipExportRenderer 33 occurrences, apiClient 9), répartis sur les 6 domaines (User 25, Event 17, ExportJob 12).",
+   "rationale": "Le motif integrations touche 97 fichiers (ZipExportRenderer 33 occurrences, apiClient 9), répartis sur Event (39), le socle (26), User (21), Product (6) et Category (5). Taille en ko inconnue, mise à 0.",
    "size": {
     "files": 97,
-    "kb": null
+    "kb": 0
    }
   },
   {
@@ -519,11 +510,62 @@
     "export"
    ],
    "motif": "batch",
-   "rationale": "Le motif batch touche 9 fichiers (PasswordResetTokenPurgeScheduler 6 occurrences, ExportPurgeScheduler 5) répartis entre User (4), ExportJob (3) et le socle (2).",
+   "rationale": "Le motif batch touche 9 fichiers (PasswordResetTokenPurgeScheduler 6 occurrences, ExportPurgeScheduler 5) répartis entre Event (5), User (2) et le socle (2). Taille en ko inconnue, mise à 0.",
    "size": {
     "files": 9,
-    "kb": null
+    "kb": 0
    }
+  },
+  {
+   "slug": "lib-socle",
+   "name": "Socle d'interface (frontend)",
+   "kind": "technical",
+   "origin": "map.tech_packs",
+   "seeds": [],
+   "path_rules": [
+    "^frontend:lib/"
+   ],
+   "entry_points": {
+    "controllers": [],
+    "front_routes": [],
+    "front_folders": [],
+    "services": []
+   },
+   "triggers": {
+    "keywords": [
+     "lib",
+     "socle"
+    ]
+   },
+   "aliases": [],
+   "crosses": [],
+   "motif": null,
+   "rationale": "pack technique déclaré par map.tech_packs"
+  },
+  {
+   "slug": "migrations",
+   "name": "Migrations de base",
+   "kind": "technical",
+   "origin": "map.tech_packs",
+   "seeds": [],
+   "path_rules": [
+    "^backend:src/main/resources/db/migration/"
+   ],
+   "entry_points": {
+    "controllers": [],
+    "front_routes": [],
+    "front_folders": [],
+    "services": []
+   },
+   "triggers": {
+    "keywords": [
+     "migrations"
+    ]
+   },
+   "aliases": [],
+   "crosses": [],
+   "motif": null,
+   "rationale": "pack technique déclaré par map.tech_packs"
   }
  ],
  "deferred_packs": [
@@ -536,85 +578,24 @@
  ],
  "assumptions": [
   {
-   "id": "A1",
-   "question": "ProductEntity : fondu dans Event par le script ou dans product ?",
-   "decision": "product",
-   "rule": "R1 satellite suivant le pivot dont il porte le nom (liens 6/11 vers Event, pas le double vers un autre pivot)",
-   "confidence": "high",
-   "seeds": [
-    "ProductEntity"
-   ],
-   "evidence": [],
-   "falsified_if": "un ticket sur les événements modifie ProductEntity sans toucher au catalogue de produits",
-   "status": "open",
-   "opened": "2026-11-19",
-   "touched_by": []
-  },
-  {
-   "id": "A2",
-   "question": "CategoryEntity : fondu dans Event par le script ou dans category ?",
-   "decision": "category",
-   "rule": "R1 satellite suivant le pivot dont il porte le nom (liens 5/11 vers Event, pas le double vers un autre pivot)",
-   "confidence": "high",
-   "seeds": [
-    "CategoryEntity"
-   ],
-   "evidence": [],
-   "falsified_if": "un ticket sur les événements modifie CategoryEntity sans toucher aux catégories",
-   "status": "open",
-   "opened": "2026-11-19",
-   "touched_by": []
-  },
-  {
    "id": "A3",
-   "question": "PasswordReset (22 fichiers) : pack propre ou dans user ?",
+   "question": "PasswordResetToken (14 fichiers) : fondu dans Event par le script, dans user ou pack propre ?",
    "decision": "user",
-   "rule": "R3 fusion par le script à 13 liens sur 14 vers User, PasswordReset ne dépasse pas pack_min_kb seul sans écran propre",
-   "confidence": "medium",
+   "rule": "R11 User est un hub, aucun groupe n'y est fondu ; la fusion du script dans Event (1 lien sur 1) est conservée faute de pack propre (14 fichiers)",
+   "confidence": "low",
    "seeds": [
-    "PasswordReset",
-    "PasswordResetTokenEntity"
+    "PasswordResetToken"
    ],
-   "evidence": [
-    "backend:src/main/java/com/matimeline/eventmanager/application/validation/StrongPasswordValidator.java"
-   ],
-   "falsified_if": "un ticket de réinitialisation de mot de passe évolue sans toucher aux comptes utilisateur",
-   "status": "undecidable",
-   "opened": "2026-11-19",
+   "evidence": [],
+   "falsified_if": "un ticket de réinitialisation de mot de passe modifie PasswordResetToken sans toucher aux événements, ou son poids dépasse pack_min_kb seul",
+   "status": "refuted",
+   "opened": "2026-11-20",
    "touched_by": [],
    "instruction": {
-    "date": "2026-11-19",
+    "date": "2026-11-20",
     "verdict": "refuted",
-    "statement": "Le service de réinitialisation lit et écrit les comptes via le dépôt utilisateur à trois endroits, tandis que le planificateur de purge n'agit que sur le dépôt des tokens et le template d'email n'importe que java.util.Locale.",
+    "statement": "Les 16 fichiers lus ne référencent pas l'entité Event : PasswordResetToken porte une clé étrangère user_id vers users avec suppression en cascade, et les services, tests et requêtes de reset passent par User et UserRepository.",
     "verified": [
-     {
-      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/application/services/PasswordResetServiceImpl.java",
-      "line_start": 147,
-      "line_end": 147,
-      "quote": "User user = userRepository.findDomainUserById(token.getUserId())",
-      "check": "exact"
-     },
-     {
-      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/application/services/PasswordResetServiceImpl.java",
-      "line_start": 162,
-      "line_end": 162,
-      "quote": "userRepository.save(updated);",
-      "check": "exact"
-     },
-     {
-      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/application/services/PasswordResetTokenPurgeScheduler.java",
-      "line_start": 37,
-      "line_end": 37,
-      "quote": "Couche APPLICATION : ne dépend que du port {@link PasswordResetTokenRepository} et de",
-      "check": "exact"
-     },
-     {
-      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/application/services/PasswordResetTokenPurgeScheduler.java",
-      "line_start": 75,
-      "line_end": 75,
-      "quote": "int purged = tokenRepository.deleteConsumedOrExpiredBefore(expiredBefore);",
-      "check": "exact"
-     },
      {
       "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/resources/db/migration/V6__create_password_reset_tokens.sql",
       "line_start": 42,
@@ -623,16 +604,30 @@
       "check": "exact"
      },
      {
-      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/PasswordResetEmailTemplate.java",
-      "line_start": 3,
-      "line_end": 3,
-      "quote": "import java.util.Locale;",
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenEndpointIntegrationTest.java",
+      "line_start": 116,
+      "line_end": 116,
+      "quote": "return userRepository.save(new User(",
+      "check": "exact"
+     },
+     {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/test/java/com/matimeline/eventmanager/application/services/PasswordResetServiceImplTest.java",
+      "line_start": 87,
+      "line_end": 87,
+      "quote": "when(userRepository.findDomainUserByEmail(\"alice@example.com\"))",
+      "check": "exact"
+     },
+     {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenFinderJpaAdapter.java",
+      "line_start": 55,
+      "line_end": 55,
+      "quote": "WHERE t.userId = :userId",
       "check": "exact"
      }
     ],
     "rejected": []
    },
-   "reason": "verdict refuted sans décision applicable"
+   "moved_from": "event"
   },
   {
    "id": "A4",
@@ -706,7 +701,7 @@
    "id": "A5",
    "question": "Pages login, register, forgot-password, reset-password : user ou session ?",
    "decision": "user",
-   "rule": "R3 écrans d'authentification sans entité, suivent le pack qui porte AuthController et PasswordReset",
+   "rule": "R3 écrans d'authentification sans entité, suivent le pack qui porte AuthController et PasswordResetService",
    "confidence": "medium",
    "seeds": [
     "User",
@@ -775,7 +770,7 @@
   },
   {
    "id": "A6",
-   "question": "Radical dashboard et pages settings : quel pack ?",
+   "question": "Radicaux dashboard et settings, pages correspondantes : quel pack ?",
    "decision": "état courant",
    "rule": "R3 dashboard désigne plusieurs packs possibles (event, product), radical omis des alias, fichiers laissés non rattachés",
    "confidence": "low",
@@ -915,14 +910,9 @@
    "rule": "R9 test sans seed suivant la classe de production la plus probable (préférence portée par le compte, migration V16 user_theme_preference)",
    "confidence": "medium",
    "seeds": [
-    "User",
-    "UserEntity"
+    "User"
    ],
-   "evidence": [
-    "backend:src/test/java/com/matimeline/eventmanager/domain/models/ThemePreferenceTest.java",
-    "backend:src/main/java/com/matimeline/eventmanager/domain/models/Role.java",
-    "backend:src/main/java/com/matimeline/eventmanager/application/dtos/AuthResponse.java"
-   ],
+   "evidence": [],
    "falsified_if": "un ticket d'interface modifie la préférence de thème sans toucher au compte utilisateur",
    "status": "confirmed",
    "opened": "2026-11-19",
@@ -973,16 +963,16 @@
   },
   {
    "id": "A9",
-   "question": "Migrations non rattachées (V1 à V9) : quel propriétaire ?",
+   "question": "Migrations non rattachées (V1, V2, V3, V5, V7) : quel propriétaire ?",
    "decision": "état courant",
-   "rule": "R10 fichiers techniques possédés par le pack de leur couche, couverts par la règle backend-core (6 fichiers backend/db sans seed)",
+   "rule": "R12 fichiers de couche db possédés par le pack technique de migrations ajouté par configuration, aucun pack technique créé ici (5 fichiers backend/db sans seed)",
    "confidence": "medium",
    "seeds": [],
    "evidence": [
     "backend:src/main/resources/db/migration/V1__baseline.sql",
-    "backend:src/main/resources/db/migration/V9__neutralize_invalid_recurrence_unit.sql"
+    "backend:src/main/resources/db/migration/V7__design_v3_schema.sql"
    ],
-   "falsified_if": "une migration est modifiée par un ticket d'un seul domaine (V9 touche la récurrence des événements)",
+   "falsified_if": "une migration est modifiée par un ticket d'un seul domaine (V7 porte 2 occurrences de state-machine)",
    "status": "undecidable",
    "opened": "2026-11-19",
    "touched_by": [],
@@ -1016,6 +1006,180 @@
     "rejected": []
    },
    "reason": "verdict refuted sans décision applicable"
+  },
+  {
+   "id": "A10",
+   "question": "Session (24 fichiers) : fondu dans Event comme le fait le script, ou pack propre ?",
+   "decision": "session",
+   "rule": "R7 le script fond Session dans Event (4 liens sur 4), mais Session a ses controllers (SessionController, JwksController) et son service JwtService ; le pack existait déjà et reste séparé",
+   "confidence": "medium",
+   "seeds": [
+    "Session"
+   ],
+   "evidence": [],
+   "falsified_if": "un ticket sur les événements modifie systématiquement Session, ou Session reste sous pack_min_kb une fois mesuré seul",
+   "status": "confirmed",
+   "opened": "2026-11-20",
+   "touched_by": [],
+   "instruction": {
+    "date": "2026-11-20",
+    "verdict": "confirmed",
+    "statement": "SessionController, SessionServiceImpl, SessionEntity et la table sessions (V10) forment un ensemble sans référence à un événement, JwtFilter appelle isSessionActive à chaque requête authentifiée, et JwksController publie la clé publique JWT.",
+    "verified": [
+     {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/SessionController.java",
+      "line_start": 35,
+      "line_end": 35,
+      "quote": "public class SessionController {",
+      "check": "exact"
+     },
+     {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/SecurityConfig.java",
+      "line_start": 178,
+      "line_end": 178,
+      "quote": ".requestMatchers(\"/api/sessions/**\").hasAuthority(\"ROLE_USER\")",
+      "check": "exact"
+     },
+     {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/resources/db/migration/V10__create_sessions.sql",
+      "line_start": 33,
+      "line_end": 33,
+      "quote": "create table sessions (",
+      "check": "exact"
+     },
+     {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtFilter.java",
+      "line_start": 81,
+      "line_end": 81,
+      "quote": "&& sessionService.isSessionActive(jwtService.extractJti(token))) {",
+      "check": "exact"
+     },
+     {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/application/services/SessionServiceImpl.java",
+      "line_start": 25,
+      "line_end": 25,
+      "quote": "public class SessionServiceImpl implements SessionService {",
+      "check": "exact"
+     },
+     {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/SessionRevocationIntegrationTest.java",
+      "line_start": 197,
+      "line_end": 197,
+      "quote": "void deleteOthers_revokesAllButCurrent() throws Exception {",
+      "check": "exact"
+     },
+     {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/JwksController.java",
+      "line_start": 65,
+      "line_end": 65,
+      "quote": ".body(jwtService.getPublicJwks());",
+      "check": "exact"
+     }
+    ],
+    "rejected": []
+   }
+  },
+  {
+   "id": "A11",
+   "question": "ExportJob (37 fichiers) : fondu dans Event comme le fait le script, ou pack propre ?",
+   "decision": "export",
+   "rule": "R7 le script fond ExportJob dans Event (5 liens sur 5), mais ExportJob a son ExportController sur /api/export et une machine d'états propre ; le pack existait déjà et reste séparé",
+   "confidence": "medium",
+   "seeds": [
+    "ExportJob"
+   ],
+   "evidence": [],
+   "falsified_if": "un ticket sur les événements modifie systématiquement ExportJob, ou ExportJob reste sous pack_min_kb une fois mesuré seul",
+   "status": "confirmed",
+   "opened": "2026-11-20",
+   "touched_by": [],
+   "instruction": {
+    "date": "2026-11-20",
+    "verdict": "confirmed",
+    "statement": "Dans les fichiers lus, ExportJob est un modèle de domaine autonome (POJO) avec sa table export_jobs, son entité ExportJobEntity, sa requête filtrée par propriétaire, sa machine d'états PENDING, RUNNING, COMPLETED, FAILED et son propre contrôleur sur /api/export, sans aucune référence à Event.",
+    "verified": [
+     {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ExportController.java",
+      "line_start": 46,
+      "line_end": 46,
+      "quote": "@RequestMapping(\"/api/export\")",
+      "check": "exact"
+     },
+     {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/domain/models/export/ExportJob.java",
+      "line_start": 16,
+      "line_end": 16,
+      "quote": "public class ExportJob {",
+      "check": "exact"
+     },
+     {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/domain/models/export/ExportJob.java",
+      "line_start": 65,
+      "line_end": 65,
+      "quote": "public boolean isDownloadable(LocalDateTime now) {",
+      "check": "exact"
+     },
+     {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/ExportJobEntity.java",
+      "line_start": 24,
+      "line_end": 24,
+      "quote": "@Table(name = \"export_jobs\")",
+      "check": "exact"
+     },
+     {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ExportJobRepositoryJpaImpl.java",
+      "line_start": 73,
+      "line_end": 73,
+      "quote": "\"SELECT j FROM ExportJobEntity j WHERE j.id = :id AND j.userId = :owner\",",
+      "check": "exact"
+     },
+     {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/application/services/ExportPurgeScheduler.java",
+      "line_start": 37,
+      "line_end": 37,
+      "quote": "public class ExportPurgeScheduler {",
+      "check": "exact"
+     },
+     {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/test/java/com/matimeline/eventmanager/application/services/ExportPurgeSchedulerIntegrationTest.java",
+      "line_start": 94,
+      "line_end": 94,
+      "quote": "void expiredCompletedJob_fileAndRowPurged() {",
+      "check": "exact"
+     }
+    ],
+    "rejected": []
+   }
+  },
+  {
+   "id": "A12",
+   "question": "User, entité hub : son seed garde-t-il son propre pack, et AvatarService lui revient-il ?",
+   "decision": "user",
+   "rule": "R11 User est importée par 3 seeds sur 6 (Category, Product, Session) ; aucun groupe n'y est fondu, AvatarService (listé dans le groupe Event) reste rattaché au compte",
+   "confidence": "high",
+   "seeds": [
+    "User"
+   ],
+   "evidence": [],
+   "falsified_if": "AvatarService est modifié par des tickets d'événements sans lien avec l'avatar du compte",
+   "status": "open",
+   "opened": "2026-11-20",
+   "touched_by": []
+  },
+  {
+   "id": "A13",
+   "question": "L'entité hub User (importée par 3 seeds d'entité) reste-t-elle dans son pack ?",
+   "seed": "User",
+   "decision": "user",
+   "rule": "R11 entité hub : importée par 3/6 seeds d'entité, ses arêtes ne votent pas la fusion (propriété / multi-tenant)",
+   "confidence": "high",
+   "evidence": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/entities/UserEntity.java"
+   ],
+   "status": "open",
+   "opened": "2026-11-20",
+   "touched_by": [],
+   "falsified_if": "un ticket change la clé de propriété sans toucher les autres domaines"
   }
  ],
  "open_questions": []

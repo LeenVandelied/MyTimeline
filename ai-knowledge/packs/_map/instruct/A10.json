@@ -1,0 +1,15 @@
+{
+ "id": "A10",
+ "question": "Session (24 fichiers) : fondu dans Event comme le fait le script, ou pack propre ?",
+ "decision": "session",
+ "rule": "R7 le script fond Session dans Event (4 liens sur 4), mais Session a ses controllers (SessionController, JwksController) et son service JwtService ; le pack existait déjà et reste séparé",
+ "confidence": "medium",
+ "seeds": [
+  "Session"
+ ],
+ "evidence": [],
+ "falsified_if": "un ticket sur les événements modifie systématiquement Session, ou Session reste sous pack_min_kb une fois mesuré seul",
+ "status": "open",
+ "opened": "2026-11-20",
+ "touched_by": []
+}

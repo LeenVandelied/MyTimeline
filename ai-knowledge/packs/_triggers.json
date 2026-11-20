@@ -8,25 +8,20 @@
     "evenement",
     "recurrence",
     "récurrence",
-    "timeline"
+    "timeline",
+    "passwordresettoken"
    ],
    "routes": [
-    "/api/events",
-    "events/evt-desktop",
-    "events/evt-mobile"
+    "/api/events"
    ],
    "entities": [
-    "EventEntity"
+    "EventEntity",
+    "PasswordResetTokenEntity"
    ],
-   "paths": [
-    "frontend:components/events/",
-    "frontend:components/timeline/"
-   ],
+   "paths": [],
    "name_globs": [
     "**/Event*",
-    "**/*event*",
-    "**/EventEntity*",
-    "**/*recurrence*"
+    "**/*event*"
    ]
   },
   "user": {
@@ -48,28 +43,22 @@
     "/api/auth",
     "/api/me",
     "/api/test-support",
+    "api/me",
+    "api/me/avatar",
+    "api/me/export",
+    "me",
     "me/avatar",
     "me/export"
    ],
    "entities": [
-    "UserEntity",
-    "PasswordResetTokenEntity"
+    "UserEntity"
    ],
-   "paths": [
-    "frontend:components/settings/"
-   ],
+   "paths": [],
    "name_globs": [
     "**/User*",
     "**/*user*",
-    "**/UserEntity*",
-    "**/PasswordReset*",
-    "**/PasswordResetTokenEntity*",
-    "**/*password*",
-    "**/*auth*",
-    "**/*role*",
-    "**/*theme*",
-    "**/*preference*",
-    "**/*settings*"
+    "**/PasswordResetToken*",
+    "**/*auth*"
    ]
   },
   "product": {
@@ -79,20 +68,14 @@
     "produit",
     "products"
    ],
-   "routes": [
-    "users/user-1/products",
-    "users/user-1/products/p2"
-   ],
+   "routes": [],
    "entities": [
     "ProductEntity"
    ],
-   "paths": [
-    "frontend:components/dashboard/"
-   ],
+   "paths": [],
    "name_globs": [
     "**/Product*",
-    "**/*product*",
-    "**/ProductEntity*"
+    "**/*product*"
    ]
   },
   "session": {
@@ -113,8 +96,7 @@
    "paths": [],
    "name_globs": [
     "**/Session*",
-    "**/*session*",
-    "**/SessionEntity*"
+    "**/*session*"
    ]
   },
   "category": {
@@ -126,8 +108,7 @@
     "categories"
    ],
    "routes": [
-    "/api/categories",
-    "api/categories"
+    "/api/categories"
    ],
    "entities": [
     "CategoryEntity"
@@ -135,8 +116,7 @@
    "paths": [],
    "name_globs": [
     "**/Category*",
-    "**/*category*",
-    "**/CategoryEntity*"
+    "**/*category*"
    ]
   },
   "export": {
@@ -159,16 +139,14 @@
     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/"
    ],
    "name_globs": [
-    "**/ExportJob*",
-    "**/ExportJobEntity*"
+    "**/ExportJob*"
    ]
   },
   "backend-core": {
    "kind": "technical",
    "layers": [
     "backend/infrastructure",
-    "backend/db",
-    "backend/",
+    "backend/(root)",
     "backend/support",
     "backend/architecture",
     "backend/build"
@@ -180,20 +158,25 @@
   "frontend-core": {
    "kind": "technical",
    "layers": [
-    "frontend/components",
-    "frontend/lib",
-    "frontend/hooks",
-    "frontend/services",
-    "frontend/__tests__",
-    "frontend/styles",
-    "frontend/contexts",
-    "frontend/i18n",
-    "frontend/utils"
+    "frontend/components/components",
+    "frontend/hooks/hooks",
+    "frontend/services/services",
+    "frontend/__tests__/__tests__",
+    "frontend/styles/styles",
+    "frontend/types/types",
+    "frontend/contexts/contexts",
+    "frontend/utils/utils"
    ],
    "paths": [
-    "frontend:__tests__/",
-    "frontend:styles/",
-    "frontend:components/landing/"
+    "frontend:components/dashboard/",
+    "frontend:components/events/",
+    "frontend:components/landing/",
+    "frontend:components/products/",
+    "frontend:components/settings/",
+    "frontend:components/shared/",
+    "frontend:components/timeline/",
+    "frontend:components/ui/",
+    "frontend:styles/__tests__/"
    ]
   },
   "frontend-app": {
@@ -203,7 +186,7 @@
     "frontend-app/(root)"
    ],
    "paths": [
-    "frontend-app:[locale]/"
+    "frontend-app:[locale]/(app)/"
    ]
   },
   "authorization": {
@@ -233,6 +216,22 @@
    "crosses": [
     "user",
     "export"
+   ]
+  },
+  "lib-socle": {
+   "kind": "technical",
+   "layers": [
+    "frontend/lib/lib"
+   ],
+   "paths": []
+  },
+  "migrations": {
+   "kind": "technical",
+   "layers": [
+    "backend/db"
+   ],
+   "paths": [
+    "backend:src/main/resources/db/"
    ]
   }
  },

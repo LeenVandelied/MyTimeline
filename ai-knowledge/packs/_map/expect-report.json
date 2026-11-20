@@ -1,0 +1,14 @@
+{
+ "schema": 1,
+ "stage": "packs",
+ "checked_at": "2026-11-20T10:16:18Z",
+ "verdict": "vert",
+ "expectations_sha256": "c3b6537c5990b4645c62bb64c8023abf8060bd849f037921f2b3544000dd6b3e",
+ "failures": [],
+ "passed": [
+  "loader_trial",
+  "index_links",
+  "zero_count"
+ ],
+ "skipped": []
+}

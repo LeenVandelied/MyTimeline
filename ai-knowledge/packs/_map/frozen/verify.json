@@ -3,61 +3,84 @@
  "errors": [],
  "warnings": [],
  "invented": {},
- "leftover": [],
- "leftover_rate": 0.0,
- "assigned": 700,
+ "leftover": [
+  "backend:src/main/resources/db/migration/V1__baseline.sql",
+  "backend:src/main/resources/db/migration/V2__unique_constraints.sql",
+  "backend:src/main/resources/db/migration/V3__add_audit_columns.sql",
+  "backend:src/main/resources/db/migration/V5__fk_indexes.sql",
+  "backend:src/main/resources/db/migration/V7__design_v3_schema.sql"
+ ],
+ "leftover_rate": 0.0071,
+ "assigned": 695,
  "total": 700,
  "sizes": {
-  "event": {
-   "files": 180,
-   "kb": 1502
+  "frontend-core": {
+   "files": 362,
+   "kb": 2706
+  },
+  "integrations": {
+   "files": 98,
+   "kb": 767
   },
   "user": {
-   "files": 154,
-   "kb": 826
+   "files": 94,
+   "kb": 527
   },
-  "frontend-core": {
-   "files": 127,
-   "kb": 778
-  },
-  "product": {
-   "files": 69,
-   "kb": 535
+  "event": {
+   "files": 60,
+   "kb": 319
   },
   "backend-core": {
-   "files": 44,
-   "kb": 326
+   "files": 38,
+   "kb": 318
   },
-  "category": {
-   "files": 32,
-   "kb": 187
+  "authorization": {
+   "files": 35,
+   "kb": 313
   },
   "frontend-app": {
    "files": 41,
    "kb": 179
   },
-  "export": {
-   "files": 31,
-   "kb": 92
+  "product": {
+   "files": 18,
+   "kb": 129
   },
   "session": {
-   "files": 22,
-   "kb": 84
+   "files": 24,
+   "kb": 111
+  },
+  "export": {
+   "files": 37,
+   "kb": 111
+  },
+  "category": {
+   "files": 21,
+   "kb": 97
+  },
+  "batch": {
+   "files": 9,
+   "kb": 42
   }
  },
  "small_domain_packs_R7": {},
  "giant_domain_packs_R8": {},
- "median_domain_kb": 361,
+ "giant_domain_packs_R8_why": {},
+ "median_domain_kb": 121,
  "overlay_claims": {
-  "batch": 7,
-  "authorization": 10,
-  "integrations": 13
+  "batch": 9,
+  "authorization": 35,
+  "integrations": 98
  },
  "by_how": {
-  "seed": 488,
-  "path_rule": 212
+  "seed": 254,
+  "path_rule": 369,
+  "R10": 72
  },
  "assumptions": {
-  "open": 9
+  "refuted": 1,
+  "confirmed": 7,
+  "undecidable": 1,
+  "open": 2
  }
 }

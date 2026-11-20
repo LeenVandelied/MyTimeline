@@ -7,29 +7,31 @@
   "frontend-app": 41
  },
  "entities": 7,
- "seeds": 14,
+ "seeds": 7,
+ "hubs": [
+  "User"
+ ],
  "seeds_by_origin": {
-  "entity": 7,
-  "extra": 7
+  "entity": 7
  },
  "seeds_from_folders": [],
  "folders_on_entity_seeds": [],
- "groups": 5,
- "groups_with_files": 5,
- "labelled": 488,
+ "groups": 4,
+ "groups_with_files": 4,
+ "labelled": 254,
  "by_how": {
-  "name": 333,
-  "fanin": 67,
-  "imports": 88
+  "name": 191,
+  "fanin": 22,
+  "imports": 41
  },
- "tech": 172,
+ "tech": 406,
  "transversal_home": 0,
  "ambiguous": 0,
  "unassigned": 40,
  "unassigned_rate": 0.0571,
  "unassigned_bytes_rate": 0.0384,
  "edges_source": "regex",
- "file_edges": 1075,
+ "file_edges": 1684,
  "graphify": {},
  "motifs": [
   "authorization",
@@ -38,5 +40,5 @@
   "state-machine"
  ],
  "notes": [],
- "duration_s": 1.15
+ "duration_s": 0.98
 }

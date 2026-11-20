@@ -2,94 +2,39 @@
  {
   "id": "A3",
   "seeds": [
-   "PasswordReset",
-   "PasswordResetTokenEntity"
-  ],
-  "confidence": "medium",
-  "decision": "user",
-  "rule": "R3 fusion par le script à 13 liens sur 14 vers User, PasswordReset ne dépasse pa",
-  "files": 12,
-  "tests": 7,
-  "evidence_unresolved": [],
-  "status": "prepared"
- },
- {
-  "id": "A4",
-  "seeds": [
-   "Event"
+   "PasswordResetToken"
   ],
   "confidence": "low",
   "decision": "event",
-  "rule": "R3 dossier d'écran sans entité, alias timeline rattaché au pack qui porte la chr",
-  "files": 12,
-  "tests": 8,
+  "rule": "R11 User est un hub, aucun groupe n'y est fondu ; la fusion du script dans Event",
+  "files": 10,
+  "tests": 6,
   "evidence_unresolved": [],
   "status": "prepared"
  },
  {
-  "id": "A5",
+  "id": "A10",
   "seeds": [
-   "User",
    "Session"
   ],
   "confidence": "medium",
-  "decision": "user",
-  "rule": "R3 écrans d'authentification sans entité, suivent le pack qui porte AuthControll",
+  "decision": "session",
+  "rule": "R7 le script fond Session dans Event (4 liens sur 4), mais Session a ses control",
   "files": 12,
   "tests": 8,
   "evidence_unresolved": [],
   "status": "prepared"
  },
  {
-  "id": "A6",
-  "seeds": [
-   "Event",
-   "Product",
-   "User"
-  ],
-  "confidence": "low",
-  "decision": "état courant",
-  "rule": "R3 dashboard désigne plusieurs packs possibles (event, product), radical omis de",
-  "files": 12,
-  "tests": 8,
-  "evidence_unresolved": [],
-  "status": "prepared"
- },
- {
-  "id": "A7",
+  "id": "A11",
   "seeds": [
    "ExportJob"
   ],
   "confidence": "medium",
-  "decision": "non créé : state-machine",
-  "rule": "R5 motif mesuré sur 2 fichiers seulement (ExportJob.java et export.ts), absorbé ",
+  "decision": "export",
+  "rule": "R7 le script fond ExportJob dans Event (5 liens sur 5), mais ExportJob a son Exp",
   "files": 12,
   "tests": 1,
-  "evidence_unresolved": [],
-  "status": "prepared"
- },
- {
-  "id": "A8",
-  "seeds": [
-   "User",
-   "UserEntity"
-  ],
-  "confidence": "medium",
-  "decision": "user",
-  "rule": "R9 test sans seed suivant la classe de production la plus probable (préférence p",
-  "files": 12,
-  "tests": 8,
-  "evidence_unresolved": [],
-  "status": "prepared"
- },
- {
-  "id": "A9",
-  "seeds": [],
-  "confidence": "medium",
-  "decision": "état courant",
-  "rule": "R10 fichiers techniques possédés par le pack de leur couche, couverts par la règ",
-  "files": 2,
-  "tests": 0,
   "evidence_unresolved": [],
   "status": "prepared"
  }

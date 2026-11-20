@@ -2,16 +2,16 @@
 pack: integrations
 kind: transversal
 name: Intégrations et services externes
-generated_at: 2026-11-19T16:00:00Z
+generated_at: 2026-11-20T11:40:00Z
 generator: synth/1
-base_sha256: a64f6c05a7ac93cdec814fefc1b51ab8c6b34d6feeac3fd66b060880ee5f337a
-facts_in_base: 228
-facts_in_pool: 130
-facts_cited: 24
+base_sha256: 822c2fc41a4cac8f8153823bb72fa9ff6f39fb4cb106f53e8fc08716e20aa55a
+facts_in_base: 350
+facts_in_pool: 186
+facts_cited: 42
 sections: integrations.sections.json
 details: [integrations.details.md]
 lang: fr
-curated_at: 2026-11-19T16:38:00Z
+curated_at: 2026-11-20T12:45:00Z
 curation: integrations.curation.json
 ---
 ## 1. Quand activer {#activate}
@@ -27,49 +27,61 @@ Aucun fait de la base ne relève de cette section.
 
 ## 3. Règles du motif {#rules}
 
-### Client HTTP frontend
-- Un 401 sur une requête hors endpoints auth gérés inline (login, register, forgot-password, reset-password, /auth/me) affiche un toast de session expirée puis redirige vers le login après 1 500 ms, avec un verrou contre les redirections multiples [#ebe8f14e30148918-3].
-- Le timeout par défaut est 15 000 ms, mais il passe à 0 pour un envoi FormData [#99da2bca3c86383d-1] [#708cf9ff39788961-1].
-### E-mail Brevo
-- Sans clé brevo.api.key (vide par défaut), l'envoi est ignoré sans appel HTTP et un warning est journalisé [#25504d1bcaa2eac3-1] [#34158f5b5cd49dab-2].
-- Une RestClientException est journalisée puis non propagée au contrôleur, donc l'échec d'envoi reste invisible de l'appelant [#825c5740d504fe2d-2].
-### Stockage de fichiers
-- Une référence vide, avec séparateur ou '..', ou hors du répertoire de base est refusée [#68cad5d7a30c3ac4-1].
-### Exports
-- Le CSV neutralise les valeurs débutant par = + - @ avant l'échappement RFC 4180 [#0bcf5a6ce1ee7408-1] [#1323a64f4a7c32e4-1].
-### Vérifié dans le code
-- Un 401 sur /auth/login (et register, forgot-password, reset-password, /auth/me) est relayé tel quel par l'intercepteur apiClient et doit être rendu inline par l'écran appelant [#frontend-core/2da5f9f87ce62f1b-1] `frontend:services/apiClient.ts:213-216`.
+### Email Brevo
+- Le nom et le lien sont échappés en HTML dans htmlContent, mais to.name reçoit le nom brut. [#d01536aff913607e-1] [#11d4aa8f36e6fb68-1]
+### Export de données
+- Le CSV neutralise toute valeur commençant par =, +, -, @, tabulation ou retour par une apostrophe, puis met entre guillemets les champs à virgule, guillemet ou saut de ligne. [#0bcf5a6ce1ee7408-1] [#1323a64f4a7c32e4-1]
+- Le ZIP réutilise les rendus JSON, Markdown et CSV, et les noms de fichiers commencent par mytimeline-export- sans identifiant utilisateur. [#19b3fc4ec346a739-1] [#0fde468ee74ce390-1]
+### Client HTTP du frontend
+- Un seul intercepteur de réponse gère réseau, 401 et toasts 400, 403, 500, voir `frontend:services/apiClient.ts:180-285`. [#ebe8f14e30148918-1]
+- Un 401 hors des cinq routes auth inline affiche la session expirée puis redirige après 1 500 ms. La correspondance se fait par égalité ou suffixe du pathname. [#ebe8f14e30148918-3] [#17e17e177c3c1115-1] [#371afdf6b26a2509-1]
+- Le toast 400 saute /me/change-password, et les toasts 403 et 500 sautent les statuts déclarés dans inlineHandledStatuses. [#0ef3c42e524af8fe-1] [#ebe8f14e30148918-4] [#ebe8f14e30148918-7] [#327d68bab6520eaf-1]
+- Le timeout par défaut est de 15 000 ms, mais un corps FormData passe à 0 et perd son Content-Type. [#99da2bca3c86383d-1] [#708cf9ff39788961-1]
+- Le token est rafraîchi toutes les 6 heures côté navigateur, erreurs ignorées. [#9bce6d27ef674db6-1]
 
 ## 4. Structure {#structure}
 
+#### frontend:services/apiClient.ts
+| Symbole | Énoncé | Lignes | Fait |
+|---|---|---|---|
+| apiClient.interceptors.response | Une réponse 401 hors routes auth inline pose le verrou isRedirecting, affiche le toast de session expirée, puis redirige après 1 500 ms vers la page de connexion de la locale courante. (partiel) | L223-232 | [#ebe8f14e30148918-3] |
 #### backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenEndpointIntegrationTest.java
 | Symbole | Énoncé | Lignes | Fait |
 |---|---|---|---|
 | E2eResetTokenEndpointIntegrationTest.ENDPOINT | Le test cible la route de test-support /api/test-support/password-reset-token, appelée en GET avec un paramètre email. | L47 | [#8e6a9b9608499d60-1] |
+#### backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/JwksEndpointIntegrationTest.java
+| Symbole | Énoncé | Lignes | Fait |
+|---|---|---|---|
+| JwksEndpointIntegrationTest.jwks_isReachableAnonymously_andExposesOneRs256SigningKey | Le test appelle GET /.well-known/jwks.json sans cookie ni Bearer et attend un 200 JSON avec Cache-Control max-age=300 et une seule clé RSA de signature RS256. | L68-81 | [#f3b5f265303d01f1-1] |
 
 ## 5. Mise en œuvre par domaine {#surface}
 
-### Réinitialisation de mot de passe en test E2E
-- Le test d'intégration cible la route de support de test, appelée en GET avec un paramètre email, pour récupérer le jeton de réinitialisation, voir `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenEndpointIntegrationTest.java:47` [#8e6a9b9608499d60-1].
+### Authentification et jeton de réinitialisation
+- La route de test-support `/api/test-support/password-reset-token` s'appelle en GET avec un paramètre email, selon `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenEndpointIntegrationTest.java:47` [#8e6a9b9608499d60-1]
+- Le finder lit en lecture seule et ne projette que la colonne token. Il ne retient que les jetons de l'utilisateur non utilisés et non expirés, le plus tardif en expiration d'abord, puis le plus grand id [#12e77eb7b9e6d0c0-1] [#12e77eb7b9e6d0c0-2]
+### Clés publiques JWT
+- L'endpoint JWKS est joignable sans cookie ni Bearer, répond en JSON avec un cache de 300 secondes et n'expose qu'une clé RSA de signature RS256, vérifié par `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/JwksEndpointIntegrationTest.java:68-81` [#f3b5f265303d01f1-1]
+### Produits et catégories
+- Le test de restauration lit la colonne archived de la table products après la requête HTTP, voir `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductRestoreIntegrationTest.java:112-117` [#92f4076df0c73295-1]
+### Événements
 
 ## 6. Fichiers critiques {#files}
 
-Fichiers du pool au poids le plus élevé (12 sur 31), le poids étant la somme des scores de spécificité de leurs faits. Liste complète : annexe.
+Fichiers du pool au poids le plus élevé (11 sur 43), le poids étant la somme des scores de spécificité de leurs faits. Liste complète : annexe.
 
 | Fichier | Faits | Sortes dominantes |
 |---|---|---|
-| `frontend:services/apiClient.ts` | 14 | convention 12, config 1, validation 1 |
-| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapter.java` | 10 | convention 6, validation 2, config 1 |
-| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailService.java` | 9 | convention 3, external_call 3, config 2 |
+| `frontend:services/apiClient.ts` | 17 | convention 14, batch_job 1, config 1 |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapter.java` | 9 | convention 4, validation 3, config 1 |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailService.java` | 8 | external_call 5, convention 2, config 1 |
 | `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenEndpointIntegrationTest.java` | 9 | convention 3, test_case 3, endpoint 2 |
-| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapterTest.java` | 7 | test_case 3, validation 3, other 1 |
-| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/ZipExportRenderer.java` | 5 | convention 4, external_call 1 |
-| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/SessionRevocationIntegrationTest.java` | 8 | test_case 5, external_call 2, convention 1 |
-| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/CsvExportRenderer.java` | 5 | convention 5 |
-| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailServiceLocaleTest.java` | 7 | test_case 3, business_rule 1, config 1 |
-| `frontend:services/productService.ts` | 5 | convention 5 |
-| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/UserRoleConstraintIntegrationTest.java` | 5 | convention 2, test_case 2, suspicious 1 |
-| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/EventDeleteStatisticsIntegrationTest.java` | 7 | test_case 3, convention 2, config 1 |
+| `frontend:services/productService.ts` | 5 | convention 3, suspicious 2 |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/EventConditionalCheckConstraintIntegrationTest.java` | 6 | convention 2, validation 2, persistence_query 1 |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/JwksEndpointIntegrationTest.java` | 8 | test_case 4, convention 1, endpoint 1 |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductRestoreIntegrationTest.java` | 5 | convention 3, persistence_query 1, role_check 1 |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/CategoryDeleteReassignIntegrationTest.java` | 10 | test_case 5, convention 3, other 1 |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenFinderJpaAdapter.java` | 4 | persistence_query 2, convention 1, suspicious 1 |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/ProductArchivedFilterIntegrationTest.java` | 6 | convention 3, other 1, persistence_query 1 |
 
 ## 7. Relations avec d'autres packs {#relations}
 
@@ -77,40 +89,41 @@ Packs liés par des faits repris, des faits équivalents écartés à la dédupl
 
 | Pack | Faits repris | Faits équivalents | Catalogue |
 |---|---|---|---|
-| export | 29 | 13 | oui |
-| user | 19 | 14 | oui |
-| backend-core | 27 | 0 |  |
-| frontend-core | 19 | 0 |  |
-| product | 12 | 7 | oui |
-| session | 8 | 2 | oui |
-| category | 5 | 4 | oui |
-| event | 8 | 1 | oui |
-| frontend-app | 3 | 0 |  |
+| frontend-core | 43 | 0 |  |
+| backend-core | 38 | 0 |  |
+| export | 24 | 13 | oui |
+| product | 17 | 12 | oui |
+| user | 21 | 7 | oui |
+| event | 18 | 5 | oui |
+| category | 13 | 7 | oui |
+| session | 8 | 5 | oui |
+| frontend-app | 4 | 0 |  |
 
-- Faits du pool par pack d'origine : export 29, backend-core 27, frontend-core 19, user 19, product 12, event 8, session 8, category 5, frontend-app 3
+- Faits du pool par pack d'origine : frontend-core 43, backend-core 38, export 24, user 21, event 18, product 17, category 13, session 8, frontend-app 4
 
 ## 8. Tests attendus {#tests}
 
-- Les tests de l'endpoint e2e de token fixent 200 sans authentification avec le token le plus récent, 400 sans paramètre email, et selon la javadoc 404 sans corps pour un compte inconnu [#0e34c06d58c55f15-1] [#11148e37efef51d0-1] [#ae9881f8d08a67e6-1].
-- Les tests du client front fixent que FormData reste une instance de FormData avec un timeout à 0, et qu'un appel JSON garde un timeout supérieur à 0 [#55f5e5ec1f18de4b-1] [#55f5e5ec1f18de4b-2] [#55f5e5ec1f18de4b-3].
-- Un test d'intégration avec Postgres combine SpringBootTest, AutoConfigureMockMvc et Transactional et hérite d'AbstractPostgresIntegrationTest, comme `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductRestoreIntegrationTest.java:51-54` [#fc1214a23e5bc828-2].
-- Le test du service Brevo construit le service avec un RestClient.Builder interceptable, et selon le commentaire le nom saisi reste échappé dans le HTML en toute locale [#68f36af5363d4ef1-1] [#d1466f3125d055e6-1].
+- Les tests fixent que le JWKS n'expose que kty, use, alg, kid, n et e, que le modulus fait 256 octets sans octet de signe, et qu'un jeton RS256 émis par le backend se vérifie avec cette clé. [#1a4b52a04a5ce838-1] [#b4948134aa5100d5-1] [#1122fa951f33f39c-1]
+- Le health Brevo est DOWN sans clé, cite BREVO_API_KEY et ne divulgue jamais la clé. [#dc542e72e594e1dd-1] [#8803c3c2db66a608-1] [#d0b0e4666b224c10-1]
+- Les tests fixent que l'export JSON omet le hash du mot de passe et que le CSV préfixe d'une apostrophe les champs commençant par @, = ou - ou un saut de ligne. [#ee835f4d91e2a8c5-1] [#37c0d7455e6beb36-1] [#3c6450bbae77f0ab-1]
+- Les tests fixent que forgot-password renvoie 200 pour un email inconnu et que reset-password renvoie 400 pour token inconnu, non UUID ou mot de passe trop court. [#20c09aee2ec1f179-1] [#230eadc9415bea9f-1] [#d72c7a45f2930324-1] [#ed6ce70fde4bb79a-1]
+- Les tests front remplacent l'adaptateur d'apiClient par un 403 et vérifient que l'intercepteur journalise sans toast, avec un témoin sans opt-out qui produit un toast. [#778f32aa13a579b0-1] [#1faea9b005c2fedd-1] [#1faea9b005c2fedd-2]
 
 ## 9. Questions ouvertes {#questions}
 
-- Un 403 ne déconnecte-t-il vraiment pas et ne prend-il pas le verrou isRedirecting ? Seul le commentaire de la branche l'affirme [#ebe8f14e30148918-4], aucun fait de code ne le confirme.
+- Le 404 (et non 403) pour la restauration d'un produit archivé d'un autre utilisateur est-il bien appliqué par le code de production ? Selon la javadoc du test, c'est voulu par anti-énumération, mais aucun fait de code ne le confirme dans ce lot, voir `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductRestoreIntegrationTest.java:208-225` [#be58d90301a09953-1].
 
 ## 10. Alertes {#alerts}
 
-- Si la clé Brevo est absente ou vide, l'email de réinitialisation n'est pas envoyé, sans appel HTTP et avec un simple warning [#25504d1bcaa2eac3-1]. Selon le commentaire du test, forgot-password doit répondre 200 dans tous les cas [#d1ec0fa0c1cb7fa1-1], donc l'utilisateur ne voit aucune erreur. Vérifier la clé et les logs en cas de mail non reçu, et ne pas transformer ce cas en exception sans revoir cette réponse 200 : `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailService.java:79-84`.
-- Le rendu Markdown de l'export insère noms et descriptions saisis par l'utilisateur sans échappement, alors que le rendu CSV neutralise les formules [#75dbb39e88e401fb-1]. Un nom contenant du Markdown déforme ou détourne le document exporté. Échapper ces champs avant d'ajouter un rendu : `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/MarkdownExportRenderer.java:58-66`.
-- Les tests de rejet de rôle invalide n'attendent que la classe Exception générique . Ils passent quelle que soit l'erreur, donc ils ne prouvent pas que la contrainte CHECK est en cause ⇒ Préciser le type d'exception ou la contrainte en modifiant ces tests : `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/UserRoleConstraintIntegrationTest.java:68-73` [#ea446db909e94ef5-1]
+- getProducts renvoie response.data sans validation Zod, alors que getCategories valide sa réponse, donc une réponse mal formée du backend passe sans erreur côté produit. Ajouter un schéma Zod comme dans categoryService, voir `frontend:services/productService.ts:6-16` [#bdb861ee54c6c577-1].
+- restoreProduct n'accepte pas de paramètre options, contrairement aux autres mutations produit, donc un 403 ne peut pas y être déclaré comme traité inline. Ajouter le paramètre avant de gérer cette erreur dans l'interface, voir `frontend:services/productService.ts:124-131` [#145742ba350d6f89-1].
+- Le mock de apiClient dans le test d'erreurs inline ne fournit que post et patch, donc le passage de l'option vers delete (deleteProduct, deleteCategory) n'est testé nulle part. Compléter le mock avant de modifier ce transport, voir `frontend:services/inlineErrorHandling.test.ts:18-23` [#e882b29be28028b9-1].
 
 ## 11. Couverture {#coverage}
 
-- Fichiers du pack : 97 ; avec au moins un fait en base : 46 ; sans fait après remise en file : 0.
-- Faits en base : 228, repris d'autres packs : +0, hors périmètre : -96, doublons écartés à la déduplication : -2, soit 130 dans le pool.
-- Faits du pool venus d'un autre pack : 130 (par pack : section Relations).
-- Destination des 130 faits du pool : Règles du motif 78 ; Mise en œuvre par domaine 1 ; Tests attendus 30 ; Alertes / Questions ouvertes 8 ; annexe seule 3 ; écartés (sorte `other` ou inconnue) 10.
-- Passe transversale : scope 97 fichiers, lus 69 (71 %), non lus 28 : ce pack décrit le motif sur un échantillon, pas sur tout son scope.
-- Base : sha256 a64f6c05a7ac…, générée le 2026-11-19.
+- Fichiers du pack : 97 ; avec au moins un fait en base : 71 ; sans fait après remise en file : 0.
+- Faits en base : 350, repris d'autres packs : +0, hors périmètre : -164, doublons écartés à la déduplication : -0, soit 186 dans le pool.
+- Faits du pool venus d'un autre pack : 186 (par pack : section Relations).
+- Destination des 186 faits du pool : Règles du motif 96 ; Mise en œuvre par domaine 8 ; Tests attendus 55 ; Alertes / Questions ouvertes 8 ; annexe seule 4 ; écartés (sorte `other` ou inconnue) 15.
+- Passe transversale : scope 97 fichiers, lus 73 (75 %), non lus 24 : ce pack décrit le motif sur un échantillon, pas sur tout son scope.
+- Base : sha256 822c2fc41a4c…, générée le 2026-11-20.
