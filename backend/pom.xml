@@ -81,6 +81,11 @@
 			processeur d'annotations (maven-compiler-plugin) aient la MEME version.
 		-->
 		<lombok.version>1.18.48</lombok.version>
+		<!--
+			Décision (#36) : l'enum Role (USER/ADMIN) est SUPPRIMÉE, aucun code ne
+			l'utilisait. Le rôle reste une chaîne ROLE_* en base (UserEntity.role),
+			sans conversion ni migration.
+		-->
 	</properties>
 	<dependencies>
 		<dependency>
@@ -139,6 +144,11 @@
 			<groupId>org.flywaydb</groupId>
 			<artifactId>flyway-database-postgresql</artifactId>
 		</dependency>
+		<!--
+			Décision (#36) : Lombok est CONSERVÉ. 8 classes de réponse l'utilisent
+			(et non plus seulement AuthResponse). À réévaluer après la conversion des
+			DTO en records (#170).
+		-->
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
@@ -187,10 +197,6 @@
 			<groupId>org.testcontainers</groupId>
 			<artifactId>testcontainers-junit-jupiter</artifactId>
 			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.security</groupId>
-			<artifactId>spring-security-crypto</artifactId>
 		</dependency>
 		<dependency>
 				<groupId>org.springframework.boot</groupId>
@@ -333,25 +339,5 @@
 			</plugin>
 		</plugins>
 	</build>
-	<repositories>
-		<repository>
-			<id>spring-milestones</id>
-			<name>Spring Milestones</name>
-			<url>https://repo.spring.io/milestone</url>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</repository>
-	</repositories>
-	<pluginRepositories>
-		<pluginRepository>
-			<id>spring-milestones</id>
-			<name>Spring Milestones</name>
-			<url>https://repo.spring.io/milestone</url>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</pluginRepository>
-	</pluginRepositories>
 
 </project>

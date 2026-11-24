@@ -4,6 +4,10 @@ import static com.tngtech.archunit.core.domain.JavaClass.Predicates.resideInAPac
 import static com.tngtech.archunit.core.domain.JavaClass.Predicates.resideInAnyPackage;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import com.matimeline.archfixtures.FakeMisplacedAdvice;
+import com.matimeline.eventmanager.application.services.fixtures.FakeConcreteServiceImpl;
 import com.tngtech.archunit.base.DescribedPredicate;
 import com.tngtech.archunit.core.domain.JavaClass;
 import com.tngtech.archunit.core.domain.JavaClasses;
@@ -13,24 +17,25 @@ import com.tngtech.archunit.lang.ArchRule;
 import com.tngtech.archunit.library.freeze.FreezingArchRule;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.ControllerAdvice;
 
 /**
  * Verrou d'architecture hexagonale (#166).
  *
  * <p>Analyse bytecode PURE : aucun conteneur, aucun contexte Spring — ce test reste rapide en CI.
  *
- * <p>Chaque règle est enveloppée dans {@link FreezingArchRule} : les violations HISTORIQUES sont
- * gelées dans une baseline (src/test/resources/archunit_store/, versionnée). Le build ne casse que
- * sur une NOUVELLE violation ; corriger une violation existante la retire automatiquement du store
- * (dégel progressif au fil de l'hygiène hexagonale — cf. RECOMMAND_FOLLOWUP).
+ * <p>Les règles 1, 2 et 4 sont enveloppées dans {@link FreezingArchRule} : les violations
+ * HISTORIQUES sont gelées dans une baseline (src/test/resources/archunit_store/, versionnée). Le
+ * build ne casse que sur une NOUVELLE violation ; corriger une violation existante la retire
+ * automatiquement du store (dégel progressif au fil de l'hygiène hexagonale — cf.
+ * RECOMMAND_FOLLOWUP). Les règles 3, 5 et 6 sont strictes : aucune baseline, toute violation casse.
  *
  * <p>Violations connues actuellement gelées :
  * <ul>
- *   <li>{@code Role} (domain) implémente {@code GrantedAuthority} (Spring Security).
  *   <li>{@code @Repository} (stéréotype Spring) posé sur les ports {@code domain.ports.repositories}.
  *   <li>Ports {@code domain.ports.services.*Service} important des DTOs {@code application.dtos}.
  *   <li>Mappers {@code application.mappers} dépendant des entités {@code infrastructure.entities}.
- *   <li>Controllers injectant les {@code *ServiceImpl} concrets au lieu des ports.
  * </ul>
  */
 class ArchitectureTest {
@@ -56,7 +61,7 @@ class ArchitectureTest {
      * Règle 1 — Le domaine ne dépend d'aucun framework technique.
      *
      * <p>Interdit {@code org.springframework..} et {@code jakarta..}, SAUF {@code jakarta.validation..}
-     * (toléré sur les DTOs/commandes du domaine). Gèle {@code Role -> GrantedAuthority}.
+     * (toléré sur les DTOs/commandes du domaine). Gèle {@code @Repository} sur {@code ProductRepository}.
      */
     @Test
     void domainShouldNotDependOnSpringOrJakarta() {
@@ -103,26 +108,65 @@ class ArchitectureTest {
     }
 
     /**
-     * Règle 3 — Les controllers dépendent des PORTS (interfaces), jamais des {@code *ServiceImpl}
-     * concrets.
+     * Règle 3 — Les points d'entrée du serveur (classes portant, directement ou par méta-annotation,
+     * {@code @Controller} ou {@code @ControllerAdvice}, donc aussi {@code @RestController} et
+     * {@code @RestControllerAdvice}, ET toute classe du dossier des contrôleurs) dépendent des
+     * PORTS (interfaces), jamais des {@code *ServiceImpl} concrets.
      *
-     * <p>Gèle {@code ProductController}/{@code UserController}/{@code AuthController} qui injectent
-     * les implémentations. Le bon exemple reste {@code CategoryController} (dépend des ports).
+     * <p>Stricte, non gelée : toute violation fait échouer le test, sans baseline. Le gestionnaire
+     * global d'erreurs est inclus explicitement et le contrôleur de support E2E n'est pas exempté
+     * (#321). Le bon exemple reste {@code CategoryController} (dépend des ports).
      */
     @Test
     void controllersShouldNotDependOnConcreteServiceImplementations() {
-        ArchRule rule =
-                noClasses()
-                        .that()
-                        .resideInAPackage(ROOT + ".infrastructure.adapters.controllers..")
-                        .should()
-                        .dependOnClassesThat()
-                        .resideInAPackage(ROOT + ".application.services..")
-                        .because(
-                                "un controller doit dépendre des ports domaine (interfaces), pas des"
-                                        + " *ServiceImpl concrets");
+        controllersShouldNotDependOnServiceImplRule().check(classesUnderTest);
+    }
 
-        FreezingArchRule.freeze(rule).check(classesUnderTest);
+    /**
+     * Périmètre de la règle 3 (#321) : le gestionnaire global d'erreurs porte une annotation
+     * d'advice, pas celle de contrôleur, et reste soumis à la règle (décision du plan). Une
+     * fixture advice rangée hors du dossier des contrôleurs doit donc être détectée.
+     */
+    @Test
+    void controllersShouldNotDependOnConcreteServiceImplementations_scopeIsExplicit() {
+        JavaClasses fixtures =
+                new ClassFileImporter()
+                        .importClasses(FakeMisplacedAdvice.class, FakeConcreteServiceImpl.class);
+
+        assertThatThrownBy(() -> controllersShouldNotDependOnServiceImplRule().check(fixtures))
+                .isInstanceOf(AssertionError.class)
+                .hasMessageContaining("FakeMisplacedAdvice");
+    }
+
+    /**
+     * Règle 3, exposée pour ControllerRuleStrictnessTest.
+     *
+     * <p>Vise les points d'entrée du serveur par leur rôle où qu'ils soient rangés : classes
+     * méta-annotées {@code @Controller} ou {@code @ControllerAdvice} (couvre {@code @RestController},
+     * {@code @RestControllerAdvice} et les annotations composées), ET toute classe du dossier des
+     * contrôleurs, annotée ou non. Le
+     * périmètre est l'union rôle + dossier, plus large que le seul dossier d'avant : le dossier est
+     * conservé parce que les fixtures non annotées de ControllerRuleStrictnessTest (verrouillé) y
+     * sont rangées. Le gestionnaire global d'erreurs est donc soumis explicitement, et le
+     * contrôleur de support E2E n'est pas exempté (#321).
+     */
+    static ArchRule controllersShouldNotDependOnServiceImplRule() {
+        return noClasses()
+                .that()
+                .areMetaAnnotatedWith(Controller.class)
+                .or()
+                .areMetaAnnotatedWith(ControllerAdvice.class)
+                .or()
+                // Le dossier reste couvert : les fixtures de ControllerRuleStrictnessTest (verrouillé)
+                // y sont rangées sans stéréotype Spring pour ne pas être scannées.
+                .resideInAPackage(ROOT + ".infrastructure.adapters.controllers..")
+                .should()
+                .dependOnClassesThat()
+                .resideInAPackage(ROOT + ".application.services..")
+                .because(
+                        "un point d'entrée du serveur (rôle contrôleur ou advice, où qu'il soit rangé, ou"
+                                + " classe du dossier des contrôleurs) doit dépendre des ports domaine"
+                                + " (interfaces), pas des *ServiceImpl concrets");
     }
 
     /**
@@ -179,6 +223,25 @@ class ArchitectureTest {
                                 "l'application est STATELESS (cookie JWT) ; introduire une HttpSession"
                                         + " invaliderait l'acceptation de CVE-2026-40973 (session"
                                         + " hijacking) — cf. docs/security/cve-acceptance.md");
+
+        rule.check(classesUnderTest);
+    }
+
+    /**
+     * Règle 6 (#185) — Le coeur métier ne dépend pas de la couche applicative. Stricte, non gelée :
+     * les ports de service prennent des commandes du domaine, jamais des DTO HTTP.
+     */
+    @Test
+    void domainShouldNotDependOnApplicationLayer() {
+        ArchRule rule =
+                noClasses()
+                        .that()
+                        .resideInAPackage(DOMAIN)
+                        .should()
+                        .dependOnClassesThat()
+                        .resideInAPackage(APPLICATION)
+                        .because(
+                                "le domaine ne connaît pas les DTO d'échange de la couche application");
 
         rule.check(classesUnderTest);
     }

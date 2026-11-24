@@ -16,12 +16,12 @@ import com.matimeline.eventmanager.application.dtos.EventUpdateRequest;
 import com.matimeline.eventmanager.domain.exceptions.EventConflictException;
 import com.matimeline.eventmanager.domain.exceptions.EventNotFoundException;
 import com.matimeline.eventmanager.domain.models.Event;
-import com.matimeline.eventmanager.domain.models.EventCreateCommand;
 import com.matimeline.eventmanager.domain.models.EventUpdateCommand;
 import com.matimeline.eventmanager.domain.models.Product;
 import com.matimeline.eventmanager.domain.models.User;
 import com.matimeline.eventmanager.domain.ports.services.EventService;
 import com.matimeline.eventmanager.domain.ports.services.ProductService;
+import com.matimeline.eventmanager.infrastructure.adapters.controllers.mappers.EventCommandMapper;
 import com.matimeline.eventmanager.infrastructure.security.CallerResolver;
 
 import jakarta.validation.Valid;
@@ -62,7 +62,7 @@ public class EventController {
 
         // #165 : traduction DTO HTTP -> commande domaine PURE (le port n'importe plus
         // application.dtos). Le controller (infra) est le seul point de couplage au DTO.
-        Event event = eventService.createEvent(toCreateCommand(request));
+        Event event = eventService.createEvent(EventCommandMapper.toCreateCommand(request, request.getProductId()));
         // #165 : POST renvoie 201 Created (auparavant 200) + EventResponse (plus l'entité
         // domaine brute). Contrat consommé par #150.
         return ResponseEntity.status(HttpStatus.CREATED).body(EventResponse.fromDomain(event));
@@ -102,21 +102,6 @@ public class EventController {
         }
         eventService.deleteById(id);
         return ResponseEntity.ok().build();
-    }
-
-    /** #165 : mappe le DTO HTTP de création vers la commande domaine pure. */
-    private EventCreateCommand toCreateCommand(EventCreationRequest request) {
-        return new EventCreateCommand(
-                request.getName(),
-                request.getType(),
-                request.getDurationValue(),
-                request.getDurationUnit(),
-                request.getIsRecurring(),
-                request.getRecurrenceUnit(),
-                request.getDate(),
-                request.getIsAllDay(),
-                request.getColor(),
-                request.getProductId());
     }
 
     /** #165 : mappe le DTO HTTP de mise à jour partielle vers la commande domaine pure. */

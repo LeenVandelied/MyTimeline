@@ -50,7 +50,15 @@ public class ProductRepositoryJpaImpl
 
     @Override
     public Optional<Product> findDomainProductById(UUID id) {
-        return findById(id).map(productMapper::toDomain);
+        return findById(id).map(entity -> {
+            Product product = productMapper.toDomain(entity);
+            // #88 : UserMapper ne porte pas le palier (dette ArchUnit gelée) ; hydraté ici pour que
+            // le quota d'EventServiceImpl lise le vrai palier du propriétaire.
+            if (product.getUser() != null && entity.getUser() != null) {
+                product.setUser(product.getUser().withTier(entity.getUser().getTier()));
+            }
+            return product;
+        });
     }
 
     @Override

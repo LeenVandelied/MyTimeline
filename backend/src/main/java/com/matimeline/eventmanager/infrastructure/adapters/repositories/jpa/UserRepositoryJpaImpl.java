@@ -96,6 +96,7 @@ public class UserRepositoryJpaImpl
         entity.setId(null);
         // #653 : posée ici (infrastructure) et non dans UserMapper — cf. toDomain ci-dessous.
         entity.setThemePreference(domainUser.getThemePreference());
+        entity.setTier(domainUser.getTier());
         return toDomain(super.save(entity));
     }
 
@@ -107,13 +108,17 @@ public class UserRepositoryJpaImpl
      * on ne l'aggrave pas). Tout User lu par ce repository porte donc la préférence.
      */
     private User toDomain(UserEntity entity) {
-        return userMapper.toDomain(entity).withThemePreference(entity.getThemePreference());
+        // #88 : même raison pour le palier (UserEntity.getTier/setTier hors de UserMapper).
+        return userMapper.toDomain(entity)
+                .withThemePreference(entity.getThemePreference())
+                .withTier(entity.getTier());
     }
 
     // #653 (ADR-010 § 3) : themePreference n'est VOLONTAIREMENT PAS recopiée ici. Cinq
     // chemins reconstruisent un User pour le sauver (PATCH profil, change/reset-password,
     // upload/suppression d'avatar) sans la porter : la recopier l'effacerait à chaque
     // modification de profil. Seul updateThemePreference l'écrit.
+    // #88 : le palier (tier) n'est pas recopié non plus, il est écrit par un chemin dédié.
     private void copyMutableFields(User source, UserEntity target) {
         target.setName(source.getName());
         target.setUsername(source.getUsername());

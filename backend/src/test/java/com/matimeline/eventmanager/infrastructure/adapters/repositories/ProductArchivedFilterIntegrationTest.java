@@ -10,7 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.matimeline.eventmanager.application.dtos.ProductUpdateRequest;
+import com.matimeline.eventmanager.domain.models.ProductUpdateCommand;
 import com.matimeline.eventmanager.domain.exceptions.ProductNotFoundException;
 import com.matimeline.eventmanager.domain.models.Product;
 import com.matimeline.eventmanager.domain.ports.repositories.ProductRepository;
@@ -270,8 +270,7 @@ class ProductArchivedFilterIntegrationTest extends AbstractPostgresIntegrationTe
         em.clear();
 
         // Set override.
-        ProductUpdateRequest setColor = new ProductUpdateRequest();
-        setColor.setColor("#abcdef");
+        ProductUpdateCommand setColor = new ProductUpdateCommand(null, null, "#abcdef", false);
         productService.updateProduct(id, setColor);
         em.flush();
         em.clear();
@@ -280,8 +279,7 @@ class ProductArchivedFilterIntegrationTest extends AbstractPostgresIntegrationTe
                 .isPresent().get().extracting(Product::getColor).isEqualTo("#abcdef");
 
         // Clear override -> null (ré-héritage).
-        ProductUpdateRequest clear = new ProductUpdateRequest();
-        clear.setClearColor(true);
+        ProductUpdateCommand clear = new ProductUpdateCommand(null, null, null, true);
         productService.updateProduct(id, clear);
         em.flush();
         em.clear();
@@ -300,12 +298,11 @@ class ProductArchivedFilterIntegrationTest extends AbstractPostgresIntegrationTe
         em.flush();
         em.clear();
 
-        ProductUpdateRequest request = new ProductUpdateRequest();
-        request.setName("p50-renamed-" + UUID.randomUUID());
+        ProductUpdateCommand request = new ProductUpdateCommand("p50-renamed-" + UUID.randomUUID(), null, null, false);
 
         Product updated = productService.updateProduct(id, request);
 
-        assertThat(updated.getName()).isEqualTo(request.getName());
+        assertThat(updated.getName()).isEqualTo(request.name());
 
         em.flush();
         em.clear();
@@ -313,6 +310,6 @@ class ProductArchivedFilterIntegrationTest extends AbstractPostgresIntegrationTe
                 .isPresent()
                 .get()
                 .extracting(Product::getName)
-                .isEqualTo(request.getName());
+                .isEqualTo(request.name());
     }
 }
