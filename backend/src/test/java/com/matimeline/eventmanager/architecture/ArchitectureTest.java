@@ -4,6 +4,10 @@ import static com.tngtech.archunit.core.domain.JavaClass.Predicates.resideInAPac
 import static com.tngtech.archunit.core.domain.JavaClass.Predicates.resideInAnyPackage;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import com.matimeline.archfixtures.FakeMisplacedAdvice;
+import com.matimeline.eventmanager.application.services.fixtures.FakeConcreteServiceImpl;
 import com.tngtech.archunit.base.DescribedPredicate;
 import com.tngtech.archunit.core.domain.JavaClass;
 import com.tngtech.archunit.core.domain.JavaClasses;
@@ -13,6 +17,8 @@ import com.tngtech.archunit.lang.ArchRule;
 import com.tngtech.archunit.library.freeze.FreezingArchRule;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.ControllerAdvice;
 
 /**
  * Verrou d'architecture hexagonale (#166).
@@ -102,28 +108,65 @@ class ArchitectureTest {
     }
 
     /**
-     * Règle 3 — Les controllers dépendent des PORTS (interfaces), jamais des {@code *ServiceImpl}
-     * concrets.
+     * Règle 3 — Les points d'entrée du serveur (classes portant, directement ou par méta-annotation,
+     * {@code @Controller} ou {@code @ControllerAdvice}, donc aussi {@code @RestController} et
+     * {@code @RestControllerAdvice}, ET toute classe du dossier des contrôleurs) dépendent des
+     * PORTS (interfaces), jamais des {@code *ServiceImpl} concrets.
      *
-     * <p>Stricte, non gelée : toute violation fait échouer le test, sans baseline. Le bon exemple
-     * reste {@code CategoryController} (dépend des ports).
+     * <p>Stricte, non gelée : toute violation fait échouer le test, sans baseline. Le gestionnaire
+     * global d'erreurs est inclus explicitement et le contrôleur de support E2E n'est pas exempté
+     * (#321). Le bon exemple reste {@code CategoryController} (dépend des ports).
      */
     @Test
     void controllersShouldNotDependOnConcreteServiceImplementations() {
         controllersShouldNotDependOnServiceImplRule().check(classesUnderTest);
     }
 
-    /** Règle 3, exposée pour ControllerRuleStrictnessTest. */
+    /**
+     * Périmètre de la règle 3 (#321) : le gestionnaire global d'erreurs porte une annotation
+     * d'advice, pas celle de contrôleur, et reste soumis à la règle (décision du plan). Une
+     * fixture advice rangée hors du dossier des contrôleurs doit donc être détectée.
+     */
+    @Test
+    void controllersShouldNotDependOnConcreteServiceImplementations_scopeIsExplicit() {
+        JavaClasses fixtures =
+                new ClassFileImporter()
+                        .importClasses(FakeMisplacedAdvice.class, FakeConcreteServiceImpl.class);
+
+        assertThatThrownBy(() -> controllersShouldNotDependOnServiceImplRule().check(fixtures))
+                .isInstanceOf(AssertionError.class)
+                .hasMessageContaining("FakeMisplacedAdvice");
+    }
+
+    /**
+     * Règle 3, exposée pour ControllerRuleStrictnessTest.
+     *
+     * <p>Vise les points d'entrée du serveur par leur rôle où qu'ils soient rangés : classes
+     * méta-annotées {@code @Controller} ou {@code @ControllerAdvice} (couvre {@code @RestController},
+     * {@code @RestControllerAdvice} et les annotations composées), ET toute classe du dossier des
+     * contrôleurs, annotée ou non. Le
+     * périmètre est l'union rôle + dossier, plus large que le seul dossier d'avant : le dossier est
+     * conservé parce que les fixtures non annotées de ControllerRuleStrictnessTest (verrouillé) y
+     * sont rangées. Le gestionnaire global d'erreurs est donc soumis explicitement, et le
+     * contrôleur de support E2E n'est pas exempté (#321).
+     */
     static ArchRule controllersShouldNotDependOnServiceImplRule() {
         return noClasses()
-                        .that()
-                        .resideInAPackage(ROOT + ".infrastructure.adapters.controllers..")
-                        .should()
-                        .dependOnClassesThat()
-                        .resideInAPackage(ROOT + ".application.services..")
-                        .because(
-                                "un controller doit dépendre des ports domaine (interfaces), pas des"
-                                        + " *ServiceImpl concrets");
+                .that()
+                .areMetaAnnotatedWith(Controller.class)
+                .or()
+                .areMetaAnnotatedWith(ControllerAdvice.class)
+                .or()
+                // Le dossier reste couvert : les fixtures de ControllerRuleStrictnessTest (verrouillé)
+                // y sont rangées sans stéréotype Spring pour ne pas être scannées.
+                .resideInAPackage(ROOT + ".infrastructure.adapters.controllers..")
+                .should()
+                .dependOnClassesThat()
+                .resideInAPackage(ROOT + ".application.services..")
+                .because(
+                        "un point d'entrée du serveur (rôle contrôleur ou advice, où qu'il soit rangé, ou"
+                                + " classe du dossier des contrôleurs) doit dépendre des ports domaine"
+                                + " (interfaces), pas des *ServiceImpl concrets");
     }
 
     /**
