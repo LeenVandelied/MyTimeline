@@ -9,9 +9,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.matimeline.eventmanager.application.policy.PlanPolicy;
 import com.matimeline.eventmanager.domain.exceptions.EndDateBeforeStartException;
 import com.matimeline.eventmanager.domain.exceptions.EventConflictException;
 import com.matimeline.eventmanager.domain.exceptions.EventNotFoundException;
+import com.matimeline.eventmanager.domain.exceptions.EventQuotaExceededException;
 import com.matimeline.eventmanager.domain.exceptions.ProductNotFoundException;
 import com.matimeline.eventmanager.domain.exceptions.RecurrenceEndDateBeforeStartException;
 import com.matimeline.eventmanager.domain.exceptions.RecurrenceUnitRequiredException;
@@ -20,6 +22,7 @@ import com.matimeline.eventmanager.domain.models.EventCreateCommand;
 import com.matimeline.eventmanager.domain.models.EventUpdateCommand;
 import com.matimeline.eventmanager.domain.models.Product;
 import com.matimeline.eventmanager.domain.models.RecurrenceUnit;
+import com.matimeline.eventmanager.domain.models.User;
 import com.matimeline.eventmanager.domain.ports.repositories.EventRepository;
 import com.matimeline.eventmanager.domain.ports.repositories.ProductRepository;
 import com.matimeline.eventmanager.domain.ports.services.EventService;
@@ -30,12 +33,15 @@ public class EventServiceImpl implements EventService {
 
     private final EventRepository eventRepository;
     private final ProductRepository productRepository;
+    private final PlanPolicy planPolicy;
 
     @Autowired
     public EventServiceImpl(EventRepository eventRepository,
-                        ProductRepository productRepository) {
+                        ProductRepository productRepository,
+                        PlanPolicy planPolicy) {
         this.eventRepository = eventRepository;
         this.productRepository = productRepository;
+        this.planPolicy = planPolicy;
     }
 
     @Override
@@ -43,6 +49,14 @@ public class EventServiceImpl implements EventService {
     public Event createEvent(EventCreateCommand command) {
         Product product = productRepository.findDomainProductById(command.productId())
             .orElseThrow(() -> new ProductNotFoundException(command.productId()));
+
+        // #88 : quota consulté avant tout enregistrement. Le propriétaire vient du produit
+        // (palier hydraté par ProductRepositoryJpaImpl). Sans propriétaire, rien à plafonner.
+        User owner = product.getUser();
+        if (owner != null
+                && !planPolicy.canCreateEvent(owner, eventRepository.countActiveByUserId(owner.getId()))) {
+            throw new EventQuotaExceededException(owner.getId());
+        }
 
         // BR-EVE-002 : type ∈ {duration, single} validé côté appli -> 422 propre, plutôt
         // que de laisser la contrainte DB ck_events_type lever une violation masquée en 401.

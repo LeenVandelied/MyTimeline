@@ -3,6 +3,9 @@ package com.matimeline.eventmanager.application.services;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -16,11 +19,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.matimeline.eventmanager.application.policy.PlanPolicy;
 import com.matimeline.eventmanager.domain.exceptions.EndDateBeforeStartException;
+import com.matimeline.eventmanager.domain.exceptions.EventQuotaExceededException;
 import com.matimeline.eventmanager.domain.exceptions.EventConflictException;
 import com.matimeline.eventmanager.domain.exceptions.EventNotFoundException;
 import com.matimeline.eventmanager.domain.exceptions.InvalidEventTypeException;
@@ -31,6 +37,7 @@ import com.matimeline.eventmanager.domain.models.EventCreateCommand;
 import com.matimeline.eventmanager.domain.models.EventUpdateCommand;
 import com.matimeline.eventmanager.domain.models.Product;
 import com.matimeline.eventmanager.domain.models.RecurrenceUnit;
+import com.matimeline.eventmanager.domain.models.User;
 import com.matimeline.eventmanager.domain.ports.repositories.EventRepository;
 import com.matimeline.eventmanager.domain.ports.repositories.ProductRepository;
 
@@ -43,6 +50,9 @@ class EventServiceImplTest {
     @Mock
     private ProductRepository productRepository;
 
+    @Mock
+    private PlanPolicy planPolicy;
+
     @InjectMocks
     private EventServiceImpl eventService;
 
@@ -52,6 +62,9 @@ class EventServiceImplTest {
 
     @BeforeEach
     void setUp() {
+        // #88 : politique permissive par défaut pour les cas existants de createEvent (R9 :
+        // hors quota, comportement inchangé). Les cas de quota la surchargent.
+        lenient().when(planPolicy.canCreateEvent(any(), anyLong())).thenReturn(true);
         eventId = UUID.randomUUID();
         productId = UUID.randomUUID();
         existingEvent = new Event(
@@ -628,6 +641,47 @@ class EventServiceImplTest {
         Event result = eventService.updateEvent(eventId, request);
 
         assertThat(result.getRecurrenceEndDate()).isEqualTo(start.plusMonths(3));
+    }
+
+    // ---- #88 (R2) : quota d'événements, politique de plan consultée à la création ----
+
+    private User quotaOwner() {
+        return new User(UUID.randomUUID(), "Owner", "owner", "pwd", "ROLE_USER", "o@example.test");
+    }
+
+    private EventCreateCommand quotaCommand() {
+        return new EventCreateCommand(
+                "Quota", "single", 1, "days", false, null, null, null, null, productId);
+    }
+
+    @Test
+    void createEvent_consultsPlanPolicy_beforeSaving() {
+        User owner = quotaOwner();
+        when(productRepository.findDomainProductById(productId))
+                .thenReturn(Optional.of(new Product(productId, "P", null, owner, null)));
+        when(eventRepository.countActiveByUserId(owner.getId())).thenReturn(7L);
+        when(planPolicy.canCreateEvent(owner, 7L)).thenReturn(true);
+        when(eventRepository.save(any(Event.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        eventService.createEvent(quotaCommand());
+
+        InOrder order = inOrder(planPolicy, eventRepository);
+        order.verify(planPolicy).canCreateEvent(owner, 7L);
+        order.verify(eventRepository).save(any(Event.class));
+    }
+
+    @Test
+    void createEvent_doesNotSave_whenPolicyRefuses() {
+        User owner = quotaOwner();
+        when(productRepository.findDomainProductById(productId))
+                .thenReturn(Optional.of(new Product(productId, "P", null, owner, null)));
+        when(eventRepository.countActiveByUserId(owner.getId())).thenReturn(20L);
+        when(planPolicy.canCreateEvent(owner, 20L)).thenReturn(false);
+
+        assertThatThrownBy(() -> eventService.createEvent(quotaCommand()))
+                .isInstanceOf(EventQuotaExceededException.class);
+
+        verify(eventRepository, never()).save(any(Event.class));
     }
 
     @Test
