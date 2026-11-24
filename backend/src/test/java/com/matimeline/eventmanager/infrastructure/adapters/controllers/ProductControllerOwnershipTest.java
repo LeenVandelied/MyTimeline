@@ -117,6 +117,18 @@ class ProductControllerOwnershipTest {
         verify(productService, never()).getProductsWithEvents(any());
     }
 
+    /** BR-PRO-004 : liste des produits d'un autre user -> 403, aucune donnée lue par le service. */
+    @Test
+    void getProductsByUser_pathUserDiffersFromCaller_returns403() throws Exception {
+        User caller = new User(callerId, "Caller", "caller", "pwd", "ROLE_USER", "c@c.com");
+        when(callerResolver.currentUser()).thenReturn(Optional.of(caller));
+
+        mockMvc.perform(get("/api/users/" + otherUserId + "/products"))
+                .andExpect(status().isForbidden());
+
+        verify(productService, never()).getProductsWithEvents(any());
+    }
+
     /**
      * #92 (cœur) : une erreur serveur (RuntimeException du service) NE DOIT PLUS être avalée
      * en 401. Avec le try/catch retiré, l'exception se propage (elle atteindrait le
