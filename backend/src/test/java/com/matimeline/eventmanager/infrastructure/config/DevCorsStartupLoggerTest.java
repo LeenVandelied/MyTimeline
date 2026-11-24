@@ -113,20 +113,26 @@ class DevCorsStartupLoggerTest {
         assertThat(appender.list).isEmpty();
     }
 
-    /** Démarre un contexte avec le logger, puis publie ApplicationReadyEvent comme au boot. */
+    /**
+     * Démarre un contexte avec le logger, puis publie ApplicationReadyEvent comme au boot.
+     * Les profils passent par la propriété spring.profiles.active : elle prime sur celle de
+     * application.properties (dev par défaut), donc la liste donnée est exactement la liste active.
+     */
     private void bootWith(List<String> profiles, String... properties) {
         new ApplicationContextRunner()
-                .withInitializer(ctx -> ctx.getEnvironment().setActiveProfiles(profiles.toArray(String[]::new)))
                 // charge les vrais application*.properties du profil (dont application-dev.properties)
                 .withInitializer(new ConfigDataApplicationContextInitializer())
                 // comme SpringApplication : sans lui, "a,b" ne serait pas découpé en List<String>
                 .withInitializer(ctx -> ctx.getBeanFactory()
                         .setConversionService(ApplicationConversionService.getSharedInstance()))
+                .withPropertyValues("spring.profiles.active=" + String.join(",", profiles))
                 .withPropertyValues(properties)
                 .withUserConfiguration(DevCorsStartupLogger.class)
                 .run(context -> {
                     assertThat(context).hasNotFailed();
                     ConfigurableApplicationContext ctx = context.getSourceApplicationContext();
+                    // garde : aucun profil par défaut ne doit s'ajouter à ceux demandés
+                    assertThat(ctx.getEnvironment().getActiveProfiles()).containsExactlyElementsOf(profiles);
                     ctx.publishEvent(new ApplicationReadyEvent(
                             new SpringApplication(), new String[0], ctx, Duration.ZERO));
                 });
