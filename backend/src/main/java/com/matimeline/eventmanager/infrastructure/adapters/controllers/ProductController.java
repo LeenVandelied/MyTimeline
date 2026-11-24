@@ -55,12 +55,9 @@ public class ProductController {
     public ResponseEntity<ProductResponse> createProduct(
             @PathVariable UUID userId,
             @Valid @RequestBody ProductCreationRequest request) {
-        Optional<User> callerOpt = callerResolver.currentUser();
-        if (callerOpt.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        if (!callerOpt.get().getId().equals(userId)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        Optional<HttpStatus> denied = requireOwner(userId);
+        if (denied.isPresent()) {
+            return ResponseEntity.status(denied.get()).build();
         }
 
         // BR-PRO-004 : le {userId} du path fait autorité, il écrase l'éventuel userId du body.
@@ -70,15 +67,12 @@ public class ProductController {
 
     @GetMapping("/users/{userId}/products")
     public ResponseEntity<List<ProductResponse>> getProducts(@PathVariable UUID userId) {
-        Optional<User> callerOpt = callerResolver.currentUser();
-        if (callerOpt.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        if (!callerOpt.get().getId().equals(userId)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        Optional<HttpStatus> denied = requireOwner(userId);
+        if (denied.isPresent()) {
+            return ResponseEntity.status(denied.get()).build();
         }
 
-        // #92 : PAS de try/catch ici. L'auth (401) est déjà résolue en amont via currentUser().
+        // #92 : PAS de try/catch ici. L'auth (401) est résolue par requireOwner (currentUser() vide).
         // L'appel service ne lève aucune JwtException ; toute erreur (NPE BR-PRO-005, DataAccess)
         // DOIT se propager au GlobalExceptionHandler (500), jamais être masquée en 401 (BR-AUT-005).
         List<ProductResponse> response = productService.getProductsWithEvents(userId).stream()
@@ -94,12 +88,9 @@ public class ProductController {
      */
     @GetMapping("/users/{userId}/products/archived")
     public ResponseEntity<List<ArchivedProductResponse>> getArchivedProducts(@PathVariable UUID userId) {
-        Optional<User> callerOpt = callerResolver.currentUser();
-        if (callerOpt.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        if (!callerOpt.get().getId().equals(userId)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        Optional<HttpStatus> denied = requireOwner(userId);
+        if (denied.isPresent()) {
+            return ResponseEntity.status(denied.get()).build();
         }
 
         List<ArchivedProductResponse> response = productService.getArchivedProducts(userId).stream()
@@ -122,12 +113,9 @@ public class ProductController {
     public ResponseEntity<Void> restoreProduct(
             @PathVariable UUID userId,
             @PathVariable UUID productId) {
-        Optional<User> callerOpt = callerResolver.currentUser();
-        if (callerOpt.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        if (!callerOpt.get().getId().equals(userId)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        Optional<HttpStatus> denied = requireOwner(userId);
+        if (denied.isPresent()) {
+            return ResponseEntity.status(denied.get()).build();
         }
 
         productService.restoreProduct(productId, userId);
@@ -138,12 +126,9 @@ public class ProductController {
     public ResponseEntity<ProductResponse> getProductById(
             @PathVariable UUID userId,
             @PathVariable UUID productId) {
-        Optional<User> callerOpt = callerResolver.currentUser();
-        if (callerOpt.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        if (!callerOpt.get().getId().equals(userId)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        Optional<HttpStatus> denied = requireOwner(userId);
+        if (denied.isPresent()) {
+            return ResponseEntity.status(denied.get()).build();
         }
 
         Optional<Product> product = productService.findDomainProductById(productId);
@@ -161,12 +146,9 @@ public class ProductController {
             @PathVariable UUID userId,
             @PathVariable UUID productId,
             @Valid @RequestBody ProductUpdateRequest request) {
-        Optional<User> callerOpt = callerResolver.currentUser();
-        if (callerOpt.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        if (!callerOpt.get().getId().equals(userId)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        Optional<HttpStatus> denied = requireOwner(userId);
+        if (denied.isPresent()) {
+            return ResponseEntity.status(denied.get()).build();
         }
 
         Optional<Product> product = productService.findDomainProductById(productId);
@@ -188,12 +170,9 @@ public class ProductController {
     public ResponseEntity<Void> deleteProduct(
             @PathVariable UUID userId,
             @PathVariable UUID productId) {
-        Optional<User> callerOpt = callerResolver.currentUser();
-        if (callerOpt.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        if (!callerOpt.get().getId().equals(userId)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        Optional<HttpStatus> denied = requireOwner(userId);
+        if (denied.isPresent()) {
+            return ResponseEntity.status(denied.get()).build();
         }
 
         Optional<Product> product = productService.findDomainProductById(productId);
@@ -213,12 +192,9 @@ public class ProductController {
     public ResponseEntity<List<EventResponse>> getEventsByProductId(
             @PathVariable UUID userId,
             @PathVariable UUID productId) {
-        Optional<User> callerOpt = callerResolver.currentUser();
-        if (callerOpt.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        if (!callerOpt.get().getId().equals(userId)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        Optional<HttpStatus> denied = requireOwner(userId);
+        if (denied.isPresent()) {
+            return ResponseEntity.status(denied.get()).build();
         }
 
         Optional<Product> product = productService.findDomainProductById(productId);
@@ -237,6 +213,24 @@ public class ProductController {
                 .map(EventResponse::fromDomain)
                 .toList();
         return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Contrôle unique du {userId} du path pour les routes /users/{userId}/products : appelant absent
+     * -> 401, {userId} ≠ appelant -> 403. Renvoie le statut de refus, vide si le caller est le
+     * propriétaire. Les routes sur un produit gardent en plus leur contrôle d'appartenance de la
+     * ressource (productBelongsToUser, anti-IDOR). Aucune exception capturée ici : le reste se
+     * propage (BR-AUT-005).
+     */
+    private Optional<HttpStatus> requireOwner(UUID userId) {
+        Optional<User> callerOpt = callerResolver.currentUser();
+        if (callerOpt.isEmpty()) {
+            return Optional.of(HttpStatus.UNAUTHORIZED);
+        }
+        if (!callerOpt.get().getId().equals(userId)) {
+            return Optional.of(HttpStatus.FORBIDDEN);
+        }
+        return Optional.empty();
     }
 
     /** #185 : mappe le DTO HTTP de création vers la commande domaine ; le {userId} du path fait autorité. */
