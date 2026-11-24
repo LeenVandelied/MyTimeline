@@ -181,4 +181,23 @@ class ArchitectureTest {
 
         rule.check(classesUnderTest);
     }
+
+    /**
+     * Règle 6 (#185) — Le coeur métier ne dépend pas de la couche applicative. Stricte, non gelée :
+     * les ports de service prennent des commandes du domaine, jamais des DTO HTTP.
+     */
+    @Test
+    void domainShouldNotDependOnApplicationLayer() {
+        ArchRule rule =
+                noClasses()
+                        .that()
+                        .resideInAPackage(DOMAIN)
+                        .should()
+                        .dependOnClassesThat()
+                        .resideInAPackage(APPLICATION)
+                        .because(
+                                "le domaine ne connaît pas les DTO d'échange de la couche application");
+
+        rule.check(classesUnderTest);
+    }
 }
