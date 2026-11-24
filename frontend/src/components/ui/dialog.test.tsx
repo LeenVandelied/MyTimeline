@@ -98,3 +98,35 @@ describe('DialogContent — lisibilité de la croix sur contenu défilé (#757)'
     expect(hoverInk).toEqual([])
   })
 })
+
+/**
+ * #456 — palier `z` de la modale générique. Le fond assombri et la boîte portent le
+ * palier modal de l'échelle (`--z-modal`, 70, ADR-008), et non le `z-50` d'origine du
+ * modèle shadcn. jsdom ne calcule pas le `z-index` : on fige la classe posée. Le rang
+ * réel face aux listes et bulles (75) est mesuré par `e2e/sprint-456-dialog-modal-layer.spec.ts`.
+ */
+describe('DialogContent — palier z modal (#456)', () => {
+  const MODAL_LAYER = /^z-(\[var\(--z-modal\)\]|modal|70)$/
+
+  function zClasses(el: Element): string[] {
+    return [...el.classList].filter((c) => /^z-/.test(c))
+  }
+
+  it('overlay and content use the modal layer, not the legacy default', () => {
+    const { content } = renderOpenDialog()
+    const overlay = document.querySelector('[data-state="open"].inset-0')
+    expect(overlay).not.toBeNull()
+    if (overlay === null) return
+
+    for (const [name, el] of [
+      ['fond assombri', overlay],
+      ['boîte', content],
+    ] as const) {
+      expect(zClasses(el), `${name} : classe z- attendue au palier modal`).toHaveLength(1)
+      expect(zClasses(el)[0], `${name} : palier modal attendu`).toMatch(MODAL_LAYER)
+      expect(el, `${name} : l'ancienne valeur par défaut ne doit plus rester`).not.toHaveClass(
+        'z-50',
+      )
+    }
+  })
+})
