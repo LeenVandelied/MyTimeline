@@ -2,6 +2,7 @@ package com.matimeline.eventmanager.architecture;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.matimeline.archfixtures.FakeMisplacedController;
 import com.matimeline.eventmanager.application.services.fixtures.FakeConcreteServiceImpl;
 import com.matimeline.eventmanager.infrastructure.adapters.controllers.fixtures.FakeControllerUsingServiceImpl;
 import com.tngtech.archunit.ArchConfiguration;
@@ -48,5 +49,19 @@ class ControllerRuleStrictnessTest {
                                         .check(fixtures))
                 .isInstanceOf(AssertionError.class)
                 .hasMessageContaining("FakeConcreteServiceImpl");
+    }
+
+    @Test
+    void restControllerOutsideControllersPackage_dependingOnServiceImpl_isDetected() {
+        JavaClasses fixtures =
+                new ClassFileImporter()
+                        .importClasses(FakeMisplacedController.class, FakeConcreteServiceImpl.class);
+
+        assertThatThrownBy(
+                        () ->
+                                ArchitectureTest.controllersShouldNotDependOnServiceImplRule()
+                                        .check(fixtures))
+                .isInstanceOf(AssertionError.class)
+                .hasMessageContaining("FakeMisplacedController");
     }
 }

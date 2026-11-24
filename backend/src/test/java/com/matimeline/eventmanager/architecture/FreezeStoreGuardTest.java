@@ -22,8 +22,14 @@ class FreezeStoreGuardTest {
 
     private static final String STORE_RESOURCE = "/archunit_store/stored.rules";
 
-    // Description exacte de la règle 3, plus le package visé au cas où le libellé évolue.
+    // Entrée fautive : la description exacte de la règle 3, ou, si le libellé évolue, la cible
+    // interdite (application.services) combinée à une source contrôleur (le mot Controller, qui
+    // couvre les annotations, ou le dossier des contrôleurs, toujours couvert par la règle).
+    // La cible seule ne suffit pas : une règle gelée voisine (domaine vers application.services)
+    // reste tolérée.
     private static final String CONTROLLERS_PACKAGE = "infrastructure.adapters.controllers";
+    private static final String CONTROLLER_MARKER = "Controller";
+    private static final String FORBIDDEN_TARGET = "application.services";
 
     @Test
     void controllerRule_isNeverFrozenInStore() throws IOException {
@@ -32,10 +38,7 @@ class FreezeStoreGuardTest {
 
         List<String> frozenControllerRules =
                 loadStoredRuleDescriptions().stream()
-                        .filter(
-                                d ->
-                                        d.contains(ruleDescription)
-                                                || d.contains(CONTROLLERS_PACKAGE))
+                        .filter(d -> targetsControllerRule(d, ruleDescription))
                         .toList();
 
         assertThat(frozenControllerRules)
@@ -45,6 +48,30 @@ class FreezeStoreGuardTest {
                                 + " FreezingArchRule.freeze(...) autour de cette règle et supprimer"
                                 + " l'entrée du store.")
                 .isEmpty();
+    }
+
+    @Test
+    void filter_toleratesNeighbouringFrozenRule_butRejectsControllerRule() {
+        String ruleDescription =
+                ArchitectureTest.controllersShouldNotDependOnServiceImplRule().getDescription();
+        String neighbour =
+                "no classes that reside in a package 'com.matimeline.eventmanager.domain..'"
+                        + " should depend on classes that reside in a package"
+                        + " 'com.matimeline.eventmanager.application.services..'";
+        String reworded =
+                "no classes that are meta-annotated with @Controller should depend on classes"
+                        + " that reside in a package 'com.matimeline.eventmanager.application.services..'";
+
+        assertThat(targetsControllerRule(neighbour, ruleDescription)).isFalse();
+        assertThat(targetsControllerRule(ruleDescription, ruleDescription)).isTrue();
+        assertThat(targetsControllerRule(reworded, ruleDescription)).isTrue();
+    }
+
+    private static boolean targetsControllerRule(String storedDescription, String ruleDescription) {
+        return storedDescription.contains(ruleDescription)
+                || (storedDescription.contains(FORBIDDEN_TARGET)
+                        && (storedDescription.contains(CONTROLLER_MARKER)
+                                || storedDescription.contains(CONTROLLERS_PACKAGE)));
     }
 
     private static List<String> loadStoredRuleDescriptions() throws IOException {
