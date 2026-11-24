@@ -18,8 +18,8 @@ import tailwind from '@tailwindcss/postcss'
  * Ces deux faits sont la JUSTIFICATION des substitutions faites dans
  * `WeekAgenda`, `KpiMarginalia`, `ProductList`, `ProductCarousel`, `StateScreen`.
  *
- * #516 — La neutralisation `color`/`text-decoration` (`time.mt-date--short,
- * time.mt-date--long, time.mt-num`) ne cible QUE le sélecteur préfixé `time` :
+ * #516 — La neutralisation `color`/`text-decoration` (`time.mt-date--long,
+ * time.mt-num`) ne cible QUE le sélecteur préfixé `time` :
  * elle ne prétend rien couvrir sur les `<span>`/`<p>` qui portent `.mt-num`
  * nu (KpiMarginalia, ProductList, ProductCarousel, ProductsListView,
  * StateScreen). Voir le test dédié plus bas.
@@ -90,7 +90,7 @@ function propsOf(root: Container, className: string): Map<string, string> {
 describe('#72 — classes Intl du DS : rang de cascade', () => {
   it('`.mt-num` et `.mt-date--long` sont HORS layer (donc gagnantes sur @layer utilities)', async () => {
     const root = await compile()
-    for (const cls of ['mt-num', 'mt-date--long', 'mt-date--short']) {
+    for (const cls of ['mt-num', 'mt-date--long']) {
       const hits = rulesFor(root, cls)
       expect(hits.length, `aucune règle compilée pour .${cls}`).toBeGreaterThan(0)
       for (const hit of hits) {
@@ -180,15 +180,18 @@ describe('#72 — ce que les classes Intl imposent (justification des substituti
     })
     expect(text2xs).toBe('13px')
   })
+})
 
-  it('`.mt-date--short` impose uppercase + 11px → NON appliquée (arbitrage Designer)', async () => {
+describe('#517 — dates courtes en capitales retirées du DS', () => {
+  it('the short-date class is absent from the design system', async () => {
     const root = await compile()
-    const props = propsOf(root, 'mt-date--short')
-    // Ces deux déclarations sont le motif documenté de sa non-application :
-    // elles changeraient la casse ET la taille des dates existantes, et le
-    // format cible du DS (« MER 24 JUIN ») demande aussi des options `Intl`
-    // différentes de celles rendues aujourd'hui (« mer. 24 »).
-    expect(props.get('text-transform')).toBe('uppercase')
-    expect(props.get('font-size')).toBe('11px')
+    expect(
+      rulesFor(root, 'mt-date--short').map((hit) => hit.selector),
+      'aucune règle compilée ne doit plus cibler .mt-date--short',
+    ).toEqual([])
+    expect(
+      rulesFor(root, 'mt-date--long').length,
+      '.mt-date--long doit rester compilée',
+    ).toBeGreaterThan(0)
   })
 })
