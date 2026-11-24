@@ -16,13 +16,13 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.matimeline.eventmanager.application.dtos.EventCreationRequest;
-import com.matimeline.eventmanager.application.dtos.ProductCreationRequest;
 import com.matimeline.eventmanager.application.policy.PlanPolicy;
 import com.matimeline.eventmanager.domain.exceptions.EventQuotaExceededException;
 import com.matimeline.eventmanager.domain.models.Category;
 import com.matimeline.eventmanager.domain.models.Event;
+import com.matimeline.eventmanager.domain.models.EventCreateCommand;
 import com.matimeline.eventmanager.domain.models.Product;
+import com.matimeline.eventmanager.domain.models.ProductCreateCommand;
 import com.matimeline.eventmanager.domain.models.User;
 import com.matimeline.eventmanager.domain.ports.repositories.CategoryRepository;
 import com.matimeline.eventmanager.domain.ports.repositories.EventRepository;
@@ -60,23 +60,13 @@ class ProductServiceImplQuotaBatchTest {
         when(categoryRepository.findDomainCategoryById(categoryId)).thenReturn(Optional.of(category));
     }
 
-    private ProductCreationRequest requestWithEvents(int count) {
-        ProductCreationRequest request = new ProductCreationRequest();
-        request.setName("Produit");
-        request.setUserId(callerId);
-        request.setCategory(categoryId);
-        List<EventCreationRequest> events = new ArrayList<>();
+    private ProductCreateCommand requestWithEvents(int count) {
+        List<EventCreateCommand> events = new ArrayList<>();
         for (int i = 0; i < count; i++) {
-            EventCreationRequest e = new EventCreationRequest();
-            e.setName("event-" + i);
-            e.setType("single");
-            e.setDurationValue(1);
-            e.setDurationUnit("days");
-            e.setIsRecurring(false);
-            events.add(e);
+            events.add(new EventCreateCommand(
+                    "event-" + i, "single", 1, "days", false, null, null, null, null, null));
         }
-        request.setEvents(events);
-        return request;
+        return new ProductCreateCommand("Produit", categoryId, callerId, null, events);
     }
 
     @Test

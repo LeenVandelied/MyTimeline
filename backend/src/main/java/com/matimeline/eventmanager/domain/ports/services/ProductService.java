@@ -4,20 +4,21 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import com.matimeline.eventmanager.application.dtos.ProductCreationRequest;
-import com.matimeline.eventmanager.application.dtos.ProductUpdateRequest;
 import com.matimeline.eventmanager.domain.models.Product;
+import com.matimeline.eventmanager.domain.models.ProductCreateCommand;
+import com.matimeline.eventmanager.domain.models.ProductUpdateCommand;
 
 public interface ProductService {
-    Product createProduct(ProductCreationRequest request);
+    Product createProduct(ProductCreateCommand command);
 
     /**
-     * Partial update of a product (PATCH). Applies BR-PRO-001 (name bounds) and
-     * BR-PRO-002 (category must exist) only for the fields actually provided.
+     * Partial update of a product (PATCH). Applies only the fields actually provided.
+     * The name bounds (BR-PRO-001) are validated by the DTO annotations at the controller,
+     * the service does not revalidate them. BR-PRO-002 (category must exist) is enforced here.
      * Throws ProductNotFoundException if the product does not exist (BR-PRO-007),
      * CategoryNotFoundException if a supplied categoryId is unknown.
      */
-    Product updateProduct(UUID id, ProductUpdateRequest request);
+    Product updateProduct(UUID id, ProductUpdateCommand command);
 
     List<Product> getProductsWithEvents(UUID userId);
     Optional<Product> findDomainProductById(UUID id);

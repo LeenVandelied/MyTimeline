@@ -24,16 +24,16 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.matimeline.eventmanager.application.dtos.EventCreationRequest;
-import com.matimeline.eventmanager.application.dtos.ProductCreationRequest;
-import com.matimeline.eventmanager.application.dtos.ProductUpdateRequest;
 import com.matimeline.eventmanager.application.policy.PlanPolicy;
 import com.matimeline.eventmanager.domain.exceptions.CategoryNotFoundException;
 import com.matimeline.eventmanager.domain.exceptions.EventQuotaExceededException;
 import com.matimeline.eventmanager.domain.exceptions.ProductNotFoundException;
 import com.matimeline.eventmanager.domain.models.Category;
 import com.matimeline.eventmanager.domain.models.Event;
+import com.matimeline.eventmanager.domain.models.EventCreateCommand;
 import com.matimeline.eventmanager.domain.models.Product;
+import com.matimeline.eventmanager.domain.models.ProductCreateCommand;
+import com.matimeline.eventmanager.domain.models.ProductUpdateCommand;
 import com.matimeline.eventmanager.domain.models.User;
 import com.matimeline.eventmanager.domain.ports.repositories.CategoryRepository;
 import com.matimeline.eventmanager.domain.ports.repositories.EventRepository;
@@ -82,13 +82,12 @@ class ProductServiceImplTest {
         caller = new User(callerId, "Caller", "caller", "pwd", "ROLE_USER", "c@c.com");
     }
 
-    private ProductCreationRequest creationRequest() {
-        ProductCreationRequest request = new ProductCreationRequest();
-        request.setName("Produit");
-        request.setUserId(callerId);
-        request.setCategory(categoryId);
-        request.setEvents(new ArrayList<>());
-        return request;
+    private ProductCreateCommand creationCommand(String color, List<EventCreateCommand> events) {
+        return new ProductCreateCommand("Produit", categoryId, callerId, color, events);
+    }
+
+    private ProductCreateCommand creationCommand() {
+        return creationCommand(null, new ArrayList<>());
     }
 
     // -------------------------------------------------------------------------
@@ -103,7 +102,7 @@ class ProductServiceImplTest {
         when(userRepository.findDomainUserById(callerId)).thenReturn(Optional.of(caller));
         when(categoryRepository.findDomainCategoryById(categoryId)).thenReturn(Optional.of(foreignCategory));
 
-        assertThatThrownBy(() -> service.createProduct(creationRequest()))
+        assertThatThrownBy(() -> service.createProduct(creationCommand()))
                 .isInstanceOf(CategoryNotFoundException.class);
 
         verify(productRepository, never()).save(any());
@@ -119,7 +118,7 @@ class ProductServiceImplTest {
         when(categoryRepository.findDomainCategoryById(categoryId)).thenReturn(Optional.of(systemCategory));
         when(productRepository.save(any(Product.class))).thenReturn(saved);
 
-        Product result = service.createProduct(creationRequest());
+        Product result = service.createProduct(creationCommand());
 
         assertThat(result).isNotNull();
         verify(productRepository).save(any(Product.class));
@@ -135,7 +134,7 @@ class ProductServiceImplTest {
         when(categoryRepository.findDomainCategoryById(categoryId)).thenReturn(Optional.of(ownCategory));
         when(productRepository.save(any(Product.class))).thenReturn(saved);
 
-        Product result = service.createProduct(creationRequest());
+        Product result = service.createProduct(creationCommand());
 
         assertThat(result).isNotNull();
         verify(productRepository).save(any(Product.class));
@@ -153,10 +152,8 @@ class ProductServiceImplTest {
         when(categoryRepository.findDomainCategoryById(categoryId)).thenReturn(Optional.of(ownCategory));
         when(productRepository.save(any(Product.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        ProductCreationRequest request = creationRequest();
-        request.setEvents(null); // BR-PRO-005 : liste nulle tolérée (0 event)
-
-        Product result = service.createProduct(request);
+        // BR-PRO-005 : liste nulle tolérée (0 event)
+        Product result = service.createProduct(creationCommand(null, null));
 
         assertThat(result).isNotNull();
         ArgumentCaptor<Product> captor = ArgumentCaptor.forClass(Product.class);
@@ -177,18 +174,12 @@ class ProductServiceImplTest {
         // La politique refuse pour cet utilisateur.
         when(planPolicy.canCreateEvent(eq(caller), anyLong())).thenReturn(false);
 
-        ProductCreationRequest request = creationRequest();
-        List<EventCreationRequest> events = new ArrayList<>();
+        List<EventCreateCommand> events = new ArrayList<>();
         for (int i = 0; i < 3; i++) {
-            EventCreationRequest e = new EventCreationRequest();
-            e.setName("event-" + i);
-            e.setType("single");
-            e.setDurationValue(1);
-            e.setDurationUnit("days");
-            e.setIsRecurring(false);
-            events.add(e);
+            events.add(new EventCreateCommand(
+                    "event-" + i, "single", 1, "days", false, null, null, null, null, null));
         }
-        request.setEvents(events);
+        ProductCreateCommand request = creationCommand(null, events);
 
         assertThatThrownBy(() -> service.createProduct(request))
                 .isInstanceOf(EventQuotaExceededException.class);
@@ -253,8 +244,7 @@ class ProductServiceImplTest {
         when(productRepository.findDomainProductById(productId)).thenReturn(Optional.of(product));
         when(categoryRepository.findDomainCategoryById(categoryId)).thenReturn(Optional.of(foreignCategory));
 
-        ProductUpdateRequest request = new ProductUpdateRequest();
-        request.setCategoryId(categoryId);
+        ProductUpdateCommand request = new ProductUpdateCommand(null, categoryId, null, false);
 
         assertThatThrownBy(() -> service.updateProduct(productId, request))
                 .isInstanceOf(CategoryNotFoundException.class);
@@ -274,8 +264,7 @@ class ProductServiceImplTest {
         when(categoryRepository.findDomainCategoryById(categoryId)).thenReturn(Optional.of(systemCategory));
         when(productRepository.save(any(Product.class))).thenReturn(product);
 
-        ProductUpdateRequest request = new ProductUpdateRequest();
-        request.setCategoryId(categoryId);
+        ProductUpdateCommand request = new ProductUpdateCommand(null, categoryId, null, false);
 
         service.updateProduct(productId, request);
 
@@ -294,8 +283,7 @@ class ProductServiceImplTest {
         when(categoryRepository.findDomainCategoryById(categoryId)).thenReturn(Optional.of(ownCategory));
         when(productRepository.save(any(Product.class))).thenReturn(product);
 
-        ProductUpdateRequest request = new ProductUpdateRequest();
-        request.setCategoryId(categoryId);
+        ProductUpdateCommand request = new ProductUpdateCommand(null, categoryId, null, false);
 
         service.updateProduct(productId, request);
 
@@ -316,7 +304,7 @@ class ProductServiceImplTest {
         when(categoryRepository.findDomainCategoryById(categoryId)).thenReturn(Optional.of(ownCategory));
         when(productRepository.save(any(Product.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        service.createProduct(creationRequest()); // creationRequest() ne pose pas de color
+        service.createProduct(creationCommand()); // creationCommand() ne pose pas de color
 
         ArgumentCaptor<Product> captor = ArgumentCaptor.forClass(Product.class);
         verify(productRepository).save(captor.capture());
@@ -332,10 +320,7 @@ class ProductServiceImplTest {
         when(categoryRepository.findDomainCategoryById(categoryId)).thenReturn(Optional.of(ownCategory));
         when(productRepository.save(any(Product.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        ProductCreationRequest request = creationRequest();
-        request.setColor("#123456");
-
-        service.createProduct(request);
+        service.createProduct(creationCommand("#123456", new ArrayList<>()));
 
         ArgumentCaptor<Product> captor = ArgumentCaptor.forClass(Product.class);
         verify(productRepository).save(captor.capture());
@@ -351,8 +336,7 @@ class ProductServiceImplTest {
         when(productRepository.findDomainProductById(productId)).thenReturn(Optional.of(product));
         when(productRepository.save(any(Product.class))).thenReturn(product);
 
-        ProductUpdateRequest request = new ProductUpdateRequest();
-        request.setColor("#ff8800");
+        ProductUpdateCommand request = new ProductUpdateCommand(null, null, "#ff8800", false);
 
         service.updateProduct(productId, request);
 
@@ -370,8 +354,7 @@ class ProductServiceImplTest {
         when(productRepository.findDomainProductById(productId)).thenReturn(Optional.of(product));
         when(productRepository.save(any(Product.class))).thenReturn(product);
 
-        ProductUpdateRequest request = new ProductUpdateRequest();
-        request.setClearColor(true);
+        ProductUpdateCommand request = new ProductUpdateCommand(null, null, null, true);
 
         service.updateProduct(productId, request);
 
@@ -389,8 +372,7 @@ class ProductServiceImplTest {
         when(productRepository.findDomainProductById(productId)).thenReturn(Optional.of(product));
         when(productRepository.save(any(Product.class))).thenReturn(product);
 
-        ProductUpdateRequest request = new ProductUpdateRequest();
-        request.setName("Renommé");
+        ProductUpdateCommand request = new ProductUpdateCommand("Renommé", null, null, false);
 
         service.updateProduct(productId, request);
 
@@ -408,9 +390,7 @@ class ProductServiceImplTest {
         when(productRepository.findDomainProductById(productId)).thenReturn(Optional.of(product));
         when(productRepository.save(any(Product.class))).thenReturn(product);
 
-        ProductUpdateRequest request = new ProductUpdateRequest();
-        request.setColor("#123456");
-        request.setClearColor(true);
+        ProductUpdateCommand request = new ProductUpdateCommand(null, null, "#123456", true);
 
         service.updateProduct(productId, request);
 

@@ -11,10 +11,14 @@ import com.matimeline.eventmanager.application.dtos.ProductCreationRequest;
 import com.matimeline.eventmanager.application.dtos.ProductResponse;
 import com.matimeline.eventmanager.application.dtos.ProductUpdateRequest;
 import com.matimeline.eventmanager.domain.models.Event;
+import com.matimeline.eventmanager.domain.models.EventCreateCommand;
 import com.matimeline.eventmanager.domain.models.Product;
+import com.matimeline.eventmanager.domain.models.ProductCreateCommand;
+import com.matimeline.eventmanager.domain.models.ProductUpdateCommand;
 import com.matimeline.eventmanager.domain.models.User;
 import com.matimeline.eventmanager.domain.ports.services.EventService;
 import com.matimeline.eventmanager.domain.ports.services.ProductService;
+import com.matimeline.eventmanager.infrastructure.adapters.controllers.mappers.EventCommandMapper;
 import com.matimeline.eventmanager.infrastructure.security.CallerResolver;
 
 import jakarta.validation.Valid;
@@ -60,8 +64,7 @@ public class ProductController {
         }
 
         // BR-PRO-004 : le {userId} du path fait autorité, il écrase l'éventuel userId du body.
-        request.setUserId(userId);
-        Product product = productService.createProduct(request);
+        Product product = productService.createProduct(toCreateCommand(request, userId));
         return ResponseEntity.status(HttpStatus.CREATED).body(ProductResponse.fromDomain(product));
     }
 
@@ -174,9 +177,10 @@ public class ProductController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
-        // BR-PRO-001/002 : validation (name bounds, category existence) enforced in the
-        // service ; a missing product / unknown category surfaces via GlobalExceptionHandler (404).
-        Product updated = productService.updateProduct(productId, request);
+        // BR-PRO-001 : les bornes du nom sont validées ici par les annotations du DTO
+        // (@Valid), le service ne les revalide pas. BR-PRO-002 : une catégorie inconnue
+        // remonte du service via GlobalExceptionHandler (404).
+        Product updated = productService.updateProduct(productId, toUpdateCommand(request));
         return ResponseEntity.ok(ProductResponse.fromDomain(updated));
     }
 
@@ -233,6 +237,27 @@ public class ProductController {
                 .map(EventResponse::fromDomain)
                 .toList();
         return ResponseEntity.ok(response);
+    }
+
+    /** #185 : mappe le DTO HTTP de création vers la commande domaine ; le {userId} du path fait autorité. */
+    private ProductCreateCommand toCreateCommand(ProductCreationRequest request, UUID userId) {
+        List<EventCreateCommand> events = request.getEvents() == null ? null
+                : request.getEvents().stream().map(e -> EventCommandMapper.toCreateCommand(e, null)).toList();
+        return new ProductCreateCommand(
+                request.getName(),
+                request.getCategory(),
+                userId,
+                request.getColor(),
+                events);
+    }
+
+    /** #185 : mappe le DTO HTTP de mise à jour partielle vers la commande domaine. */
+    private ProductUpdateCommand toUpdateCommand(ProductUpdateRequest request) {
+        return new ProductUpdateCommand(
+                request.getName(),
+                request.getCategoryId(),
+                request.getColor(),
+                request.isClearColor());
     }
 
     /**

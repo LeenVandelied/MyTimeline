@@ -11,8 +11,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.matimeline.eventmanager.application.policy.PlanPolicy;
-import com.matimeline.eventmanager.application.dtos.ProductCreationRequest;
-import com.matimeline.eventmanager.application.dtos.ProductUpdateRequest;
 import com.matimeline.eventmanager.domain.exceptions.CategoryNotFoundException;
 import com.matimeline.eventmanager.domain.exceptions.EventQuotaExceededException;
 import com.matimeline.eventmanager.domain.exceptions.ProductNotFoundException;
@@ -20,6 +18,8 @@ import com.matimeline.eventmanager.domain.exceptions.UserNotFoundException;
 import com.matimeline.eventmanager.domain.models.Category;
 import com.matimeline.eventmanager.domain.models.Event;
 import com.matimeline.eventmanager.domain.models.Product;
+import com.matimeline.eventmanager.domain.models.ProductCreateCommand;
+import com.matimeline.eventmanager.domain.models.ProductUpdateCommand;
 import com.matimeline.eventmanager.domain.models.RecurrenceUnit;
 import com.matimeline.eventmanager.domain.models.User;
 import com.matimeline.eventmanager.domain.ports.repositories.CategoryRepository;
@@ -52,17 +52,17 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional
-    public Product createProduct(ProductCreationRequest request) {
-        User user = userRepository.findDomainUserById(request.getUserId())
-                .orElseThrow(() -> new UserNotFoundException(request.getUserId()));
+    public Product createProduct(ProductCreateCommand command) {
+        User user = userRepository.findDomainUserById(command.userId())
+                .orElseThrow(() -> new UserNotFoundException(command.userId()));
 
         // #50 (faille cross-tenant) : la catégorie cible doit appartenir à l'appelant
         // OU être système (ownerId == null). Sinon -> 404 (anti-énumération).
-        Category category = resolveAssignableCategory(request.getCategory(), user.getId());
+        Category category = resolveAssignableCategory(command.categoryId(), user.getId());
 
         // #88 : quota vérifié avant toute persistance (après la catégorie). Le rang dans le lot s'ajoute au décompte
         // possédé, pour qu'un lot ne dépasse pas le plafond. Un refus refuse toute la création.
-        int batchSize = Optional.ofNullable(request.getEvents()).orElseGet(List::of).size();
+        int batchSize = Optional.ofNullable(command.events()).orElseGet(List::of).size();
         if (batchSize > 0) {
             long owned = eventRepository.countActiveByUserId(user.getId());
             for (int rank = 0; rank < batchSize; rank++) {
@@ -78,15 +78,15 @@ public class ProductServiceImpl implements ProductService {
         // uninitialized version value null") et casse l'INSERT réel Postgres. En laissant
         // l'id à null, @GeneratedValue l'attribue et @Version s'initialise (aligné sur
         // CategoryServiceImpl : new Category(null, ...)).
-        Product product = new Product(null, request.getName(), category, user, new ArrayList<>());
+        Product product = new Product(null, command.name(), category, user, new ArrayList<>());
         // #158 : surcharge couleur produit (null = héritage de la catégorie côté front).
-        product.setColor(request.getColor());
+        product.setColor(command.color());
 
-        // #186 (BR-PRO-005) : un produit SANS événement est autorisé. getEvents() peut être
-        // null (pas de @NotNull sur le DTO ; Zod z.array sans .min(1)) -> null traité comme
-        // liste vide pour éviter la NPE (500). Le produit est déjà construit avec 0 event (L63).
-        Optional.ofNullable(request.getEvents()).orElseGet(List::of).forEach(eventCreationRequest -> {
-            LocalDate startDate = (eventCreationRequest.getDate() != null) ? eventCreationRequest.getDate() : LocalDate.now();
+        // #186 (BR-PRO-005) : un produit SANS événement est autorisé. events() peut être
+        // null (la commande vient d'un DTO sans @NotNull ; Zod z.array sans .min(1)) -> null
+        // traité comme liste vide pour éviter la NPE (500). Le produit est déjà construit avec 0 event (L63).
+        Optional.ofNullable(command.events()).orElseGet(List::of).forEach(eventCommand -> {
+            LocalDate startDate = (eventCommand.date() != null) ? eventCommand.date() : LocalDate.now();
     
             // id NULL (idem product) : l'EventEntity imbriquée est persistée en cascade,
             // @GeneratedValue attribue l'id et @Version l'initialise. Un id pré-assigné
@@ -95,16 +95,17 @@ public class ProductServiceImpl implements ProductService {
             // (ProductMapper.toEntity), pas par ce productId (null ici, sans effet).
             Event event = new Event(
                     null,
-                    eventCreationRequest.getName(),
-                    eventCreationRequest.getType(),
-                    eventCreationRequest.getDurationValue(),
-                    eventCreationRequest.getDurationUnit(),
-                    eventCreationRequest.getIsRecurring(),
-                    RecurrenceUnit.fromString(eventCreationRequest.getRecurrenceUnit()),
+                    eventCommand.name(),
+                    eventCommand.type(),
+                    eventCommand.durationValue(),
+                    eventCommand.durationUnit(),
+                    eventCommand.isRecurring(),
+                    RecurrenceUnit.fromString(eventCommand.recurrenceUnit()),
                     startDate,
-                    Utils.calculateEndDate(eventCreationRequest, startDate),
+                    Utils.calculateEndDate(eventCommand.type(), eventCommand.durationValue(),
+                            eventCommand.durationUnit(), startDate),
                     product.getId(),
-                    eventCreationRequest.getIsAllDay()
+                    eventCommand.isAllDay()
             );
             product.addEvent(event);
         });
@@ -138,28 +139,28 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional
-    public Product updateProduct(UUID id, ProductUpdateRequest request) {
+    public Product updateProduct(UUID id, ProductUpdateCommand command) {
         Product product = productRepository.findDomainProductById(id)
                 .orElseThrow(() -> new ProductNotFoundException(id));
 
-        if (request.getName() != null) {
-            product.setName(request.getName());
+        if (command.name() != null) {
+            product.setName(command.name());
         }
 
-        if (request.getCategoryId() != null) {
+        if (command.categoryId() != null) {
             // #50 (faille cross-tenant) : l'ownership du produit est déjà garanti au niveau
             // controller (path == JWT). On valide donc la catégorie cible contre le
             // propriétaire du produit chargé -> catégorie d'autrui traitée comme inexistante (404).
-            Category category = resolveAssignableCategory(request.getCategoryId(), product.getUser().getId());
+            Category category = resolveAssignableCategory(command.categoryId(), product.getUser().getId());
             product.setCategory(category);
         }
 
         // #158 : surcharge couleur produit. clearColor prime (reset -> null = ré-héritage
         // catégorie) ; sinon un color non-null pose la surcharge ; color null = inchangé.
-        if (request.isClearColor()) {
+        if (command.clearColor()) {
             product.setColor(null);
-        } else if (request.getColor() != null) {
-            product.setColor(request.getColor());
+        } else if (command.color() != null) {
+            product.setColor(command.color());
         }
 
         return productRepository.save(product);
