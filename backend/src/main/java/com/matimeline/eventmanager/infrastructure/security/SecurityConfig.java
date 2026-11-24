@@ -73,7 +73,7 @@ public class SecurityConfig {
      * {@code allowCredentials=true}). Il ne dispense PAS le profil dev de porter sa
      * propre valeur : voir {@code application-dev.properties}.
      */
-    static final String ALLOWED_ORIGINS_EXPRESSION = "${app.cors.allowed-origins:http://localhost:3000}";
+    public static final String ALLOWED_ORIGINS_EXPRESSION = "${app.cors.allowed-origins:http://localhost:3000}";
 
     // userDetailsService n'est pas injecté ici : il est fourni en paramètre du @Bean
     // authenticationManager(...) (où Spring le résout), pas via ce constructeur.
