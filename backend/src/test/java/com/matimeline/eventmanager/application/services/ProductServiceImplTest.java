@@ -190,7 +190,7 @@ class ProductServiceImplTest {
     }
 
     // -------------------------------------------------------------------------
-    // getProductsWithEvents (#124 filtre SQL user_id / #41 produits sans event visibles)
+    // getProductsByUser (#124 filtre SQL user_id / #41 produits sans event visibles)
     // -------------------------------------------------------------------------
 
     /**
@@ -198,10 +198,10 @@ class ProductServiceImplTest {
      * PLUS findAllProducts() (ex-full scan + filtre Java par userId).
      */
     @Test
-    void getProductsWithEvents_delegatesToFindByUserId_notFindAll() {
+    void getProductsByUser_delegatesToFindByUserId_notFindAll() {
         when(productRepository.findByUserId(callerId)).thenReturn(new ArrayList<>());
 
-        service.getProductsWithEvents(callerId);
+        service.getProductsByUser(callerId);
 
         verify(productRepository).findByUserId(callerId);
         verify(productRepository, never()).findAllProducts();
@@ -213,7 +213,7 @@ class ProductServiceImplTest {
      * (déjà filtré par user en SQL) retourne, sans re-filtrer.
      */
     @Test
-    void getProductsWithEvents_returnsProductWithoutEvents() {
+    void getProductsByUser_returnsProductWithoutEvents() {
         Category ownCategory = new Category(categoryId, "Mienne", "#000", "desc", callerId);
         Product noEvents = new Product(productId, "SansEvent", ownCategory, caller, new ArrayList<>());
         Product withEvents = new Product(UUID.randomUUID(), "AvecEvent", ownCategory, caller, new ArrayList<>());
@@ -222,7 +222,7 @@ class ProductServiceImplTest {
 
         when(productRepository.findByUserId(callerId)).thenReturn(List.of(noEvents, withEvents));
 
-        List<Product> result = service.getProductsWithEvents(callerId);
+        List<Product> result = service.getProductsByUser(callerId);
 
         assertThat(result).containsExactly(noEvents, withEvents);
         assertThat(result.get(0).hasEvents()).isFalse();

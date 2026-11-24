@@ -75,7 +75,7 @@ public class ProductController {
         // #92 : PAS de try/catch ici. L'auth (401) est résolue par requireOwner (currentUser() vide).
         // L'appel service ne lève aucune JwtException ; toute erreur (NPE BR-PRO-005, DataAccess)
         // DOIT se propager au GlobalExceptionHandler (500), jamais être masquée en 401 (BR-AUT-005).
-        List<ProductResponse> response = productService.getProductsWithEvents(userId).stream()
+        List<ProductResponse> response = productService.getProductsByUser(userId).stream()
                 .map(ProductResponse::fromDomain)
                 .toList();
         return ResponseEntity.ok(response);

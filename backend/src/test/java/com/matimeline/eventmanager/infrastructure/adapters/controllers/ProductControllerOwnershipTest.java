@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -114,7 +115,24 @@ class ProductControllerOwnershipTest {
         mockMvc.perform(get("/api/users/" + callerId + "/products"))
                 .andExpect(status().isUnauthorized());
 
-        verify(productService, never()).getProductsWithEvents(any());
+        verifyNoInteractions(productService);
+    }
+
+    /** Liste de ses propres produits -> 200 avec les produits fournis par le service. */
+    @Test
+    void getProducts_ownList_returns200_withProductsFromService() throws Exception {
+        User caller = new User(callerId, "Caller", "caller", "pwd", "ROLE_USER", "c@c.com");
+        Category category = new Category(UUID.randomUUID(), "Cat", "#000000", "desc", callerId);
+        Product mine = new Product(productId, "mine", category, caller, new java.util.ArrayList<>());
+
+        when(callerResolver.currentUser()).thenReturn(Optional.of(caller));
+        when(productService.getProductsByUser(callerId)).thenReturn(List.of(mine));
+
+        mockMvc.perform(get("/api/users/" + callerId + "/products"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].id").value(productId.toString()))
+                .andExpect(jsonPath("$[0].name").value("mine"));
     }
 
     /** BR-PRO-004 : liste des produits d'un autre user -> 403, aucune donnée lue par le service. */
@@ -126,7 +144,7 @@ class ProductControllerOwnershipTest {
         mockMvc.perform(get("/api/users/" + otherUserId + "/products"))
                 .andExpect(status().isForbidden());
 
-        verify(productService, never()).getProductsWithEvents(any());
+        verifyNoInteractions(productService);
     }
 
     /**
@@ -139,7 +157,7 @@ class ProductControllerOwnershipTest {
     void getProducts_serviceThrows_propagates_notMaskedAs401() throws Exception {
         User caller = new User(callerId, "Caller", "caller", "pwd", "ROLE_USER", "c@c.com");
         when(callerResolver.currentUser()).thenReturn(Optional.of(caller));
-        when(productService.getProductsWithEvents(callerId))
+        when(productService.getProductsByUser(callerId))
                 .thenThrow(new RuntimeException("boom DB/NPE non-JWT"));
 
         // L'exception remonte au lieu d'être transformée en 401 (avant #92 : ResponseEntity 401).

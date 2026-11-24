@@ -126,14 +126,10 @@ public class ProductServiceImpl implements ProductService {
      * indépendamment de ses événements (règle métier), donc un produit SANS événement
      * est désormais visible. Sa liste {@code events} est vide (jamais {@code null} :
      * garanti par {@code ProductMapper.toDomain} puis {@code ProductResponse.fromDomain}).
-     *
-     * <p>Le nom {@code getProductsWithEvents} devient un léger abus (la méthode liste
-     * TOUS les produits) — conservé pour ne pas propager un renommage au port/controller/
-     * tests dans ce sprint ; renommage possible en follow-up.
      */
     @Override
     @Transactional(readOnly = true)
-    public List<Product> getProductsWithEvents(UUID userId) {
+    public List<Product> getProductsByUser(UUID userId) {
         return productRepository.findByUserId(userId);
     }
 

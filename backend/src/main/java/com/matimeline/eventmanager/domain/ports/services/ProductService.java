@@ -20,7 +20,7 @@ public interface ProductService {
      */
     Product updateProduct(UUID id, ProductUpdateCommand command);
 
-    List<Product> getProductsWithEvents(UUID userId);
+    List<Product> getProductsByUser(UUID userId);
     Optional<Product> findDomainProductById(UUID id);
 
     /**
