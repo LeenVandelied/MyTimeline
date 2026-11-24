@@ -68,6 +68,11 @@ public class SecurityConfig {
      * expression que le constructeur : une divergence entre les deux rendrait le test
      * vert sur une expression qui n'est plus celle du code de production.
      *
+     * <p>La constante est publique parce que {@code DevCorsStartupLogger} (package
+     * {@code infrastructure.config}) la relit pour journaliser, au démarrage en dev, la
+     * liste d'origines réellement appliquée. Elle doit donc rester publique et rester la
+     * seule source de l'expression : ne pas la dupliquer ailleurs.
+     *
      * <p>Le default INTERNE {@code :http://localhost:3000} est le filet fail-safe si la
      * property est totalement absente (jamais un wildcard, incompatible avec
      * {@code allowCredentials=true}). Il ne dispense PAS le profil dev de porter sa
