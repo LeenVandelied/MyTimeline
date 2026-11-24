@@ -22,6 +22,7 @@ import com.matimeline.eventmanager.application.dtos.EventResponse;
 import com.matimeline.eventmanager.domain.exceptions.EndDateBeforeStartException;
 import com.matimeline.eventmanager.domain.exceptions.EventConflictException;
 import com.matimeline.eventmanager.domain.exceptions.EventNotFoundException;
+import com.matimeline.eventmanager.domain.exceptions.EventQuotaExceededException;
 import com.matimeline.eventmanager.domain.exceptions.ExportFormatNotSupportedException;
 import com.matimeline.eventmanager.domain.exceptions.InvalidAvatarException;
 import com.matimeline.eventmanager.domain.exceptions.InvalidCredentialsException;
@@ -239,6 +240,15 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.CONFLICT)
                 .body(buildBody(HttpStatus.CONFLICT, ErrorCode.CONFLICT,
                         "resource was modified concurrently, please retry"));
+    }
+
+    // #88 : quota d'événements du palier atteint -> 402 Payment Required.
+    @ExceptionHandler(EventQuotaExceededException.class)
+    public ResponseEntity<Map<String, Object>> handleEventQuotaExceeded(EventQuotaExceededException ex) {
+        return ResponseEntity
+                .status(HttpStatus.PAYMENT_REQUIRED)
+                .body(buildBody(HttpStatus.PAYMENT_REQUIRED, ErrorCode.EVENT_QUOTA_EXCEEDED,
+                        "event quota reached for your plan"));
     }
 
     @ExceptionHandler(EndDateBeforeStartException.class)

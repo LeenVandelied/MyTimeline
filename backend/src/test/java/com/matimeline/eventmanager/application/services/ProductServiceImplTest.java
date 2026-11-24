@@ -3,6 +3,10 @@ package com.matimeline.eventmanager.application.services;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -20,11 +24,15 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.matimeline.eventmanager.application.dtos.EventCreationRequest;
 import com.matimeline.eventmanager.application.dtos.ProductCreationRequest;
 import com.matimeline.eventmanager.application.dtos.ProductUpdateRequest;
+import com.matimeline.eventmanager.application.policy.PlanPolicy;
 import com.matimeline.eventmanager.domain.exceptions.CategoryNotFoundException;
+import com.matimeline.eventmanager.domain.exceptions.EventQuotaExceededException;
 import com.matimeline.eventmanager.domain.exceptions.ProductNotFoundException;
 import com.matimeline.eventmanager.domain.models.Category;
+import com.matimeline.eventmanager.domain.models.Event;
 import com.matimeline.eventmanager.domain.models.Product;
 import com.matimeline.eventmanager.domain.models.User;
 import com.matimeline.eventmanager.domain.ports.repositories.CategoryRepository;
@@ -50,6 +58,8 @@ class ProductServiceImplTest {
     private CategoryRepository categoryRepository;
     @Mock
     private UserRepository userRepository;
+    @Mock
+    private PlanPolicy planPolicy;
 
     private ProductServiceImpl service;
 
@@ -61,7 +71,10 @@ class ProductServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        service = new ProductServiceImpl(productRepository, eventRepository, categoryRepository, userRepository);
+        // #88 : politique permissive par défaut (cas existants, R9). Les cas de quota la surchargent.
+        lenient().when(planPolicy.canCreateEvent(any(), anyLong())).thenReturn(true);
+        service = new ProductServiceImpl(productRepository, eventRepository, categoryRepository, userRepository,
+                planPolicy);
         callerId = UUID.randomUUID();
         otherUserId = UUID.randomUUID();
         categoryId = UUID.randomUUID();
@@ -149,6 +162,40 @@ class ProductServiceImplTest {
         ArgumentCaptor<Product> captor = ArgumentCaptor.forClass(Product.class);
         verify(productRepository).save(captor.capture());
         assertThat(captor.getValue().hasEvents()).isFalse();
+    }
+
+    /**
+     * #88 (R3) : créer un produit avec des événements ne contourne pas le quota. La politique
+     * est interrogée pour le propriétaire du produit et son refus empêche toute la création :
+     * ni le produit ni aucun événement n'est enregistré.
+     */
+    @Test
+    void createProduct_withEvents_consultsPlanPolicy() {
+        Category ownCategory = new Category(categoryId, "Mienne", "#000", "desc", callerId);
+        when(userRepository.findDomainUserById(callerId)).thenReturn(Optional.of(caller));
+        when(categoryRepository.findDomainCategoryById(categoryId)).thenReturn(Optional.of(ownCategory));
+        // La politique refuse pour cet utilisateur.
+        when(planPolicy.canCreateEvent(eq(caller), anyLong())).thenReturn(false);
+
+        ProductCreationRequest request = creationRequest();
+        List<EventCreationRequest> events = new ArrayList<>();
+        for (int i = 0; i < 3; i++) {
+            EventCreationRequest e = new EventCreationRequest();
+            e.setName("event-" + i);
+            e.setType("single");
+            e.setDurationValue(1);
+            e.setDurationUnit("days");
+            e.setIsRecurring(false);
+            events.add(e);
+        }
+        request.setEvents(events);
+
+        assertThatThrownBy(() -> service.createProduct(request))
+                .isInstanceOf(EventQuotaExceededException.class);
+
+        verify(planPolicy, atLeastOnce()).canCreateEvent(eq(caller), anyLong());
+        verify(productRepository, never()).save(any(Product.class));
+        verify(eventRepository, never()).save(any(Event.class));
     }
 
     // -------------------------------------------------------------------------

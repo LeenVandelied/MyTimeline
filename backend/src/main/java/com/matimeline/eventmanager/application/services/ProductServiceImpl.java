@@ -10,9 +10,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.matimeline.eventmanager.application.policy.PlanPolicy;
 import com.matimeline.eventmanager.application.dtos.ProductCreationRequest;
 import com.matimeline.eventmanager.application.dtos.ProductUpdateRequest;
 import com.matimeline.eventmanager.domain.exceptions.CategoryNotFoundException;
+import com.matimeline.eventmanager.domain.exceptions.EventQuotaExceededException;
 import com.matimeline.eventmanager.domain.exceptions.ProductNotFoundException;
 import com.matimeline.eventmanager.domain.exceptions.UserNotFoundException;
 import com.matimeline.eventmanager.domain.models.Category;
@@ -32,15 +34,20 @@ public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
+    private final EventRepository eventRepository;
+    private final PlanPolicy planPolicy;
 
     @Autowired
-    public ProductServiceImpl(ProductRepository productRepository, 
-                          EventRepository eventRepository, 
-                          CategoryRepository categoryRepository, 
-                          UserRepository userRepository) {
+    public ProductServiceImpl(ProductRepository productRepository,
+                          EventRepository eventRepository,
+                          CategoryRepository categoryRepository,
+                          UserRepository userRepository,
+                          PlanPolicy planPolicy) {
         this.productRepository = productRepository;
+        this.eventRepository = eventRepository;
         this.categoryRepository = categoryRepository;
         this.userRepository = userRepository;
+        this.planPolicy = planPolicy;
     }
 
     @Override
@@ -52,6 +59,18 @@ public class ProductServiceImpl implements ProductService {
         // #50 (faille cross-tenant) : la catégorie cible doit appartenir à l'appelant
         // OU être système (ownerId == null). Sinon -> 404 (anti-énumération).
         Category category = resolveAssignableCategory(request.getCategory(), user.getId());
+
+        // #88 : quota vérifié avant toute persistance (après la catégorie). Le rang dans le lot s'ajoute au décompte
+        // possédé, pour qu'un lot ne dépasse pas le plafond. Un refus refuse toute la création.
+        int batchSize = Optional.ofNullable(request.getEvents()).orElseGet(List::of).size();
+        if (batchSize > 0) {
+            long owned = eventRepository.countActiveByUserId(user.getId());
+            for (int rank = 0; rank < batchSize; rank++) {
+                if (!planPolicy.canCreateEvent(user, owned + rank)) {
+                    throw new EventQuotaExceededException(user.getId());
+                }
+            }
+        }
 
         // PIT-S10-003 / convention create : id NULL à la création. ProductEntity porte
         // @Version + @GeneratedValue(AUTO) ; un id pré-assigné route persist() vers l'état

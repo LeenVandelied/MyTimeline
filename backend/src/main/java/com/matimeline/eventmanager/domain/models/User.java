@@ -16,6 +16,8 @@ public class User {
     // reconstruisent un User (PATCH profil, mots de passe, avatar) ne peuvent donc pas
     // l'effacer par omission.
     private ThemePreference themePreference;
+    // #88 : palier d'abonnement, FREE tant qu'aucun autre n'est fourni.
+    private UserTier tier = UserTier.FREE;
 
     public User(UUID id, String name, String username, String password, String role, String email) {
         this.id = id;
@@ -73,6 +75,17 @@ public class User {
         return themePreference;
     }
 
+    public UserTier getTier() {
+        return tier;
+    }
+
+    /** Copie de cet utilisateur portant {@code tier} (#88), sur le modèle de withThemePreference. */
+    public User withTier(UserTier tier) {
+        User copy = new User(id, name, username, password, role, email, avatar, themePreference);
+        copy.tier = tier != null ? tier : UserTier.FREE;
+        return copy;
+    }
+
     /**
      * Copie de cet utilisateur portant {@code themePreference} (#653). Sert à l'adaptateur de
      * persistance pour hydrater la préférence SANS étendre {@code UserMapper} (application ->
@@ -80,6 +93,8 @@ public class User {
      * modèle ne sert jamais à ÉCRIRE la préférence (cf. port {@code updateThemePreference}).
      */
     public User withThemePreference(ThemePreference themePreference) {
-        return new User(id, name, username, password, role, email, avatar, themePreference);
+        User copy = new User(id, name, username, password, role, email, avatar, themePreference);
+        copy.tier = tier;
+        return copy;
     }
 }

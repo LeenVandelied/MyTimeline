@@ -3,6 +3,7 @@ package com.matimeline.eventmanager.infrastructure.entities;
 import jakarta.persistence.*;
 
 import com.matimeline.eventmanager.domain.models.ThemePreference;
+import com.matimeline.eventmanager.domain.models.UserTier;
 import com.matimeline.eventmanager.infrastructure.entities.converters.ThemePreferenceConverter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -42,6 +43,12 @@ public class UserEntity {
     @Convert(converter = ThemePreferenceConverter.class)
     @Column(name = "theme_preference", length = 16)
     private ThemePreference themePreference;
+
+    // #88 (V17) : palier d'abonnement, FREE par défaut. ddl-auto=validate : nom et type
+    // (varchar) DOIVENT correspondre à V17.
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tier", nullable = false, length = 16)
+    private UserTier tier = UserTier.FREE;
 
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -117,6 +124,14 @@ public class UserEntity {
 
     public void setThemePreference(ThemePreference themePreference) {
         this.themePreference = themePreference;
+    }
+
+    public UserTier getTier() {
+        return tier;
+    }
+
+    public void setTier(UserTier tier) {
+        this.tier = tier;
     }
 
     public LocalDateTime getCreatedAt() {
