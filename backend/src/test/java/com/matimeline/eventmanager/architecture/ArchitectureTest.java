@@ -19,17 +19,17 @@ import org.junit.jupiter.api.Test;
  *
  * <p>Analyse bytecode PURE : aucun conteneur, aucun contexte Spring — ce test reste rapide en CI.
  *
- * <p>Chaque règle est enveloppée dans {@link FreezingArchRule} : les violations HISTORIQUES sont
- * gelées dans une baseline (src/test/resources/archunit_store/, versionnée). Le build ne casse que
- * sur une NOUVELLE violation ; corriger une violation existante la retire automatiquement du store
- * (dégel progressif au fil de l'hygiène hexagonale — cf. RECOMMAND_FOLLOWUP).
+ * <p>Les règles 1, 2 et 4 sont enveloppées dans {@link FreezingArchRule} : les violations
+ * HISTORIQUES sont gelées dans une baseline (src/test/resources/archunit_store/, versionnée). Le
+ * build ne casse que sur une NOUVELLE violation ; corriger une violation existante la retire
+ * automatiquement du store (dégel progressif au fil de l'hygiène hexagonale — cf.
+ * RECOMMAND_FOLLOWUP). Les règles 3, 5 et 6 sont strictes : aucune baseline, toute violation casse.
  *
  * <p>Violations connues actuellement gelées :
  * <ul>
  *   <li>{@code @Repository} (stéréotype Spring) posé sur les ports {@code domain.ports.repositories}.
  *   <li>Ports {@code domain.ports.services.*Service} important des DTOs {@code application.dtos}.
  *   <li>Mappers {@code application.mappers} dépendant des entités {@code infrastructure.entities}.
- *   <li>Controllers injectant les {@code *ServiceImpl} concrets au lieu des ports.
  * </ul>
  */
 class ArchitectureTest {
@@ -105,13 +105,17 @@ class ArchitectureTest {
      * Règle 3 — Les controllers dépendent des PORTS (interfaces), jamais des {@code *ServiceImpl}
      * concrets.
      *
-     * <p>Gèle {@code ProductController}/{@code UserController}/{@code AuthController} qui injectent
-     * les implémentations. Le bon exemple reste {@code CategoryController} (dépend des ports).
+     * <p>Stricte, non gelée : toute violation fait échouer le test, sans baseline. Le bon exemple
+     * reste {@code CategoryController} (dépend des ports).
      */
     @Test
     void controllersShouldNotDependOnConcreteServiceImplementations() {
-        ArchRule rule =
-                noClasses()
+        controllersShouldNotDependOnServiceImplRule().check(classesUnderTest);
+    }
+
+    /** Règle 3, exposée pour ControllerRuleStrictnessTest. */
+    static ArchRule controllersShouldNotDependOnServiceImplRule() {
+        return noClasses()
                         .that()
                         .resideInAPackage(ROOT + ".infrastructure.adapters.controllers..")
                         .should()
@@ -120,8 +124,6 @@ class ArchitectureTest {
                         .because(
                                 "un controller doit dépendre des ports domaine (interfaces), pas des"
                                         + " *ServiceImpl concrets");
-
-        FreezingArchRule.freeze(rule).check(classesUnderTest);
     }
 
     /**
