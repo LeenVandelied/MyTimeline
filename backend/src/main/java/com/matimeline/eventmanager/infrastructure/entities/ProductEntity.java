@@ -19,7 +19,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 @EntityListeners(AuditingEntityListener.class)
 // BR-PRO-006/BR-PRO-007 : soft delete. Archived products are hidden from every
 // Hibernate-generated read (findAll/findById, associations). The listing
-// (getProductsWithEvents -> findAll) and getProductById/archiveById lookups
+// (getProductsByUser -> findByUserId) and getProductById/archiveById lookups
 // (findById) therefore never surface archived rows. Reference GET events endpoint
 // resolves the product via findById first, so archived products' events are 404.
 @SQLRestriction("archived = false")
