@@ -6,6 +6,9 @@ import { ensureAuthenticated } from './support/auth'
 import { neutralizeDevToolingPointerEvents } from './support/dev-tooling'
 import { WCAG_AA_NON_TEXT, describeRendering, readStable, waitForFonts } from './support/contrast'
 import { getUserId, seedCategory, seedProduct, unique } from './support/products'
+import * as fs from 'node:fs'
+import * as path from 'node:path'
+import { EVENT_PALETTE } from '../src/lib/event-palette'
 
 /**
  * #325 (Sprint 70) — RENDU VISUEL DE LA MINI-FRISE D'APERÇU, CLAIR ET SOMBRE.
@@ -48,7 +51,7 @@ import { getUserId, seedCategory, seedProduct, unique } from './support/products
  * Les deux thèmes sont parcourus pour chacune.
  *
  * PRÉREQUIS RUNTIME : backend + front avec proxy `/api`
- * (`docs/memory/sprints/sprint-47/e2e-local-runbook.md`).
+ * (`docs/runbook/e2e-local.md`).
  */
 
 const SCHEMES = ['light', 'dark'] as const
@@ -431,3 +434,248 @@ for (const scheme of SCHEMES) {
     })
   })
 }
+
+/**
+ * #504 — TOUTE LA PALETTE, pas trois échantillons.
+ *
+ * Le bloc `SWATCHES` ci-dessus ne mesure que cobalt, citron et nuit. Les 12
+ * couleurs de la palette curatée (#577) sont ici mesurées sur les deux traits
+ * planchés par #497 (connecteur et contour du fantôme), en clair et en sombre.
+ *
+ * La liste n'est PAS recopiée : elle est lue dans `EVENT_PALETTE`. Une couleur
+ * ajoutée à la palette entre donc d'office dans la mesure (T2 le verrouille).
+ *
+ * ORACLE DE « INTACT / CORRIGÉ » (T4). Il ne vient pas du plancher de
+ * l'application : on calcule ICI le ratio de la couleur BRUTE contre le fond
+ * réellement lu sous le trait. Sous 3:1 le trait doit être peint dans une autre
+ * couleur, à partir de 3.1:1 il doit l'être tel quel. Entre les deux, la marge de
+ * `contrastFloor` rend l'attendu ambigu : la couleur n'est pas jugée.
+ */
+const PALETTE_UNDER_TEST = EVENT_PALETTE.map(({ role, hex }) => ({ name: role, hex }))
+
+/** En deçà : le trait brut est non conforme et DOIT être corrigé. */
+const RAW_MUST_BE_FLOORED_BELOW = WCAG_AA_NON_TEXT
+/** Au-delà : le trait brut est conforme et DOIT ressortir intact. */
+const RAW_MUST_BE_INTACT_FROM = 3.1
+
+interface TraitMeasure {
+  readonly name: string
+  readonly hex: string
+  readonly scheme: (typeof SCHEMES)[number]
+  readonly trait: 'connecteur pointillé' | 'contour du fantôme'
+  /** Ratio PEINT (couleur effective contre fond composité). */
+  readonly ratio: number
+  /** Ratio de la couleur brute contre le même fond. */
+  readonly rawRatio: number
+  /** Couleur peinte, `rgb(r, g, b)`. */
+  readonly painted: string
+}
+
+function relativeLuminance(rgb: readonly number[]): number {
+  const [r, g, b] = rgb.map((v) => {
+    const s = v / 255
+    return s <= 0.04045 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4)
+  })
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b
+}
+
+function hexChannels(hex: string): number[] {
+  return [1, 3, 5].map((i) => Number.parseInt(hex.slice(i, i + 2), 16))
+}
+
+/** Ratio WCAG de `hex` (alpha = `opacity`) composé sur le fond `backgroundHex`. */
+function rawContrast(hex: string, opacity: number, backgroundHex: string): number {
+  const bg = hexChannels(backgroundHex)
+  const ink = hexChannels(hex).map((v, i) => v * opacity + bg[i] * (1 - opacity))
+  const [hi, lo] = [relativeLuminance(ink), relativeLuminance(bg)].sort((a, b) => b - a)
+  return (hi + 0.05) / (lo + 0.05)
+}
+
+/** Lève avec couleur, thème et ratio mesuré pour chaque trait sous le plancher. */
+function assertTraitFloor(measures: readonly TraitMeasure[]): void {
+  const failing = measures.filter((m) => m.ratio < WCAG_AA_NON_TEXT)
+  if (failing.length === 0) return
+  throw new Error(
+    failing
+      .map(
+        (m) =>
+          `${m.trait} : couleur ${m.name} (${m.hex}), thème ${m.scheme}, ` +
+          `${m.ratio.toFixed(2)}:1 mesuré pour un plancher de ${WCAG_AA_NON_TEXT}:1`,
+      )
+      .join('\n'),
+  )
+}
+
+async function expectThemeApplied(page: Page, scheme: (typeof SCHEMES)[number]): Promise<void> {
+  const isDark = await page.evaluate(
+    () =>
+      document.documentElement.classList.contains('dark') ||
+      document.documentElement.getAttribute('data-theme') === 'dark',
+  )
+  expect(isDark, `le thème ${scheme} n'est pas réellement appliqué à <html>`).toBe(
+    scheme === 'dark',
+  )
+}
+
+/** Applique une couleur de la palette et mesure les deux traits planchés. */
+async function measurePaletteColour(
+  page: Page,
+  scheme: (typeof SCHEMES)[number],
+  colour: { readonly name: string; readonly hex: string },
+): Promise<TraitMeasure[]> {
+  await page.getByTestId('event-form-color-input').fill(colour.hex)
+  await page.mouse.move(0, 0)
+  // Attente d'ÉTAT (l'aperçu est débouncé à 150 ms) : la barre pleine est peinte
+  // par `--mt-evt`, elle prend la couleur saisie quand le rendu l'a reçue.
+  await expect
+    .poll(
+      async () =>
+        page
+          .getByTestId('event-form-preview-bar')
+          .evaluate((el) => getComputedStyle(el).backgroundColor),
+      { message: `l'aperçu n'a jamais pris la couleur ${colour.name} ${colour.hex}` },
+    )
+    .toBe(toRgbString(colour.hex))
+
+  const traits = [
+    { trait: 'connecteur pointillé', testid: 'event-form-preview-connector' },
+    { trait: 'contour du fantôme', testid: 'event-form-preview-ghost' },
+  ] as const
+  const measures: TraitMeasure[] = []
+  for (const { trait, testid } of traits) {
+    const locator = page.getByTestId(testid)
+    const r = await readStable(locator, 3_000, 'borderTopColor')
+    const painted = await locator.evaluate((el) => getComputedStyle(el).borderTopColor)
+    measures.push({
+      name: colour.name,
+      hex: colour.hex,
+      scheme,
+      trait,
+      ratio: r.ratio,
+      rawRatio: rawContrast(colour.hex, r.effectiveOpacity, r.background),
+      painted,
+    })
+  }
+  return measures
+}
+
+test.describe('#504 — palette complète, mini-frise d’aperçu', () => {
+  // T2 — pas de navigateur : on compare la liste mesurée à la SOURCE de la palette.
+  test('the measured colours are the palette entries, not a hand-copied list', () => {
+    const source = fs.readFileSync(
+      path.join(__dirname, '..', 'src', 'lib', 'event-palette.ts'),
+      'utf8',
+    )
+    const declared = [
+      ...source.matchAll(/role:\s*'(\w+)'\s*,\s*token:[^,]+,\s*hex:\s*'(#[0-9A-Fa-f]{6})'/g),
+    ].map((m) => ({ name: m[1], hex: m[2] }))
+    expect(declared.length, 'aucune entrée lue dans le module de palette').toBeGreaterThan(0)
+    expect(
+      PALETTE_UNDER_TEST,
+      'la liste mesurée diffère de la palette déclarée dans src/lib/event-palette.ts',
+    ).toEqual(declared)
+  })
+
+  // T3 — le rapport d'échec nomme la couleur, le thème et le ratio.
+  test('a colour under the floor is reported with its name, theme and ratio', () => {
+    const under: TraitMeasure = {
+      name: 'citron',
+      hex: '#A7B83A',
+      scheme: 'light',
+      trait: 'connecteur pointillé',
+      ratio: 2.2,
+      rawRatio: 2.2,
+      painted: 'rgb(167, 184, 58)',
+    }
+    const ok: TraitMeasure = { ...under, name: 'cobalt', ratio: 5.41 }
+    expect(() => assertTraitFloor([ok])).not.toThrow()
+    expect(() => assertTraitFloor([ok, under])).toThrow(/citron/)
+    expect(() => assertTraitFloor([under])).toThrow(/thème light/)
+    expect(() => assertTraitFloor([under])).toThrow(/2\.20:1/)
+    expect(() => assertTraitFloor([ok, under])).not.toThrow(/cobalt/)
+  })
+
+  for (const scheme of SCHEMES) {
+    test.describe(`thème ${scheme}`, () => {
+      test.use({ storageState: sessionState(PROD), viewport: DESKTOP_SHORT, colorScheme: scheme })
+
+      // T1 — les deux traits atteignent 3:1 pour chacune des couleurs.
+      test('every palette colour keeps connector and ghost outline at 3:1 or more in light and dark', async ({
+        page,
+      }) => {
+        test.setTimeout(180_000)
+        await openPreviewInRecurringState(page)
+        await expectThemeApplied(page, scheme)
+
+        const measures: TraitMeasure[] = []
+        for (const colour of PALETTE_UNDER_TEST) {
+          measures.push(...(await measurePaletteColour(page, scheme, colour)))
+        }
+        // Chaque rôle de la palette est mesuré pour le connecteur ET pour le fantôme.
+        for (const { role: name } of EVENT_PALETTE) {
+          for (const trait of ['connecteur pointillé', 'contour du fantôme']) {
+            expect(
+              measures.some((m) => m.name === name && m.trait === trait),
+              `${trait} : couleur ${name} non mesurée, thème ${scheme}`,
+            ).toBe(true)
+          }
+        }
+        assertTraitFloor(measures)
+      })
+
+      // T4 — conforme : peint tel quel. Trop clair ou trop sombre : corrigé.
+      // COUVERTURE PARTIELLE : en sombre, aucune couleur de la palette n'est sous 3:1,
+      // donc la branche « trop sombre corrigée » n'est PAS couverte par la palette
+      // ici. Elle l'est par le cas existant « nuit » (`SWATCHES`, `flooredIn: ['dark']`).
+      test('already compliant palette colours are painted unchanged and floored ones differ', async ({
+        page,
+      }) => {
+        test.setTimeout(180_000)
+        await openPreviewInRecurringState(page)
+        await expectThemeApplied(page, scheme)
+
+        const violations: string[] = []
+        const counts = { intact: 0, floored: 0, ambiguous: 0 }
+        for (const colour of PALETTE_UNDER_TEST) {
+          for (const m of await measurePaletteColour(page, scheme, colour)) {
+            const isRaw = m.painted === toRgbString(m.hex)
+            const where = `${m.trait} : couleur ${m.name} (${m.hex}), thème ${scheme}`
+            if (m.rawRatio < RAW_MUST_BE_FLOORED_BELOW) {
+              counts.floored += 1
+              if (isRaw) {
+                violations.push(
+                  `${where} : brute à ${m.rawRatio.toFixed(2)}:1, elle devait être corrigée ` +
+                    'mais est peinte telle quelle',
+                )
+              }
+            } else if (m.rawRatio >= RAW_MUST_BE_INTACT_FROM) {
+              counts.intact += 1
+              if (!isRaw) {
+                violations.push(
+                  `${where} : conforme brute (${m.rawRatio.toFixed(2)}:1), elle devait ressortir ` +
+                    `intacte mais est peinte ${m.painted}`,
+                )
+              }
+            } else {
+              counts.ambiguous += 1
+            }
+          }
+        }
+        test.info().annotations.push({ type: 'répartition', description: JSON.stringify(counts) })
+        // GARDE-FOU : sans lui, un ratio brut illisible (fond relu dans un format
+        // inattendu, donc NaN) classe tout en « ambigu » et le test passe sans rien juger.
+        expect(
+          counts.intact + counts.floored,
+          `thème ${scheme} : aucun trait jugé (${JSON.stringify(counts)}), le ratio de la ` +
+            'couleur brute est probablement illisible',
+        ).toBeGreaterThan(0)
+        expect(
+          counts.ambiguous,
+          `thème ${scheme} : trop de traits ambigus (${JSON.stringify(counts)}), ` +
+            'le test ne juge plus assez de couleurs',
+        ).toBeLessThanOrEqual(1)
+        expect(violations, violations.join('\n')).toEqual([])
+      })
+    })
+  }
+})

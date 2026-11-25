@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect, type Page, type Route } from '@playwright/test'
 import { openSettingsChapter } from './support/auth'
 import { SHARED, DEL } from './support/accounts'
 import { sessionState } from './support/session'
@@ -86,5 +86,169 @@ test.describe('Réglages — Compte : suppression', () => {
     // logout + redirection (401 avec setTimeout 1500ms dans l'intercepteur).
     await expect(page).toHaveURL(/\/(fr\/)?login/, { timeout: 15_000 })
     await expect(page.getByTestId('login-form')).toBeVisible()
+  })
+})
+
+/**
+ * #270 — export RGPD asynchrone (ZIP/CSV) : préparation, lien + expiration, lien
+ * expiré puis relance, échec du TRAVAIL d'export. Le suivi du travail est simulé par
+ * `page.route` (réponses conformes à `exportJobResponseSchema`) : le compte partagé
+ * n'a aucune ligne d'export et aucune requête d'export réelle ne part vers le backend.
+ * Les cas « coupure réseau » et « toutes les étapes » vivent dans
+ * `sprint-99-touch-targets.spec.ts`.
+ */
+const JOB_ID = '0192f0a0-0000-7000-8000-00000000c270'
+const DOWNLOAD_URL = `/api/export/download/${JOB_ID}?token=t270`
+
+interface FakeJob {
+  status: 'PENDING' | 'RUNNING' | 'COMPLETED' | 'FAILED'
+  downloadUrl?: string | null
+  expiresAt?: string | null
+}
+
+/**
+ * POST -> 202 PENDING ; GET job -> `job` ; GET download -> petit fichier. Toute autre
+ * requête d'export est avortée (jamais de repli vers le backend réel).
+ */
+async function withFakeAsyncExport(
+  page: Page,
+  job: FakeJob,
+): Promise<{ posted: string[]; downloads: string[] }> {
+  const seen = { posted: [] as string[], downloads: [] as string[] }
+  await page.route('**/api/export**', (route: Route) => {
+    const req = route.request()
+    const url = new URL(req.url())
+    const format = url.searchParams.get('format') ?? 'ZIP'
+    if (req.method() === 'POST' && url.pathname.endsWith('/api/export')) {
+      seen.posted.push(format)
+      return route.fulfill({
+        status: 202,
+        json: { jobId: JOB_ID, status: 'PENDING', format, downloadUrl: null, expiresAt: null },
+      })
+    }
+    if (req.method() === 'GET' && url.pathname === `/api/export/job/${JOB_ID}`) {
+      return route.fulfill({
+        status: 200,
+        json: {
+          jobId: JOB_ID,
+          format: 'ZIP',
+          downloadUrl: null,
+          expiresAt: null,
+          ...job,
+        },
+      })
+    }
+    if (req.method() === 'GET' && url.pathname === `/api/export/download/${JOB_ID}`) {
+      seen.downloads.push(`${url.pathname}${url.search}`)
+      return route.fulfill({
+        status: 200,
+        contentType: 'application/zip',
+        headers: { 'content-disposition': 'attachment; filename="mytimeline-export.zip"' },
+        body: 'PK',
+      })
+    }
+    return route.abort('failed')
+  })
+  return seen
+}
+
+/** Choisit un format asynchrone dans le Select de l'étape de confirmation. */
+async function pickFormat(page: Page, label: string): Promise<void> {
+  await page.getByTestId('export-format').click()
+  await page.getByRole('option', { name: label }).click()
+}
+
+test.describe('Réglages — Compte : export asynchrone (#270)', () => {
+  test.use({ storageState: sessionState(SHARED) })
+
+  test('export async (ZIP et CSV) : l\u2019étape préparation s\u2019affiche pendant le suivi du travail', async ({
+    page,
+  }) => {
+    const seen = await withFakeAsyncExport(page, { status: 'RUNNING' })
+
+    for (const [format, label] of [
+      ['ZIP', 'ZIP (archive complète)'],
+      ['CSV', 'CSV (tableur)'],
+    ] as const) {
+      await openSettingsChapter(page, 'account')
+      await expect(page.getByTestId('export-step-confirm')).toBeVisible()
+      await pickFormat(page, label)
+      await page.getByTestId('export-start').click()
+
+      // Le serveur répond « en cours » : préparation visible, aucun lien de téléchargement.
+      const preparing = page.getByTestId('export-step-preparing')
+      await expect(preparing).toBeVisible()
+      await expect(preparing).toContainText('en cours')
+      await expect(page.getByTestId('export-download')).toHaveCount(0)
+      await expect(page.getByTestId('export-ready-async')).toHaveCount(0)
+      expect(seen.posted).toContain(format)
+    }
+    expect(seen.posted).toEqual(['ZIP', 'CSV'])
+  })
+
+  test('export async terminé : lien de téléchargement et expiration affichés', async ({ page }) => {
+    const seen = await withFakeAsyncExport(page, {
+      status: 'COMPLETED',
+      downloadUrl: DOWNLOAD_URL,
+      expiresAt: '2099-01-01T00:00:00',
+    })
+    await openSettingsChapter(page, 'account')
+    await pickFormat(page, 'ZIP (archive complète)')
+    await page.getByTestId('export-start').click()
+
+    await expect(page.getByTestId('export-ready-async')).toBeVisible()
+
+    // La date d'expiration est affichée (instant serveur = UTC).
+    const expiry = page.getByTestId('export-expiry')
+    await expect(expiry).toBeVisible()
+    await expect(expiry.locator('time')).toHaveAttribute('datetime', '2099-01-01T00:00:00.000Z')
+    await expect(expiry).toContainText('2099')
+
+    // Le bouton de téléchargement vise l'adresse renvoyée par le serveur.
+    const download = page.getByTestId('export-download')
+    await expect(download).toBeVisible()
+    const request = page.waitForRequest((r) => r.url().includes('/api/export/download/'))
+    await download.click()
+    const sent = new URL((await request).url())
+    expect(`${sent.pathname}${sent.search}`).toBe(DOWNLOAD_URL)
+    expect(seen.downloads).toEqual([DOWNLOAD_URL])
+  })
+
+  test('lien expiré : relancer ramène à l\u2019étape de confirmation', async ({ page }) => {
+    await withFakeAsyncExport(page, {
+      status: 'COMPLETED',
+      downloadUrl: DOWNLOAD_URL,
+      expiresAt: '2020-01-01T00:00:00',
+    })
+    await openSettingsChapter(page, 'account')
+    await pickFormat(page, 'CSV (tableur)')
+    await page.getByTestId('export-start').click()
+
+    await expect(page.getByTestId('export-expired')).toBeVisible()
+    await expect(page.getByTestId('export-step-confirm')).toHaveCount(0)
+
+    await page.getByTestId('export-relaunch').click()
+    await expect(page.getByTestId('export-step-confirm')).toBeVisible()
+    await expect(page.getByTestId('export-start')).toBeVisible()
+    await expect(page.getByTestId('export-expired')).toHaveCount(0)
+  })
+
+  test('travail d\u2019export en échec : erreur puis réessayer ramène à la confirmation', async ({
+    page,
+  }) => {
+    await withFakeAsyncExport(page, { status: 'FAILED' })
+    await openSettingsChapter(page, 'account')
+    await pickFormat(page, 'ZIP (archive complète)')
+    await page.getByTestId('export-start').click()
+
+    // Échec du TRAVAIL (statut FAILED, réponse 200), pas une coupure réseau.
+    const error = page.getByTestId('export-step-error')
+    await expect(error).toBeVisible()
+    await expect(error).toContainText(/La préparation de l.export a échoué/)
+
+    await page.getByTestId('export-retry').click()
+    await expect(page.getByTestId('export-step-confirm')).toBeVisible()
+    await expect(page.getByTestId('export-start')).toBeVisible()
+    await expect(page.getByTestId('export-step-error')).toHaveCount(0)
   })
 })

@@ -10,21 +10,26 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.MessageDigest;
 import java.security.interfaces.RSAPrivateCrtKey;
-import java.security.interfaces.RSAPrivateKey;
+import java.security.interfaces.RSAKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.RSAPublicKeySpec;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
 import java.util.Base64;
 
 /**
  * Chargement du matériel de signature RSA utilisé par {@link JwtService} (#323, RS256).
  *
- * <p><strong>Une seule variable d'environnement, pas deux.</strong> Seule la clé PRIVÉE est
- * configurée côté backend ({@code JWT_PRIVATE_KEY}) ; la clé publique en est DÉRIVÉE
- * ({@link RSAPrivateCrtKey} porte modulus + exposant public). Configurer les deux ouvrirait
- * une classe de panne entière — une paire dépareillée signerait des jetons que l'application
- * refuserait elle-même de relire, sans aucun message clair.
+ * <p><strong>La clé courante n'est configurée que par sa clé privée.</strong> Seule la clé
+ * PRIVÉE courante est configurée côté backend ({@code JWT_PRIVATE_KEY}) ; sa clé publique en
+ * est DÉRIVÉE ({@link RSAPrivateCrtKey} porte modulus + exposant public). Configurer les deux
+ * ouvrirait une classe de panne entière — une paire dépareillée signerait des jetons que
+ * l'application refuserait elle-même de relire, sans aucun message clair.
+ *
+ * <p>S'y ajoute, facultative, la clé PUBLIQUE précédente ({@code JWT_PREVIOUS_PUBLIC_KEY},
+ * format X.509 SPKI, cf. {@link #publicFromSpki}) le temps d'une rotation (#489) : elle ne
+ * sert qu'à vérifier les jetons émis avant la rotation, jamais à signer.
  *
  * <p>Format attendu : clé privée <strong>PKCS#8</strong> encodée en Base64 (le corps d'un
  * PEM {@code -----BEGIN PRIVATE KEY-----}). L'armure PEM et les retours à la ligne sont
@@ -75,6 +80,19 @@ final class RsaKeyMaterial {
         PublicKey publicKey = factory.generatePublic(
                 new RSAPublicKeySpec(crt.getModulus(), crt.getPublicExponent()));
         return new KeyPair(publicKey, privateKey);
+    }
+
+    /**
+     * Parse une clé PUBLIQUE RSA au format X.509 SPKI (Base64, armure PEM tolérée), utilisée
+     * pour la clé de vérification PRÉCÉDENTE lors d'une rotation (#489).
+     *
+     * @throws GeneralSecurityException matériel non décodable, non RSA ou modulus trop court
+     */
+    static PublicKey publicFromSpki(String material) throws GeneralSecurityException {
+        PublicKey key = KeyFactory.getInstance("RSA")
+                .generatePublic(new X509EncodedKeySpec(decode(material)));
+        assertLongEnough(asRsa(key));
+        return key;
     }
 
     /**
@@ -148,10 +166,11 @@ final class RsaKeyMaterial {
         if (publicKey instanceof RSAPublicKey rsa) {
             return rsa;
         }
-        // Inatteignable tant que le matériel provient de fromPkcs8/generateEphemeral (RSA par
-        // construction) — la garde existe pour que l'ajout d'un autre algorithme échoue ici,
-        // bruyamment, plutôt que de publier un JWKS silencieusement faux.
-        throw new GeneralSecurityException("clé publique non RSA : publication JWKS impossible");
+        // Inatteignable tant que le matériel provient de fromPkcs8, generateEphemeral ou
+        // publicFromSpki (KeyFactory "RSA" dans les trois cas) — la garde existe pour que
+        // l'ajout d'un autre algorithme échoue ici, bruyamment, plutôt que de publier un JWKS
+        // silencieusement faux ou d'accepter une clé précédente non RSA.
+        throw new GeneralSecurityException("clé publique non RSA");
     }
 
     /** Encode un entier positif en Base64url non padé, sans l'octet de signe de BigInteger. */
@@ -162,7 +181,7 @@ final class RsaKeyMaterial {
         return Base64.getUrlEncoder().withoutPadding().encodeToString(unsigned);
     }
 
-    private static void assertLongEnough(RSAPrivateKey key) throws GeneralSecurityException {
+    private static void assertLongEnough(RSAKey key) throws GeneralSecurityException {
         int bits = key.getModulus().bitLength();
         if (bits < MIN_MODULUS_BITS) {
             throw new GeneralSecurityException(

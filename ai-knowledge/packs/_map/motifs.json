@@ -1,0 +1,33 @@
+{
+ "authorization": {
+  "regex": "org\\.springframework\\.security|io\\.jsonwebtoken",
+  "path_hint": "infrastructure/security",
+  "rationale": "Le contrôle d'accès passe par org.springframework.security (39 fichiers) et io.jsonwebtoken (8 fichiers), concentrés dans infrastructure/security.",
+  "sample_hits": 47,
+  "sample_hits_measured": 43
+ },
+ "state-machine": {
+  "regex": "@Enumerated|ExportJobStatus",
+  "path_hint": "",
+  "rationale": "Les états sont portés par @Enumerated (4 fichiers) et ExportJobStatus (1 fichier), signal faible limité au cycle de vie des exports.",
+  "sample_hits": 5,
+  "sample_hits_measured": 14,
+  "below_threshold": "14 fichiers < seuil 20"
+ },
+ "integrations": {
+  "regex": "Adapter|Renderer|java\\.util\\.zip|java\\.nio\\.file|axios",
+  "path_hint": "infrastructure/adapters",
+  "rationale": "Les échanges externes (stockage, e-mail, fichiers exportés, appels HTTP du front) passent par les classes Renderer (5) et le client axios (18 imports).",
+  "sample_hits": 30,
+  "sample_hits_measured": 73
+ },
+ "batch": {
+  "regex": "@Scheduled|@Async|org\\.springframework\\.scheduling|Scheduler",
+  "path_hint": "",
+  "rationale": "Les traitements planifiés et asynchrones reposent sur @Scheduled (5 fichiers) et org.springframework.scheduling (6 fichiers), pour les purges d'exports et de jetons.",
+  "sample_hits": 18,
+  "sample_hits_measured": 11,
+  "below_threshold": "11 fichiers < seuil 20"
+ },
+ "rejected": {}
+}

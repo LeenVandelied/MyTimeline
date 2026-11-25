@@ -1,0 +1,44 @@
+{
+  "id": "A5",
+  "verdict": "confirmed",
+  "evidence": [
+    {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java",
+      "line_start": 230,
+      "line_end": 230,
+      "quote": "userService.createUser(newUser);"
+    },
+    {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java",
+      "line_start": 364,
+      "line_end": 364,
+      "quote": "non consommé) -> met à jour le hash BCrypt + marque consommé -> 200. Token"
+    },
+    {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java",
+      "line_start": 370,
+      "line_end": 370,
+      "quote": "passwordResetService.resetPassword(request.getToken(), request.getNewPassword());"
+    },
+    {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/app/[locale]/register/page.tsx",
+      "line_start": 51,
+      "line_end": 51,
+      "quote": "await register(data.name, data.username, data.email, data.password)"
+    },
+    {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/app/[locale]/register/page.tsx",
+      "line_start": 53,
+      "line_end": 53,
+      "quote": "router.push(`/${locale}/login`)"
+    },
+    {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/contexts/AuthContext.tsx",
+      "line_start": 65,
+      "line_end": 65,
+      "quote": "(le compte reste `null`). `register` n'ouvre pas de session (le backend ne"
+    }
+  ],
+  "statement": "La page register appelle la création de compte puis redirige vers /login sans ouvrir de session, et AuthController crée le User via userService.createUser tandis que reset-password est délégué à PasswordResetService sans appel au SessionService.",
+  "proposed_decision": "user"
+}

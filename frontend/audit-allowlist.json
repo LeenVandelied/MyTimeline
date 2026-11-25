@@ -1,0 +1,13 @@
+{
+  "_doc": "Exceptions de l'étape BLOQUANTE `npm audit --omit=dev` (job CI security). Une entrée = un avis high/critical SANS version corrigée publiée, jugé non exploitable ici. Voir frontend/README.md § « Exceptions d'audit npm ». Retirer l'entrée dès qu'un correctif sort : la gate échoue une fois `reviewBy` dépassé.",
+  "advisories": [
+    {
+      "id": "GHSA-fc5q-39xc-vjpf",
+      "package": "picomatch",
+      "path": "next-intl > @parcel/watcher > picomatch",
+      "reason": "ReDoS sur des extglobs répétés. Aucune version corrigée publiée (avis mis à jour le 2026-11-17 : <= 4.0.7, first_patched_version null). picomatch n'est atteint que par le watcher de l'extracteur next-intl, qui ne reçoit que les globs de la config du dépôt, jamais une entrée utilisateur. `npm audit fix` rétrograde @parcel/watcher en 2.5.1 et aggrave l'audit (2 -> 3).",
+      "addedOn": "2026-11-18",
+      "reviewBy": "2026-12-18"
+    }
+  ]
+}

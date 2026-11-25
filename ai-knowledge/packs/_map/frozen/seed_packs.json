@@ -1,0 +1,9 @@
+{
+ "Category": "category",
+ "Event": "event",
+ "ExportJob": "export",
+ "PasswordResetToken": "user",
+ "Product": "product",
+ "Session": "session",
+ "User": "user"
+}

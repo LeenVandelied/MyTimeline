@@ -38,7 +38,7 @@ import {
  * Aucune authentification : la landing est publique. Aucun libellé en dur : la
  * suite tourne en fr/en/es/de, l'ancrage se fait sur les `data-testid` (#354).
  *
- * Lancement local : cf. `docs/memory/sprints/sprint-47/e2e-local-runbook.md`
+ * Lancement local : cf. `docs/runbook/e2e-local.md`
  * (frontend sur :3100, `PLAYWRIGHT_BASE_URL`, `--workers=1`).
  */
 

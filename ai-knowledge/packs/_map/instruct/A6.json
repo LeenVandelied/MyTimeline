@@ -1,0 +1,20 @@
+{
+ "id": "A6",
+ "question": "Radical dashboard et pages settings : quel pack ?",
+ "decision": "état courant",
+ "rule": "R3 dashboard désigne plusieurs packs possibles (event, product), radical omis des alias, fichiers laissés non rattachés",
+ "confidence": "low",
+ "seeds": [
+  "Event",
+  "Product",
+  "User"
+ ],
+ "evidence": [
+  "frontend-app:[locale]/(app)/dashboard/page.tsx",
+  "frontend-app:[locale]/(app)/settings/page.tsx"
+ ],
+ "falsified_if": "un ticket montre que le dashboard n'agrège que les événements ou que les produits",
+ "status": "open",
+ "opened": "2026-11-19",
+ "touched_by": []
+}

@@ -1,0 +1,21 @@
+{
+ "Event": [
+  "timeline",
+  "recurrence"
+ ],
+ "User": [
+  "login",
+  "register",
+  "password",
+  "forgot-password",
+  "reset-password",
+  "auth",
+  "role",
+  "theme",
+  "preference"
+ ],
+ "Product": [
+  "products",
+  "productId"
+ ]
+}

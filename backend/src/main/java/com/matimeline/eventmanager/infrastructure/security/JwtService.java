@@ -1,6 +1,7 @@
 package com.matimeline.eventmanager.infrastructure.security;
 
 import io.jsonwebtoken.*;
+import io.jsonwebtoken.security.SignatureException;
 
 import jakarta.annotation.PostConstruct;
 
@@ -12,9 +13,12 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.security.GeneralSecurityException;
+import java.security.Key;
 import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -39,8 +43,21 @@ public class JwtService {
     @Value("${jwt.private-key:}")
     private String privateKeyMaterial;
 
+    /**
+     * Clé PUBLIQUE précédente (SPKI Base64), facultative, pour la rotation sans déconnexion (#489).
+     * Vide = pas de rotation. Procédure : y mettre l'ancienne clé publique en changeant
+     * {@code JWT_PRIVATE_KEY}, puis la retirer une fois les anciens jetons expirés. Elle ne
+     * sert qu'à VÉRIFIER : la signature utilise toujours la clé courante.
+     */
+    @Value("${jwt.previous-public-key:}")
+    private String previousPublicKeyMaterial;
+
     private PrivateKey signingKey;
     private PublicKey verificationKey;
+    private String verificationKid;
+    // Clé précédente et son kid : null si absente ou identique à la courante.
+    private PublicKey previousKey;
+    private String previousKid;
 
     /**
      * Garde-fou de boot (fail-fast) : charge et valide le matériel de signature AU DÉMARRAGE
@@ -62,6 +79,16 @@ public class JwtService {
                 : configuredKeyPair();
         this.signingKey = keyPair.getPrivate();
         this.verificationKey = keyPair.getPublic();
+        this.verificationKid = kidOf(verificationKey);
+        this.previousKey = loadPreviousKey();
+        this.previousKid = previousKey == null ? null : kidOf(previousKey);
+        if (previousKey != null) {
+            log.warn("Rotation de la clé de connexion en cours : clé PUBLIQUE précédente chargée "
+                     + "(kid={}). Les jetons qu'elle a signés restent acceptés jusqu'à leur "
+                     + "expiration. Retirer jwt.previous-public-key (JWT_PREVIOUS_PUBLIC_KEY) "
+                     + "une fois écoulée la durée de validité des jetons ({} h) après la rotation.",
+                     previousKid, TOKEN_VALIDITY_MS / (1000L * 60 * 60));
+        }
 
         // ⚠ Journalisée dans LES DEUX cas, pas seulement sur le chemin éphémère.
         // #358 — ce log n'est PLUS une étape de configuration : la clé publique est désormais
@@ -92,6 +119,32 @@ public class JwtService {
         }
     }
 
+    /**
+     * Charge la clé précédente. ⚠ Ni la valeur ni le message de l'exception sous-jacente ne
+     * sont repris (aucune cause enveloppée).
+     */
+    private PublicKey loadPreviousKey() {
+        if (previousPublicKeyMaterial == null || previousPublicKeyMaterial.isBlank()) {
+            return null;
+        }
+        PublicKey previous;
+        try {
+            previous = RsaKeyMaterial.publicFromSpki(previousPublicKeyMaterial);
+        } catch (Exception e) {
+            throw new IllegalStateException(
+                    "jwt.previous-public-key invalide : attendu une clé PUBLIQUE RSA X.509 SPKI "
+                    + "en Base64 (corps d'un PEM '-----BEGIN PUBLIC KEY-----', armure et sauts de "
+                    + "ligne tolérés), de modulus >= " + RsaKeyMaterial.MIN_MODULUS_BITS
+                    + " bits. Cause : " + e.getClass().getSimpleName()
+                    + " (valeur et détail volontairement non journalisés).");
+        }
+        if (Arrays.equals(previous.getEncoded(), verificationKey.getEncoded())) {
+            log.info("jwt.previous-public-key identique à la clé courante : ignorée.");
+            return null;
+        }
+        return previous;
+    }
+
     private KeyPair ephemeralKeyPair() {
         KeyPair keyPair = RsaKeyMaterial.generateEphemeral();
         log.warn("jwt.private-key (JWT_PRIVATE_KEY) non configurée : paire RS256 ÉPHÉMÈRE générée "
@@ -113,15 +166,15 @@ public class JwtService {
     }
 
     /**
-     * Document JWK Set publiant la clé PUBLIQUE de vérification courante (#358).
+     * Document JWK Set publiant les clés PUBLIQUES de vérification (#358, #489) : toujours la
+     * clé courante, en première position, puis la clé précédente si
+     * {@code jwt.previous-public-key} est renseignée (rotation en cours). Une ou deux entrées.
      *
-     * <p>C'est la SOURCE DE VÉRITÉ de la clé pour le middleware Next : celui-ci la découvre via
-     * {@code /.well-known/jwks.json} au lieu de la lire dans une variable d'environnement
-     * recopiée à la main. La classe de panne « clé publique dépareillée » disparaît par
-     * construction — la valeur publiée est DÉRIVÉE, à chaque appel, du matériel qui signe
-     * réellement les jetons, et non d'une seconde configuration qui pourrait diverger.
-     *
-     * <p>Une seule entrée : {@code JWT_PRIVATE_KEY} est unique (cf. {@code RsaKeyMaterial}).
+     * <p>C'est la SOURCE DE VÉRITÉ des clés pour le middleware Next : celui-ci les découvre via
+     * {@code /.well-known/jwks.json} au lieu de les lire dans une variable d'environnement
+     * recopiée à la main. La clé courante est DÉRIVÉE, à chaque appel, du matériel qui signe
+     * réellement les jetons. La clé précédente ne sert qu'à vérifier les jetons émis avant la
+     * rotation, jusqu'à leur expiration.
      *
      * @throws IllegalStateException matériel de clé non encodable en JWK — inatteignable avec
      *                               une paire RSA, remonté en 500 plutôt que servi tronqué :
@@ -129,17 +182,24 @@ public class JwtService {
      */
     public JwksResponse getPublicJwks() {
         try {
-            String modulus = RsaKeyMaterial.modulusBase64Url(verificationKey);
-            String exponent = RsaKeyMaterial.publicExponentBase64Url(verificationKey);
-            return new JwksResponse(List.of(new JwkResponse(
-                    "RSA", "sig", Jwts.SIG.RS256.getId(),
-                    RsaKeyMaterial.jwkThumbprint(modulus, exponent),
-                    modulus, exponent)));
+            List<JwkResponse> keys = new ArrayList<>();
+            keys.add(toJwk(verificationKey));
+            if (previousKey != null) {
+                keys.add(toJwk(previousKey));
+            }
+            return new JwksResponse(List.copyOf(keys));
         } catch (GeneralSecurityException e) {
             throw new IllegalStateException(
                     "Publication JWKS impossible : " + e.getClass().getSimpleName()
                     + " (détail volontairement non journalisé).", e);
         }
+    }
+
+    private static JwkResponse toJwk(PublicKey key) throws GeneralSecurityException {
+        String modulus = RsaKeyMaterial.modulusBase64Url(key);
+        String exponent = RsaKeyMaterial.publicExponentBase64Url(key);
+        return new JwkResponse("RSA", "sig", Jwts.SIG.RS256.getId(),
+                RsaKeyMaterial.jwkThumbprint(modulus, exponent), modulus, exponent);
     }
 
     public String generateToken(String username) {
@@ -221,10 +281,7 @@ public class JwtService {
         if (token == null || token.isBlank()) {
             throw new MalformedJwtException("Jeton JWT absent ou blanc.");
         }
-        Jws<Claims> jws = Jwts.parser()
-                .verifyWith(verificationKey)
-                .build()
-                .parseSignedClaims(token);
+        Jws<Claims> jws = parseWithCandidateKeys(token);
 
         String algorithm = jws.getHeader().getAlgorithm();
         if (!Jwts.SIG.RS256.getId().equals(algorithm)) {
@@ -233,6 +290,96 @@ public class JwtService {
                     + " est accepté (cohérence avec la vérification du middleware Edge, #323).");
         }
         return jws.getPayload();
+    }
+
+    /**
+     * #489 : la clé de vérification se choisit sur l'en-tête PARSÉ par jjwt. Jeton avec kid :
+     * uniquement la clé (courante ou précédente) de ce kid, kid inconnu refusé. Jeton sans kid
+     * (ceux qu'émet le backend) : courante, puis précédente si la signature ne correspond pas.
+     * Un jeton vérifié par la clé précédente subit en plus {@link #assertBoundedPreviousKeyToken}.
+     */
+    private Jws<Claims> parseWithCandidateKeys(String token) {
+        KidLocator current = new KidLocator(verificationKey);
+        Jws<Claims> jws;
+        PublicKey usedKey;
+        try {
+            jws = Jwts.parser().keyLocator(current).build().parseSignedClaims(token);
+            usedKey = current.chosen;
+        } catch (SignatureException e) {
+            // Un kid désigne une seule clé : pas de seconde chance.
+            if (previousKey == null || current.designatedByKid) {
+                throw e;
+            }
+            KidLocator previous = new KidLocator(previousKey);
+            jws = Jwts.parser().keyLocator(previous).build().parseSignedClaims(token);
+            usedKey = previous.chosen;
+        }
+        if (usedKey == previousKey) {
+            assertBoundedPreviousKeyToken(jws);
+        }
+        return jws;
+    }
+
+    /**
+     * Défense en profondeur (#489) : un jeton de la clé précédente doit ressembler à ceux que le
+     * backend émettait, soit un jti (révocable par session) et une durée exp - iat bornée par
+     * {@link #TOKEN_VALIDITY_MS}. Sans cela, un jeton à très longue durée signé par l'ancienne
+     * clé survivrait à toute la fenêtre de rotation.
+     */
+    private static void assertBoundedPreviousKeyToken(Jws<Claims> jws) {
+        Claims claims = jws.getPayload();
+        if (claims.getId() == null || claims.getId().isBlank()) {
+            throw new MissingClaimException(jws.getHeader(), claims, Claims.ID, claims.getId(),
+                    "Jeton de la clé précédente sans jti : refusé.");
+        }
+        Date issuedAt = claims.getIssuedAt();
+        Date expiration = claims.getExpiration();
+        if (issuedAt == null || expiration == null) {
+            String missing = issuedAt == null ? Claims.ISSUED_AT : Claims.EXPIRATION;
+            throw new MissingClaimException(jws.getHeader(), claims, missing, null,
+                    "Jeton de la clé précédente sans " + missing + " : refusé.");
+        }
+        if (expiration.getTime() - issuedAt.getTime() > TOKEN_VALIDITY_MS) {
+            throw new IncorrectClaimException(jws.getHeader(), claims, Claims.EXPIRATION, expiration,
+                    "Jeton de la clé précédente de durée supérieure à la validité des jetons : refusé.");
+        }
+    }
+
+    /** Clé de vérification d'après le kid de l'en-tête JWS ; retient la clé choisie pour l'appelant. */
+    private final class KidLocator extends LocatorAdapter<Key> {
+
+        private final PublicKey keyWithoutKid;
+        private PublicKey chosen;
+        private boolean designatedByKid;
+
+        private KidLocator(PublicKey keyWithoutKid) {
+            this.keyWithoutKid = keyWithoutKid;
+        }
+
+        @Override
+        protected Key locate(JwsHeader header) {
+            String kid = header.getKeyId();
+            designatedByKid = kid != null;
+            if (kid == null) {
+                chosen = keyWithoutKid;
+            } else if (kid.equals(verificationKid)) {
+                chosen = verificationKey;
+            } else if (previousKey != null && kid.equals(previousKid)) {
+                chosen = previousKey;
+            } else {
+                throw new SignatureException("Clé de signature inconnue (kid non reconnu).");
+            }
+            return chosen;
+        }
+    }
+
+    private static String kidOf(PublicKey key) {
+        try {
+            return RsaKeyMaterial.jwkThumbprint(
+                    RsaKeyMaterial.modulusBase64Url(key), RsaKeyMaterial.publicExponentBase64Url(key));
+        } catch (GeneralSecurityException e) {
+            throw new IllegalStateException("Empreinte de clé impossible : " + e.getClass().getSimpleName());
+        }
     }
 
     public boolean validateToken(String token, UserDetails userDetails) {

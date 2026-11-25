@@ -1,0 +1,3569 @@
+{
+ "pack": "backend-core",
+ "schema": 1,
+ "curated_at": "2026-11-20T12:45:00Z",
+ "curator": "curate/1",
+ "base_sha256": "39bfcc06120267da616569dbbc5fb4625c3a364c7ee046233a677a2ac05aa654",
+ "pack_sha256_before": "39c844775f3bb73f3190e85731e507aa1d6d1f11c38089d8c1cbebb4de3318c6",
+ "pack_sha256_after": "1455422b40c29ff5d1b9f4a88aab346c6df16e161c1ed51b161d0ed1e6d47738",
+ "criteria_sha256": "48e0e20f086c5b11deecfecdc547ba1d6115faee1597a5aaf682f6c699e92423",
+ "models": {
+  "measure": "haiku",
+  "refute": "sonnet"
+ },
+ "base_fingerprint": "25f44a89e54e4b2fde8775ca41e34886c048c60adccc1939aea23b5565fc353a",
+ "bytes": {
+  "before": 10176,
+  "after": 10222,
+  "by_section": {
+   "activate": {
+    "before": 204,
+    "after": 204
+   },
+   "lexicon": {
+    "before": 78,
+    "after": 78
+   },
+   "rules": {
+    "before": 2506,
+    "after": 2552
+   },
+   "structure": {
+    "before": 82,
+    "after": 82
+   },
+   "surface": {
+    "before": 96,
+    "after": 96
+   },
+   "files": {
+    "before": 1737,
+    "after": 1737
+   },
+   "relations": {
+    "before": 493,
+    "after": 493
+   },
+   "tests": {
+    "before": 1445,
+    "after": 1445
+   },
+   "questions": {
+    "before": 597,
+    "after": 597
+   },
+   "alerts": {
+    "before": 1820,
+    "after": 1820
+   },
+   "coverage": {
+    "before": 718,
+    "after": 718
+   }
+  }
+ },
+ "units": [
+  {
+   "id": "backend-core:rules:1",
+   "section": "rules",
+   "rank": 1,
+   "text": "- Les ports de service du domaine prennent et renvoient des commandes et modèles du domaine, comme EventService, sauf ProductService qui prend encore les DTO ProductCreationRequest et ProductUpdateRequest [#3649497eed73f9f7-1]",
+   "fact_text": "Les ports de service du domaine prennent et renvoient des commandes et modèles du domaine, comme EventService, sauf ProductService qui prend encore les DTO ProductCreationRequest et ProductUpdateRequest",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "backend-core/3649497eed73f9f7-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/domain/ports/services/EventService.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/domain/ports/services/EventService.java",
+     11,
+     23,
+     "7bc9aa932ad6222074f2be7f5551657a49e096f3b2b962af80af4ca7c8f090d6"
+    ]
+   ],
+   "code_sha256": "7bc9aa932ad6222074f2be7f5551657a49e096f3b2b962af80af4ca7c8f090d6",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.4,
+      "values": null,
+      "terms": 0.375,
+      "n": {
+       "identifiers": 5,
+       "values": 0,
+       "terms": 8
+      }
+     },
+     "restatement": "Le port EventService déclare updateEvent(UUID id, EventUpdateCommand command), qui retourne un Event. Le Javadoc explique que les signatures reçoivent des commandes domaine (EventCreateCommand, EventUpdateCommand) et non plus les DTOs applicatifs, pour respecter la règle de dépendance hexagonale. Le contrôleur d'infrastructure doit donc traduire le DTO HTTP en commande avant l'appel. Les méthodes createEvent, save et findDomainEventByProductId sont aussi déclarées dans l'interface.",
+     "confidence": "high"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 7,
+     "within_budget": false,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/domain/ports/services/ProductService.java",
+     "file_ok": false,
+     "overlap": {
+      "identifiers": 0.8,
+      "values": null,
+      "terms": 0.75,
+      "n": {
+       "identifiers": 5,
+       "values": 0,
+       "terms": 8
+      }
+     },
+     "job": "backend-core:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_CategoryRequest.java:1"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Seul ProductService importe application.dtos (ProductCreationRequest, ProductUpdateRequest, lignes 7-8 et 12, 20), les autres ports du domaine n'en dépendent pas. La ligne est exacte.",
+      "EventService prend EventCreateCommand et EventUpdateCommand, et ProductService importe ProductCreationRequest et ProductUpdateRequest (lignes 7, 8, 12, 20) : la ligne est exacte.",
+      "Seul ProductService importe des DTO applicatifs (lignes 7-8). Les autres ports du domaine n'en importent pas."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "scope",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 18,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "application\\.dtos dans backend/.../domain",
+         "found": "Seul ProductService en importe. EventCreateCommand et EventUpdateCommand n'y figurent que dans des commentaires."
+        },
+        {
+         "tool": "Grep",
+         "target": "ProductCreationRequest et interfaces dans domain/ports/services",
+         "found": "ProductService.createProduct(ProductCreationRequest) et updateProduct(UUID, ProductUpdateRequest)."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "Request|DTO|dtos dans domain/ports/services",
+         "found": "Seul ProductService importe des DTO applicatifs, les autres mentions sont des commentaires."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "application.dtos dans backend/.../domain",
+         "found": "Seul ProductService importe ProductCreationRequest et ProductUpdateRequest. Les autres occurrences sont des commentaires dans EventCreateCommand et EventUpdateCommand."
+        },
+        {
+         "tool": "Grep",
+         "target": "Product(Creation|Update)Request dans domain/ports/services",
+         "found": "createProduct(ProductCreationRequest) et updateProduct(UUID, ProductUpdateRequest)."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     }
+    }
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "placed": {
+    "pack_line": 30,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "backend-core:rules:2",
+   "section": "rules",
+   "rank": 2,
+   "text": "- Les tests d'intégration étendent la classe de base PostgreSQL, avec profil test et conteneur singleton partagé. [#784c974edb4c82c0-3] [#9b3b36b46f6db347-2]",
+   "fact_text": "Les tests d'intégration étendent la classe de base PostgreSQL, avec profil test et conteneur singleton partagé",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "backend-core/784c974edb4c82c0-3",
+    "backend-core/9b3b36b46f6db347-2"
+   ],
+   "files": [
+    "backend:src/test/java/com/matimeline/eventmanager/support/AbstractPostgresIntegrationTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/support/AbstractPostgresIntegrationTest.java",
+     30,
+     31,
+     "e54a34e81a5bbbda95d5e5a883a32ab91467fe398faac60d9a6d2c43cd8f7443"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/support/AbstractPostgresIntegrationTest.java",
+     33,
+     38,
+     "5898a578dd04647e89ef202b107dd965840d90e6d5bf6f1cc0bb2aa272da5834"
+    ]
+   ],
+   "code_sha256": "0fd083330584c316635a72f1202d3b9a32955a5efa6b8dd3cfae33a98f9a8ab0",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
+      "terms": 0.667,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 9
+      }
+     },
+     "restatement": "AbstractPostgresIntegrationTest est une classe abstraite de base pour les tests d'intégration. Elle active le profil Spring \"test\" et déclare un PostgreSQLContainer statique sur l'image postgres:16-alpine, démarré une seule fois dans un bloc static. Les tests héritants partagent donc ce conteneur.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 3,
+     "within_budget": true,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/test/java/com/matimeline/eventmanager/support/AbstractPostgresIntegrationTest.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
+      "terms": 0.556,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 9
+      }
+     },
+     "job": "backend-core:rediscover:backend_src_test_java_com_matimeline_eventmanager_infrastructure_security_RateLimitingDisabledIntegrationTest.java:2",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "AbstractPostgresIntegrationTest porte @ActiveProfiles(\"test\") et démarre un PostgreSQLContainer statique (L30-38). Les 35 fichiers @SpringBootTest étendent tous la base, ForgotPasswordAsyncTest par nom qualifié.",
+      "AbstractPostgresIntegrationTest porte @ActiveProfiles(\"test\") (L30) et un conteneur POSTGRES statique démarré une fois (L33-38). 35 fichiers de test ont un @SpringBootTest et tous étendent la base : ForgotPasswordAsyncTest l'étend par nom qualifié (L55). Aucun contre-exemple.",
+      "AbstractPostgresIntegrationTest porte @ActiveProfiles(\"test\") (L30) et un conteneur POSTGRES statique démarré une fois (L33-38). Les @SpringBootTest trouvés l'étendent. Le seul écart apparent, ProdConfigStartupLoggerTest, ne mentionne @SpringBootTest que dans sa javadoc."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "scope",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 12,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "@SpringBootTest dans backend/src/test",
+         "found": "35 classes"
+        },
+        {
+         "tool": "Grep",
+         "target": "extends AbstractPostgresIntegrationTest",
+         "found": "34 fichiers"
+        },
+        {
+         "tool": "Grep",
+         "target": "ForgotPasswordAsyncTest.java",
+         "found": "étend la base via nom qualifié (L55), donc 35/35"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "^@SpringBootTest|^@DataJpaTest dans backend/src/test/java",
+         "found": "35 fichiers"
+        },
+        {
+         "tool": "Grep",
+         "target": "extends AbstractPostgresIntegrationTest dans backend/src/test/java",
+         "found": "34 fichiers, il manque ForgotPasswordAsyncTest"
+        },
+        {
+         "tool": "Grep",
+         "target": "ForgotPasswordAsyncTest.java : @SpringBootTest et class",
+         "found": "étend la base par son nom qualifié complet (L55)"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "@SpringBootTest|@DataJpaTest|AbstractPostgresIntegrationTest dans backend/src/test",
+         "found": "Les classes @SpringBootTest listées étendent AbstractPostgresIntegrationTest. Les tests unitaires purs et les tests de profil (AuthControllerProdProfileCookieTest, BrevoHealthIndicatorTest) l'évitent "
+        },
+        {
+         "tool": "Grep",
+         "target": "@SpringBootTest[^{]*?class \\w+ { (multiligne) : classes sans extends",
+         "found": "Un seul fichier, ProdConfigStartupLoggerTest, dont la mention de @SpringBootTest est dans la javadoc (elle dit éviter @SpringBootTest). Ce n'est pas un contre-exemple."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "placed": {
+    "pack_line": 31,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "backend-core:rules:3",
+   "section": "rules",
+   "rank": 3,
+   "text": "- Selon la javadoc, ces tests n'utilisent pas H2, Flyway rejoue les migrations depuis V1 et Hibernate valide le schéma. [#b103523302cefc64-1]",
+   "fact_text": "Selon la javadoc, ces tests n'utilisent pas H2, Flyway rejoue les migrations depuis V1 et Hibernate valide le schéma",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "backend-core/b103523302cefc64-1"
+   ],
+   "files": [
+    "backend:src/test/java/com/matimeline/eventmanager/support/AbstractPostgresIntegrationTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/support/AbstractPostgresIntegrationTest.java",
+     25,
+     28,
+     "4c7e053a2b5fd7dc3eee13c8e3c7df3b8cbf812c9abc79195fa48f170f9491f8"
+    ]
+   ],
+   "code_sha256": "4c7e053a2b5fd7dc3eee13c8e3c7df3b8cbf812c9abc79195fa48f170f9491f8",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [
+     {
+      "id": "backend-core/b103523302cefc64-1",
+      "verdict": "unverifiable"
+     }
+    ],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "La javadoc L25-28 dit exactement cela (pas de H2, Flyway depuis V1, validate), et la ligne est attribuée à la javadoc. La règle générale est vérifiée par les 35 classes @SpringBootTest, qui héritent toutes de la base.",
+      "La ligne rapporte la javadoc (L25-28) : pas de H2, Flyway rejoue les migrations, Hibernate valide. Elle ne prête pas ces garanties au code, et elle est fidèle au commentaire. La même recherche sur les tests montre que tous passent par la base commune.",
+      "La ligne rapporte la javadoc (L25-28), qui dit bien Flyway depuis V1, ddl-auto=validate et pas de H2. La ligne est formulée « selon la javadoc ». Aucun contre-exemple de portée trouvé."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "scope",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 12,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "@SpringBootTest dans backend/src/test",
+         "found": "35 classes, toutes héritent de la base"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "classes @SpringBootTest sans la base commune",
+         "found": "aucune, voir la ligne précédente"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "@SpringBootTest|AbstractPostgresIntegrationTest dans backend/src/test",
+         "found": "Les tests d'intégration passent par la base Postgres Testcontainers. Aucun H2 observé."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "placed": {
+    "pack_line": 32,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "backend-core:rules:4",
+   "section": "rules",
+   "rank": 4,
+   "text": "- Sans jwt.private-key, le service génère une paire RS256 éphémère. [#891330b9b1514b8d-1]",
+   "fact_text": "Sans jwt.private-key, le service génère une paire RS256 éphémère",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "backend-core/891330b9b1514b8d-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtService.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtService.java",
+     35,
+     40,
+     "1b0755ff0d4fcbae8fa6b0ebc5d995e353b25ea7a8a85c36bf6ce7e6a1c1fe79"
+    ]
+   ],
+   "code_sha256": "1b0755ff0d4fcbae8fa6b0ebc5d995e353b25ea7a8a85c36bf6ce7e6a1c1fe79",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
+      "terms": 0.6,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 5
+      }
+     },
+     "restatement": "Le champ privateKeyMaterial est lu depuis la propriété jwt.private-key (variable JWT_PRIVATE_KEY) avec une valeur vide par défaut. Le commentaire indique qu'une valeur vide déclenche une paire éphémère générée au boot, réservée au dev et aux tests, et que le profil prod exige une valeur explicite.",
+     "confidence": "medium",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 4,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtService.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.8,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 5
+      }
+     },
+     "job": "backend-core:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_CategoryRequest.java:1",
+     "rank_in_lot": 1,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 34,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "backend-core:rules:5",
+   "section": "rules",
+   "rank": 5,
+   "text": "- Une clé mal formée lève IllegalStateException sans reprendre la valeur configurée. [#1e299e939b17e348-1]",
+   "fact_text": "Une clé mal formée lève IllegalStateException sans reprendre la valeur configurée",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "backend-core/1e299e939b17e348-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtService.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtService.java",
+     79,
+     93,
+     "cff17811f1f4c4408264a3f2bb4f51f70b5eb3a2264c9e79a5105abf5d788bdd"
+    ]
+   ],
+   "code_sha256": "cff17811f1f4c4408264a3f2bb4f51f70b5eb3a2264c9e79a5105abf5d788bdd",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.4,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 5
+      }
+     },
+     "restatement": "configuredKeyPair charge la clé RSA via RsaKeyMaterial.fromPkcs8 et, en cas d'erreur, lève une IllegalStateException avec un message d'aide (modulus minimal, commande openssl). La cause est journalisée seulement par nom de classe, sans la valeur de la clé.",
+     "confidence": "high",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 4,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtService.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.6,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 5
+      }
+     },
+     "job": "backend-core:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_CategoryRequest.java:1",
+     "rank_in_lot": 2,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 35,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "backend-core:rules:6",
+   "section": "rules",
+   "rank": 6,
+   "text": "- currentUser ne lève jamais d'exception et renvoie Optional vide pour un contexte anonyme, l'appelant choisit le statut HTTP. [#9db0c0fc888c044b-1] [#9db0c0fc888c044b-2]",
+   "fact_text": "currentUser ne lève jamais d'exception et renvoie Optional vide pour un contexte anonyme, l'appelant choisit le statut HTTP",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "backend-core/9db0c0fc888c044b-1",
+    "backend-core/9db0c0fc888c044b-2"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/CallerResolver.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/CallerResolver.java",
+     59,
+     75,
+     "603aa601e228ff106204c5b9b97b98420732b387ad6821c0440b63976c22ba35"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/CallerResolver.java",
+     64,
+     68,
+     "6ba2e85044d1b486e460d59a9d6cb5b947b3197a4220f71c8c8eda467a33a1ab"
+    ]
+   ],
+   "code_sha256": "67e3b9d3847b62079898dc7eeab72129f8b6632b40fbceea129d536167c7479e",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": null,
+      "terms": 0.2,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 10
+      }
+     },
+     "restatement": "CallerResolver.currentUser renvoie Optional.empty() si l'authentification est absente, non authentifiée, de type AnonymousAuthenticationToken ou si le nom est vide, sans s'appuyer sur un compte nommé anonymousUser. Sinon il délègue à userService.findDomainUserByUsername, et un compte purgé donne Optional.empty(), ce qui produit un 401 côté contrôleur.",
+     "confidence": "high",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 5,
+     "within_budget": true,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/CallerResolver.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": null,
+      "terms": 0.4,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 10
+      }
+     },
+     "job": "backend-core:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_CategoryRequest.java:1",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "CallerResolver.currentUser (L59-75) renvoie Optional.empty() pour auth nulle, non authentifiée, anonyme ou username vide, sans lever d'exception ni choisir de statut. Aucun contre-exemple lu : l'unique chemin non protégé est la délégation à userService.findDomainUserByUsername, simple requête JPA qui renvoie un Optional.",
+      "CallerResolver.currentUser (L59-75) renvoie Optional.empty() pour contexte anonyme et tous les contrôleurs grep-és testent callerOpt, aucun contre-exemple lu.",
+      "CallerResolver.currentUser (L59-75) renvoie Optional.empty() pour contexte nul, non authentifié, anonyme ou username vide, sans lever d'exception propre. Aucun contre-exemple lu dans la portée."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "scope",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "findDomainUserByUsername dans backend/src/main",
+         "found": "UserServiceImpl délègue à UserRepositoryJpaImpl, qui utilise getResultList et renvoie un Optional. Aucun appelant de CallerResolver ne contredit la règle."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "currentUser\\(\\) dans backend/src/main",
+         "found": "Appelé par Export, Product, Event, Category, Session, User controllers, toujours via Optional callerOpt."
+        }
+       ],
+       [
+        {
+         "tool": "Read",
+         "target": "CallerResolver.java",
+         "found": "tous les chemins de sortie renvoient Optional.empty() ou délèguent à userService.findDomainUserByUsername"
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "words:jamais",
+   "placed": {
+    "pack_line": 36,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "backend-core:rules:7",
+   "section": "rules",
+   "rank": 7,
+   "text": "- Le soft delete par SQLRestriction masque les archivés à toute lecture Hibernate, donc purge et restauration passent par du SQL natif qui filtre archived et user_id, voir `backend:src/main/java/com/matimeline/eventmanager/domain/ports/repositories/ProductRepository.java:70-104`. [#1cde148ce35ea68c-1] [#b6b8faa3d2da2ac9-1] [#f56e4e358ba66393-1]",
+   "fact_text": "Le soft delete par SQLRestriction masque les archivés à toute lecture Hibernate, donc purge et restauration passent par du SQL natif qui filtre archived et user_id, voir ProductRepository.java",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "backend-core/1cde148ce35ea68c-1",
+    "backend-core/b6b8faa3d2da2ac9-1",
+    "backend-core/f56e4e358ba66393-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/entities/ProductEntity.java",
+    "backend:src/main/java/com/matimeline/eventmanager/domain/ports/repositories/ProductRepository.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/entities/ProductEntity.java",
+     20,
+     25,
+     "2420ec09fec70ccfce6330039854f3b38f4ed0d3645dca4b49f3609816f24c06"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/domain/ports/repositories/ProductRepository.java",
+     70,
+     81,
+     "ad2b64798435af9a9591c998ba753fa6b2023c8f05bb7ff98f47d64719768f17"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/domain/ports/repositories/ProductRepository.java",
+     83,
+     104,
+     "285c93f217f6763d8d497b8dc5ebb0640ffd1aa938552f2a4f4209d221a0dbdc"
+    ]
+   ],
+   "code_sha256": "8a402bf3b9d555e7fb023fe447b37b528a7e9acb1f70335873933e9039db9a7d",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.25,
+      "values": null,
+      "terms": 0.583,
+      "n": {
+       "identifiers": 4,
+       "values": 0,
+       "terms": 12
+      }
+     },
+     "restatement": "ProductEntity porte @SQLRestriction(\"archived = false\") : Hibernate masque les produits archivés dans toutes ses lectures (findAll, findById, associations), donc les événements d'un produit archivé répondent 404. Le commentaire lie ce comportement au soft delete BR-PRO-006/007.",
+     "confidence": "high",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 11,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/ProductEntity.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": null,
+      "terms": 0.583,
+      "n": {
+       "identifiers": 4,
+       "values": 0,
+       "terms": 12
+      }
+     },
+     "job": "backend-core:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_CategoryRequest.java:1",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "ProductRepositoryJpaImpl utilise du SQL natif filtrant archived et user_id pour la restauration et les archivés (L211-254). Aucun contre-exemple lu.",
+      "ProductEntity porte @SQLRestriction (L25). Les purges et restaurations passent par du SQL natif dans ProductRepositoryJpaImpl (deleteAllByUserId L204, restore L245-252). Le port documente le filtre user_id et archived L83-104. Aucune autre entité n'a de @SQLRestriction.",
+      "@SQLRestriction(\"archived = false\") est confirmé sur ProductEntity. Les méthodes natives de ProductRepositoryJpaImpl (#78, #711) contournent le filtre. La purge filtre user_id sans filtre archived, car elle inclut les archivés. C'est un raccourci, pas une contradiction."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "scope",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "nativeQuery|archived dans adapters/repositories",
+         "found": "Les natifs filtrent user_id et archived (L219, L254) ; la purge contourne aussi le filtre (L198)."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "@SQLRestriction|createNativeQuery dans backend/src/main/java",
+         "found": "Un seul @SQLRestriction (ProductEntity), contourné par des requêtes natives dans ProductRepositoryJpaImpl."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "@SQLRestriction dans infrastructure",
+         "found": "Une seule entité en porte, ProductEntity. ProductRepositoryJpaImpl a des requêtes natives volontaires (lignes 131, 197, 209, 245)."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "words:toute",
+   "placed": {
+    "pack_line": 38,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "backend-core:rules:8",
+   "section": "rules",
+   "rank": 8,
+   "text": "- Les entités métier (utilisateur, produit, événement, catégorie, jeton de réinitialisation) portent un UUID généré, des dates d'audit et une version, mais les entités de session et de job d'export n'ont pas de version [#cbc477c31e33275c-1] [#be53be0d97652fd1-1] [#46119bdcfa9f904b-1]",
+   "fact_text": "Les entités métier (utilisateur, produit, événement, catégorie, jeton de réinitialisation) portent un UUID généré, des dates d'audit et une version, mais les entités de session et de job d'export n'ont pas de version",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "backend-core/cbc477c31e33275c-1",
+    "backend-core/be53be0d97652fd1-1",
+    "backend-core/46119bdcfa9f904b-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/entities/CategoryEntity.java",
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/entities/EventEntity.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/entities/CategoryEntity.java",
+     17,
+     19,
+     "51038947ec7457c9ec0f77f13ef10e1317ec309127b55be85b883628899871e7"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/entities/CategoryEntity.java",
+     32,
+     42,
+     "3aae54845c713244eca88ceb5e083be6ab34e37b57c9c7cd5ac132f59784f128"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/entities/EventEntity.java",
+     43,
+     45,
+     "910f57ac36bc3e729c265d826d31138391d469ef6d5f871dfbc9d8d6b904c1ec"
+    ]
+   ],
+   "code_sha256": "2ed0a1dea9be8b721361595e11f28a8a75aa16250aac2f0d51df5c5042f7498c",
+   "verdict": "admit",
+   "reason": "restricted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
+      "terms": 0.2,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 15
+      }
+     },
+     "restatement": "L'entité CategoryEntity utilise un @Version sur le champ version (non nul), ce qui active le verrouillage optimiste JPA. Les autres règles montrées sont : id généré par GenerationType.AUTO, createdAt annoté @CreatedDate, non nul et non modifiable (updatable = false), updatedAt annoté @LastModifiedDate et non nul. L'extrait montre aussi EventEntity.recurrenceUnit, un enum persisté en chaîne via @Enumerated(EnumType.STRING) dans la colonne recurrence_unit.",
+     "confidence": "high"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 9,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/entities/PasswordResetTokenEntity.java",
+     "file_ok": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.333,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 15
+      }
+     },
+     "job": "backend-core:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_CategoryRequest.java:1"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "La ligne est globalement vraie : version présente sur Category, Event, User, Product et le jeton, absente sur la session et le job d'export. Un écart de détail existe : l'id du jeton de réinitialisation est assigné par l'application et non généré, mais la ligne n'est pas fausse sur l'essentiel.",
+      "PasswordResetTokenEntity n'a pas de @GeneratedValue, son id est assigné par l'application avant persist, alors que la ligne dit que les entités métier dont le jeton portent un UUID généré.",
+      "Les entités User, Product, Event et Category ont @GeneratedValue, @CreatedDate et @Version. PasswordResetTokenEntity a @Version mais son UUID est assigné par l'application, ce qui reste cohérent avec UUID généré. SessionEntity et ExportJobEntity n'ont pas de @Version."
+     ],
+     "evidence": [
+      "",
+      "// Pas de @GeneratedValue : l'id UUID est assigné applicativement avant persist",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "scope",
+      "outcome": "counterexample",
+      "votes": 3,
+      "supporters": 2,
+      "budget": 18,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "@Version, @GeneratedValue, @CreatedDate dans infrastructure/entities",
+         "found": "@Version sur PasswordResetToken, Category, Event, User et Product. Aucun sur SessionEntity ni sur ExportJobEntity. PasswordResetTokenEntity et SessionEntity n'ont pas de @GeneratedValue."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "@Version|^public class|@GeneratedValue dans infrastructure/entities",
+         "found": "@Version sur User, Event, Category, Product, PasswordResetToken ; absent de Session et ExportJob ; @GeneratedValue absent de PasswordResetTokenEntity et SessionEntity."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "@Version|@GeneratedValue|@CreatedDate dans infrastructure/entities",
+         "found": "@Version sur User, Event, Product, Category et PasswordResetToken. Aucune sur Session ni ExportJob, dont les commentaires le confirment."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0,
+      "evidence": [
+       {
+        "file": "backend:src/main/java/com/matimeline/eventmanager/infrastructure/entities/PasswordResetTokenEntity.java",
+        "line_start": 28,
+        "line_end": 28,
+        "evidence": "// Pas de @GeneratedValue : l'id UUID est assigné applicativement avant persist",
+        "evidence_check": "exact"
+       }
+      ],
+      "restated": "Les entités utilisateur, produit, événement et catégorie ont un UUID généré, des dates d'audit et une version. Le jeton de réinitialisation a une version mais son UUID est assigné par l'application. Les entités de session et de job d'export n'ont pas de version."
+     }
+    }
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "counter_examples": [
+    {
+     "file": "backend:src/main/java/com/matimeline/eventmanager/infrastructure/entities/PasswordResetTokenEntity.java",
+     "line_start": 28,
+     "line_end": 28,
+     "evidence": "// Pas de @GeneratedValue : l'id UUID est assigné applicativement avant persist",
+     "evidence_check": "exact"
+    }
+   ],
+   "restated": "Les entités utilisateur, produit, événement et catégorie ont un UUID généré, des dates d'audit et une version. Le jeton de réinitialisation a une version mais son UUID est assigné par l'application. Les entités de session et de job d'export n'ont pas de version.",
+   "placed": {
+    "pack_line": 39,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "backend-core:rules:9",
+   "section": "rules",
+   "rank": 9,
+   "text": "- Un champ écrit par un chemin dédié est exclu de save et mis à jour par une méthode de port propre. [#c3d2971633861966-1]",
+   "fact_text": "Un champ écrit par un chemin dédié est exclu de save et mis à jour par une méthode de port propre",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "backend-core/c3d2971633861966-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/domain/ports/repositories/UserRepository.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/domain/ports/repositories/UserRepository.java",
+     15,
+     29,
+     "153719598b2584c862e3a59089ba1157d3317b4a4ddd580d62442de5dfd3e3f2"
+    ]
+   ],
+   "code_sha256": "153719598b2584c862e3a59089ba1157d3317b4a4ddd580d62442de5dfd3e3f2",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 0.2,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 10
+      }
+     },
+     "restatement": "UserRepository.save ne recopie pas themePreference lors d'une mise à jour, et la préférence de thème ne s'écrit que via updateThemePreference(UUID, ThemePreference), qui renvoie un Optional vide si le compte n'existe plus. Un User reconstruit sans préférence n'efface donc pas la valeur en base.",
+     "confidence": "high",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 14,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/domain/models/User.java",
+     "file_ok": false,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 0.4,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 10
+      }
+     },
+     "job": "backend-core:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_CategoryRequest.java:1",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "UserRepository.save n'écrit pas themePreference en mise à jour et updateThemePreference est la méthode de port dédiée (L15-29). Aucun contre-exemple trouvé.",
+      "UserRepository.save ne recopie pas themePreference en mise à jour, et updateThemePreference est la méthode de port dédiée (UserRepository.java L15-29, UserRepositoryJpaImpl L113). Aucun autre champ ne suit ce patron, mais la ligne ne le prétend pas.",
+      "UserRepository.save exclut themePreference en mise à jour, qui passe par updateThemePreference (lignes 15-29). Aucun contre-exemple lu pour ce motif."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "scope",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Read",
+         "target": "extrait UserRepository L15-29",
+         "found": "Le patron est confirmé pour themePreference."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "PAS recopi|n'écrit que|seul chemin|updatable = false",
+         "found": "Seul themePreference suit le patron, plus des created_at updatable=false qui sont un autre mécanisme."
+        }
+       ],
+       [
+        {
+         "tool": "Read",
+         "target": "extrait UserRepository L15-29",
+         "found": "Le motif est confirmé pour themePreference."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "placed": {
+    "pack_line": 40,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "backend-core:rules:10",
+   "section": "rules",
+   "rank": 10,
+   "text": "- Une mise à jour partielle utilise null pour inchangé, donc @Pattern au lieu de @NotBlank et un booléen clearColor pour effacer la couleur. [#e5c0483643898852-1] [#00242f1143423b22-1]",
+   "fact_text": "Une mise à jour partielle utilise null pour inchangé, donc @Pattern au lieu de @NotBlank et un booléen clearColor pour effacer la couleur",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "backend-core/e5c0483643898852-1",
+    "backend-core/00242f1143423b22-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/application/dtos/ProductUpdateRequest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/dtos/ProductUpdateRequest.java",
+     30,
+     31,
+     "702bafcc2d89267e0a3a00e49d3a40093ca68d67c0350b1a9ce0f49ee1015f58"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/dtos/ProductUpdateRequest.java",
+     39,
+     39,
+     "0d0eec9353f2535a762ac06164e3042dccf0cc8c27742cc222765c1c1800a81e"
+    ]
+   ],
+   "code_sha256": "e177c39a50fd5e49a7be3c3697bb2e5976cde3a98ce1e8b3610057258d3c21f2",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": null,
+      "terms": 0.091,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 11
+      }
+     },
+     "restatement": "Dans ProductUpdateRequest, le champ name est contraint à une longueur de 1 à 100 caractères et à la regex .*\\S.*, qui impose au moins un caractère non blanc. Le booléen clearColor, lui, est seulement déclaré, sans logique visible dans l'extrait.",
+     "confidence": "high",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 7,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/application/dtos/ProductUpdateRequest.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.636,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 11
+      }
+     },
+     "job": "backend-core:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_CategoryRequest.java:1",
+     "rank_in_lot": 3,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 42,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "backend-core:rules:11",
+   "section": "rules",
+   "rank": 11,
+   "text": "- Les DTO de requête ont des getters et setters écrits à la main, et la plupart des réponses sont Lombok sans setter avec une fabrique fromDomain, les autres étant des records ou sans fabrique [#573a55d2f0e0cdad-4] [#301896c782a8b85e-1] [#9f00547b4339b55b-1]",
+   "fact_text": "Les DTO de requête ont des getters et setters écrits à la main, et la plupart des réponses sont Lombok sans setter avec une fabrique fromDomain, les autres étant des records ou sans fabrique",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "backend-core/573a55d2f0e0cdad-4",
+    "backend-core/301896c782a8b85e-1",
+    "backend-core/9f00547b4339b55b-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/application/dtos/CategoryRequest.java",
+    "backend:src/main/java/com/matimeline/eventmanager/application/dtos/AuthResponse.java",
+    "backend:src/main/java/com/matimeline/eventmanager/application/dtos/EventResponse.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/dtos/CategoryRequest.java",
+     16,
+     20,
+     "10cb053863fde415c051b24da3dabf8ba245fe7047490565fc1dc38bedcace05"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/dtos/AuthResponse.java",
+     6,
+     10,
+     "09afd2ca50706bec5c64559c3fa276cfff9f1e1542ac8bd88a0bfcf9a107f141"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/dtos/EventResponse.java",
+     49,
+     49,
+     "88aa1e74608276b84bd0a91c488eed9699d4629c01e307adb5fe03907b259c68"
+    ]
+   ],
+   "code_sha256": "64b92bc5d23b32b9a0048bbad4f3739bb5ece108bb27d5245bd5de558c907d73",
+   "verdict": "admit",
+   "reason": "restricted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.2,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 10
+      }
+     },
+     "restatement": "Le DTO CategoryRequest impose que le champ name soit non vide (@NotBlank) et ne dépasse pas 255 caractères (@Size(max = 255)). L'extrait montre aussi AuthResponse, une classe Lombok (@Getter, @AllArgsConstructor) portant un seul champ token, et la seule signature de EventResponse.fromDomain(Event), sans corps de méthode visible.",
+     "confidence": "high"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 10,
+     "within_budget": false,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/application/dtos/CategoryRequest.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 1.0,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 10
+      }
+     },
+     "job": "backend-core:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_CategoryRequest.java:1",
+     "rank_in_lot": 1
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Le motif des réponses Lombok avec fromDomain et des autres en records est confirmé. Un DTO de requête est un record (UpdatePreferencesRequest), donc « les DTO de requête » à la main est un peu trop général, mais la ligne ne s'en trouve pas fausse sur l'essentiel.",
+      "Les requêtes classes ont des setters manuels et les réponses Lombok @Getter ont fromDomain, mais UpdatePreferencesRequest (ligne 18) est un record sans setter, donc la généralité sur les DTO de requête a un contre-exemple.",
+      "Le motif tient en gros, mais UpdatePreferencesRequest est un record de requête, donc les DTO de requête n'ont pas tous des accesseurs écrits à la main."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "scope",
+      "outcome": "counterexample",
+      "votes": 3,
+      "supporters": 3,
+      "budget": 18,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "classes, records et @Getter/@Setter/@Data dans application/dtos",
+         "found": "Huit réponses Lombok @Getter, trois records dont SessionResponse, JwkResponse et JwksResponse. Les requêtes sont des classes sans annotation de classe, sauf UpdatePreferencesRequest qui est un record."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "public class|record|@Getter|public void set dans application/dtos",
+         "found": "Requêtes en classes avec setters manuels, réponses @Getter, records JwksResponse, JwkResponse, SessionResponse et UpdatePreferencesRequest."
+        },
+        {
+         "tool": "Grep",
+         "target": "fromDomain dans application/dtos",
+         "found": "fromDomain présent sur Category, ArchivedProduct, ExportJob, Session, User, Event, Product ; absent de AuthResponse."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "declarations de classes/records et annotations Lombok dans application/dtos",
+         "found": "Les requêtes sont des classes sans Lombok, sauf UpdatePreferencesRequest qui est un record. Les réponses sont @Getter, avec des records (SessionResponse, JwkResponse, JwksResponse)."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0,
+      "evidence": [
+       {
+        "file": "backend:src/main/java/com/matimeline/eventmanager/application/dtos/UpdatePreferencesRequest.java",
+        "line_start": 18,
+        "line_end": 18,
+        "evidence": "public record UpdatePreferencesRequest(",
+        "evidence_check": "exact"
+       }
+      ],
+      "restated": "La plupart des DTO de requête sont des classes avec getters et setters écrits à la main, sauf UpdatePreferencesRequest qui est un record, et la plupart des réponses sont Lombok avec fromDomain."
+     }
+    }
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "counter_examples": [
+    {
+     "file": "backend:src/main/java/com/matimeline/eventmanager/application/dtos/UpdatePreferencesRequest.java",
+     "line_start": 18,
+     "line_end": 18,
+     "evidence": "public record UpdatePreferencesRequest(",
+     "evidence_check": "exact"
+    }
+   ],
+   "restated": "La plupart des DTO de requête sont des classes avec getters et setters écrits à la main, sauf UpdatePreferencesRequest qui est un record, et la plupart des réponses sont Lombok avec fromDomain.",
+   "placed": {
+    "pack_line": 43,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "backend-core:rules:12",
+   "section": "rules",
+   "rank": 12,
+   "text": "- Selon la javadoc, StrongPassword se pose sur création et modification de mot de passe, jamais sur AuthRequest. [#a8f3d3adead0954d-2]",
+   "fact_text": "Selon la javadoc, StrongPassword se pose sur création et modification de mot de passe, jamais sur AuthRequest",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "backend-core/a8f3d3adead0954d-2"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/application/validation/StrongPassword.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/validation/StrongPassword.java",
+     22,
+     27,
+     "5e72ffd9e58892362b4a3278c79f89afedd6e64118b8dad3e1c8ea3a987f405c"
+    ]
+   ],
+   "code_sha256": "5e72ffd9e58892362b4a3278c79f89afedd6e64118b8dad3e1c8ea3a987f405c",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [
+     {
+      "id": "backend-core/a8f3d3adead0954d-2",
+      "verdict": "unverifiable"
+     }
+    ],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "StrongPassword n'est posé que sur ChangePasswordRequest L21, RegisterRequest L24 et ResetPasswordRequest L21, jamais sur AuthRequest. La règle est conforme au code.",
+      "@StrongPassword n'est posée que sur ChangePasswordRequest, ResetPasswordRequest et RegisterRequest, jamais sur AuthRequest.",
+      "@StrongPassword n'est posé que sur RegisterRequest, ResetPasswordRequest et ChangePasswordRequest, jamais sur AuthRequest, conformément à la javadoc."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "scope",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "@StrongPassword dans backend/src/main/java",
+         "found": "3 usages : Change, Register et Reset, aucun dans AuthRequest"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "@StrongPassword dans backend/src/main/java",
+         "found": "3 usages: ChangePasswordRequest, ResetPasswordRequest, RegisterRequest"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "@StrongPassword dans backend/src/main/java",
+         "found": "Trois occurrences : ResetPasswordRequest L21, RegisterRequest L24, ChangePasswordRequest L21."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "words:jamais",
+   "placed": {
+    "pack_line": 44,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "backend-core:rules:13",
+   "section": "rules",
+   "rank": 13,
+   "text": "- Selon la javadoc, l'identité de l'appelant vient du JWT, le username du corps ne sert qu'à confirmer. [#d6d5911c6a9ed32f-1]",
+   "fact_text": "Selon la javadoc, l'identité de l'appelant vient du JWT, le username du corps ne sert qu'à confirmer",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "backend-core/d6d5911c6a9ed32f-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/application/dtos/DeleteAccountRequest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/dtos/DeleteAccountRequest.java",
+     8,
+     14,
+     "e498448a5f72b3e9cf0fa3d7f6aa70898871b29f17f10ce56957aae3f25179d8"
+    ]
+   ],
+   "code_sha256": "e498448a5f72b3e9cf0fa3d7f6aa70898871b29f17f10ce56957aae3f25179d8",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [
+     {
+      "id": "backend-core/d6d5911c6a9ed32f-1",
+      "verdict": "unverifiable"
+     }
+    ],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "La ligne dit bien « selon la javadoc ». DeleteAccountRequest L8-14 affirme que la source d'identité est le JWT et que le champ username sert à confirmer.",
+      "La ligne dit « selon la javadoc » et DeleteAccountRequest L8-14 dit bien que la source d'identité est le JWT et que username sert à confirmer.",
+      "La javadoc de DeleteAccountRequest (L8-14) dit bien que la source d'identité est le JWT et que le champ username sert de confirmation. La ligne dit « selon la javadoc »."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "scope",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Read",
+         "target": "extrait DeleteAccountRequest",
+         "found": "javadoc conforme à la ligne"
+        }
+       ],
+       [
+        {
+         "tool": "Read",
+         "target": "extrait DeleteAccountRequest L8-14",
+         "found": "javadoc confirme la source JWT, username en double-sécurité"
+        }
+       ],
+       [
+        {
+         "tool": "Read",
+         "target": "excerpt DeleteAccountRequest L8-14",
+         "found": "Javadoc conforme à la ligne."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "placed": {
+    "pack_line": 45,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "backend-core:tests:1",
+   "section": "tests",
+   "rank": 1,
+   "text": "- Les tests fixent que le stockage local rejette les références de type path-traversal sur store, load et delete par IllegalArgumentException [#71532eb6a4bff389-1]. Ils travaillent sur un répertoire temporaire réel injecté dans l'adaptateur avant chaque test [#bf9a385a27b5a2f4-1].",
+   "fact_text": "Les tests fixent que le stockage local rejette les références de type path-traversal sur store, load et delete par IllegalArgumentException. Ils travaillent sur un répertoire temporaire réel injecté dans l'adaptateur avant chaque test",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "backend-core/71532eb6a4bff389-1",
+    "backend-core/bf9a385a27b5a2f4-1"
+   ],
+   "files": [
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapterTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapterTest.java",
+     60,
+     76,
+     "bcd847e311d5167a2d0d177cd062b2b32cad94411ba6122da9cb5f154fe22c6d"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapterTest.java",
+     19,
+     29,
+     "192138a5d286bee434972886d8fd13595b8808c919b645f82158095347e96322"
+    ]
+   ],
+   "code_sha256": "9ecb88e5f932fd023303c6010b2bdb5a9bf6c403625cb0879a4b709d6027df64",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.222,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 18
+      }
+     },
+     "restatement": "LocalStorageAdapter doit rejeter par IllegalArgumentException les références contenant un chemin de traversée, comme load(\"../../etc/passwd\") et delete(\"../secret\"). store(bytes, \"../etc\") est aussi rejeté pour extension invalide. Le setUp crée l'adapter sur un @TempDir.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 17,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapterTest.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.167,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 18
+      }
+     },
+     "job": "backend-core:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_CategoryRequest.java:1",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "LocalStorageAdapterTest L60-76 rejette par IllegalArgumentException sur store, load, delete ; @TempDir injecté via setUp @BeforeEach L21-29.",
+      "Les tests rejettent par IllegalArgumentException sur store (extension '../etc'), load et delete (L60-76). L'adaptateur est construit avec @TempDir dans @BeforeEach (L21-29).",
+      "LocalStorageAdapterTest: store rejette '../etc' (extension), load et delete rejettent des références traversantes, @TempDir injecté dans setUp (L21-29). Raccourci acceptable."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 91,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "backend-core:tests:2",
+   "section": "tests",
+   "rank": 2,
+   "text": "- Les tests fixent que la préférence de thème rejette toute valeur hors liste exacte (casse, espaces, vide, valeurs inconnues) par IllegalArgumentException, via un test paramétré [#205634fdc51ed73d-1].",
+   "fact_text": "Les tests fixent que la préférence de thème rejette toute valeur hors liste exacte (casse, espaces, vide, valeurs inconnues) par IllegalArgumentException, via un test paramétré",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "backend-core/205634fdc51ed73d-1"
+   ],
+   "files": [
+    "backend:src/test/java/com/matimeline/eventmanager/domain/models/ThemePreferenceTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/domain/models/ThemePreferenceTest.java",
+     26,
+     30,
+     "e92e287f28090732bb3eb84ad76382b1993630749e5aed132d1c452f95ad9dff"
+    ]
+   ],
+   "code_sha256": "e92e287f28090732bb3eb84ad76382b1993630749e5aed132d1c452f95ad9dff",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.308,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 13
+      }
+     },
+     "restatement": "ThemePreference.fromValue doit lever IllegalArgumentException pour toute valeur hors de l'ensemble accepté. Les cas rejetés incluent \"LIGHT\", \"Dark\", \" system\", \"system \", la chaîne vide, \"auto\" et \"LIGHT_MODE\", donc la comparaison semble sensible à la casse et exacte, sans trim. L'ensemble des valeurs valides n'est pas montré dans l'extrait.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 9,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/test/java/com/matimeline/eventmanager/domain/models/ThemePreferenceTest.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.154,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 13
+      }
+     },
+     "job": "backend-core:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_CategoryRequest.java:1",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "ThemePreferenceTest L26-30 : test paramétré avec LIGHT, Dark, ' system', 'system ', '', auto, LIGHT_MODE, attend IllegalArgumentException.",
+      "ThemePreferenceTest.fromValue_rejectsAnythingElse (L26-30) est paramétré et attend IllegalArgumentException pour casse, espaces, vide et valeurs inconnues.",
+      "ThemePreferenceTest.fromValue_rejectsAnythingElse (L26-30) est paramétré avec casse, espaces, vide, inconnues et attend IllegalArgumentException."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 92,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "backend-core:tests:3",
+   "section": "tests",
+   "rank": 3,
+   "text": "- Un test d'agrégat de domaine passe par la fabrique pending, appelle la transition mark* puis vérifie chaque champ, avec un message explicite quand la date doit être celle fournie et non dérivée du TTL [#16b553bae5d184fe-1].",
+   "fact_text": "Un test d'agrégat de domaine passe par la fabrique pending, appelle la transition mark* puis vérifie chaque champ, avec un message explicite quand la date doit être celle fournie et non dérivée du TTL",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "backend-core/16b553bae5d184fe-1"
+   ],
+   "files": [
+    "backend:src/test/java/com/matimeline/eventmanager/domain/models/export/ExportJobTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/domain/models/export/ExportJobTest.java",
+     15,
+     32,
+     "7afe9b9e3e7903b182d3e2d1c7b123d7976b29246f98b8d91dc88fd1e37d1e79"
+    ]
+   ],
+   "code_sha256": "7afe9b9e3e7903b182d3e2d1c7b123d7976b29246f98b8d91dc88fd1e37d1e79",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
+      "terms": 0.25,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 16
+      }
+     },
+     "restatement": "Le test vérifie que ExportJob.markCompleted(ref, completedAt, expiresAt) passe le statut à COMPLETED, enregistre storageRef, et stocke completedAt tel que fourni. completedAt n'est pas recalculé à partir de expiresAt moins 24 heures, car expiresAt est volontairement choisi différent de completedAt plus 24 heures.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 16,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/test/java/com/matimeline/eventmanager/domain/models/export/ExportJobTest.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.438,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 16
+      }
+     },
+     "job": "backend-core:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_CategoryRequest.java:1",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "ExportJobTest L19-31 : fabrique pending, markCompleted, vérification des champs et message explicite sur completedAt (L29-30).",
+      "ExportJobTest (L17-32) passe par ExportJob.pending, appelle markCompleted, vérifie les champs et a un message sur completedAt fourni et non dérivé du TTL.",
+      "ExportJobTest L19-31 utilise ExportJob.pending, markCompleted, vérifie les champs, avec message explicite sur completedAt."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 93,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "backend-core:tests:4",
+   "section": "tests",
+   "rank": 4,
+   "text": "- Un test de contrat DTO n'a pas de contexte Spring et désérialise un JSON littéral avec un ObjectMapper instancié directement [#f8c15a124e9472b2-2].",
+   "fact_text": "Un test de contrat DTO n'a pas de contexte Spring et désérialise un JSON littéral avec un ObjectMapper instancié directement",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "backend-core/f8c15a124e9472b2-2"
+   ],
+   "files": [
+    "backend:src/test/java/com/matimeline/eventmanager/application/dtos/EventCreationRequestContractTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/application/dtos/EventCreationRequestContractTest.java",
+     16,
+     18,
+     "38e8b3a8b7a64dfbf9fd933ff2c6e6002b9219f460418ffcfe1cdc7ff5b25749"
+    ]
+   ],
+   "code_sha256": "38e8b3a8b7a64dfbf9fd933ff2c6e6002b9219f460418ffcfe1cdc7ff5b25749",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.333,
+      "values": null,
+      "terms": 0.286,
+      "n": {
+       "identifiers": 3,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "restatement": "Le test EventCreationRequestContractTest instancie un ObjectMapper Jackson simple en champ privé. L'extrait ne montre que cette initialisation, sans assertion visible.",
+     "confidence": "high",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 21,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/test/java/com/matimeline/eventmanager/application/dtos/EventCreationRequestContractTest.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.667,
+      "values": null,
+      "terms": 0.714,
+      "n": {
+       "identifiers": 3,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "job": "backend-core:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_CategoryRequest.java:1",
+     "rank_in_lot": 4,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 94,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "backend-core:tests:5",
+   "section": "tests",
+   "rank": 5,
+   "text": "- Un test d'intégration est annoté SpringBootTest et AutoConfigureMockMvc, étend AbstractPostgresIntegrationTest et injecte un MockMvc [#d9aaaab667e49289-1].",
+   "fact_text": "Un test d'intégration est annoté SpringBootTest et AutoConfigureMockMvc, étend AbstractPostgresIntegrationTest et injecte un MockMvc",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "backend-core/d9aaaab667e49289-1"
+   ],
+   "files": [
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/RateLimitingDisabledIntegrationTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/RateLimitingDisabledIntegrationTest.java",
+     28,
+     31,
+     "25fdede468231739fd3c8413440926202d837f6db07ae007db82509d19c72774"
+    ]
+   ],
+   "code_sha256": "25fdede468231739fd3c8413440926202d837f6db07ae007db82509d19c72774",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.75,
+      "values": null,
+      "terms": 0.2,
+      "n": {
+       "identifiers": 4,
+       "values": 0,
+       "terms": 5
+      }
+     },
+     "restatement": "La classe RateLimitingDisabledIntegrationTest est un test @SpringBootTest avec MockMvc, qui force la propriété app.rate-limit.enabled à false et hérite de AbstractPostgresIntegrationTest. L'extrait ne montre que la déclaration, donc le comportement exact testé n'est pas visible. Le rôle est déduit du nom de la propriété.",
+     "confidence": "medium",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 4,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/AuthErrorContractIntegrationTest.java",
+     "file_ok": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.8,
+      "n": {
+       "identifiers": 4,
+       "values": 0,
+       "terms": 5
+      }
+     },
+     "job": "backend-core:rediscover:backend_src_test_java_com_matimeline_eventmanager_infrastructure_security_RateLimitingDisabledIntegrationTest.java:2",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "RateLimitingDisabledIntegrationTest L28-31 montre SpringBootTest, AutoConfigureMockMvc et extends AbstractPostgresIntegrationTest ; l'injection de MockMvc n'est pas contredite.",
+      "RateLimitingDisabledIntegrationTest (L28-31) porte SpringBootTest et AutoConfigureMockMvc et étend AbstractPostgresIntegrationTest. L'injection du MockMvc n'est pas visible dans l'extrait, mais c'est plausible, donc pas de réfutation.",
+      "RateLimitingDisabledIntegrationTest L28-31 porte @SpringBootTest, @AutoConfigureMockMvc et étend AbstractPostgresIntegrationTest. L'injection du MockMvc n'est pas dans l'extrait mais reste plausible."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 95,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "backend-core:tests:6",
+   "section": "tests",
+   "rank": 6,
+   "text": "- Selon la javadoc, les tests d'architecture ArchUnit analysent le bytecode sans contexte Spring pour rester rapides en CI [#6e4864d81232c39c-1]. Selon la javadoc, BomDriftTest est un test unitaire pur qui lit les versions de libs du classpath [#4804f2a414ef6f01-1].",
+   "fact_text": "Selon la javadoc, les tests d'architecture ArchUnit analysent le bytecode sans contexte Spring pour rester rapides en CI. Selon la javadoc, BomDriftTest est un test unitaire pur qui lit les versions de libs du classpath",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "backend-core/6e4864d81232c39c-1",
+    "backend-core/4804f2a414ef6f01-1"
+   ],
+   "files": [
+    "backend:src/test/java/com/matimeline/eventmanager/architecture/ArchitectureTest.java",
+    "backend:src/test/java/com/matimeline/eventmanager/build/BomDriftTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/architecture/ArchitectureTest.java",
+     20,
+     20,
+     "5c7a2fdf705da689b16a83748504275ac4d29d05b7838d614ca7186772f3fe1b"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/build/BomDriftTest.java",
+     14,
+     14,
+     "c3a6efe18444812c5b4393cad2fc48199bb6e3d0648126ef7739cb7e64cd9c2b"
+    ]
+   ],
+   "code_sha256": "287d25c01b297c985cad890298cbd8bc4fdad1aafd6dc2832668e612e531e4af",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": null,
+      "terms": 0.385,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 13
+      }
+     },
+     "restatement": "Ces deux extraits ne montrent que des commentaires de classe. ArchitectureTest annonce une analyse bytecode pure, sans conteneur ni contexte Spring. BomDriftTest se déclare test unitaire pur, sans @SpringBootTest ni conteneur Postgres. Le code des tests n'est pas visible dans l'extrait.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 22,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/test/java/com/matimeline/eventmanager/architecture/ArchitectureTest.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": null,
+      "terms": 0.846,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 13
+      }
+     },
+     "job": "backend-core:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_CategoryRequest.java:1",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [
+     {
+      "id": "backend-core/6e4864d81232c39c-1",
+      "verdict": "confirmed"
+     },
+     {
+      "id": "backend-core/4804f2a414ef6f01-1",
+      "verdict": "confirmed"
+     }
+    ],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Javadoc ArchitectureTest L20 (bytecode pur, sans contexte Spring, rapide en CI) et BomDriftTest L14 (test unitaire pur) concordent ; la ligne est attribuée à la javadoc.",
+      "Les javadocs de ArchitectureTest (L20) et BomDriftTest (L14) disent bien analyse bytecode sans Spring et test unitaire pur. La ligne est attribuée à la javadoc.",
+      "Les javadocs de ArchitectureTest (L20) et BomDriftTest (L14) disent bien analyse bytecode pure et test unitaire pur, la ligne l'attribue à la javadoc."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 96,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "backend-core:tests:7",
+   "section": "tests",
+   "rank": 7,
+   "text": "- Les méthodes de test se nomment sujet_situation_résultat [#dc1833af13b82e2d-1] [#cb0b5254f4e4ac26-1].",
+   "fact_text": "Les méthodes de test se nomment sujet_situation_résultat",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "backend-core/dc1833af13b82e2d-1",
+    "backend-core/cb0b5254f4e4ac26-1"
+   ],
+   "files": [
+    "backend:src/test/java/com/matimeline/eventmanager/application/services/SessionServiceImplTest.java",
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapterTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/application/services/SessionServiceImplTest.java",
+     44,
+     44,
+     "df0ea653084e3915ae00da805911be3c776855cf56f9a1ace26eeb077b5aa809"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapterTest.java",
+     31,
+     32,
+     "68aa386c197fdc7c5d46f288d1a06cdb3a464a405d587e7fad9e5dc9b31545c4"
+    ]
+   ],
+   "code_sha256": "70fdc5a0af1fa1036f10a821679c5b1188ee46193bb49e3391cb587069b08754",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
+      "terms": 0.667,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 3
+      }
+     },
+     "restatement": "Les deux tests SessionServiceImplTest.isSessionActive_activeJti_true et LocalStorageAdapterTest.store_thenLoad_roundTrips ne montrent que leur déclaration (@Test puis méthode vide), sans corps ni assertion visibles. Le contenu de chaque test ne peut donc pas être décrit à partir de cet extrait.",
+     "confidence": "low",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 9,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/test/java/com/matimeline/eventmanager/domain/models/ThemePreferenceTest.java",
+     "file_ok": false,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
+      "terms": 0.667,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 3
+      }
+     },
+     "job": "backend-core:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_CategoryRequest.java:1",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 1,
+     "reasons": [
+      "Règle trop générale : plusieurs tests n'ont que deux segments (ThemePreferenceTest.fromValue_rejectsAnythingElse L28, LocalStorageAdapterTest.store_rejectsInvalidExtension L60), sans segment de situation distinct.",
+      "isSessionActive_activeJti_true (L44) suit sujet_situation_résultat, les autres noms vus aussi, aucun contre-exemple net.",
+      "Les noms vus (isSessionActive_activeJti_true, store_thenLoad_roundTrips) suivent sujet_situation_résultat."
+     ],
+     "evidence": [
+      "void fromValue_rejectsAnythingElse(String value) {",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 97,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "backend-core:questions:1",
+   "section": "questions",
+   "rank": 1,
+   "text": "- Le contrôle de format du champ color doit-il être ajouté côté serveur ? Le commentaire dit que le refine Zod du frontend reste à répercuter, et le DTO n'a aucune contrainte hex, ce que le code documente par BR-EVE-009 [#1cfdbb8136494b7c-1] [#af3d8994f27f9508-1].",
+   "fact_text": "Le contrôle de format du champ color doit-il être ajouté côté serveur ? Le commentaire dit que le refine Zod du frontend reste à répercuter, et le DTO n'a aucune contrainte hex, ce que le code documente par BR-EVE-009",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "backend-core/1cfdbb8136494b7c-1",
+    "backend-core/af3d8994f27f9508-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/application/dtos/EventCreationRequest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/dtos/EventCreationRequest.java",
+     41,
+     42,
+     "5d80ab33ada0fcfee8f0d7eb014a487eead7b9ed61d8db6147ef460729a2e5d4"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/dtos/EventCreationRequest.java",
+     44,
+     44,
+     "a489a3d30e27ea482e65ce4a600a65318e048cc4e5738f4aff1e5356bd4e26da"
+    ]
+   ],
+   "code_sha256": "24bd5acf3ec570820f3b7ed04e171cfa03e1a1bfb3dfc6c7e2cf6f807586f6aa",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [
+     {
+      "id": "backend-core/1cfdbb8136494b7c-1",
+      "verdict": "unverifiable"
+     }
+    ],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "EventCreationRequest L41-44 : color est un String libre sans contrainte hex, et le commentaire renvoie à BR-EVE-009. Le code ne tranche pas si une contrainte doit être ajoutée, c'est une décision métier.",
+      "Question de décision produit (ajouter ou non une contrainte hex sur la couleur d'événement). Le code ne la tranche pas, le commentaire dit seulement qu'il n'y a pas de contrainte (BR-EVE-009).",
+      "Rien ne tranche : EventCreationRequest.color n'a aucune contrainte hex (L44), alors que ProductCreationRequest et ProductUpdateRequest en ont une avec @Pattern. Ajouter ou non le contrôle sur les événements reste une décision de conception."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "open",
+     "searched": true,
+     "search": {
+      "check": "answer",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Read",
+         "target": "extrait EventCreationRequest",
+         "found": "aucune contrainte de format sur color, commentaire seul"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "getColor()|validateColor|hex dans backend/src/main/java",
+         "found": "aucune validation de format de couleur côté service pour les événements, seul ProductCreationRequest a un @Pattern hex"
+        }
+       ],
+       [
+        {
+         "tool": "Read",
+         "target": "EventCreationRequest.java L1-60",
+         "found": "Pas de @Pattern sur color, le commentaire renvoie à BR-EVE-009."
+        },
+        {
+         "tool": "Grep",
+         "target": "@Pattern dans dtos et ProductController, ProductService",
+         "found": "@Pattern hex seulement sur les couleurs de ProductCreationRequest L29 et ProductUpdateRequest L36."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "answer",
+   "placed": {
+    "pack_line": 101,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "backend-core:questions:2",
+   "section": "questions",
+   "rank": 2,
+   "text": "- La javadoc de validateEventType dit qu'une DataIntegrityViolationException est masquée en 401 par le dispatch /error, mais aucun fait de code ne le confirme ici. Seule la levée d'InvalidEventTypeException avant persistance est établie [#b88b2f870d7e4421-1] [#4ff3b3eb5d8b58c4-3].",
+   "fact_text": "La javadoc de validateEventType dit qu'une DataIntegrityViolationException est masquée en 401 par le dispatch /error, mais aucun fait de code ne le confirme ici. Seule la levée d'InvalidEventTypeException avant persistance est établie",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "backend-core/b88b2f870d7e4421-1",
+    "backend-core/4ff3b3eb5d8b58c4-3"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/utils/Utils.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/utils/Utils.java",
+     21,
+     22,
+     "387ecc6d78403fd263d3b3aa0b1834a62f7cb3708bb0a3be02d8b15767cb7790"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/utils/Utils.java",
+     24,
+     28,
+     "59e611cff81ef9bb77555c80ad9f97a24462457cba232d810f997dfb167593f1"
+    ]
+   ],
+   "code_sha256": "7a061b6ebeab094cabd60b0a8efd5ddc6b376644b16d332799408577498dd802",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [
+     {
+      "id": "backend-core/b88b2f870d7e4421-1",
+      "verdict": "unverifiable"
+     }
+    ],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "SecurityConfig L162-166 et GlobalExceptionHandler L158-159 décrivent le masquage en 401 par le dispatch /error, mais /error est maintenant permitAll. GlobalExceptionHandler L147-152 indique qu'aucun handler DataIntegrityViolationException n'existe et que ces violations remontent en 500. Le code ne tranche donc pas le comportement actuel sans ambiguïté.",
+      "Le code montre que /error est permitAll (SecurityConfig L166), donc le masquage en 401 décrit par la javadoc semble historique, mais le comportement réel n'est pas tranché par un code lu.",
+      "Le code montre que /error est en permitAll dans SecurityConfig (L162-166), ce qui rend le masquage en 401 historique et non confirmé. La question reste ambiguë."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "open",
+     "searched": true,
+     "search": {
+      "check": "answer",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "DataIntegrityViolationException|\"/error\" dans backend/src",
+         "found": "/error est permitAll (SecurityConfig L166). Handler global supprimé (GlobalExceptionHandler L147). Seul commentaire historique sur le 401."
+        },
+        {
+         "tool": "Read",
+         "target": "SecurityConfig.java L150-180",
+         "found": "Le commentaire dit que sans permitAll l'exception non gérée ressort en 401. permitAll est présent."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "DataIntegrityViolation|/error dans backend/src/main",
+         "found": "GlobalExceptionHandler ne gère plus DataIntegrityViolationException, /error est permitAll dans SecurityConfig."
+        },
+        {
+         "tool": "Read",
+         "target": "SecurityConfig.java L155-175",
+         "found": "Commentaire: sans permitAll, 500 ressort en 401. permitAll présent."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "DispatcherType|/error|DataIntegrityViolation dans backend/src/main",
+         "found": "SecurityConfig L166 permitAll sur /error, GlobalExceptionHandler et InvalidEventTypeException ne citent le 401 que dans des commentaires"
+        },
+        {
+         "tool": "Read",
+         "target": "SecurityConfig.java L158-171",
+         "found": "commentaire sur le 401 trompeur sans permitAll, et permitAll présent"
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "answer",
+   "placed": {
+    "pack_line": 102,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "backend-core:alerts:1",
+   "section": "alerts",
+   "rank": 1,
+   "text": "- La surcharge de génération de token à partir d'un nom d'utilisateur n'ajoute pas de claim jti, alors que la surcharge sur Authentication en ajoute un et que la javadoc affirme qu'aucun token n'est émis sans jti. Un token issu de la première surcharge peut échapper à tout mécanisme fondé sur le jti, donc appelle la surcharge Authentication ou ajoute le jti avant d'utiliser l'autre, voir `backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtService.java:145-156` [#46b3392f051dc8d7-1].",
+   "fact_text": "La surcharge de génération de token à partir d'un nom d'utilisateur n'ajoute pas de claim jti, alors que la surcharge sur Authentication en ajoute un et que la javadoc affirme qu'aucun token n'est émis sans jti. Un token issu de la première surcharge peut échapper à tout mécanisme fondé sur le jti, donc appelle la surcharge Authentication ou ajoute le jti avant d'utiliser l'autre, voir JwtService.java",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "backend-core/46b3392f051dc8d7-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtService.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtService.java",
+     145,
+     156,
+     "a33e2902c8c382b7948cd603ebb7d337f85e5a2537db6cbafba9cf2debc55c26"
+    ]
+   ],
+   "code_sha256": "a33e2902c8c382b7948cd603ebb7d337f85e5a2537db6cbafba9cf2debc55c26",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "generateToken(String) (JwtService L145-156) n'a pas de .id(...), alors que generateToken(Authentication) (L164-174) ajoute le jti. Les appelants de production (AuthController L119 et L319) utilisent la surcharge Authentication. generateToken(String) n'est appelée que par des tests, mais elle reste publique : le risque subsiste par un autre chemin d'appel.",
+      "generateToken(String) (L145-156) n'a pas de .id(); aucun appelant en main, seuls des tests l'utilisent, mais la méthode reste publique donc le risque subsiste.",
+      "JwtService.generateToken(String) (L145-156) n'ajoute pas de jti, contrairement à generateToken(Authentication) (L164-174). Les seuls appelants en main (AuthController L119 et L319) utilisent la surcharge Authentication, mais la surcharge reste publique et rien ne garantit l'invariant."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "supported",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "guards",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "generateToken\\( dans backend/src",
+         "found": "Appels de production uniquement avec Authentication (AuthController L119 et L319). generateToken(String) est appelée seulement dans des tests (JwtServiceRs256Test, ExportTokenServiceTest, JwksEndpoint"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "generateToken\\(",
+         "found": "En main, seul AuthController (L119, L319) appelle la surcharge Authentication. La surcharge String n'est appelée que dans des tests."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "generateToken\\( dans backend/src/main",
+         "found": "deux appelants dans AuthController, tous deux sur Authentication. La surcharge String n'a aucun appelant en main."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "guards",
+   "placed": {
+    "pack_line": 106,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "backend-core:alerts:2",
+   "section": "alerts",
+   "rank": 2,
+   "text": "- Le champ events de la création de produit n'a pas d'annotation de validation en cascade dans cette classe. Les contraintes des EventCreationRequest imbriqués ne sont pas déclenchées par ce DTO seul, donc ajoute la cascade ou valide ailleurs avant de compter sur elles, voir `backend:src/main/java/com/matimeline/eventmanager/application/dtos/ProductCreationRequest.java:32` [#d58358f7f920e99c-1].",
+   "fact_text": "Le champ events de la création de produit n'a pas d'annotation de validation en cascade dans cette classe. Les contraintes des EventCreationRequest imbriqués ne sont pas déclenchées par ce DTO seul, donc ajoute la cascade ou valide ailleurs avant de compter sur elles, voir ProductCreationRequest.java",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "backend-core/d58358f7f920e99c-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/application/dtos/ProductCreationRequest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/dtos/ProductCreationRequest.java",
+     32,
+     32,
+     "13bda978571c2ab2023f432ef5d0fd7f8067f6e048e7cffaeaa3b8c286e9bf6c"
+    ]
+   ],
+   "code_sha256": "13bda978571c2ab2023f432ef5d0fd7f8067f6e048e7cffaeaa3b8c286e9bf6c",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "ProductCreationRequest L32 n'a pas de @Valid sur events (grep). ProductController L53 ne met @Valid que sur le corps. ProductServiceImpl.createProduct L69-91 lit les champs imbriqués sans les valider. Aucun garde-fou trouvé.",
+      "ProductCreationRequest.events n'a pas de @Valid, le contrôleur ne valide que le niveau racine et ProductServiceImpl itère sans valider les EventCreationRequest.",
+      "ProductCreationRequest.events (L32) n'a pas @Valid. ProductController valide la requête avec @Valid (L53) mais cela ne descend pas dans la liste. ProductServiceImpl L69 ne fait que gérer le null, sans valider les événements."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "guards",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "@Valid|List<EventCreationRequest> dans ProductCreationRequest",
+         "found": "aucun @Valid sur events"
+        },
+        {
+         "tool": "Grep",
+         "target": "ProductCreationRequest|getEvents() dans backend/src/main/java",
+         "found": "contrôleur avec @Valid sur le corps seulement, service qui parcourt les événements sans validation"
+        },
+        {
+         "tool": "Read",
+         "target": "ProductServiceImpl.java L45-94",
+         "found": "pas de validation des événements imbriqués"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "@Valid dans ProductCreationRequest.java",
+         "found": "aucune occurrence"
+        },
+        {
+         "tool": "Grep",
+         "target": "@Valid|ProductCreationRequest dans ProductController.java",
+         "found": "@Valid sur le corps racine seulement (L53)"
+        },
+        {
+         "tool": "Read",
+         "target": "ProductServiceImpl.java L55-94",
+         "found": "boucle sur getEvents() sans validation des éléments"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "@Valid dans ProductCreationRequest, ProductController, ProductServiceImpl",
+         "found": "@Valid seulement sur le @RequestBody du contrôleur, pas sur le champ events."
+        },
+        {
+         "tool": "Grep",
+         "target": "getEvents() dans backend/src/main/java",
+         "found": "ProductServiceImpl L69 traite le null de la liste, sans validation des éléments."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "guards",
+   "placed": {
+    "pack_line": 107,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "backend-core:alerts:3",
+   "section": "alerts",
+   "rank": 3,
+   "text": "- La règle 5 d'ArchUnit (pas de HttpSession en production) n'est pas enveloppée dans FreezingArchRule.freeze, contrairement aux autres. Toute violation fait échouer le test sans baseline, donc corrige la violation au lieu de geler, voir `backend:src/test/java/com/matimeline/eventmanager/architecture/ArchitectureTest.java:183` [#642150eaacf772b5-1].",
+   "fact_text": "La règle 5 d'ArchUnit (pas de HttpSession en production) n'est pas enveloppée dans FreezingArchRule.freeze, contrairement aux autres. Toute violation fait échouer le test sans baseline, donc corrige la violation au lieu de geler, voir ArchitectureTest.java",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "backend-core/642150eaacf772b5-1"
+   ],
+   "files": [
+    "backend:src/test/java/com/matimeline/eventmanager/architecture/ArchitectureTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/architecture/ArchitectureTest.java",
+     183,
+     183,
+     "dd2f352b4b83ada0a0f7ec93add1f6cabb372c95c6cb35be7bbe3cbf2f782c84"
+    ]
+   ],
+   "code_sha256": "dd2f352b4b83ada0a0f7ec93add1f6cabb372c95c6cb35be7bbe3cbf2f782c84",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "ArchitectureTest L183 appelle rule.check(classesUnderTest) sans FreezingArchRule.freeze, alors que les autres règles (L81, 102, 125, 153) sont gelées. Le fait est exact et aucun garde-fou ne contredit l'alerte.",
+      "ArchitectureTest L183 appelle rule.check sans FreezingArchRule.freeze, contrairement aux règles 2 à 4.",
+      "ArchitectureTest L183 appelle rule.check directement, alors que les autres règles (L81, 102, 125, 153) utilisent FreezingArchRule.freeze(rule).check."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "supported",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "guards",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "FreezingArchRule|HttpSession dans ArchitectureTest.java",
+         "found": "freeze présent aux lignes 81, 102, 125 et 153. La règle HttpSession (L170-183) n'est pas gelée."
+        }
+       ],
+       [
+        {
+         "tool": "Read",
+         "target": "ArchitectureTest.java L80-185",
+         "found": "Règles 2-4 en FreezingArchRule.freeze(rule).check, règle 5 en rule.check direct."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "FreezingArchRule|HttpSession|rule.check dans ArchitectureTest.java",
+         "found": "quatre règles gelées, celle de HttpSession (L183) non gelée"
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "guards",
+   "placed": {
+    "pack_line": 108,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "backend-core:alerts:4",
+   "section": "alerts",
+   "rank": 4,
+   "text": "- Trois fichiers du domaine importent du Spring ou de la couche application, en écart avec la règle hexagonale. Il s'agit de l'enum Role, du port ProductRepository (annotation Repository, absente de UserRepository) et du port ProductService (DTO application, alors qu'EventService prend des commandes du domaine). Ne copie pas ce patron dans un nouveau port, voir `backend:src/main/java/com/matimeline/eventmanager/domain/models/Role.java:3-5` [#d4207acb24ab9af6-1] [#f5728797d94e6d35-1] [#54c376e6a3ecbd60-1].",
+   "fact_text": "Trois fichiers du domaine importent du Spring ou de la couche application, en écart avec la règle hexagonale. Il s'agit de l'enum Role, du port ProductRepository (annotation Repository, absente de UserRepository) et du port ProductService (DTO application, alors qu'EventService prend des commandes du domaine). Ne copie pas ce patron dans un nouveau port, voir Role.java",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "backend-core/d4207acb24ab9af6-1",
+    "backend-core/f5728797d94e6d35-1",
+    "backend-core/54c376e6a3ecbd60-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/domain/models/Role.java",
+    "backend:src/main/java/com/matimeline/eventmanager/domain/ports/repositories/ProductRepository.java",
+    "backend:src/main/java/com/matimeline/eventmanager/domain/ports/services/ProductService.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/domain/models/Role.java",
+     3,
+     5,
+     "16c5454da4255f857e28b0886b3730faa42d6798f074b61ac99a6ddd9ee7d0ac"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/domain/ports/repositories/ProductRepository.java",
+     8,
+     8,
+     "7b980d15c8577d4af00864b9bca2d864921653a7839e18181e7f6ce0ef8bbdb2"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/domain/ports/services/ProductService.java",
+     7,
+     12,
+     "85a310f25757cc8ac53fd432f78c470b66c41a7e524a063169278868fa9430b4"
+    ]
+   ],
+   "code_sha256": "11645babe8296304a8fc31b3b7b17e150e66a4a91061767eb24e88e355bb571f",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Les imports Spring et application sont bien présents dans Role.java L3, ProductRepository.java L8 et ProductService.java L7-8 ; le grep du domaine ne trouve aucun autre cas. Aucun garde-fou ne corrige l'écart.",
+      "Les imports cités existent bien : Role.java L3 (spring security), ProductRepository.java L8 (stereotype.Repository), ProductService.java L7-8 (DTO application). Un Grep sur tout le domaine ne trouve aucun autre écart. Aucun garde-fou ne change cela.",
+      "Le Grep sur le domaine confirme exactement trois imports fautifs : Role.java:3 (Spring Security), ProductRepository.java:8 (Repository) et ProductService.java:7-8 (DTO application). Aucun garde-fou ne corrige l'écart."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "supported",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "guards",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "imports org.springframework ou application dans domain/",
+         "found": "Exactement les trois fichiers cités."
+        },
+        {
+         "tool": "Grep",
+         "target": "imports dtos/application dans domain/ports/services",
+         "found": "Seul ProductService importe des DTOs."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "import org.springframework|import ...application dans backend/.../domain",
+         "found": "Exactement trois fichiers : Role, ProductRepository, ProductService."
+        },
+        {
+         "tool": "Grep",
+         "target": "import .*dtos dans domain/ports/services",
+         "found": "Seul ProductService importe des DTO."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "^import org\\.springframework|^import com\\.matimeline\\.eventmanager\\.application dans domain/",
+         "found": "Quatre lignes, dans Role, ProductRepository et ProductService (deux imports). Rien dans UserRepository ni EventService."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "guards",
+   "placed": {
+    "pack_line": 109,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "backend-core:rules:annex:18fbc949",
+   "section": "rules",
+   "rank": 2,
+   "text": "- Le domaine reste du Java pur, seul jakarta.validation est toléré, et l'exception se écrit comme un prédicat unique. [#005e9b3100070e4b-5] [#005e9b3100070e4b-3]",
+   "fact_text": "Le domaine reste du Java pur, seul jakarta.validation est toléré, et l'exception se écrit comme un prédicat unique",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "backend-core/005e9b3100070e4b-5",
+    "backend-core/005e9b3100070e4b-3"
+   ],
+   "files": [
+    "backend:src/test/java/com/matimeline/eventmanager/architecture/ArchitectureTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/architecture/ArchitectureTest.java",
+     78,
+     79,
+     "965918319cddc85abdad74faa5c055ae1641d8533f04d48cb115e4f71c36e4da"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/architecture/ArchitectureTest.java",
+     68,
+     70,
+     "f7d9bd2837b1cd813c2f62634fb3ae91135be41d5d9012becb047fc05bb3116a"
+    ]
+   ],
+   "code_sha256": "2b2fa5f46e15711090b7d2e47a7d4d64b47274406f955f31c45aa48a935a4cb7",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 0.6,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 10
+      }
+     },
+     "restatement": "Dans ArchitectureTest.domainShouldNotDependOnSpringOrJakarta, la règle interdit aux classes du domaine de dépendre de org.springframework.. et de jakarta.., à l'exception de jakarta.validation... Le message précise que le domaine doit rester du Java pur, seul jakarta.validation étant toléré.",
+     "confidence": "high"
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "backend-core.details.md",
+     "row": 1
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  },
+  {
+   "id": "backend-core:rules:annex:478c71a8",
+   "section": "rules",
+   "rank": 4,
+   "text": "- Un composant de sécurité reçoit le port UserService par constructeur, jamais une implémentation. [#c1f9785dd42e8084-2]",
+   "fact_text": "Un composant de sécurité reçoit le port UserService par constructeur, jamais une implémentation",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "backend-core/c1f9785dd42e8084-2"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/CallerResolver.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/CallerResolver.java",
+     43,
+     50,
+     "b7d3b604d0a044b466e03298e95595530b1c2707447d7f321edc2009d4f74af5"
+    ]
+   ],
+   "code_sha256": "b7d3b604d0a044b466e03298e95595530b1c2707447d7f321edc2009d4f74af5",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 6
+      }
+     },
+     "restatement": "CallerResolver est un composant Spring qui reçoit un UserService par injection de constructeur. L'extrait ne montre que la déclaration et le constructeur, sans logique d'identification.",
+     "confidence": "high"
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "words:jamais",
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "backend-core.details.md",
+     "row": 2
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  },
+  {
+   "id": "backend-core:rules:annex:5f2bcf75",
+   "section": "rules",
+   "rank": 7,
+   "text": "- Les jetons durent deux jours et sont signés en RS256 avec un jti aléatoire. [#ba79c292ff5ef085-1] [#0e3f907dd14ff23f-2]",
+   "fact_text": "Les jetons durent deux jours et sont signés en RS256 avec un jti aléatoire",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "backend-core/ba79c292ff5ef085-1",
+    "backend-core/0e3f907dd14ff23f-2"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtService.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtService.java",
+     30,
+     32,
+     "122e493b06d5ef1b301b775bbd3e399e1b767827dbd099b67f9c7f2156e1c1f3"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtService.java",
+     164,
+     174,
+     "bc65cc4cd0b6c14046242a059a9c661e1351def92f5c64acaf9a71719dd20e64"
+    ]
+   ],
+   "code_sha256": "c74c3fceae419b969b8dee5e647fa2abc0438cafef400b46b668698bb709d819",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.667,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 6
+      }
+     },
+     "restatement": "JwtService.TOKEN_VALIDITY_MS vaut 1000 × 60 × 60 × 24 × 2 millisecondes, soit deux jours (BR-AUT-007). generateToken signe le JWT en RS256 avec un jti UUID aléatoire, un claim role et une expiration calculée à partir de cette constante.",
+     "confidence": "high"
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "backend-core.details.md",
+     "row": 3
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  },
+  {
+   "id": "backend-core:rules:annex:2d9fa5d0",
+   "section": "rules",
+   "rank": 10,
+   "text": "- parseClaims refuse un jeton vide et tout algorithme autre que RS256, et validateToken renvoie false pour toute exception. [#d4b7e95551c98baf-2] [#b8bb9c95308ea011-1]",
+   "fact_text": "parseClaims refuse un jeton vide et tout algorithme autre que RS256, et validateToken renvoie false pour toute exception",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "backend-core/d4b7e95551c98baf-2",
+    "backend-core/b8bb9c95308ea011-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtService.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtService.java",
+     220,
+     236,
+     "d81ed6497b85180fd855a9f5a87f31bdb41135de517fb7799afeef131c3a999f"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtService.java",
+     238,
+     245,
+     "a65800c69e61d2615c28c53eb883383cb726f03a2fa31e7f9746f73c736916c4"
+    ]
+   ],
+   "code_sha256": "cecb04024e8ac60ff27409553c584310ea669e3cde83784daaa99e6c15fa491b",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.857,
+      "n": {
+       "identifiers": 3,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "restatement": "parseClaims refuse un jeton null ou blanc (MalformedJwtException), vérifie la signature avec verificationKey, puis rejette tout algorithme d'en-tête autre que RS256 (UnsupportedJwtException). validateToken renvoie false en cas d'exception et exige que le nom extrait corresponde à l'utilisateur et que le jeton ne soit pas expiré.",
+     "confidence": "high"
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "words:tout,toute",
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "backend-core.details.md",
+     "row": 4
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  },
+  {
+   "id": "backend-core:tests:annex:bcbdb5df",
+   "section": "tests",
+   "rank": 2,
+   "text": "- Les tests fixent que l'indicateur de santé Brevo est DOWN quand la clé d'API est nulle [#eaae94db71d3c395-1]. Ils fixent aussi qu'aucun détail du Health ne contient la valeur de la clé [#2ed7f484b7341552-1].",
+   "fact_text": "Les tests fixent que l'indicateur de santé Brevo est DOWN quand la clé d'API est nulle. Ils fixent aussi qu'aucun détail du Health ne contient la valeur de la clé",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "backend-core/eaae94db71d3c395-1",
+    "backend-core/2ed7f484b7341552-1"
+   ],
+   "files": [
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoHealthIndicatorTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoHealthIndicatorTest.java",
+     16,
+     24,
+     "c63a4e0846998fec578bcd15bdd6753391b9c0b65627648adf92dfa3c9704b3b"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoHealthIndicatorTest.java",
+     41,
+     48,
+     "6e2a1cf20154a7dc0bc9bd738a2608fc0ad4432077a60f35525f8a07e7b14e15"
+    ]
+   ],
+   "code_sha256": "431e75e9ffa3e1c5b0714a6e99c6bd4b6ee6c61173a5f579e7ec8c9d9a3615b4",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.6,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 10
+      }
+     },
+     "restatement": "BrevoHealthIndicator construit avec une clé nulle renvoie Status.DOWN et une entrée de détails \"reason\". Un second test vérifie qu'aucune valeur des détails de health() ne contient la valeur de la clé API transmise. L'extrait ne contient que ces deux méthodes de test.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "backend-core.details.md",
+     "row": 5
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  },
+  {
+   "id": "backend-core:tests:annex:0cc0ab5c",
+   "section": "tests",
+   "rank": 3,
+   "text": "- Les tests fixent que ClientIpAnonymizer remet à zéro le dernier octet d'une IPv4, par exemple 192.168.1.42 devient 192.168.1.0 [#d8047dd30843e60e-1].",
+   "fact_text": "Les tests fixent que ClientIpAnonymizer remet à zéro le dernier octet d'une IPv4, par exemple 192.168.1.42 devient 192.168.1.0",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "backend-core/d8047dd30843e60e-1"
+   ],
+   "files": [
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/ClientIpAnonymizerTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/ClientIpAnonymizerTest.java",
+     15,
+     50,
+     "d8bd0ed8ae04bce42fc582fbf8d45e3e09dbb311d6d29f7d1aecb792b514ce67"
+    ]
+   ],
+   "code_sha256": "d8bd0ed8ae04bce42fc582fbf8d45e3e09dbb311d6d29f7d1aecb792b514ce67",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 0.625,
+      "n": {
+       "identifiers": 2,
+       "values": 2,
+       "terms": 8
+      }
+     },
+     "restatement": "ClientIpAnonymizer.anonymize met à zéro le dernier octet d'une IPv4 après suppression des espaces, par exemple 192.168.1.42 devient 192.168.1.0. Pour IPv6, il conserve trois hextets suivis de \"::\". Il renvoie null pour \"::1\", null, chaîne vide, espaces seuls, format invalide comme \"999.1.1.1\" ou \"1.2.3\".",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "backend-core.details.md",
+     "row": 6
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  }
+ ],
+ "comment_facts": [
+  {
+   "id": "backend-core/b103523302cefc64-1",
+   "verdict": "unverifiable",
+   "code_says": "La classe déclare static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>(\"postgres:16-alpine\") et l'injecte via @DynamicPropertySource, ce qui confirme l'usage de PostgreSQL officiel et l'absence de H2. Le rejeu Flyway depuis V1 et le ddl-auto=validate ne figurent pas dans ce fichier (ils relèvent du profil test, non lu).",
+   "code_line_start": 0,
+   "code_line_end": 0,
+   "code_evidence": "",
+   "evidence_check": null,
+   "code_file": "",
+   "invalid": false,
+   "cache_digest": "16f64be62448157818313eaf130c8e6404cd801331da58cf66ca98d1242815a1",
+   "reused": true,
+   "reused_from": "2026-11-20T12:20:00Z",
+   "cited_by": [
+    "backend-core:rules:3"
+   ],
+   "structure_rows_removed": []
+  },
+  {
+   "id": "backend-core/a8f3d3adead0954d-2",
+   "verdict": "unverifiable",
+   "code_says": "",
+   "code_line_start": 0,
+   "code_line_end": 0,
+   "code_evidence": "",
+   "evidence_check": null,
+   "code_file": "",
+   "invalid": false,
+   "cache_digest": "e50e43da59039bc78e892996b737b2e17d57319b617de9071d5078bf23958397",
+   "reused": true,
+   "reused_from": "2026-11-20T12:20:00Z",
+   "cited_by": [
+    "backend-core:rules:12"
+   ],
+   "structure_rows_removed": []
+  },
+  {
+   "id": "backend-core/d6d5911c6a9ed32f-1",
+   "verdict": "unverifiable",
+   "code_says": "Le fichier ne contient qu'un champ username annoté @NotBlank avec ses accesseurs. Aucune lecture du JWT, aucune comparaison à caller.getUsername() et aucune exception AccountDeletionMismatchException ne figurent ici.",
+   "code_line_start": 0,
+   "code_line_end": 0,
+   "code_evidence": "",
+   "evidence_check": null,
+   "code_file": "",
+   "invalid": false,
+   "cache_digest": "ae9d92003d43b0857faa1051586f53a28983eaa6fc5e82edb366660d0ac92639",
+   "reused": true,
+   "reused_from": "2026-11-20T12:20:00Z",
+   "cited_by": [
+    "backend-core:rules:13"
+   ],
+   "structure_rows_removed": []
+  },
+  {
+   "id": "backend-core/6e4864d81232c39c-1",
+   "verdict": "confirmed",
+   "code_says": "Le test importe les classes avec ClassFileImporter sur le package racine, en excluant les tests, sans annotation Spring ni conteneur.",
+   "code_line_start": 49,
+   "code_line_end": 52,
+   "code_evidence": "new ClassFileImporter()",
+   "evidence_check": null,
+   "code_file": "backend:src/test/java/com/matimeline/eventmanager/architecture/ArchitectureTest.java",
+   "invalid": false,
+   "cache_digest": "391e769f4e1440384072e009d7e191506c0fdbe58268b07398d6755df1938697",
+   "reused": true,
+   "reused_from": "2026-11-20T12:20:00Z",
+   "cited_by": [
+    "backend-core:tests:6"
+   ],
+   "structure_rows_removed": []
+  },
+  {
+   "id": "backend-core/4804f2a414ef6f01-1",
+   "verdict": "confirmed",
+   "code_says": "La classe n'a aucune annotation Spring de test ni conteneur, et lit les versions par Class.forName et réflexion sur le classpath, ou par ServerInfo, SpringVersion et VersionPrinter.",
+   "code_line_start": 172,
+   "code_line_end": 176,
+   "code_evidence": "Class<?> clazz = Class.forName(className);",
+   "evidence_check": null,
+   "code_file": "backend:src/test/java/com/matimeline/eventmanager/build/BomDriftTest.java",
+   "invalid": false,
+   "cache_digest": "4038c22279527a00989eb80c78c5bba817d485cd4a78051f8bc3697ed81d7a54",
+   "reused": true,
+   "reused_from": "2026-11-20T12:20:00Z",
+   "cited_by": [
+    "backend-core:tests:6"
+   ],
+   "structure_rows_removed": []
+  },
+  {
+   "id": "backend-core/1cfdbb8136494b7c-1",
+   "verdict": "unverifiable",
+   "code_says": "Le champ color est une String nullable sans annotation de validation ni contrainte de format. Le code backend ne dit rien de l'état du refine Zod côté frontend.",
+   "code_line_start": 0,
+   "code_line_end": 0,
+   "code_evidence": "",
+   "evidence_check": null,
+   "code_file": "",
+   "invalid": false,
+   "cache_digest": "f00de9e636a20c0d420cbe90f6b8378e7e1fd2c7f1bd3e12e15e76651824b140",
+   "reused": true,
+   "reused_from": "2026-11-20T12:20:00Z",
+   "cited_by": [
+    "backend-core:questions:1"
+   ],
+   "structure_rows_removed": []
+  },
+  {
+   "id": "backend-core/b88b2f870d7e4421-1",
+   "verdict": "unverifiable",
+   "code_says": "Utils.validateEventType lève une InvalidEventTypeException si le type est null ou hors de {duration, single}, avant la persistance. Le comportement de masquage en 401 par le dispatch /error relève de SecurityConfig, qui n'est pas dans les fichiers lus.",
+   "code_line_start": 0,
+   "code_line_end": 0,
+   "code_evidence": "",
+   "evidence_check": null,
+   "code_file": "",
+   "invalid": false,
+   "cache_digest": "ec8799d9d5daf905a5ec0e0cb059c9ba9f9b2f3d674085a90ccd9c60352f93d3",
+   "reused": true,
+   "reused_from": "2026-11-20T12:20:00Z",
+   "cited_by": [
+    "backend-core:questions:2"
+   ],
+   "structure_rows_removed": []
+  }
+ ],
+ "facts_validated": [
+  "backend-core/3649497eed73f9f7-1",
+  "backend-core/784c974edb4c82c0-3",
+  "backend-core/9b3b36b46f6db347-2",
+  "backend-core/b103523302cefc64-1",
+  "backend-core/9db0c0fc888c044b-1",
+  "backend-core/9db0c0fc888c044b-2",
+  "backend-core/1cde148ce35ea68c-1",
+  "backend-core/b6b8faa3d2da2ac9-1",
+  "backend-core/f56e4e358ba66393-1",
+  "backend-core/cbc477c31e33275c-1",
+  "backend-core/be53be0d97652fd1-1",
+  "backend-core/46119bdcfa9f904b-1",
+  "backend-core/c3d2971633861966-1",
+  "backend-core/573a55d2f0e0cdad-4",
+  "backend-core/301896c782a8b85e-1",
+  "backend-core/9f00547b4339b55b-1",
+  "backend-core/a8f3d3adead0954d-2",
+  "backend-core/d6d5911c6a9ed32f-1",
+  "backend-core/71532eb6a4bff389-1",
+  "backend-core/bf9a385a27b5a2f4-1",
+  "backend-core/205634fdc51ed73d-1",
+  "backend-core/16b553bae5d184fe-1",
+  "backend-core/d9aaaab667e49289-1",
+  "backend-core/6e4864d81232c39c-1",
+  "backend-core/4804f2a414ef6f01-1",
+  "backend-core/dc1833af13b82e2d-1",
+  "backend-core/cb0b5254f4e4ac26-1",
+  "backend-core/1cfdbb8136494b7c-1",
+  "backend-core/af3d8994f27f9508-1",
+  "backend-core/b88b2f870d7e4421-1",
+  "backend-core/4ff3b3eb5d8b58c4-3",
+  "backend-core/46b3392f051dc8d7-1",
+  "backend-core/d58358f7f920e99c-1",
+  "backend-core/642150eaacf772b5-1",
+  "backend-core/d4207acb24ab9af6-1",
+  "backend-core/f5728797d94e6d35-1",
+  "backend-core/54c376e6a3ecbd60-1"
+ ],
+ "counts": {
+  "units": 32,
+  "admit": 26,
+  "annex": 6,
+  "drop": 0,
+  "hold": 0,
+  "pending": 0,
+  "consigne_before_unsupported": 0,
+  "consigne_after_dropped": 0,
+  "structure_rows_removed": 0,
+  "framework": 0,
+  "guarded_elsewhere": 0,
+  "resolved": 0,
+  "restricted": 2,
+  "counterexample": 0,
+  "promoted": 0,
+  "kept_for": {
+   "rediscovered": 4
+  },
+  "pointers_removed": 0,
+  "restored_alerts": 0,
+  "budget_cut": 0
+ },
+ "answers": [],
+ "budget_cut": [],
+ "structure_rows_removed": [],
+ "notes": [],
+ "base_sha256_after": "39bfcc06120267da616569dbbc5fb4625c3a364c7ee046233a677a2ac05aa654",
+ "bases_touched": {
+  "backend-core": {
+   "fingerprint": "25f44a89e54e4b2fde8775ca41e34886c048c60adccc1939aea23b5565fc353a",
+   "sha256_after": "39bfcc06120267da616569dbbc5fb4625c3a364c7ee046233a677a2ac05aa654"
+  }
+ },
+ "lint": {
+  "ok": true,
+  "errors": 0,
+  "warnings": 2
+ }
+}

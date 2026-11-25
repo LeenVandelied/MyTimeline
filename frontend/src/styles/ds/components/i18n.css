@@ -176,24 +176,23 @@
    Le FORMATAGE est fait côté code par Intl.DateTimeFormat / NumberFormat ;
    le design ne fait que GARANTIR LA PLACE et la tenue typographique.
    Convention de marquage :
-     <time datetime="2026-06-24" class="mt-date--short">{{ formatted }}</time>
-   Formats cibles (cf. Audit Multilingue §3) :
-     FR  MER 24 JUIN     ·  EN  WED JUN 24
-     ES  MIÉ 24 JUN      ·  DE  MI. 24. JUN
+     <time datetime="2026-06-24" class="mt-date--long">{{ formatted }}</time>
+   #517 — Le format de date courte en capitales (11px + uppercase) a été
+   retiré le 2026-11-24 : aucun écran ne l'utilisait. À rouvrir si une
+   maquette le demande.
    tabular-nums = chiffres de chasse fixe (alignement des colonnes mono).
    unicode-bidi:isolate = une date/un nombre ne se réordonne JAMAIS dans un
-   contexte RTL (le « 24 » reste avant « JUIN », la ponctuation ne migre pas).
+   contexte RTL (« 24 juin » garde son ordre, la ponctuation ne migre pas).
    ============================================================ */
 .mt-num{
   font-family:var(--font-mono); font-variant-numeric:tabular-nums lining-nums;
   font-feature-settings:"tnum" 1; direction:ltr; unicode-bidi:isolate;
 }
-.mt-date--short, .mt-date--long{
+.mt-date--long{
   font-family:var(--font-mono); font-variant-numeric:tabular-nums;
   direction:ltr; unicode-bidi:isolate; white-space:nowrap; letter-spacing:.01em;
+  font-size:13px;
 }
-.mt-date--short{font-size:11px; text-transform:uppercase; letter-spacing:.06em;}
-.mt-date--long{font-size:13px;}
 /* #516 — Neutralisation VOLONTAIREMENT limitée au sélecteur préfixé `time`.
    `<time>` n'a en réalité aucun style natif de couleur/soulignement (contrairement
    à `<a>`) : la règle est défensive, pour le jour où un `<time class="mt-num">`
@@ -207,7 +206,7 @@
    `color:inherit` non préfixé y battrait toujours les utilitaires Tailwind
    `text-ink-muted`/`text-ink`/`text-accent` posés sur ces mêmes éléments,
    quelle que soit leur spécificité — régression de couleur immédiate. */
-time.mt-date--short, time.mt-date--long, time.mt-num{text-decoration:none; color:inherit;}
+time.mt-date--long, time.mt-num{text-decoration:none; color:inherit;}
 
 /* ============================================================
    8 · RTL  →  miroir logique de l'UI, frise conservée LTR

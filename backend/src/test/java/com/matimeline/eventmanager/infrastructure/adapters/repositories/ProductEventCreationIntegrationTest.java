@@ -12,11 +12,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.matimeline.eventmanager.application.dtos.EventCreationRequest;
-import com.matimeline.eventmanager.application.dtos.ProductCreationRequest;
 import com.matimeline.eventmanager.domain.models.Event;
 import com.matimeline.eventmanager.domain.models.EventCreateCommand;
 import com.matimeline.eventmanager.domain.models.Product;
+import com.matimeline.eventmanager.domain.models.ProductCreateCommand;
 import com.matimeline.eventmanager.domain.ports.services.EventService;
 import com.matimeline.eventmanager.domain.ports.services.ProductService;
 import com.matimeline.eventmanager.infrastructure.entities.CategoryEntity;
@@ -79,11 +78,8 @@ class ProductEventCreationIntegrationTest extends AbstractPostgresIntegrationTes
         CategoryEntity category = persistSystemCategory();
         em.flush();
 
-        ProductCreationRequest request = new ProductCreationRequest();
-        request.setName("create-product-" + UUID.randomUUID());
-        request.setUserId(user.getId());
-        request.setCategory(category.getId());
-        request.setEvents(new ArrayList<>());
+        ProductCreateCommand request = new ProductCreateCommand(
+                "create-product-" + UUID.randomUUID(), category.getId(), user.getId(), null, new ArrayList<>());
 
         Product created = productService.createProduct(request);
 
@@ -96,7 +92,7 @@ class ProductEventCreationIntegrationTest extends AbstractPostgresIntegrationTes
                 .isPresent()
                 .get()
                 .extracting(Product::getName)
-                .isEqualTo(request.getName());
+                .isEqualTo(request.name());
     }
 
     /** Création produit AVEC event imbriqué : persist en cascade (ProductEntity + EventEntity neufs). */
@@ -106,20 +102,13 @@ class ProductEventCreationIntegrationTest extends AbstractPostgresIntegrationTes
         CategoryEntity category = persistSystemCategory();
         em.flush();
 
-        EventCreationRequest eventReq = new EventCreationRequest();
-        eventReq.setName("nested-event-" + UUID.randomUUID());
-        eventReq.setType("single");
-        eventReq.setDurationValue(1);
-        eventReq.setDurationUnit("days");
-        eventReq.setIsRecurring(false);
-        eventReq.setDate(LocalDate.of(2026, 7, 2));
-        eventReq.setIsAllDay(true);
+        EventCreateCommand eventReq = new EventCreateCommand(
+                "nested-event-" + UUID.randomUUID(), "single", 1, "days", false, null,
+                LocalDate.of(2026, 7, 2), true, null, null);
 
-        ProductCreationRequest request = new ProductCreationRequest();
-        request.setName("create-product-nested-" + UUID.randomUUID());
-        request.setUserId(user.getId());
-        request.setCategory(category.getId());
-        request.setEvents(List.of(eventReq));
+        ProductCreateCommand request = new ProductCreateCommand(
+                "create-product-nested-" + UUID.randomUUID(), category.getId(), user.getId(), null,
+                List.of(eventReq));
 
         Product created = productService.createProduct(request);
 
@@ -130,7 +119,7 @@ class ProductEventCreationIntegrationTest extends AbstractPostgresIntegrationTes
 
         List<Event> events = eventService.findDomainEventByProductId(created.getId());
         assertThat(events).hasSize(1);
-        assertThat(events.get(0).getTitle()).isEqualTo(eventReq.getName());
+        assertThat(events.get(0).getTitle()).isEqualTo(eventReq.name());
     }
 
     /** Création event via EventService : persist d'une EventEntity neuve à id pré-assigné. */
@@ -140,11 +129,8 @@ class ProductEventCreationIntegrationTest extends AbstractPostgresIntegrationTes
         CategoryEntity category = persistSystemCategory();
         em.flush();
 
-        ProductCreationRequest productReq = new ProductCreationRequest();
-        productReq.setName("host-product-" + UUID.randomUUID());
-        productReq.setUserId(user.getId());
-        productReq.setCategory(category.getId());
-        productReq.setEvents(new ArrayList<>());
+        ProductCreateCommand productReq = new ProductCreateCommand(
+                "host-product-" + UUID.randomUUID(), category.getId(), user.getId(), null, new ArrayList<>());
         Product product = productService.createProduct(productReq);
         em.flush();
 

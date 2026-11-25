@@ -1,0 +1,34 @@
+{
+ "checked": 3,
+ "outcomes": {
+  "refuted": 1,
+  "skipped_not_open": 6,
+  "confirmed": 2
+ },
+ "details": [
+  {
+   "id": "A3",
+   "verdict": "refuted",
+   "outcome": "refuted",
+   "verified": 4,
+   "rejected": 0,
+   "rejections": {}
+  },
+  {
+   "id": "A10",
+   "verdict": "confirmed",
+   "outcome": "confirmed",
+   "verified": 7,
+   "rejected": 0,
+   "rejections": {}
+  },
+  {
+   "id": "A11",
+   "verdict": "confirmed",
+   "outcome": "confirmed",
+   "verified": 7,
+   "rejected": 0,
+   "rejections": {}
+  }
+ ]
+}

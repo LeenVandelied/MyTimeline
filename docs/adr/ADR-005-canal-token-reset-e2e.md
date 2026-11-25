@@ -141,12 +141,15 @@ Justification (revue S45) :
   `E2eTestSupportPackageGuardTest` (ArchUnit) vérifie que **rien en production ne dépend** de ce
   package. L'écart ne peut donc pas contaminer le code réel.
 
-⚠ **Le prix**, explicite : la règle ArchUnit qui interdit à un controller d'atteindre un port de
-persistance est portée par le **package** (`ArchitectureTest.java`), pas par l'annotation
-`@RestController` — c'est ce qui laisse passer cette classe. Un durcissement de cette règle
-(cibler les `@RestController`) rendrait cet écart détectable ; il faudrait alors soit exempter
-explicitement `…adapters.testsupport`, soit introduire le service applicatif écarté ci-dessus.
-Ce durcissement touche une règle transverse et est **hors du périmètre** de #283 : suivi à part.
+⚠ **Le prix**, explicite : la règle ArchUnit des controllers (`ArchitectureTest.java`) n'interdit
+que la dépendance aux services concrets `application.services`. Elle ne couvre pas l'accès direct à
+un port de persistance, c'est ce qui laisse passer cette classe. Depuis #321, elle est portée par le
+**rôle** (annotations `@RestController`, `@Controller`, `@RestControllerAdvice` et
+`@ControllerAdvice`) en plus du dossier des controllers, et non plus par le seul package.
+`E2eResetTokenController` y est donc soumis sans exemption (voir Limites §4). Un durcissement qui
+interdirait l'accès aux ports de persistance rendrait cet écart détectable ; il faudrait alors soit
+exempter explicitement `…adapters.testsupport`, soit introduire le service applicatif écarté
+ci-dessus. Ce durcissement est **hors du périmètre** de #283 et de #321 : suivi à part.
 
 ### 2. Le port `E2eResetTokenFinder` vit hors de `domain/ports/`
 
@@ -173,9 +176,17 @@ revue S45 ne fait que **départager les ex æquo** de façon reproductible — l
 aléatoire, il n'ordonne pas par récence. Si une TTL variable est un jour introduite, la correction
 attendue est l'ajout d'une colonne de création, pas un ajustement de ce tri.
 
+### 4. Le contrôleur de support E2E est couvert par la règle d'architecture des contrôleurs
+
+Depuis #321, la règle ArchUnit des contrôleurs (`ArchitectureTest`) vise les classes annotées
+`@RestController`, `@Controller`, `@RestControllerAdvice` ou `@ControllerAdvice` (rôle en plus du
+dossier des controllers). `E2eResetTokenController` y est donc soumis, **sans exemption**, et
+couvert pour la seule interdiction des dépendances aux services concrets. Il ne dépend d'aucun
+service concret (`application.services`), ce que la règle vérifie.
+
 ## Références
 
 - Issue #283 (Sprint 45) ; issue #145 (Sprint 37, canal DB d'origine) ; issue #284 (consommateur).
-- BR-AUT-005 / BR-AUT-012 (`.ai-env/context-packs/br-auth.md`).
+- BR-AUT-005 / BR-AUT-012 (anciennes règles métier d'authentification, supprimées avec la stack ai-env le 2026-11-19, voir l'historique git).
 - `backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/`.
 - `frontend/e2e/support/reset-token.ts`, `frontend/e2e/forgot-password.spec.ts`.

@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils'
 /**
  * #53 — Spinner accessible pour les états « loading » des formulaires.
  * `role="status"` + `aria-label` + texte `sr-only` : annoncé aux lecteurs
- * d'écran (cf. context-pack frontend, a11y). Couleur via `currentColor` →
+ * d'écran (a11y). Couleur via `currentColor` →
  * hérite du token du conteneur (aucune couleur hardcodée).
  */
 export interface SpinnerProps extends React.HTMLAttributes<HTMLSpanElement> {

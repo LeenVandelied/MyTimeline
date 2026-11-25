@@ -1,0 +1,44 @@
+{
+ "files": 700,
+ "bytes": 4621905,
+ "by_repo": {
+  "backend": 270,
+  "frontend": 389,
+  "frontend-app": 41
+ },
+ "entities": 7,
+ "seeds": 7,
+ "hubs": [
+  "User"
+ ],
+ "seeds_by_origin": {
+  "entity": 7
+ },
+ "seeds_from_folders": [],
+ "folders_on_entity_seeds": [],
+ "groups": 4,
+ "groups_with_files": 4,
+ "labelled": 237,
+ "by_how": {
+  "name": 179,
+  "fanin": 21,
+  "imports": 37
+ },
+ "tech": 423,
+ "transversal_home": 0,
+ "ambiguous": 0,
+ "unassigned": 40,
+ "unassigned_rate": 0.0571,
+ "unassigned_bytes_rate": 0.0384,
+ "edges_source": "regex",
+ "file_edges": 1684,
+ "graphify": {},
+ "motifs": [
+  "authorization",
+  "batch",
+  "integrations",
+  "state-machine"
+ ],
+ "notes": [],
+ "duration_s": 0.97
+}

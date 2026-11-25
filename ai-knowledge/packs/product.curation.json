@@ -1,0 +1,3717 @@
+{
+ "pack": "product",
+ "schema": 1,
+ "curated_at": "2026-11-20T12:45:00Z",
+ "curator": "curate/1",
+ "base_sha256": "2bfca16f7a112102b3218560e3785cde02464423ef22b18da5b8b0754655f4dd",
+ "pack_sha256_before": "e0191fcc9fc9707ad9678a6b0a176a3ce2f5303ad8e329029626ca160f57f4b0",
+ "pack_sha256_after": "d037aacb301648354186544438aa0fa83e0efc6d9c32a529776a635ebb446876",
+ "criteria_sha256": "48e0e20f086c5b11deecfecdc547ba1d6115faee1597a5aaf682f6c699e92423",
+ "models": {
+  "measure": "haiku",
+  "refute": "sonnet"
+ },
+ "base_fingerprint": "3197943c795d30038856a4876cceb9d4fbd4da41b9a1e0571c51fda664b2f2dc",
+ "bytes": {
+  "before": 12168,
+  "after": 12168,
+  "by_section": {
+   "activate": {
+    "before": 180,
+    "after": 180
+   },
+   "lexicon": {
+    "before": 78,
+    "after": 78
+   },
+   "rules": {
+    "before": 1082,
+    "after": 1082
+   },
+   "structure": {
+    "before": 2187,
+    "after": 2187
+   },
+   "surface": {
+    "before": 1526,
+    "after": 1526
+   },
+   "files": {
+    "before": 1928,
+    "after": 1928
+   },
+   "relations": {
+    "before": 319,
+    "after": 319
+   },
+   "tests": {
+    "before": 828,
+    "after": 828
+   },
+   "questions": {
+    "before": 665,
+    "after": 665
+   },
+   "alerts": {
+    "before": 2391,
+    "after": 2391
+   },
+   "coverage": {
+    "before": 613,
+    "after": 613
+   }
+  }
+ },
+ "units": [
+  {
+   "id": "product:rules:1",
+   "section": "rules",
+   "rank": 1,
+   "text": "- Un produit inconnu, non archivé ou d'un autre utilisateur donne la même ProductNotFoundException (réponse uniforme). [#ee944d529b683e6d-1]",
+   "fact_text": "Un produit inconnu, non archivé ou d'un autre utilisateur donne la même ProductNotFoundException (réponse uniforme)",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "product/ee944d529b683e6d-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+     197,
+     198,
+     "40f16474c9c181126efb5344785cc565eff0dadf1f332d4a1446c53fe63e89f0"
+    ]
+   ],
+   "code_sha256": "40f16474c9c181126efb5344785cc565eff0dadf1f332d4a1446c53fe63e89f0",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.0,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "restatement": "restoreProduct lève ProductNotFoundException lorsque la valeur restored vaut 0, c'est-à-dire lorsque la mise à jour de restauration n'a touché aucune ligne. L'extrait ne montre pas la requête elle-même, donc la signification exacte de restored repose sur son nom.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 3,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.857,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "job": "product:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_ProductCreationRequest.java:1",
+     "rank_in_lot": 1,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 31,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:rules:2",
+   "section": "rules",
+   "rank": 2,
+   "text": "- La catégorie est obligatoire et doit appartenir à l'appelant ou être système, sinon CategoryNotFoundException est levée. [#f1ff1bcbd432dc1a-1] [#5905874ac78b836f-1]",
+   "fact_text": "La catégorie est obligatoire et doit appartenir à l'appelant ou être système, sinon CategoryNotFoundException est levée",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "product/f1ff1bcbd432dc1a-1",
+    "product/5905874ac78b836f-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/application/dtos/ProductCreationRequest.java",
+    "backend:src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/dtos/ProductCreationRequest.java",
+     16,
+     17,
+     "2a0b1bd69efa492e7de83e1da8d0c9fd6dd0110c7a579a4fd0c977dcb3d02500"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+     52,
+     54,
+     "4cd2454fffadc1a135d43b51b75e670b526b9d42eced210d7efcecff43d13370"
+    ]
+   ],
+   "code_sha256": "e6db597a89a459023fb606c5bef739443755e0f96507fe89a60a693df712020d",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 6
+      }
+     },
+     "restatement": "Le champ ProductCreationRequest.category est annoté @NotNull avec le message « Category is required », donc une requête de création sans catégorie est rejetée par la validation. Dans ProductServiceImpl.createProduct, la catégorie passe ensuite par resolveAssignableCategory, qui exige qu'elle appartienne à l'appelant ou soit système (ownerId null).",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 3,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.667,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 6
+      }
+     },
+     "job": "product:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_ProductCreationRequest.java:1",
+     "rank_in_lot": 2,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 33,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:rules:3",
+   "section": "rules",
+   "rank": 3,
+   "text": "- clearColor, prioritaire, remet la couleur à null, sinon elle n'est remplacée que si la valeur fournie est non null. [#1f81adc7889b6ff7-3]",
+   "fact_text": "clearColor, prioritaire, remet la couleur à null, sinon elle n'est remplacée que si la valeur fournie est non null",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "product/1f81adc7889b6ff7-3"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+     140,
+     144,
+     "8d76e93ea9dbe33a2e292ed5ebb957a6d901d6dfb70e09349475d8fc59c4592c"
+    ]
+   ],
+   "code_sha256": "8d76e93ea9dbe33a2e292ed5ebb957a6d901d6dfb70e09349475d8fc59c4592c",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
+      "terms": 0.429,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "restatement": "Dans updateProduct, si request.isClearColor() est vrai, la couleur du produit est remise à null et ce cas est prioritaire. Sinon, une couleur non null dans la requête remplace la couleur existante, et une couleur absente laisse la couleur inchangée.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 3,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.714,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "job": "product:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_ProductCreationRequest.java:1",
+     "rank_in_lot": 3,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 35,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:rules:4",
+   "section": "rules",
+   "rank": 4,
+   "text": "- Le nom (1 à 100 caractères, pas uniquement des espaces) et la couleur (#RRGGBB) sont validés, null étant ignoré. [#e6032e4c6921b184-2] [#85cfb8bf280a8bdd-1]",
+   "fact_text": "Le nom (1 à 100 caractères, pas uniquement des espaces) et la couleur (#RRGGBB) sont validés, null étant ignoré",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "product/e6032e4c6921b184-2",
+    "product/85cfb8bf280a8bdd-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/application/dtos/ProductUpdateRequest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/dtos/ProductUpdateRequest.java",
+     30,
+     31,
+     "702bafcc2d89267e0a3a00e49d3a40093ca68d67c0350b1a9ce0f49ee1015f58"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/dtos/ProductUpdateRequest.java",
+     36,
+     36,
+     "e7dd1f04474a6b72158daf2884801881e3725ba6979309c3416093dd4d0fbacf"
+    ]
+   ],
+   "code_sha256": "c8798c3f4b6591a412f7cc92afd7a8400edfbd72ae30b84239c87d9c02218738",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 0.167,
+      "n": {
+       "identifiers": 1,
+       "values": 2,
+       "terms": 6
+      }
+     },
+     "restatement": "Dans ProductUpdateRequest, name porte @Size(min = 1, max = 100) et @Pattern(regexp = \".*\\\\S.*\") qui rejette un nom composé uniquement d'espaces, sans @NotNull visible, donc l'absence du champ n'est pas rejetée par cet extrait. color porte le même motif hexadécimal #RRGGBB que la création.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 5,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/application/dtos/ProductCreationRequest.java",
+     "file_ok": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 0.667,
+      "n": {
+       "identifiers": 1,
+       "values": 2,
+       "terms": 6
+      }
+     },
+     "job": "product:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_ProductCreationRequest.java:1",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "ProductUpdateRequest L30-31 et L36 : @Size(1,100), @Pattern non blanc et @Pattern #RRGGBB ; ces contraintes ignorent null.",
+      "ProductUpdateRequest.name L30-31 (@Size 1..100, @Pattern non blanc) et color L36 (#RRGGBB) correspondent ; null ignoré par Bean Validation.",
+      "ProductUpdateRequest.name L30-31 porte @Size(1..100) et @Pattern non blanc, color L36 @Pattern #RRGGBB ; ces contraintes ignorent null."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 36,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:rules:5",
+   "section": "rules",
+   "rank": 5,
+   "text": "- Ne pas utiliser ProductRepositoryJpaImpl.save pour détecter l'absence d'un produit : charger d'abord avec findDomainProductById et lever ProductNotFoundException, comme le font updateProduct et archiveById [#01e0685abee3c880-1] `backend:src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java:123-124`.",
+   "fact_text": "Ne pas utiliser ProductRepositoryJpaImpl.save pour détecter l'absence d'un produit : charger d'abord avec findDomainProductById et lever ProductNotFoundException, comme le font updateProduct et archiveById ProductServiceImpl.java",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "product/01e0685abee3c880-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+     122,
+     147,
+     "ed92a632359ff54053f94e008b22c47a1c8fc942ff94595cfcb92d92e4d1903c"
+    ]
+   ],
+   "code_sha256": "ed92a632359ff54053f94e008b22c47a1c8fc942ff94595cfcb92d92e4d1903c",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": null,
+      "terms": 0.143,
+      "n": {
+       "identifiers": 6,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "restatement": "`ProductServiceImpl.updateProduct` charge le produit par `id` (sinon `ProductNotFoundException`), puis n'applique que les champs non null : `name` est remplacé si fourni, et `categoryId` est résolu via `resolveAssignableCategory` contre le propriétaire du produit, pour qu'une catégorie d'autrui soit traitée comme inexistante (404 selon le commentaire #50). Pour la couleur, `isClearColor()` est prioritaire et remet `color` à null (retour à l'héritage de la catégorie), sinon un `color` non null pose la surcharge, et un `color` null laisse la valeur inchangée (commentaire #158). Le produit est ensuite persisté par `productRepository.save`.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 2,
+     "within_budget": true,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.833,
+      "values": null,
+      "terms": 0.286,
+      "n": {
+       "identifiers": 6,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "job": "product:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_services_ProductServiceImpl.java:1"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "updateProduct (L123-124) et archiveById (L175-176) chargent via findDomainProductById puis lèvent ProductNotFoundException avant save, conforme au constat.",
+      "updateProduct (L123-124) et archiveById (L175-176) chargent via findDomainProductById puis lèvent ProductNotFoundException avant save, conformément à la consigne.",
+      "updateProduct (L123-124) et archiveById (L175-176) chargent via findDomainProductById puis lèvent ProductNotFoundException, conforme à la ligne ; la partie sur save n'est pas contredite."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "supported",
+     "question_verdict": "n/a"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 38,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:surface:1",
+   "section": "surface",
+   "rank": 1,
+   "text": "- La restauration ne lit pas la cible dans le contrôleur et laisse le service vérifier l'ownership via userId, donc le 404 ne vient que de ProductNotFoundException [#214af15c4a16cfc3-1] [#1b85008a2de7f5c1-1].",
+   "fact_text": "La restauration ne lit pas la cible dans le contrôleur et laisse le service vérifier l'ownership via userId, donc le 404 ne vient que de ProductNotFoundException",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "product/214af15c4a16cfc3-1",
+    "product/1b85008a2de7f5c1-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java",
+     118,
+     132,
+     "f0830e844d3fdc1ac9e1d78264d5daf6fac881e85cbd53d70bd927a57d0f9377"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java",
+     130,
+     130,
+     "8292ac9eabd402cbbd777fb5ba7f8d76ea68a40d311f309e59e51fa548542e56"
+    ]
+   ],
+   "code_sha256": "cc4f962fdeeb2f86f3d495e053793cc755e7b34c437cda53904eacd477130853",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": 0.0,
+      "terms": 0.0,
+      "n": {
+       "identifiers": 2,
+       "values": 1,
+       "terms": 8
+      }
+     },
+     "restatement": "ProductController.restoreProduct renvoie 401 si callerResolver.currentUser() est vide, puis 403 si l'identifiant de l'appelant est différent du userId du chemin. Sinon il appelle productService.restoreProduct(productId, userId) et renvoie 204 No Content.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 4,
+     "within_budget": true,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": 1.0,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 2,
+       "values": 1,
+       "terms": 8
+      }
+     },
+     "job": "product:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_ProductCreationRequest.java:1",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "restoreProduct (L118-132) ne lit pas le produit et appelle directement productService.restoreProduct(productId, userId) ; le contrôleur ne renvoie pas de 404 lui-même.",
+      "restoreProduct L118-132 ne lit pas le produit et délègue à productService.restoreProduct(productId, userId) ; le seul 404 vient de ProductNotFoundException (test L368-381).",
+      "restoreProduct L118-132 ne lit pas le produit, appelle productService.restoreProduct(productId, userId) ; le test de 404 passe par ProductNotFoundException."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 61,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:surface:2",
+   "section": "surface",
+   "rank": 2,
+   "text": "- Les autres routes sur un produit lisent d'abord le produit puis contrôlent la propriété, 404 si absent et 403 si c'est un produit d'autrui [#integrations/19fecc33e428b2ad-1] [#a692ab10977b0f60-1].",
+   "fact_text": "Les autres routes sur un produit lisent d'abord le produit puis contrôlent la propriété, 404 si absent et 403 si c'est un produit d'autrui",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "integrations/19fecc33e428b2ad-1",
+    "product/a692ab10977b0f60-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java",
+     150,
+     152,
+     "cb9481b544ccf2683108115e024f3ebd6ef349d6bb336bdbce87aebfc84450e4"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java",
+     134,
+     154,
+     "84e7f43ac539b4c1e8b089e792cd298b64856b0b879d6ccc23a8cb0056e5ead1"
+    ]
+   ],
+   "code_sha256": "a4302c577cd301d5a8fccb3fad10745aa7b898a4489a60070dc25c6232514055",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": null,
+      "values": 1.0,
+      "terms": 0.0,
+      "n": {
+       "identifiers": 0,
+       "values": 2,
+       "terms": 8
+      }
+     },
+     "restatement": "ProductController.getProductById renvoie 401 si aucun utilisateur n'est résolu, 403 si userId diffère de l'id de l'appelant, 404 si productService.findDomainProductById est vide, 403 si productBelongsToUser est faux, sinon 200 avec ProductResponse.fromDomain.",
+     "confidence": "high",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 4,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": null,
+      "values": 1.0,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 0,
+       "values": 2,
+       "terms": 8
+      }
+     },
+     "job": "product:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_ProductCreationRequest.java:1",
+     "rank_in_lot": 5,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 62,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:surface:3",
+   "section": "surface",
+   "rank": 3,
+   "text": "- Un produit sans utilisateur est considéré comme n'appartenant à personne, la vérification de propriété renvoie faux [#integrations/ee9ecada784b2990-1].",
+   "fact_text": "Un produit sans utilisateur est considéré comme n'appartenant à personne, la vérification de propriété renvoie faux",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "integrations/ee9ecada784b2990-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java",
+     242,
+     246,
+     "e96789c2aa165a3134c74a5b181e10e023675810794634b4cb60c975806714bd"
+    ]
+   ],
+   "code_sha256": "e96789c2aa165a3134c74a5b181e10e023675810794634b4cb60c975806714bd",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 0.125,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 8
+      }
+     },
+     "restatement": "ProductController.productBelongsToUser ne renvoie true que si product.getUser() n'est pas null, que son getId() n'est pas null et qu'il est égal à userId.",
+     "confidence": "high",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 4,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 0.625,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 8
+      }
+     },
+     "job": "product:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_ProductCreationRequest.java:1",
+     "rank_in_lot": 6,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 63,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:surface:4",
+   "section": "surface",
+   "rank": 4,
+   "text": "- DELETE archive le produit (soft delete) et renvoie 204, il ne le supprime pas [#895ce336064b5985-1].",
+   "fact_text": "DELETE archive le produit (soft delete) et renvoie 204, il ne le supprime pas",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "product/895ce336064b5985-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java",
+     183,
+     206,
+     "98b1a16d28df0ec56be8274d09bd4eed12e8fe8c00e5d11f9d05d777fe608cb1"
+    ]
+   ],
+   "code_sha256": "98b1a16d28df0ec56be8274d09bd4eed12e8fe8c00e5d11f9d05d777fe608cb1",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 0.4,
+      "n": {
+       "identifiers": 1,
+       "values": 1,
+       "terms": 5
+      }
+     },
+     "restatement": "ProductController.deleteProduct applique les mêmes contrôles que getProductById (401, 403 sur userId, 404, 403 sur propriété), puis appelle productService.archiveById, soit un soft delete selon BR-PRO-007, et renvoie 204 No Content sans suppression physique.",
+     "confidence": "high",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 4,
+     "within_budget": true,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": 1.0,
+      "terms": 0.4,
+      "n": {
+       "identifiers": 1,
+       "values": 1,
+       "terms": 5
+      }
+     },
+     "job": "product:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_ProductCreationRequest.java:1",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "deleteProduct L183-206 appelle productService.archiveById (soft delete) et renvoie noContent.",
+      "deleteProduct L183-206 appelle archiveById et renvoie noContent (soft delete).",
+      "deleteProduct L183-206 appelle archiveById (soft delete) et renvoie noContent (204)."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 64,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:surface:5",
+   "section": "surface",
+   "rank": 5,
+   "text": "- Les archivés ont leur propre route et leur propre requête native, triée par date de mise à jour décroissante puis par id [#2ba17dfa95093054-1] [#2f24c825d05e665c-1].",
+   "fact_text": "Les archivés ont leur propre route et leur propre requête native, triée par date de mise à jour décroissante puis par id",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "product/2ba17dfa95093054-1",
+    "product/2f24c825d05e665c-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java",
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ProductRepositoryJpaImpl.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java",
+     92,
+     106,
+     "d3edeaa1dc694cbf2a0c88799da39a97ef99d691e5f0a17924377929f4f0d797"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ProductRepositoryJpaImpl.java",
+     214,
+     225,
+     "08dfbfd814c6030d67c578b80d456b45d7a51715007da654a63fdb937b9bc8c7"
+    ]
+   ],
+   "code_sha256": "b12e203415f182de7458312db5dcfad2b929afe880e2d9513d6235c0824b9816",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 0.0,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 10
+      }
+     },
+     "restatement": "ProductController.getArchivedProducts renvoie 401 sans appelant, 403 si userId diffère de l'appelant, sinon 200 avec la liste de productService.getArchivedProducts(userId) mappée par ArchivedProductResponse::fromDomain.",
+     "confidence": "high",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 8,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ProductRepositoryJpaImpl.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 0.3,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 10
+      }
+     },
+     "job": "product:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_ProductCreationRequest.java:1",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Route /products/archived (L92) et requête native ORDER BY updated_at DESC, id (L219-220).",
+      "Route /products/archived L92 et requête native L219-220 avec ORDER BY updated_at DESC, id.",
+      "Route /products/archived L92 et requête native L219-220 avec ORDER BY updated_at DESC, id."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 65,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:surface:6",
+   "section": "surface",
+   "rank": 6,
+   "text": "- La restauration ne modifie que les produits archivés du userId donné et retourne le nombre de lignes modifiées [#3e052d935a2dbdca-1].",
+   "fact_text": "La restauration ne modifie que les produits archivés du userId donné et retourne le nombre de lignes modifiées",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "product/3e052d935a2dbdca-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/domain/ports/repositories/ProductRepository.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/domain/ports/repositories/ProductRepository.java",
+     104,
+     104,
+     "f827633fb99691ab2cfe609a1063db7f888f8bd42623f77131a7bd2de786d2f3"
+    ]
+   ],
+   "code_sha256": "f827633fb99691ab2cfe609a1063db7f888f8bd42623f77131a7bd2de786d2f3",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.375,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 8
+      }
+     },
+     "restatement": "Le port ProductRepository.restoreArchivedByIdAndUserId(productId, userId) ne déclare qu'une signature retournant un int. L'implémentation n'est pas dans l'extrait, donc on suppose que la valeur retournée est un nombre de lignes modifiées, ce qui reste une inférence.",
+     "confidence": "medium",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 8,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ProductRepositoryJpaImpl.java",
+     "file_ok": false,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 8
+      }
+     },
+     "job": "product:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_ProductCreationRequest.java:1",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "La signature int restoreArchivedByIdAndUserId(UUID productId, UUID userId) (L104) est cohérente avec la ligne ; la requête n'est pas visible, pas de preuve contraire.",
+      "La signature int restoreArchivedByIdAndUserId(UUID productId, UUID userId) L104 est cohérente avec la ligne, rien ne la contredit.",
+      "Le port restoreArchivedByIdAndUserId(productId, userId) retourne int, cohérent avec le constat ; rien ne le contredit."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 66,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:surface:7",
+   "section": "surface",
+   "rank": 7,
+   "text": "- Une RuntimeException levée par le service pendant la liste se propage et n'est pas convertie en 401, comportement fixé par un test [#integrations/38fae44ada312d48-2].",
+   "fact_text": "Une RuntimeException levée par le service pendant la liste se propage et n'est pas convertie en 401, comportement fixé par un test",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "integrations/38fae44ada312d48-2"
+   ],
+   "files": [
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductControllerOwnershipTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductControllerOwnershipTest.java",
+     126,
+     136,
+     "8cbc8ab084d701516803914fa2e1dd70e15eb25b9301092b0832f36326d9b499"
+    ]
+   ],
+   "code_sha256": "8cbc8ab084d701516803914fa2e1dd70e15eb25b9301092b0832f36326d9b499",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 0.25,
+      "n": {
+       "identifiers": 1,
+       "values": 1,
+       "terms": 8
+      }
+     },
+     "restatement": "Le test getProducts_serviceThrows_propagates_notMaskedAs401 attend qu'une RuntimeException levée par productService.getProductsWithEvents remonte comme exception au lieu d'être transformée en 401.",
+     "confidence": "high",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 12,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductControllerOwnershipTest.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 0.375,
+      "n": {
+       "identifiers": 1,
+       "values": 1,
+       "terms": 8
+      }
+     },
+     "job": "product:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_ProductCreationRequest.java:1",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Le test getProducts_serviceThrows_propagates_notMaskedAs401 (L126-136) vérifie que l'exception remonte.",
+      "Test L126-136 : RuntimeException du service propage via assertThrows, pas de 401.",
+      "Le test getProducts_serviceThrows_propagates_notMaskedAs401 L126-136 vérifie que l'exception remonte via assertThrows."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 67,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:surface:8",
+   "section": "surface",
+   "rank": 8,
+   "text": "- Un PATCH sur le produit d'un autre utilisateur renvoie 403 sans appeler updateProduct [#integrations/25068b338c5f8b14-1] [#b8e07eeec1904e4d-1].",
+   "fact_text": "Un PATCH sur le produit d'un autre utilisateur renvoie 403 sans appeler updateProduct",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "integrations/25068b338c5f8b14-1",
+    "product/b8e07eeec1904e4d-1"
+   ],
+   "files": [
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductControllerOwnershipTest.java",
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductControllerOwnershipTest.java",
+     252,
+     268,
+     "c18ac9d12530cc78fea03cce9a413cc5677166a693b81b0a9ec68dfe2fe5a00f"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java",
+     156,
+     181,
+     "47ed85a9e103df32c74ff44db62bdddbcf36fc4db5dbc1b4aec0fe80a5fd52a6"
+    ]
+   ],
+   "code_sha256": "d756eae1bc06a7a2b795b2632a4f805a6690e27dcdab8b5de6d1343e67465419",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": 1.0,
+      "terms": 0.75,
+      "n": {
+       "identifiers": 2,
+       "values": 1,
+       "terms": 4
+      }
+     },
+     "restatement": "ProductController.updateProduct renvoie 401, 403 sur userId, 404, puis 403 si le produit n'appartient pas à l'appelant, et le test patchProduct_productOwnedByAnotherUser_returns403 vérifie ce 403 avec un produit appartenant à un autre utilisateur, sans appel à productService.updateProduct.",
+     "confidence": "high",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 4,
+     "within_budget": true,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": 1.0,
+      "terms": 0.25,
+      "n": {
+       "identifiers": 2,
+       "values": 1,
+       "terms": 4
+      }
+     },
+     "job": "product:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_ProductCreationRequest.java:1",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Test L252-268 : 403 et verify(productService, never()).updateProduct ; le contrôleur L173-175 le confirme.",
+      "Test L252-268 : 403 et verify never updateProduct ; contrôleur L173-175 conforme.",
+      "Test L252-268 attend 403 et verify(productService, never()).updateProduct ; le contrôleur L173-175 renvoie FORBIDDEN."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 68,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:surface:9",
+   "section": "surface",
+   "rank": 9,
+   "text": "- La création lève UserNotFoundException si l'utilisateur n'existe pas, et le front injecte le userId dans le corps en plus du chemin [#8236045f458a8db1-1] [#b11cebb63b3990b9-1].",
+   "fact_text": "La création lève UserNotFoundException si l'utilisateur n'existe pas, et le front injecte le userId dans le corps en plus du chemin",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "product/8236045f458a8db1-1",
+    "product/b11cebb63b3990b9-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+    "frontend:services/productService.ts"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+     49,
+     50,
+     "36eb6d3090436c8daa46d19ac5d8e49e53e3608635615a499f686d24cda17256"
+    ],
+    [
+     "frontend:services/productService.ts",
+     18,
+     45,
+     "4d96d330ef7899721991cab772cf661d477fbb370f47aea620e1067b9e46ad4b"
+    ]
+   ],
+   "code_sha256": "e3268d4fbb237554fbce6f5996e68ba31d17262d87d099792896c8305c834765",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": null,
+      "terms": 0.125,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 8
+      }
+     },
+     "restatement": "Le service frontend createProduct envoie un POST sur /users/{userId}/products avec le corps productData auquel il ajoute le champ userId. En cas d'erreur, il journalise via console.error avec safeErrorMessage puis relance l'erreur. Une option d'erreur inline est transmise à apiClient.post.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 3,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.875,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 8
+      }
+     },
+     "job": "product:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_ProductCreationRequest.java:1",
+     "rank_in_lot": 4,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 69,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:tests:1",
+   "section": "tests",
+   "rank": 1,
+   "text": "- Les tests fixent que clearColor remet la couleur à null et l'emporte sur color, que l'absence de color laisse la valeur et qu'une création sans couleur persiste null. [#bbfc4f67ad3dc4f3-1] [#ab04586cc2314a7e-1] [#1ff9190d9f49ffee-1]",
+   "fact_text": "Les tests fixent que clearColor remet la couleur à null et l'emporte sur color, que l'absence de color laisse la valeur et qu'une création sans couleur persiste null",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "product/bbfc4f67ad3dc4f3-1",
+    "product/ab04586cc2314a7e-1",
+    "product/1ff9190d9f49ffee-1"
+   ],
+   "files": [
+    "backend:src/test/java/com/matimeline/eventmanager/application/services/ProductServiceImplTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/application/services/ProductServiceImplTest.java",
+     356,
+     372,
+     "e1e89a5496994bd2a57591c3e3825ea5fddc40cf6fbd4322586a9b5bad74db30"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/application/services/ProductServiceImplTest.java",
+     337,
+     352,
+     "722c966e763e86ec21aad615885300ed7170e01b99fd02e347098f771066fbb7"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/application/services/ProductServiceImplTest.java",
+     264,
+     277,
+     "1a3b7917314e8346d8e7a064ab2ab911d9163b4e87f51e1c9963ea80f276d768"
+    ]
+   ],
+   "code_sha256": "81e9a815c264ef8fcdbe2891a98f4ce0a32826df3353e1a7c65d491779434603",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
+      "terms": 0.0,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 12
+      }
+     },
+     "restatement": "L'annotation @SQLRestriction(\"archived = false\") sur ProductEntity exclut les lignes archivées des requêtes Hibernate sur cette entité. L'extrait ne montre que cette ligne, donc son effet sur les requêtes natives comme findArchivedByUserId n'est pas visible ici.",
+     "confidence": "medium",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 9,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/test/java/com/matimeline/eventmanager/application/services/ProductServiceImplTest.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.75,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 12
+      }
+     },
+     "job": "product:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_ProductCreationRequest.java:1",
+     "rank_in_lot": 7,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 101,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:tests:2",
+   "section": "tests",
+   "rank": 2,
+   "text": "- Les tests fixent que PATCH avec name vide ou blanc donne 400 sans appel au service, et qu'un PATCH avec seulement categoryId donne 200. [#1cfd6e24b15be414-1] [#56ee0eef1027811f-1] [#fb61a40c3eff3e71-1]",
+   "fact_text": "Les tests fixent que PATCH avec name vide ou blanc donne 400 sans appel au service, et qu'un PATCH avec seulement categoryId donne 200",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "product/1cfd6e24b15be414-1",
+    "product/56ee0eef1027811f-1",
+    "product/fb61a40c3eff3e71-1"
+   ],
+   "files": [
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductControllerOwnershipTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductControllerOwnershipTest.java",
+     177,
+     185,
+     "a064df8497e835a9bbfe1301d42a5b66aa65891abeadf223e165bd33438b59ae"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductControllerOwnershipTest.java",
+     192,
+     200,
+     "f77982e128acbc0b04d08dd1da337672a2d767a5889430325eeb5a410c20b659"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductControllerOwnershipTest.java",
+     206,
+     221,
+     "164251b30fcd424b13ba95b3dd7d085d9c3e8a304738557bb68b03a9f8917290"
+    ]
+   ],
+   "code_sha256": "64124398ef2e1e8af08e72ff0b75f118ed3ee65893943af47f6d13094296adf9",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": 0.0,
+      "terms": 0.375,
+      "n": {
+       "identifiers": 2,
+       "values": 2,
+       "terms": 8
+      }
+     },
+     "restatement": "Le test updateProduct_clearColorWinsOverProvidedColor part d'un produit de couleur #ff8800, envoie color #123456 avec clearColor à true, et attend une couleur null après updateProduct avec un save appelé. Les deux autres tests du même extrait vérifient qu'une couleur absente laisse la couleur inchangée et qu'une création sans color donne une couleur null héritant de la catégorie.",
+     "confidence": "high",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 3,
+     "within_budget": true,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductControllerOwnershipTest.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": 1.0,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 2,
+       "values": 2,
+       "terms": 8
+      }
+     },
+     "job": "product:rediscover:backend_src_test_java_com_matimeline_eventmanager_infrastructure_adapters_controllers_ProductControllerOwnershipTest.java:2",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Tests L177-200 : 400 pour nom vide et blanc sans appel au service ; test L206-221 : categoryId seul donne 200.",
+      "Tests L177-200 (name vide/blanc -> 400, never updateProduct) et L206-221 (categoryId seul -> 200) correspondent.",
+      "Tests L177-200 attendent 400 avec never() sur updateProduct pour nom vide et blanc ; L206-221 attend 200 pour categoryId seul."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 102,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:tests:3",
+   "section": "tests",
+   "rank": 3,
+   "text": "- Les tests fixent que les réponses ne contiennent ni user ni owner, et que les archivés n'ont ni events ni archived. [#3d1c8f1b7951785a-1] [#230d3c1e55d17b27-1] [#94942f07db2a5e6b-1]",
+   "fact_text": "Les tests fixent que les réponses ne contiennent ni user ni owner, et que les archivés n'ont ni events ni archived",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "product/3d1c8f1b7951785a-1",
+    "product/230d3c1e55d17b27-1",
+    "product/94942f07db2a5e6b-1"
+   ],
+   "files": [
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductControllerOwnershipTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductControllerOwnershipTest.java",
+     393,
+     419,
+     "a8f7ddfc8e6f6d7b831de25d011d2ef64fd3984cf723ab51d44bf3da1ddf878e"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductControllerOwnershipTest.java",
+     425,
+     447,
+     "bf97bf890ad32b22499289df1fa4a14594bed69053d4b6894d0ad701d5d769cc"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductControllerOwnershipTest.java",
+     312,
+     333,
+     "003c67649e6dd0d0b7c59affb8233e5f4f41e4b716ad7699bed12cfbd3a87e28"
+    ]
+   ],
+   "code_sha256": "46acaa13d66478006b3cba9b05c55bfbbcc464200c02a1419a164b00702b7da4",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 0.111,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 9
+      }
+     },
+     "restatement": "Le test patchProduct_emptyName_returns400 envoie un name vide et attend 400 sans appel à productService.updateProduct. Les tests blankName (name à un espace) et nameAbsent_categoryOnly (patch sur categoryId seul) donnent respectivement 400 et 200.",
+     "confidence": "high",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 3,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductControllerOwnershipTest.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 0.778,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 9
+      }
+     },
+     "job": "product:rediscover:backend_src_test_java_com_matimeline_eventmanager_infrastructure_adapters_controllers_ProductControllerOwnershipTest.java:2",
+     "rank_in_lot": 1,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 103,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:tests:4",
+   "section": "tests",
+   "rank": 4,
+   "text": "- Un test de contrôleur doit brancher GlobalExceptionHandler via setControllerAdvice, sinon le 404 sur ProductNotFoundException n'est pas obtenu. [#0e76e9555a6756f0-1]",
+   "fact_text": "Un test de contrôleur doit brancher GlobalExceptionHandler via setControllerAdvice, sinon le 404 sur ProductNotFoundException n'est pas obtenu",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "product/0e76e9555a6756f0-1"
+   ],
+   "files": [
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductControllerOwnershipTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductControllerOwnershipTest.java",
+     368,
+     381,
+     "3c82ea70c2313a6e87c8c1bfb8ce47850c9f01cca5981aeddb9e903b4e23b6a0"
+    ]
+   ],
+   "code_sha256": "3c82ea70c2313a6e87c8c1bfb8ce47850c9f01cca5981aeddb9e903b4e23b6a0",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": 0.0,
+      "terms": 0.25,
+      "n": {
+       "identifiers": 3,
+       "values": 1,
+       "terms": 4
+      }
+     },
+     "restatement": "Le test getProductById_ownProduct_returnsResponseShape_withoutUserLeak vérifie un 200 avec id, name, category.id, category.name, events[0].id et events[0].title, et l'absence des champs user, owner, category.ownerId et category.description dans la réponse.",
+     "confidence": "high",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 3,
+     "within_budget": true,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductControllerOwnershipTest.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 0.0,
+      "n": {
+       "identifiers": 3,
+       "values": 1,
+       "terms": 4
+      }
+     },
+     "job": "product:rediscover:backend_src_test_java_com_matimeline_eventmanager_infrastructure_adapters_controllers_ProductControllerOwnershipTest.java:2",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Le test L370-381 construit un standaloneSetup avec setControllerAdvice(new GlobalExceptionHandler()) pour obtenir le 404 ; la ligne en est une lecture raisonnable.",
+      "Le test L371-374 construit un MockMvc standalone avec setControllerAdvice(new GlobalExceptionHandler()) pour obtenir le 404 ; affirmation plausible, non contredite.",
+      "Le test L370-381 construit un standaloneSetup avec setControllerAdvice(new GlobalExceptionHandler()) pour obtenir le 404 sur ProductNotFoundException ; cohérent avec le constat."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 104,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:questions:1",
+   "section": "questions",
+   "rank": 1,
+   "text": "- Le 403 de restauration est-il voulu côté client ? restoreProduct du service frontend n'accepte pas de paramètre options, contrairement aux autres mutations produit. [#integrations/145742ba350d6f89-1]",
+   "fact_text": "Le 403 de restauration est-il voulu côté client ? restoreProduct du service frontend n'accepte pas de paramètre options, contrairement aux autres mutations produit",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "integrations/145742ba350d6f89-1"
+   ],
+   "files": [
+    "frontend:services/productService.ts"
+   ],
+   "ranges": [
+    [
+     "frontend:services/productService.ts",
+     124,
+     131,
+     "672d178b341b9e6654be6542c6f275561f81e16a7811348bcefd4a015f437097"
+    ]
+   ],
+   "code_sha256": "672d178b341b9e6654be6542c6f275561f81e16a7811348bcefd4a015f437097",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "restoreProduct (L124) n'a pas de paramètre options et useRestoreProduct l'appelle sans, mais rien dans le code ne dit si le 403 sans inline est voulu. Le hook ne traite que le 404.",
+      "restoreProduct (L124) n'a pas de paramètre options et useRestoreProduct l'appelle avec (userId, productId). Le code ne dit pas si c'est voulu ou un oubli. Le backend renvoie 403 dans ProductController et rien ne trace une décision.",
+      "restoreProduct (L124-131) n'a pas de paramètre options et useRestoreProduct ne passe rien ; aucun code ne dit si le 403 global (toast) est voulu pour la restauration. Seul le 404 est géré dans onError."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "open",
+     "searched": true,
+     "search": {
+      "check": "answer",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "restoreProduct|HANDLES_FORBIDDEN_INLINE dans frontend/src",
+         "found": "Seul useRestoreProduct appelle restoreProduct(userId, productId) sans options. Les autres mutations produit acceptent options."
+        },
+        {
+         "tool": "Read",
+         "target": "frontend/src/hooks/useRestoreProduct.ts",
+         "found": "onError ne gère que 404. Pas de réponse sur le 403."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "restoreProduct dans frontend",
+         "found": "seul appelant réel : useRestoreProduct.ts L52, sans options"
+        },
+        {
+         "tool": "Read",
+         "target": "useRestoreProduct.ts",
+         "found": "onError ne traite que 404, rien sur 403"
+        },
+        {
+         "tool": "Grep",
+         "target": "403|FORBIDDEN dans ProductController.java",
+         "found": "nombreux 403 renvoyés par le contrôleur, sans lien avec l'intention côté client"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "restoreProduct et HANDLES_FORBIDDEN_INLINE dans frontend/src",
+         "found": "Seul useRestoreProduct appelle restoreProduct ; HANDLES_FORBIDDEN_INLINE est passé aux autres mutations produit, jamais à la restauration."
+        },
+        {
+         "tool": "Read",
+         "target": "frontend/src/hooks/useRestoreProduct.ts",
+         "found": "Pas de gestion du 403, ni d'options ; intention non explicitée."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "answer",
+   "placed": {
+    "pack_line": 108,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:questions:2",
+   "section": "questions",
+   "rank": 2,
+   "text": "- Les produits sans catégorie doivent-ils rester hors du comptage ? Les lignes dont category_id est null sont ignorées sans erreur dans countByCategoryForUser. [#7e554cf0d1309bdb-1]",
+   "fact_text": "Les produits sans catégorie doivent-ils rester hors du comptage ? Les lignes dont category_id est null sont ignorées sans erreur dans countByCategoryForUser",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "product/7e554cf0d1309bdb-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ProductRepositoryJpaImpl.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ProductRepositoryJpaImpl.java",
+     166,
+     170,
+     "7de45b0c56d192576a704778646bd35547f63c866b30dc52c8e958aaef8d8e60"
+    ]
+   ],
+   "code_sha256": "7de45b0c56d192576a704778646bd35547f63c866b30dc52c8e958aaef8d8e60",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Le code ignore bien les lignes à category_id null (L169), mais la colonne est NOT NULL, donc ce cas ne peut pas se produire.",
+      "Le code ignore les lignes category_id null via continue (L169), mais rien ne dit si c'est voulu. category_id est peut-être nullable et le choix métier reste ouvert.",
+      "Le code tranche : products.category_id est not null depuis la baseline, donc la branche null de countByCategoryForUser est défensive et ne sert à rien en pratique."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "resolved",
+     "searched": true,
+     "search": {
+      "check": "answer",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 2,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "category_id dans db/migration",
+         "found": "V1 déclare category_id uuid not null ; V5 le rappelle ; aucune migration ne le rend nullable."
+        }
+       ],
+       [
+        {
+         "tool": "Read",
+         "target": "ProductRepositoryJpaImpl.java L155-175",
+         "found": "if (categoryId == null) continue ; le GROUP BY category_id produit bien une ligne pour null, qui est écartée"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "migration category_id",
+         "found": "V1__baseline.sql L37 not null, V5 le confirme (products.category_id uuid not null)"
+        },
+        {
+         "tool": "Grep",
+         "target": "migration drop not null / products category",
+         "found": "aucun drop not null sur category_id"
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0,
+      "contradicted": 2
+     },
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "answer",
+   "placed": {
+    "pack_line": 109,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:questions:3",
+   "section": "questions",
+   "rank": 3,
+   "text": "- getProducts et createProduct du frontend divergent-ils volontairement de categoryService ? Le premier n'a pas de validation Zod, le second journalise toute erreur. [#integrations/bdb861ee54c6c577-1] [#integrations/dda27156f28e13ec-1]",
+   "fact_text": "getProducts et createProduct du frontend divergent-ils volontairement de categoryService ? Le premier n'a pas de validation Zod, le second journalise toute erreur",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "integrations/bdb861ee54c6c577-1",
+    "integrations/dda27156f28e13ec-1"
+   ],
+   "files": [
+    "frontend:services/productService.ts"
+   ],
+   "ranges": [
+    [
+     "frontend:services/productService.ts",
+     6,
+     16,
+     "3e975974a6374b3dac02a4268f37e9e8176601d26dd26b5e1ecb379be4243d78"
+    ],
+    [
+     "frontend:services/productService.ts",
+     41,
+     44,
+     "b14527e3ca92a8935ec04b139666db8871bd82b30d71dd00b7598b7c30d6e09c"
+    ]
+   ],
+   "code_sha256": "5d92e9586f86c00c5a1d292d3360111ae02276ebeda0b92c204eaf98ae4c5c60",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Les écarts existent (getProducts sans Zod, journalisation inconditionnelle). categoryService valide avec Zod et filtre 403/404/409 via logUnexpected. Aucun commentaire ni code ne dit si l'écart est voulu.",
+      "Le code confirme la divergence (getProducts sans Zod, createProduct journalise tout via console.error, alors que categoryService utilise categorySchema.parse et logUnexpected). Aucun commentaire ni code n'indique si c'est volontaire.",
+      "Le code montre la divergence (categoryService valide en Zod et filtre les statuts 403/404/409 via logUnexpected, getProducts/createProduct non) mais rien n'indique si elle est voulue."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "open",
+     "searched": true,
+     "search": {
+      "check": "answer",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Read",
+         "target": "frontend/src/services/categoryService.ts L1-70",
+         "found": "categorySchema.array().parse et logUnexpected avec EXPECTED_STATUSES, contrairement à productService."
+        }
+       ],
+       [
+        {
+         "tool": "Read",
+         "target": "categoryService.ts",
+         "found": "Zod parse et logUnexpected filtrant 403/404/409, absents de productService"
+        },
+        {
+         "tool": "Read",
+         "target": "productService.ts",
+         "found": "getProducts et createProduct retournent response.data sans parse, journalisent toute erreur"
+        }
+       ],
+       [
+        {
+         "tool": "Read",
+         "target": "frontend/src/services/categoryService.ts",
+         "found": "categorySchema.parse et logUnexpected documentés, EXPECTED_STATUSES ; absent de productService, sans justification."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "answer",
+   "placed": {
+    "pack_line": 110,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:alerts:1",
+   "section": "alerts",
+   "rank": 1,
+   "text": "- Un produit existant sans événement renvoie 404 sur la route des événements au lieu d'une liste vide, ce qui contredit la règle des produits sans événement. Traiter ce 404 comme une liste vide côté client ou corriger le contrôleur. [#4593c850244cd3aa-1]",
+   "fact_text": "Un produit existant sans événement renvoie 404 sur la route des événements au lieu d'une liste vide, ce qui contredit la règle des produits sans événement",
+   "consigne": "Traiter ce 404 comme une liste vide côté client ou corriger le contrôleur",
+   "consigne_dropped": false,
+   "cites": [
+    "product/4593c850244cd3aa-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java",
+     229,
+     231,
+     "1f3aba03e2aa4f28a4cdacfe63347fd6f744768616dfce7d9f924bfea19e1dd1"
+    ]
+   ],
+   "code_sha256": "1f3aba03e2aa4f28a4cdacfe63347fd6f744768616dfce7d9f924bfea19e1dd1",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": {
+     "fact_supported": true,
+     "consigne_supported": true,
+     "reason": "Le fait product/4593c850244cd3aa-1 affirme le 404 au lieu d'une liste vide, en contradiction avec la règle, ce qui motive le traitement côté client ou la correction du contrôleur.",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "ProductController.getEventsByProductId L229-231 renvoie bien 404 si la liste est vide, alors que BR-PRO-005 autorise un produit sans événement. Aucun appelant frontend de cette route ni autre garde-fou trouvé.",
+      "ProductController.getEventsByProductId L229-231 renvoie bien 404 si la liste est vide, et le client frontend getEventsByProductId relance l'erreur sans la traiter en liste vide.",
+      "ProductController.getEventsByProductId renvoie bien 404 si events.isEmpty() (L229-231) et le client eventService.getEventsByProductId relance l'erreur sans la traiter comme liste vide."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "supported",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "guards",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "/events|404 dans frontend/src fichiers *roduct*",
+         "found": "Aucun appel client de la route des événements d'un produit ; seuls des 404 sur archive/restore/update."
+        },
+        {
+         "tool": "Grep",
+         "target": "getEventsByProductId dans backend",
+         "found": "Seul le contrôleur l'expose, sans autre traitement de la liste vide."
+        }
+       ],
+       [
+        {
+         "tool": "Read",
+         "target": "ProductController.java",
+         "found": "L229-231 confirme le 404 sur liste vide"
+        },
+        {
+         "tool": "Grep",
+         "target": "frontend/src '/events'",
+         "found": "eventService.getEventsByProductId appelle la route"
+        },
+        {
+         "tool": "Read",
+         "target": "frontend/src/services/eventService.ts L55-72",
+         "found": "catch puis throw error, aucun traitement du 404 comme liste vide"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "frontend/src products/${..}/events",
+         "found": "un seul appelant, eventService.ts L63"
+        },
+        {
+         "tool": "Read",
+         "target": "frontend/src/services/eventService.ts L52-82",
+         "found": "le catch relance l'erreur, aucun traitement du 404 en liste vide"
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "guards",
+   "placed": {
+    "pack_line": 114,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:alerts:2",
+   "section": "alerts",
+   "rank": 2,
+   "text": "- ProductMapper.toDomain appelle getEvents().stream() sans test de null, et Product.addEvent ajoute sans test alors que hasEvents gère le null. Une liste nulle fait échouer ces appels, l'initialiser avant. [#cd959b5c2a578081-1] [#backend-core/7609dab35d65be14-1]",
+   "fact_text": "ProductMapper.toDomain appelle getEvents().stream() sans test de null, et Product.addEvent ajoute sans test alors que hasEvents gère le null. Une liste nulle fait échouer ces appels, l'initialiser avant",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "product/cd959b5c2a578081-1",
+    "backend-core/7609dab35d65be14-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/application/mappers/ProductMapper.java",
+    "backend:src/main/java/com/matimeline/eventmanager/domain/models/Product.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/mappers/ProductMapper.java",
+     28,
+     28,
+     "a9e29ac5555ab7b5ae328f7073261a605ac47064cb829647d94c3d2afb90c3f8"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/domain/models/Product.java",
+     66,
+     68,
+     "19c0b8f696a9073497c4754d53c00f52c2d43a4646bc8a2c1c6e372bf67547de"
+    ]
+   ],
+   "code_sha256": "99daa0a7d11fc23a97969ef2eb2fb41d199bd3db5372d5f8332ee3b21ad266fb",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "ProductMapper L28 appelle getEvents().stream() et Product L67 fait this.events.add sans test de null. Les flux principaux passent une liste non nulle (createProduct: new ArrayList, ProductEntity L48: new ArrayList), mais les setters setEvents (Product L62, ProductEntity L118) permettent un null, donc l'invariant n'est pas garanti.",
+      "ProductMapper L28 appelle getEvents().stream() sans test null et Product.addEvent L67 fait this.events.add sans test. ProductEntity L48 initialise la liste à new ArrayList et createProduct passe new ArrayList, ce qui réduit le risque sans garantir l'invariant, puisque Product(…) et setEvents acceptent null.",
+      "ProductMapper.toDomain L28 appelle getEvents().stream() sans test, Product.addEvent L67 ajoute sans test, hasEvents L71 gère null. ProductEntity initialise sa liste (L48) et createProduct passe new ArrayList, mais les constructeurs de Product acceptent une liste nulle."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "guards",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "List<EventEntity> events|this.events|List<Event> events dans backend/src/main",
+         "found": "ProductEntity.events initialisé à new ArrayList<>(), mais setEvents sans garde sur Product et ProductEntity."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "events dans Product, ProductEntity",
+         "found": "ProductEntity.events = new ArrayList<>() ; Product accepte la liste telle quelle ; setEvents sans garde."
+        }
+       ],
+       [
+        {
+         "tool": "Read",
+         "target": "domain/models/Product.java",
+         "found": "addEvent sans test de null, hasEvents avec test"
+        },
+        {
+         "tool": "Grep",
+         "target": "List<EventEntity> events dans ProductEntity",
+         "found": "initialisée à new ArrayList<>() L48, ce qui réduit le risque côté mapper sans l'exclure pour un Product construit avec null"
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "guards",
+   "placed": {
+    "pack_line": 115,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:alerts:3",
+   "section": "alerts",
+   "rank": 3,
+   "text": "- Le commentaire du contrôleur de mise à jour attribue au service la validation des bornes du nom, mais le service pose le nom sans contrôle et seul le DTO valide. Tout appel au service hors DTO validé contourne les bornes, garder les annotations du DTO. [#b4d705cd3e628fe2-1] [#1f81adc7889b6ff7-1]",
+   "fact_text": "Le commentaire du contrôleur de mise à jour attribue au service la validation des bornes du nom, mais le service pose le nom sans contrôle et seul le DTO valide. Tout appel au service hors DTO validé contourne les bornes",
+   "consigne": "garder les annotations du DTO",
+   "consigne_dropped": false,
+   "cites": [
+    "product/b4d705cd3e628fe2-1",
+    "product/1f81adc7889b6ff7-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java",
+    "backend:src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java",
+     177,
+     178,
+     "4d5c5143d0b098aed3211fa95d2ea16575f344fa5064946b66b715b7e60f6009"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+     126,
+     128,
+     "0febd736d27ec96acd88079d46d43d8a66fb26a59b866515212f56dcb7d53c83"
+    ]
+   ],
+   "code_sha256": "7f7d3bd077848d5eeca87024791c20e2f0477a373d765fe4dd66cb88a2092306",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": {
+     "fact_supported": true,
+     "consigne_supported": true,
+     "reason": "Le commentaire et le fait product/1f81adc7889b6ff7-1 établissent que seul le DTO valide les bornes du nom, ce qui justifie de garder les annotations du DTO.",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "deduce": null,
+    "rediscover": null,
+    "comment": [
+     {
+      "id": "product/b4d705cd3e628fe2-1",
+      "verdict": "unverifiable"
+     }
+    ],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "ProductServiceImpl.updateProduct L126-128 pose le nom sans contrôle ; ProductUpdateRequest porte @Size(min=1,max=100) et @Pattern, appliqués par @Valid au contrôleur. Un appel au service hors DTO validé contourne bien les bornes.",
+      "ProductServiceImpl.updateProduct L126-128 pose le nom sans contrôle. Seul ProductUpdateRequest (@Size, @Pattern) valide, et le contrôleur passe par @Valid.",
+      "ProductServiceImpl.updateProduct L126-128 pose le nom sans contrôle. Les bornes sont posées par @Size(min = 1, max = 100) et @Pattern sur ProductUpdateRequest, appliquées via @Valid au contrôleur seulement."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "supported",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "guards",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "@Size|@Pattern dans ProductUpdateRequest.java",
+         "found": "@Size(min = 1, max = 100) et @Pattern(\".*\\\\S.*\") sur name : seul le DTO valide."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "ProductUpdateRequest.java annotations",
+         "found": "@Size(min=1,max=100) et @Pattern non blanc sur name, c'est la seule validation"
+        },
+        {
+         "tool": "Read",
+         "target": "ProductServiceImpl.java",
+         "found": "L126-128 setName sans contrôle"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "ProductUpdateRequest.java @Size|@Pattern",
+         "found": "les bornes du nom sont portées par le DTO (L30-31)"
+        },
+        {
+         "tool": "Grep",
+         "target": "productRepository.save( dans backend/src/main",
+         "found": "trois appels, tous dans ProductServiceImpl"
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "guards",
+   "placed": {
+    "pack_line": 116,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:alerts:4",
+   "section": "alerts",
+   "rank": 4,
+   "text": "- createProduct construit chaque Event avec product.getId() alors que le produit vient d'être créé avec un id null. La valeur transmise est null à ce stade, ne pas supposer l'id renseigné dans ce flux. [#5fdd4ac6b14115d8-1]",
+   "fact_text": "createProduct construit chaque Event avec product.getId() alors que le produit vient d'être créé avec un id null. La valeur transmise est null à ce stade",
+   "consigne": "ne pas supposer l'id renseigné dans ce flux",
+   "consigne_dropped": false,
+   "cites": [
+    "product/5fdd4ac6b14115d8-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+     86,
+     87,
+     "4a581b148ae2e2632f1e6d4288fc927213383a79b2abcd3392b42ae32ec219b5"
+    ]
+   ],
+   "code_sha256": "4a581b148ae2e2632f1e6d4288fc927213383a79b2abcd3392b42ae32ec219b5",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": {
+     "fact_supported": true,
+     "consigne_supported": true,
+     "reason": "Le fait product/5fdd4ac6b14115d8-1 affirme que product.getId() vaut null à ce stade, et la consigne de ne pas supposer un id renseigné en découle directement.",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "createProduct L62 construit Product avec id null, puis L87 passe product.getId() (null) au constructeur d'Event. Le commentaire L72-76 confirme que la valeur est null et sans effet.",
+      "ProductServiceImpl L62 construit Product avec id null, donc product.getId() à L87 vaut null ; le commentaire L76 le confirme.",
+      "createProduct construit Product avec id null (L62) puis passe product.getId() (L87), donc null ; le commentaire L76 le confirme."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "supported",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "guards",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Read",
+         "target": "ProductServiceImpl.java L56-90",
+         "found": "Product(null,...) puis Event(..., product.getId(), ...) donc productId null."
+        }
+       ],
+       [
+        {
+         "tool": "Read",
+         "target": "ProductServiceImpl.java",
+         "found": "new Product(null, ...) L62 puis product.getId() L87, aucun id assigné entre les deux."
+        }
+       ],
+       [
+        {
+         "tool": "Read",
+         "target": "ProductServiceImpl.java",
+         "found": "id null à la création L62, productId null L87, lien au produit par l'objet parent"
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "guards",
+   "placed": {
+    "pack_line": 117,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:alerts:5",
+   "section": "alerts",
+   "rank": 5,
+   "text": "- La liste events de ProductCreationRequest n'a pas @Valid dans ce fichier, donc les contraintes des événements imbriqués ne sont pas déclenchées par cette classe seule. Vérifier où elles sont appliquées avant d'y compter. [#backend-core/d58358f7f920e99c-1]",
+   "fact_text": "La liste events de ProductCreationRequest n'a pas @Valid dans ce fichier, donc les contraintes des événements imbriqués ne sont pas déclenchées par cette classe seule",
+   "consigne": "Vérifier où elles sont appliquées avant d'y compter",
+   "consigne_dropped": false,
+   "cites": [
+    "backend-core/d58358f7f920e99c-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/application/dtos/ProductCreationRequest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/dtos/ProductCreationRequest.java",
+     32,
+     32,
+     "13bda978571c2ab2023f432ef5d0fd7f8067f6e048e7cffaeaa3b8c286e9bf6c"
+    ]
+   ],
+   "code_sha256": "13bda978571c2ab2023f432ef5d0fd7f8067f6e048e7cffaeaa3b8c286e9bf6c",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": {
+     "fact_supported": true,
+     "consigne_supported": true,
+     "reason": "Le fait backend-core/d58358f7f920e99c-1 indique l'absence de @Valid sur la liste, et la consigne de vérifier où les contraintes sont appliquées en découle directement.",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "ProductCreationRequest.java L32 déclare `List<EventCreationRequest> events` sans @Valid. ProductController L53 met @Valid sur la requête, mais sans @Valid imbriqué les contraintes d'EventCreationRequest ne se propagent pas, et rien d'autre ne les applique.",
+      "ProductCreationRequest L32 déclare bien `List<EventCreationRequest> events` sans @Valid ; le contrôleur a @Valid sur la requête racine, ce qui ne cascade pas aux éléments. EventCreationRequest porte des contraintes (@NotBlank, @NotNull) mais je n'ai pas trouvé où elles seraient appliquées pour ce flux.",
+      "ProductCreationRequest.events (L32) n'a pas @Valid, et le contrôleur ne met @Valid que sur la requête racine (ProductController L53) : les contraintes de EventCreationRequest ne sont pas cascadées."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "supported",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "guards",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "@Valid|ProductCreationRequest dans *Product*.java",
+         "found": "@Valid seulement sur le @RequestBody de ProductController (L53, L160), aucun @Valid sur la liste events."
+        },
+        {
+         "tool": "Grep",
+         "target": "contraintes dans EventCreationRequest.java",
+         "found": "Contraintes présentes (@NotBlank, @NotNull) mais jamais déclenchées sur la liste imbriquée par ce DTO."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "ProductCreationRequest (backend/src/main)",
+         "found": "ProductController L53 a @Valid @RequestBody sur la racine seulement ; ProductServiceImpl ne revalide pas."
+        },
+        {
+         "tool": "Grep",
+         "target": "contraintes dans EventCreationRequest",
+         "found": "@NotBlank/@NotNull présents sur name, type, durationValue, durationUnit, isRecurring, productId, mais rien ne les déclenche via ProductCreationRequest."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "ProductCreationRequest (backend/src/main)",
+         "found": "seul ProductController L53 le reçoit avec @Valid sur la racine ; le service ne revalide pas"
+        },
+        {
+         "tool": "Grep",
+         "target": "@Valid|@NotNull|@NotBlank dans EventCreationRequest",
+         "found": "contraintes présentes sur le DTO événement mais non déclenchées par l'imbrication"
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "guards",
+   "placed": {
+    "pack_line": 118,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:alerts:6",
+   "section": "alerts",
+   "rank": 6,
+   "text": "- ProductEntity.hashCode renvoie le hash de la classe, identique pour toutes les instances, alors que equals se fonde sur id. Éviter de mettre ces entités dans des ensembles hachés volumineux. [#0d1a3b72ab180c62-1]",
+   "fact_text": "ProductEntity.hashCode renvoie le hash de la classe, identique pour toutes les instances, alors que equals se fonde sur id",
+   "consigne": "Éviter de mettre ces entités dans des ensembles hachés volumineux",
+   "consigne_dropped": false,
+   "cites": [
+    "product/0d1a3b72ab180c62-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/entities/ProductEntity.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/entities/ProductEntity.java",
+     150,
+     153,
+     "87f0b279783106dbae1b1df72ec23071649aa5bedcdcf3612c658762abd8ac55"
+    ]
+   ],
+   "code_sha256": "87f0b279783106dbae1b1df72ec23071649aa5bedcdcf3612c658762abd8ac55",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": {
+     "fact_supported": true,
+     "consigne_supported": true,
+     "reason": "Le fait product/0d1a3b72ab180c62-1 décrit un hashCode identique pour toutes les instances, et la consigne d'éviter les grands ensembles hachés en est la conséquence directe.",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "ProductEntity.hashCode (L150-153) renvoie bien getClass().hashCode() alors que equals (L143-148) compare id. Aucun Set/Map haché de ProductEntity trouvé dans le code main, mais le risque reste réel pour tout appelant futur.",
+      "ProductEntity.hashCode (L151-153) renvoie bien getClass().hashCode(), constant. Aucun Set/Map de ProductEntity trouvé dans backend/src/main, mais le risque reste réel pour tout usage futur.",
+      "ProductEntity.hashCode (L150-153) renvoie bien getClass().hashCode() alors que equals (L143-148) compare id ; aucun garde-fou trouvé, pas de Set/Map de ProductEntity dans le backend, mais le risque reste réel pour tout usage futur."
+     ],
+     "evidence": [
+      "",
+      "",
+      "return getClass().hashCode();"
+     ],
+     "consigne_verdict": "supported",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "guards",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "Set<ProductEntity>|HashSet<ProductEntity>|Map<ProductEntity|toSet()|distinct() dans backend/src/main",
+         "found": "Aucune occurrence : pas de garde-fou ni d'usage haché actuel."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "Set<ProductEntity>|HashSet<ProductEntity>|Map<ProductEntity dans backend/src/main",
+         "found": "aucune occurrence, donc aucun garde-fou ni usage dangereux actuel"
+        },
+        {
+         "tool": "Grep",
+         "target": "hashCode dans ProductEntity.java",
+         "found": "confirme getClass().hashCode() ligne 152"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "Set<ProductEntity>|Map<ProductEntity|HashSet<ProductEntity in backend/src",
+         "found": "Aucune occurrence : pas d'ensemble haché de ProductEntity aujourd'hui."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "guards",
+   "placed": {
+    "pack_line": 119,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:alerts:7",
+   "section": "alerts",
+   "rank": 7,
+   "text": "- Selon la javadoc, getProductsWithEvents liste tous les produits, avec ou sans événements, et le code retourne bien tous ceux de l'utilisateur. Le nom trompe, ne pas supposer un filtre. [#94c60305c01dfa59-1] [#df007001f59cff4d-1]",
+   "fact_text": "Selon la javadoc, getProductsWithEvents liste tous les produits, avec ou sans événements, et le code retourne bien tous ceux de l'utilisateur. Le nom trompe",
+   "consigne": "ne pas supposer un filtre",
+   "consigne_dropped": false,
+   "cites": [
+    "product/94c60305c01dfa59-1",
+    "product/df007001f59cff4d-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+     107,
+     112,
+     "b7d9210735e178d89c495dde045dbcfe1996d4da63eacae1989ef7f77a9c0ffe"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+     116,
+     118,
+     "fffa25dd8898f618611503e071d7eacd11371a8e1b2436973bf023bdac264968"
+    ]
+   ],
+   "code_sha256": "d26385dde6dfa0fd83e8970ef5e90180d01c0215d0a1914e041cac5a3a07fc0c",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": {
+     "fact_supported": true,
+     "consigne_supported": true,
+     "reason": "La javadoc et le code (product/94c60305c01dfa59-1 et product/df007001f59cff4d-1) montrent que la méthode retourne tous les produits, ce qui justifie de ne pas supposer de filtre.",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "deduce": null,
+    "rediscover": null,
+    "comment": [
+     {
+      "id": "product/94c60305c01dfa59-1",
+      "verdict": "contradicted"
+     }
+    ],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "La javadoc L110-112 le dit, et le code L117 retourne productRepository.findByUserId(userId) sans filtre hasEvents.",
+      "La javadoc L105-112 et le code L117 (productRepository.findByUserId sans filtre hasEvents) confirment que tous les produits de l'utilisateur sont retournés.",
+      "getProductsWithEvents (L116-118) retourne productRepository.findByUserId sans filtre hasEvents, et la javadoc L110 reconnaît le nom trompeur."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "supported",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "guards",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [],
+       [
+        {
+         "tool": "Read",
+         "target": "ProductServiceImpl.java L107-118",
+         "found": "findByUserId sans filtre sur les événements."
+        }
+       ],
+       [
+        {
+         "tool": "Read",
+         "target": "ProductServiceImpl.java L96-118",
+         "found": "aucun filtre, tous les produits de l'utilisateur"
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "confronts": [
+    "product/94c60305c01dfa59-1"
+   ],
+   "check": "guards",
+   "placed": {
+    "pack_line": 120,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:alerts:8",
+   "section": "alerts",
+   "rank": 8,
+   "text": "- Le port ProductRepository importe une annotation Spring et le port ProductService utilise des DTO de la couche application, contre la règle hexagonale du projet. Ne pas copier ce modèle, préférer les commandes du domaine comme EventService. [#backend-core/f5728797d94e6d35-1] [#backend-core/54c376e6a3ecbd60-1]",
+   "fact_text": "Le port ProductRepository importe une annotation Spring et le port ProductService utilise des DTO de la couche application, contre la règle hexagonale du projet. Ne pas copier ce modèle",
+   "consigne": "préférer les commandes du domaine comme EventService",
+   "consigne_dropped": false,
+   "cites": [
+    "backend-core/f5728797d94e6d35-1",
+    "backend-core/54c376e6a3ecbd60-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/domain/ports/repositories/ProductRepository.java",
+    "backend:src/main/java/com/matimeline/eventmanager/domain/ports/services/ProductService.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/domain/ports/repositories/ProductRepository.java",
+     8,
+     8,
+     "7b980d15c8577d4af00864b9bca2d864921653a7839e18181e7f6ce0ef8bbdb2"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/domain/ports/services/ProductService.java",
+     7,
+     12,
+     "85a310f25757cc8ac53fd432f78c470b66c41a7e524a063169278868fa9430b4"
+    ]
+   ],
+   "code_sha256": "7e3838d473f1fa25fd6332e6b6f65d99ef36f5b0fb1fb698be8615a8ad4c29fd",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": {
+     "fact_supported": true,
+     "consigne_supported": true,
+     "reason": "Les faits backend-core/f5728797d94e6d35-1 et backend-core/54c376e6a3ecbd60-1 établissent l'import Spring et l'usage des DTO applicatifs, et la consigne de préférer les commandes du domaine s'appuie sur le contraste avec EventService cité dans le fait.",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Les extraits montrent ProductRepository L8 important org.springframework.stereotype.Repository et ProductService L7-8 important des DTO application, ce qui est contraire à la règle hexagonale du projet.",
+      "ProductRepository L8 importe org.springframework.stereotype.Repository et ProductService L7-12 importe des DTO application. EventService utilise bien EventCreateCommand et EventUpdateCommand du domaine (ports/services/EventService.java), donc la consigne est motivée.",
+      "ProductRepository importe org.springframework.stereotype.Repository (L8) et ProductService importe ProductCreationRequest et ProductUpdateRequest de application.dtos (L7-8), contre la règle hexagonale."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "supported",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "guards",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [],
+       [
+        {
+         "tool": "Grep",
+         "target": "imports et signatures de EventService",
+         "found": "createEvent(EventCreateCommand), updateEvent(UUID, EventUpdateCommand), imports du domaine uniquement."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "ProductCreationRequest dans backend/src/main",
+         "found": "ProductService (port du domaine) en dépend directement L7 et L12"
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "guards",
+   "placed": {
+    "pack_line": 121,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:alerts:9",
+   "section": "alerts",
+   "rank": 9,
+   "text": "- Un test affirme que les événements d'un produit archivé sont inaccessibles mais n'asserte que findDomainProductById, et un autre accepte toute Exception. Ils prouvent moins que leur nom, ne pas s'y fier comme garantie. [#ea7a4b9c5c1b2b40-1] [#80aacdf81dad7441-1]",
+   "fact_text": "Un test affirme que les événements d'un produit archivé sont inaccessibles mais n'asserte que findDomainProductById, et un autre accepte toute Exception. Ils prouvent moins que leur nom",
+   "consigne": "ne pas s'y fier comme garantie",
+   "consigne_dropped": false,
+   "cites": [
+    "product/ea7a4b9c5c1b2b40-1",
+    "product/80aacdf81dad7441-1"
+   ],
+   "files": [
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/ProductArchivedFilterIntegrationTest.java",
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductControllerOwnershipTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/ProductArchivedFilterIntegrationTest.java",
+     237,
+     253,
+     "c32ff571f6f9a1ccbd6ed57e1ddcf38eea2aa578c30be231100e26acb73d84ee"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductControllerOwnershipTest.java",
+     134,
+     135,
+     "418c142e3e0102d4fac4406c67b6b2ff5635e8ffcffb0e795a5144888021a519"
+    ]
+   ],
+   "code_sha256": "1e26036783fce1f3bdc067dcd2448de45ddd59cd0b630035695ccb35baa7c803",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": {
+     "fact_supported": true,
+     "consigne_supported": true,
+     "reason": "Les faits product/ea7a4b9c5c1b2b40-1 et product/80aacdf81dad7441-1 montrent que les tests prouvent moins que leur nom, ce qui justifie de ne pas s'y fier comme garantie.",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Le test archivedProduct_eventsUnreachableThroughProductLookup (L237-253) n'asserte que findDomainProductById, et getProducts_serviceThrows_propagates_notMaskedAs401 (L134-135) accepte toute Exception.class. La ligne est exacte.",
+      "Le test archivedProduct_eventsUnreachableThroughProductLookup (L237-253) n'asserte que findDomainProductById vide, et ProductControllerOwnershipTest L134-135 utilise assertThrows(Exception.class). Les deux prouvent moins que leur nom.",
+      "archivedProduct_eventsUnreachableThroughProductLookup (L237-253) n'asserte que findDomainProductById isEmpty, jamais les events ; getProducts_serviceThrows_propagates_notMaskedAs401 (L134-135) utilise assertThrows(Exception.class). Le constat est exact."
+     ],
+     "evidence": [
+      "",
+      "",
+      "assertThat(productRepository.findDomainProductById(product.getId())).isEmpty();"
+     ],
+     "consigne_verdict": "supported",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "guards",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Read",
+         "target": "ProductControllerOwnershipTest.java L110-149",
+         "found": "assertThrows(Exception.class, ...) confirmé, aucune vérification du type d'exception."
+        }
+       ],
+       [
+        {
+         "tool": "Read",
+         "target": "ProductArchivedFilterIntegrationTest.java",
+         "found": "L252 unique assertion sur findDomainProductById, les events ne sont pas interrogés"
+        }
+       ],
+       [
+        {
+         "tool": "Read",
+         "target": "ProductControllerOwnershipTest.java L110-149",
+         "found": "assertThrows(Exception.class, ...) sans type précis, confirme la faiblesse."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "guards",
+   "placed": {
+    "pack_line": 122,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "product:rules:annex:ad0efac2",
+   "section": "rules",
+   "rank": 2,
+   "text": "- L'archivage est un soft delete (archived passe à true) et lève ProductNotFoundException si le produit est introuvable. [#7e4b226aac0bc03f-1]",
+   "fact_text": "L'archivage est un soft delete (archived passe à true) et lève ProductNotFoundException si le produit est introuvable",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "product/7e4b226aac0bc03f-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+     174,
+     179,
+     "f3e09d1f5df2dc93622833b2bac60df9a7b70cf237b72ff53032fbe6685e6053"
+    ]
+   ],
+   "code_sha256": "f3e09d1f5df2dc93622833b2bac60df9a7b70cf237b72ff53032fbe6685e6053",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.556,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 9
+      }
+     },
+     "restatement": "archiveById charge le produit par findDomainProductById, lève ProductNotFoundException si le produit est absent, puis passe archived à true et sauvegarde le produit. Le produit n'est pas supprimé.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "product.details.md",
+     "row": 1
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  },
+  {
+   "id": "product:rules:annex:b64c03dd",
+   "section": "rules",
+   "rank": 3,
+   "text": "- La restauration est un UPDATE natif filtré sur id, user_id et archived = true, et renvoie le nombre de lignes modifiées. [#b94a2c6577ba3262-1] [#1633108a3ab71d25-1]",
+   "fact_text": "La restauration est un UPDATE natif filtré sur id, user_id et archived = true, et renvoie le nombre de lignes modifiées",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "product/b94a2c6577ba3262-1",
+    "product/1633108a3ab71d25-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ProductRepositoryJpaImpl.java",
+    "backend:src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ProductRepositoryJpaImpl.java",
+     249,
+     259,
+     "25aba7a0a6264a65551df61ddbdf092b474e83a70c244f83e47517a7e10848a3"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+     195,
+     200,
+     "03aef08c6b38cf4da7240e04b162e4952ec24df3c959d3af9f6bec8d454a7fac"
+    ]
+   ],
+   "code_sha256": "f302a6c04140a6fd4475fe3f958535a8c912b686172c83362e1a62db42b92061",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.778,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 9
+      }
+     },
+     "restatement": "ProductRepositoryJpaImpl.restoreArchivedByIdAndUserId exécute un UPDATE SQL natif qui remet archived à false, incrémente version et met updated_at à now, uniquement si id, user_id et archived = true correspondent, puis renvoie le nombre de lignes modifiées.",
+     "confidence": "high"
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "product.details.md",
+     "row": 2
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  },
+  {
+   "id": "product:rules:annex:6aa1410a",
+   "section": "rules",
+   "rank": 6,
+   "text": "- Le userId du path écrase celui du corps de la requête (BR-PRO-004). [#b912bc34cf89d67a-1]",
+   "fact_text": "Le userId du path écrase celui du corps de la requête (BR-PRO-004)",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "product/b912bc34cf89d67a-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java",
+     62,
+     63,
+     "ed9c6638e1fb45084297dd8439b3ff008e206a474420aae2d3c0217eea676685"
+    ]
+   ],
+   "code_sha256": "ed9c6638e1fb45084297dd8439b3ff008e206a474420aae2d3c0217eea676685",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 0.75,
+      "n": {
+       "identifiers": 2,
+       "values": 1,
+       "terms": 4
+      }
+     },
+     "restatement": "Dans ProductController.createProduct, request.setUserId(userId) écrase le userId du corps de la requête par celui du chemin, qui fait autorité. Le commentaire BR-PRO-004 le désigne comme règle métier.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "product.details.md",
+     "row": 3
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  },
+  {
+   "id": "product:rules:annex:be447fd7",
+   "section": "rules",
+   "rank": 7,
+   "text": "- La couleur est optionnelle (null signifie héritage de la catégorie), sinon au format #RRGGBB. [#b147dbf13fec084b-1] [#14ee1b6e889854a1-1]",
+   "fact_text": "La couleur est optionnelle (null signifie héritage de la catégorie), sinon au format #RRGGBB",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "product/b147dbf13fec084b-1",
+    "product/14ee1b6e889854a1-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/application/dtos/ProductCreationRequest.java",
+    "backend:src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/dtos/ProductCreationRequest.java",
+     22,
+     30,
+     "6dbf260b246239b5c7a1363dcd63b862f7b3521362b8fd6ad1eda521f27a3799"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+     62,
+     64,
+     "bb56acc31e779683782e96d313b8b8e24ff5b3a76690bbf63a19a13fe11ada87"
+    ]
+   ],
+   "code_sha256": "284757bb8a75202f6fd5970d58ca3cf06a146cf13fcb30829bf556eb80c77244",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.571,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "restatement": "Le champ ProductCreationRequest.color est nullable et, s'il est fourni, doit respecter le motif ^#[0-9a-fA-F]{6}$ (message « Color must be a #RRGGBB hex value »). Une valeur null est acceptée et correspond à l'héritage de la couleur de la catégorie. createProduct appelle ensuite product.setColor(request.getColor()).",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "product.details.md",
+     "row": 4
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  },
+  {
+   "id": "product:rules:annex:d876d679",
+   "section": "rules",
+   "rank": 8,
+   "text": "- Le nom est obligatoire, de 1 à 100 caractères. [#757eb13f1c44ca86-1]",
+   "fact_text": "Le nom est obligatoire, de 1 à 100 caractères",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "product/757eb13f1c44ca86-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/application/dtos/ProductCreationRequest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/dtos/ProductCreationRequest.java",
+     12,
+     14,
+     "f7b2254102dd3339eec67f4a09db0ddbe1ef9b68e1396f7850c459686bdd735f"
+    ]
+   ],
+   "code_sha256": "f7b2254102dd3339eec67f4a09db0ddbe1ef9b68e1396f7850c459686bdd735f",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": null,
+      "values": 1.0,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 0,
+       "values": 2,
+       "terms": 2
+      }
+     },
+     "restatement": "Le champ ProductCreationRequest.name est annoté @NotBlank (« Name is required ») et @Size(min = 1, max = 100). Un nom vide, blanc ou de plus de 100 caractères est rejeté à la validation.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "product.details.md",
+     "row": 5
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  },
+  {
+   "id": "product:rules:annex:89b2e88b",
+   "section": "rules",
+   "rank": 9,
+   "text": "- La liste d'événements est optionnelle, et un événement sans date prend la date du jour. [#14ee1b6e889854a1-3]",
+   "fact_text": "La liste d'événements est optionnelle, et un événement sans date prend la date du jour",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "product/14ee1b6e889854a1-3"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+     69,
+     70,
+     "87fce6d263dc9d597de2ef65096735d003df3c284f8997c5c65df469594494c3"
+    ]
+   ],
+   "code_sha256": "87fce6d263dc9d597de2ef65096735d003df3c284f8997c5c65df469594494c3",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 6
+      }
+     },
+     "restatement": "Dans createProduct, les événements de la requête sont parcourus via Optional.ofNullable(...).orElseGet(List::of), donc une liste absente équivaut à une liste vide. La date de départ de chaque événement vaut sa date fournie, sinon LocalDate.now().",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "product.details.md",
+     "row": 6
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  },
+  {
+   "id": "product:rules:annex:981293c3",
+   "section": "rules",
+   "rank": 10,
+   "text": "- Le produit est créé actif (archived à false). [#c67a2106f273d2dc-1]",
+   "fact_text": "Le produit est créé actif (archived à false)",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "product/c67a2106f273d2dc-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/domain/models/Product.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/domain/models/Product.java",
+     15,
+     22,
+     "5be55c01b3c78f7d259afc6dbaeb639a2304234dd7d0eded3985490bca8040c1"
+    ]
+   ],
+   "code_sha256": "5be55c01b3c78f7d259afc6dbaeb639a2304234dd7d0eded3985490bca8040c1",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 0.8,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 5
+      }
+     },
+     "restatement": "Le constructeur du modèle de domaine Product affecte id, name, category, user et events, puis force archived à false. Un produit créé par ce constructeur n'est donc jamais archivé.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "product.details.md",
+     "row": 7
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  },
+  {
+   "id": "product:rules:annex:407d614e",
+   "section": "rules",
+   "rank": 11,
+   "text": "- La catégorie fournie est résolue contre le propriétaire du produit chargé, pas contre l'appelant. [#1f81adc7889b6ff7-2]",
+   "fact_text": "La catégorie fournie est résolue contre le propriétaire du produit chargé, pas contre l'appelant",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "product/1f81adc7889b6ff7-2"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+     130,
+     136,
+     "4f130a30e59891279d23325b0c5a29eefbb5e7763f9b0fce67cb70bfd1ad1797"
+    ]
+   ],
+   "code_sha256": "4f130a30e59891279d23325b0c5a29eefbb5e7763f9b0fce67cb70bfd1ad1797",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 1.0,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "restatement": "Dans updateProduct, si categoryId est fourni, la catégorie est résolue avec resolveAssignableCategory contre l'identifiant du propriétaire du produit chargé (product.getUser().getId()), et non contre l'appelant. Une catégorie inexistante ou appartenant à un autre utilisateur donne un 404.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "product.details.md",
+     "row": 8
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  },
+  {
+   "id": "product:surface:annex:5e17ea5b",
+   "section": "surface",
+   "rank": 5,
+   "text": "- La liste des produits exclut les archivés selon la javadoc du port, alors que le nom getProductsWithEvents est trompeur car les produits sans événement sont aussi retournés [#2cf44af0f6907afa-1] [#df007001f59cff4d-1] [#a404ffbc862a833b-1].",
+   "fact_text": "La liste des produits exclut les archivés selon la javadoc du port, alors que le nom getProductsWithEvents est trompeur car les produits sans événement sont aussi retournés",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "product/2cf44af0f6907afa-1",
+    "product/df007001f59cff4d-1",
+    "product/a404ffbc862a833b-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/domain/ports/repositories/ProductRepository.java",
+    "backend:src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ProductRepositoryJpaImpl.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/domain/ports/repositories/ProductRepository.java",
+     27,
+     27,
+     "049a457231dc6e2ee081cda1e7cd87e609a6164130f0cfa4f81f95d3033e2488"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+     116,
+     118,
+     "fffa25dd8898f618611503e071d7eacd11371a8e1b2436973bf023bdac264968"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ProductRepositoryJpaImpl.java",
+     70,
+     82,
+     "8be13106507f6169800398fa552ac0e673558228c0a44c4d3cd6b489eead21d4"
+    ]
+   ],
+   "code_sha256": "acb11902cd2887961a9805ac725cb0129c3218813806e8b0a8c93d800566f1ac",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.556,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 9
+      }
+     },
+     "restatement": "Le port ProductRepository.findByUserId renvoie la liste des produits d'un utilisateur. getProductsWithEvents le délègue au port, et l'implémentation JPA exécute une requête SELECT DISTINCT avec LEFT JOIN FETCH sur les événements filtrée par p.user.id. Cette requête ne contient aucun filtre sur le champ archived, donc les produits archivés sont renvoyés aussi.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "product.details.md",
+     "row": 9
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  }
+ ],
+ "comment_facts": [
+  {
+   "id": "product/b4d705cd3e628fe2-1",
+   "verdict": "unverifiable",
+   "code_says": "Dans ProductController.updateProduct, le contrôleur vérifie l'authentification, la correspondance userId du chemin et la propriété du produit, puis délègue à productService.updateProduct(productId, request) sans contrôle local des bornes de nom. La validation réelle de ces bornes se trouve dans l'implémentation du service, qui n'est pas listée.",
+   "code_line_start": 0,
+   "code_line_end": 0,
+   "code_evidence": "",
+   "evidence_check": null,
+   "code_file": "",
+   "invalid": false,
+   "cache_digest": "f53a58567fd1565250558d6b2a8ae3ceeb361328cf64c49d8b190c27913bb31d",
+   "reused": true,
+   "reused_from": "2026-11-20T12:20:00Z",
+   "cited_by": [
+    "product:alerts:3"
+   ],
+   "structure_rows_removed": []
+  },
+  {
+   "id": "product/94c60305c01dfa59-1",
+   "verdict": "contradicted",
+   "code_says": "getProductsWithEvents ne renvoie pas tous les produits : elle délègue à productRepository.findByUserId(userId), c'est-à-dire seulement les produits de l'utilisateur passé en paramètre.",
+   "code_line_start": 116,
+   "code_line_end": 118,
+   "code_evidence": "return productRepository.findByUserId(userId);",
+   "evidence_check": "exact",
+   "code_file": "backend:src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+   "invalid": false,
+   "cache_digest": "c9af99f4062e0e470af64545ae589996654b33e9b17bfe581559455e6138ff5f",
+   "reused": true,
+   "reused_from": "2026-11-20T12:20:00Z",
+   "cited_by": [
+    "product:alerts:7"
+   ],
+   "structure_rows_removed": []
+  }
+ ],
+ "facts_validated": [
+  "product/e6032e4c6921b184-2",
+  "product/85cfb8bf280a8bdd-1",
+  "product/01e0685abee3c880-1",
+  "product/214af15c4a16cfc3-1",
+  "product/1b85008a2de7f5c1-1",
+  "product/895ce336064b5985-1",
+  "product/2ba17dfa95093054-1",
+  "product/2f24c825d05e665c-1",
+  "product/3e052d935a2dbdca-1",
+  "integrations/38fae44ada312d48-2",
+  "integrations/25068b338c5f8b14-1",
+  "product/b8e07eeec1904e4d-1",
+  "product/1cfd6e24b15be414-1",
+  "product/56ee0eef1027811f-1",
+  "product/fb61a40c3eff3e71-1",
+  "product/0e76e9555a6756f0-1",
+  "integrations/145742ba350d6f89-1",
+  "product/7e554cf0d1309bdb-1",
+  "integrations/bdb861ee54c6c577-1",
+  "integrations/dda27156f28e13ec-1",
+  "product/4593c850244cd3aa-1",
+  "product/cd959b5c2a578081-1",
+  "backend-core/7609dab35d65be14-1",
+  "product/b4d705cd3e628fe2-1",
+  "product/1f81adc7889b6ff7-1",
+  "product/5fdd4ac6b14115d8-1",
+  "backend-core/d58358f7f920e99c-1",
+  "product/0d1a3b72ab180c62-1",
+  "product/94c60305c01dfa59-1",
+  "product/df007001f59cff4d-1",
+  "backend-core/f5728797d94e6d35-1",
+  "backend-core/54c376e6a3ecbd60-1",
+  "product/ea7a4b9c5c1b2b40-1",
+  "product/80aacdf81dad7441-1"
+ ],
+ "counts": {
+  "units": 39,
+  "admit": 30,
+  "annex": 9,
+  "drop": 0,
+  "hold": 0,
+  "pending": 0,
+  "consigne_before_unsupported": 0,
+  "consigne_after_dropped": 0,
+  "structure_rows_removed": 0,
+  "framework": 0,
+  "guarded_elsewhere": 0,
+  "resolved": 0,
+  "restricted": 0,
+  "counterexample": 0,
+  "promoted": 0,
+  "kept_for": {
+   "rediscovered": 8
+  },
+  "pointers_removed": 0,
+  "restored_alerts": 0,
+  "budget_cut": 0
+ },
+ "answers": [],
+ "budget_cut": [],
+ "structure_rows_removed": [],
+ "notes": [
+  "product:alerts:1 : consigne non retrouvée dans la ligne, ligne laissée telle quelle",
+  "product:alerts:3 : consigne non retrouvée dans la ligne, ligne laissée telle quelle",
+  "product:alerts:4 : consigne non retrouvée dans la ligne, ligne laissée telle quelle",
+  "product:alerts:5 : consigne non retrouvée dans la ligne, ligne laissée telle quelle",
+  "product:alerts:6 : consigne non retrouvée dans la ligne, ligne laissée telle quelle",
+  "product:alerts:7 : consigne non retrouvée dans la ligne, ligne laissée telle quelle",
+  "product:alerts:8 : consigne non retrouvée dans la ligne, ligne laissée telle quelle",
+  "product:alerts:9 : consigne non retrouvée dans la ligne, ligne laissée telle quelle"
+ ],
+ "base_sha256_after": "2bfca16f7a112102b3218560e3785cde02464423ef22b18da5b8b0754655f4dd",
+ "bases_touched": {
+  "backend-core": {
+   "fingerprint": "25f44a89e54e4b2fde8775ca41e34886c048c60adccc1939aea23b5565fc353a",
+   "sha256_after": "39bfcc06120267da616569dbbc5fb4625c3a364c7ee046233a677a2ac05aa654"
+  },
+  "integrations": {
+   "fingerprint": "f7984eacb1b983b17187ea75176f49511bb0644b8c83f802588dac68e31c8537",
+   "sha256_after": "88ad6cc38a54980e577165c9e049a2633584d262d9613dedc80680c6e9b3b7a2"
+  },
+  "product": {
+   "fingerprint": "3197943c795d30038856a4876cceb9d4fbd4da41b9a1e0571c51fda664b2f2dc",
+   "sha256_after": "2bfca16f7a112102b3218560e3785cde02464423ef22b18da5b8b0754655f4dd"
+  }
+ },
+ "lint": {
+  "ok": true,
+  "errors": 0,
+  "warnings": 0
+ }
+}

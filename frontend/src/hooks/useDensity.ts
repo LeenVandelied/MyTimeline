@@ -3,10 +3,11 @@
 import { useCallback, useEffect, useState } from 'react'
 import {
   DEFAULT_DENSITY,
-  DENSITY_OPTIONS,
+  DENSITY_ATTRIBUTE,
   DENSITY_STORAGE_KEY,
+  isDensity,
   type DensityOption,
-} from '@/types/settings'
+} from '@/lib/density'
 import { useHydrated } from '@/hooks/useHydrated'
 
 /**
@@ -14,16 +15,20 @@ import { useHydrated } from '@/hooks/useHydrated'
  * localStorage (non-PII, DEC-S9-002) et appliquée immédiatement via l'attribut
  * `data-density` sur <html> — sans rechargement (critère d'acceptation).
  *
+ * #898 — ce hook ne sert plus qu'au CHOIX (section Préférences). L'application de
+ * la valeur persistée à CHAQUE chargement de page est faite avant l'hydratation
+ * par `DENSITY_INIT_SCRIPT` (`@/lib/density`), rendu par `app/[locale]/layout.tsx`.
+ *
  * SSR-safe : DEFAULT_DENSITY au rendu serveur et pendant l'hydratation, puis la
  * valeur de localStorage une fois hydraté (`useHydrated`, #891) — aucun mismatch.
  */
-function isDensity(value: string | null): value is DensityOption {
-  return value !== null && (DENSITY_OPTIONS as readonly string[]).includes(value)
-}
-
 function readStoredDensity(): DensityOption | null {
-  const stored = window.localStorage.getItem(DENSITY_STORAGE_KEY)
-  return isDensity(stored) ? stored : null
+  try {
+    const stored = window.localStorage.getItem(DENSITY_STORAGE_KEY)
+    return isDensity(stored) ? stored : null
+  } catch {
+    return null
+  }
 }
 
 export function useDensity() {
@@ -36,13 +41,21 @@ export function useDensity() {
     chosen ?? (hydrated ? readStoredDensity() : null) ?? DEFAULT_DENSITY
 
   // Application au DOM à chaque changement (immédiat, sans reload).
+  // #898 — PAS avant l'hydratation : à ce stade `density` vaut DEFAULT_DENSITY par
+  // construction, et l'écrire écraserait la valeur posée par le script précoce
+  // (flash compact → normal → compact sur une page qui monte la section).
   useEffect(() => {
-    document.documentElement.setAttribute('data-density', density)
-  }, [density])
+    if (!hydrated) return
+    document.documentElement.setAttribute(DENSITY_ATTRIBUTE, density)
+  }, [density, hydrated])
 
   const setDensity = useCallback((next: DensityOption) => {
     setChosen(next)
-    window.localStorage.setItem(DENSITY_STORAGE_KEY, next)
+    try {
+      window.localStorage.setItem(DENSITY_STORAGE_KEY, next)
+    } catch {
+      // Stockage bloqué : le choix s'applique à la session, sans persistance.
+    }
   }, [])
 
   return { density, setDensity }

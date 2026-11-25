@@ -52,3 +52,21 @@ npm error Unable to resolve reference $postcss
 pas résolvable. Corrigé en écrivant la version littérale (issue #435) — résolution strictement
 identique, `package-lock.json` inchangé. Garder l'override aligné sur `devDependencies.postcss`
 lors d'un futur bump ; ne pas réintroduire la forme `$...`.
+
+## Exceptions d'audit npm (`audit-allowlist.json`)
+
+Le job CI `security` passe le JSON de `npm audit --omit=dev` à `scripts/npm-audit-gate.mjs`, qui
+échoue sur tout avis high ou critical absent de `audit-allowlist.json`. Le fichier liste les
+exceptions acceptées, avec les champs `id`, `package`, `path`, `reason`, `addedOn` et `reviewBy`.
+
+- Une exception n'est admise que pour un avis sans version corrigée publiée.
+- Elle se retire dès qu'un correctif sort (la gate avertit sur une entrée périmée).
+- `reviewBy` est au plus à 30 jours de `addedOn`. Passé cette date, la gate échoue.
+
+Entrée actuelle : GHSA-fc5q-39xc-vjpf (picomatch <= 4.0.7, via `next-intl` > `@parcel/watcher`).
+
+Reproduire la gate en local :
+
+```bash
+npm audit --omit=dev --json | node ../scripts/npm-audit-gate.mjs audit-allowlist.json
+```

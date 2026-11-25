@@ -1,0 +1,15 @@
+{
+ "id": "A7",
+ "question": "state-machine : créer un pack transversal ?",
+ "decision": "non créé : state-machine",
+ "rule": "R5 motif mesuré sur 2 fichiers seulement (ExportJob.java et export.ts), absorbé par le domaine export",
+ "confidence": "medium",
+ "seeds": [
+  "ExportJob"
+ ],
+ "evidence": [],
+ "falsified_if": "l'extraction compte au moins 3 fichiers à forte densité d'états hors du domaine export",
+ "status": "open",
+ "opened": "2026-11-19",
+ "touched_by": []
+}

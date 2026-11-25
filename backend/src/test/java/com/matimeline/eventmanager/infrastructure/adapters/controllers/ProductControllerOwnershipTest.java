@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -27,12 +28,12 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import com.matimeline.eventmanager.application.dtos.ProductCreationRequest;
-import com.matimeline.eventmanager.application.dtos.ProductUpdateRequest;
 import com.matimeline.eventmanager.domain.exceptions.ProductNotFoundException;
 import com.matimeline.eventmanager.domain.models.Category;
 import com.matimeline.eventmanager.domain.models.Event;
 import com.matimeline.eventmanager.domain.models.Product;
+import com.matimeline.eventmanager.domain.models.ProductCreateCommand;
+import com.matimeline.eventmanager.domain.models.ProductUpdateCommand;
 import com.matimeline.eventmanager.domain.models.User;
 import com.matimeline.eventmanager.domain.ports.services.EventService;
 import com.matimeline.eventmanager.domain.ports.services.ProductService;
@@ -114,7 +115,36 @@ class ProductControllerOwnershipTest {
         mockMvc.perform(get("/api/users/" + callerId + "/products"))
                 .andExpect(status().isUnauthorized());
 
-        verify(productService, never()).getProductsWithEvents(any());
+        verifyNoInteractions(productService);
+    }
+
+    /** Liste de ses propres produits -> 200 avec les produits fournis par le service. */
+    @Test
+    void getProducts_ownList_returns200_withProductsFromService() throws Exception {
+        User caller = new User(callerId, "Caller", "caller", "pwd", "ROLE_USER", "c@c.com");
+        Category category = new Category(UUID.randomUUID(), "Cat", "#000000", "desc", callerId);
+        Product mine = new Product(productId, "mine", category, caller, new java.util.ArrayList<>());
+
+        when(callerResolver.currentUser()).thenReturn(Optional.of(caller));
+        when(productService.getProductsByUser(callerId)).thenReturn(List.of(mine));
+
+        mockMvc.perform(get("/api/users/" + callerId + "/products"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].id").value(productId.toString()))
+                .andExpect(jsonPath("$[0].name").value("mine"));
+    }
+
+    /** BR-PRO-004 : liste des produits d'un autre user -> 403, aucune donnée lue par le service. */
+    @Test
+    void getProductsByUser_pathUserDiffersFromCaller_returns403() throws Exception {
+        User caller = new User(callerId, "Caller", "caller", "pwd", "ROLE_USER", "c@c.com");
+        when(callerResolver.currentUser()).thenReturn(Optional.of(caller));
+
+        mockMvc.perform(get("/api/users/" + otherUserId + "/products"))
+                .andExpect(status().isForbidden());
+
+        verifyNoInteractions(productService);
     }
 
     /**
@@ -127,7 +157,7 @@ class ProductControllerOwnershipTest {
     void getProducts_serviceThrows_propagates_notMaskedAs401() throws Exception {
         User caller = new User(callerId, "Caller", "caller", "pwd", "ROLE_USER", "c@c.com");
         when(callerResolver.currentUser()).thenReturn(Optional.of(caller));
-        when(productService.getProductsWithEvents(callerId))
+        when(productService.getProductsByUser(callerId))
                 .thenThrow(new RuntimeException("boom DB/NPE non-JWT"));
 
         // L'exception remonte au lieu d'être transformée en 401 (avant #92 : ResponseEntity 401).
@@ -160,7 +190,7 @@ class ProductControllerOwnershipTest {
 
         when(callerResolver.currentUser()).thenReturn(Optional.of(caller));
         when(productService.findDomainProductById(productId)).thenReturn(Optional.of(ownProduct));
-        when(productService.updateProduct(eq(productId), any(ProductUpdateRequest.class))).thenReturn(updated);
+        when(productService.updateProduct(eq(productId), any(ProductUpdateCommand.class))).thenReturn(updated);
 
         mockMvc.perform(patch("/api/users/" + callerId + "/products/" + productId)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -212,7 +242,7 @@ class ProductControllerOwnershipTest {
 
         when(callerResolver.currentUser()).thenReturn(Optional.of(caller));
         when(productService.findDomainProductById(productId)).thenReturn(Optional.of(ownProduct));
-        when(productService.updateProduct(eq(productId), any(ProductUpdateRequest.class))).thenReturn(updated);
+        when(productService.updateProduct(eq(productId), any(ProductUpdateCommand.class))).thenReturn(updated);
 
         mockMvc.perform(patch("/api/users/" + callerId + "/products/" + productId)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -430,7 +460,7 @@ class ProductControllerOwnershipTest {
         Product created = new Product(productId, "nouveau", category, caller, List.of());
 
         when(callerResolver.currentUser()).thenReturn(Optional.of(caller));
-        when(productService.createProduct(any(ProductCreationRequest.class))).thenReturn(created);
+        when(productService.createProduct(any(ProductCreateCommand.class))).thenReturn(created);
 
         mockMvc.perform(post("/api/users/" + callerId + "/products")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -444,5 +474,34 @@ class ProductControllerOwnershipTest {
                 .andExpect(jsonPath("$.events").isArray())
                 .andExpect(jsonPath("$.user").doesNotExist())
                 .andExpect(jsonPath("$.owner").doesNotExist());
+    }
+
+    /**
+     * BR-PRO-004 : le propriétaire du chemin écrase celui du corps. Le service reçoit une commande
+     * domaine portant le userId du chemin. Le mock rend un produit quelle que soit la surcharge
+     * appelée, pour que l'échec porte sur l'assertion et non sur une réponse vide.
+     */
+    @Test
+    void createProduct_pathUserOverridesBodyUserId_serviceReceivesCommandWithPathUser() throws Exception {
+        User caller = new User(callerId, "Caller", "caller", "pwd", "ROLE_USER", "c@c.com");
+        UUID categoryId = UUID.randomUUID();
+        Product created = new Product(productId, "nouveau", new Category(categoryId, "Travail"), caller, List.of());
+        ProductService service = org.mockito.Mockito.mock(ProductService.class, invocation ->
+                invocation.getMethod().getReturnType() == Product.class ? created : null);
+        MockMvc mvc = MockMvcBuilders
+                .standaloneSetup(new ProductController(service, eventService, callerResolver))
+                .build();
+        when(callerResolver.currentUser()).thenReturn(Optional.of(caller));
+
+        mvc.perform(post("/api/users/" + callerId + "/products")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"nouveau\",\"category\":\"" + categoryId
+                                + "\",\"userId\":\"" + otherUserId + "\"}"))
+                .andExpect(status().isCreated());
+
+        org.mockito.ArgumentCaptor<ProductCreateCommand> captor =
+                org.mockito.ArgumentCaptor.forClass(ProductCreateCommand.class);
+        verify(service).createProduct(captor.capture());
+        org.assertj.core.api.Assertions.assertThat(captor.getValue().userId()).isEqualTo(callerId);
     }
 }

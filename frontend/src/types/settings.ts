@@ -43,13 +43,11 @@ export const SessionListSchema = z.array(SessionSchema)
 export const THEME_OPTIONS = ['light', 'dark', 'system'] as const
 export type ThemeOption = (typeof THEME_OPTIONS)[number]
 
-export const DENSITY_OPTIONS = ['compact', 'normal', 'comfortable'] as const
-export type DensityOption = (typeof DENSITY_OPTIONS)[number]
+// #898 — densité : source unique dans `@/lib/density` (module sans dépendance,
+// importable par la spec Playwright et par le script d'application précoce).
+export { DENSITY_OPTIONS, DENSITY_STORAGE_KEY, DEFAULT_DENSITY } from '@/lib/density'
+export type { DensityOption } from '@/lib/density'
 
 /** #235 — réexport de la source de vérité unique (cf. `@/i18n/locales`). */
 export const LOCALE_OPTIONS = SUPPORTED_LOCALES
 export type LocaleOption = Locale
-
-/** Clé localStorage de la densité (non-PII, cf. DEC-S9-002 : jamais de PII ici). */
-export const DENSITY_STORAGE_KEY = 'mt-density'
-export const DEFAULT_DENSITY: DensityOption = 'normal'

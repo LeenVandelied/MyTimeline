@@ -1,0 +1,18 @@
+{
+ "id": "A4",
+ "question": "Pages timeline : event ou autre pack ?",
+ "decision": "event",
+ "rule": "R3 dossier d'écran sans entité, alias timeline rattaché au pack qui porte la chronologie d'événements",
+ "confidence": "low",
+ "seeds": [
+  "Event"
+ ],
+ "evidence": [
+  "frontend-app:[locale]/(app)/timeline/page.tsx",
+  "frontend-app:[locale]/(app)/timeline/page.test.tsx"
+ ],
+ "falsified_if": "la page timeline consomme surtout des données produit ou utilisateur sans les événements",
+ "status": "open",
+ "opened": "2026-11-19",
+ "touched_by": []
+}

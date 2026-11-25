@@ -1,0 +1,3688 @@
+{
+ "pack": "frontend-core",
+ "schema": 1,
+ "curated_at": "2026-11-20T12:45:00Z",
+ "curator": "curate/1",
+ "base_sha256": "c791a5180bd2233bde2ce44e0781e72a6c23674349601b8b20a482dcb74ebf96",
+ "pack_sha256_before": "e0fc974147cc6ffc7047a80288e28a9ca28fbe2bb2f7891a25d494e52117c103",
+ "pack_sha256_after": "7d05fe2e9c3f704701cfbab8f60028290696fadc21b09616cbefee7f291c4ddc",
+ "criteria_sha256": "48e0e20f086c5b11deecfecdc547ba1d6115faee1597a5aaf682f6c699e92423",
+ "models": {
+  "measure": "haiku",
+  "refute": "sonnet"
+ },
+ "base_fingerprint": "5b369c83ce0a659d4cdb23d1194415d4e3f008efd2c977562298044b0d84e91a",
+ "bytes": {
+  "before": 8165,
+  "after": 8165,
+  "by_section": {
+   "activate": {
+    "before": 167,
+    "after": 167
+   },
+   "lexicon": {
+    "before": 78,
+    "after": 78
+   },
+   "rules": {
+    "before": 1375,
+    "after": 1375
+   },
+   "structure": {
+    "before": 82,
+    "after": 82
+   },
+   "surface": {
+    "before": 96,
+    "after": 96
+   },
+   "files": {
+    "before": 1161,
+    "after": 1161
+   },
+   "relations": {
+    "before": 419,
+    "after": 419
+   },
+   "tests": {
+    "before": 1362,
+    "after": 1362
+   },
+   "questions": {
+    "before": 289,
+    "after": 289
+   },
+   "alerts": {
+    "before": 2015,
+    "after": 2015
+   },
+   "coverage": {
+    "before": 716,
+    "after": 716
+   }
+  }
+ },
+ "units": [
+  {
+   "id": "frontend-core:rules:1",
+   "section": "rules",
+   "rank": 1,
+   "text": "- Selon le commentaire de `frontend:types/event.ts:12`, un champ nullable côté backend se déclare avec nullable et jamais avec nullish. [#87ba3444819c3487-1]",
+   "fact_text": "Selon le commentaire de event.ts, un champ nullable côté backend se déclare avec nullable et jamais avec nullish",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-core/87ba3444819c3487-1"
+   ],
+   "files": [
+    "frontend:types/event.ts"
+   ],
+   "ranges": [
+    [
+     "frontend:types/event.ts",
+     12,
+     12,
+     "cdb12657342c3d6bee5002c5a68322884190b5ac422157001cdf87c02a90d80f"
+    ]
+   ],
+   "code_sha256": "cdb12657342c3d6bee5002c5a68322884190b5ac422157001cdf87c02a90d80f",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [
+     {
+      "id": "frontend-core/87ba3444819c3487-1",
+      "verdict": "unverifiable"
+     }
+    ],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "La ligne est attribuée au commentaire de event.ts L12. Aucun usage de .nullish() dans le code de production de frontend/src, seulement des commentaires dans event.ts, user.ts et export.ts.",
+      "Le commentaire event.ts L12 dit bien JAMAIS nullish. Aucun usage de .nullish() dans frontend/src, seulement des commentaires qui l'interdisent (user.ts, export.ts).",
+      "Le commentaire de event.ts L12 dit bien nullable et jamais nullish ; aucun usage de .nullish() dans frontend/src, seulement des commentaires qui le déconseillent."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "scope",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "\\.nullish\\(\\) dans frontend/src hors tests",
+         "found": "3 occurrences, toutes dans des commentaires qui interdisent .nullish() ; aucun contre-exemple"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "nullish\\(\\) dans frontend/src",
+         "found": "Trois occurrences, toutes en commentaire de prohibition. Aucun contre-exemple."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "\\.nullish\\(\\) dans frontend/src",
+         "found": "3 occurrences, toutes dans des commentaires (user.ts, event.ts, export.ts)"
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "words:jamais",
+   "placed": {
+    "pack_line": 30,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "frontend-core:rules:2",
+   "section": "rules",
+   "rank": 2,
+   "text": "- L'intercepteur de réponse de apiClient.ts remonte d'abord timeouts et erreurs 5xx au store réseau avant le traitement par statut, sauf un 500 que la requête déclare traiter elle-même [#9bc256ea7132e8fc-1] [#2da5f9f87ce62f1b-3]",
+   "fact_text": "L'intercepteur de réponse de apiClient.ts remonte d'abord timeouts et erreurs 5xx au store réseau avant le traitement par statut, sauf un 500 que la requête déclare traiter elle-même",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-core/9bc256ea7132e8fc-1",
+    "frontend-core/2da5f9f87ce62f1b-3"
+   ],
+   "files": [
+    "frontend:services/apiClient.ts"
+   ],
+   "ranges": [
+    [
+     "frontend:services/apiClient.ts",
+     201,
+     212,
+     "299c1a074f356a254af94a78e1c15f5bcb15d8bc6474cb7b5754b514dfcf8cd6"
+    ],
+    [
+     "frontend:services/apiClient.ts",
+     180,
+     285,
+     "58069a1fb92806406834a3ee22d573345aa048cfc8bcf945cec349cd33f29ba9"
+    ]
+   ],
+   "code_sha256": "2f29769f4794290a61179b2af7fe1cec7f28c368d6315707cbcc7565b26eed93",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": 1.0,
+      "terms": 0.385,
+      "n": {
+       "identifiers": 2,
+       "values": 1,
+       "terms": 13
+      }
+     },
+     "restatement": "Dans le bloc `frontend:services/apiClient.ts` L201-212, une erreur axios avec `error.code === 'ECONNABORTED'` appelle `networkStatusStore.reportTimeout()`. Sinon, si `error.response?.status` est un nombre supérieur ou égal à 500, elle appelle `networkStatusStore.reportServerError()`, sauf pour un 500 dont la requête déclare la gestion inline (`handlesStatusInline(error.config, 500)`). Le bloc ne efface jamais l'état réseau : il ne fait que signaler un timeout ou une erreur serveur.",
+     "confidence": "high"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 1,
+     "within_budget": true,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/services/apiClient.ts",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": 1.0,
+      "terms": 0.462,
+      "n": {
+       "identifiers": 2,
+       "values": 1,
+       "terms": 13
+      }
+     },
+     "job": "frontend-core:rediscover:frontend_services_apiClient.ts:1"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Le code de apiClient.ts L202-212 appelle reportTimeout/reportServerError avant les branches 400/401/403/500 (L217+) et exclut seulement un 500 géré inline via handlesStatusInline ; un seul axios.create existe dans la portée.",
+      "L'intercepteur apiClient.interceptors.response (L187-212) classe timeout (ECONNABORTED) et status>=500 avant les branches isInlineAuthRequest/400/401/403/500, avec l'exception 500 + handlesStatusInline(error.config, 500) : la ligne est fidèle.",
+      "apiClient.ts L202-212 : le bloc d'erreur appelle reportTimeout (ECONNABORTED) ou reportServerError (status >= 500 sauf 500 avec handlesStatusInline) avant isInlineAuthRequest et les branches 400/401/403/500 ; aucun contre-exemple (un seul axios.create, dans apiClient.ts)."
+     ],
+     "evidence": [
+      "!(status === 500 && handlesStatusInline(error.config, 500))",
+      "!(status === 500 && handlesStatusInline(error.config, 500))",
+      "!(status === 500 && handlesStatusInline(error.config, 500))"
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "scope",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 6,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "interceptors.response|ECONNABORTED|status >= 500 dans apiClient.ts",
+         "found": "Intercepteur de réponse à L180, classification réseau L202-212 avant le traitement par statut."
+        },
+        {
+         "tool": "Grep",
+         "target": "axios.create|reportServerError|reportTimeout dans frontend/src",
+         "found": "Une seule instance axios (apiClient.ts L17) ; les appels report* ne se trouvent que dans cet intercepteur, aucun contre-exemple."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "interceptors.response|reportServerError|handlesStatusInline dans apiClient.ts",
+         "found": "Intercepteur unique L180, classification réseau L202-212 avant le traitement par statut."
+        },
+        {
+         "tool": "Grep",
+         "target": "reportServerError|reportTimeout|axios.create dans frontend/src",
+         "found": "Seul apiClient.ts crée une instance axios et appelle reportTimeout/reportServerError ; pas de contre-exemple."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "axios.create( et inlineHandledStatuses dans frontend/src",
+         "found": "Une seule instance axios (apiClient.ts:17) ; l'opt-out 500 est défini dans inlineErrorHandling.ts (HANDLES_SERVER_ERROR_INLINE) et testé dans apiClient.test.ts, sans contre-exemple."
+        },
+        {
+         "tool": "Grep",
+         "target": "interceptors.response|ECONNABORTED|status >= 500 dans apiClient.ts",
+         "found": "Confirme l'ordre : classification réseau L202-212 avant le traitement par statut."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     }
+    }
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "placed": {
+    "pack_line": 32,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "frontend-core:rules:3",
+   "section": "rules",
+   "rank": 3,
+   "text": "- La redirection sur 401 est verrouillée par isRedirecting et différée de 1500 ms. [#2da5f9f87ce62f1b-1]",
+   "fact_text": "La redirection sur 401 est verrouillée par isRedirecting et différée de 1500 ms",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-core/2da5f9f87ce62f1b-1"
+   ],
+   "files": [
+    "frontend:services/apiClient.ts"
+   ],
+   "ranges": [
+    [
+     "frontend:services/apiClient.ts",
+     223,
+     232,
+     "6db20eab6ecd897868f3320a7035483ef2dbf0cded394cf96e9e8900558ac075"
+    ]
+   ],
+   "code_sha256": "6db20eab6ecd897868f3320a7035483ef2dbf0cded394cf96e9e8900558ac075",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 0.333,
+      "n": {
+       "identifiers": 1,
+       "values": 2,
+       "terms": 3
+      }
+     },
+     "restatement": "Sur une erreur 401 dans l'intercepteur de réponse, un seul toast `sessionExpired` est affiché et une redirection vers la page de login est planifiée après 1500 ms, le verrou `isRedirecting` empêchant les redirections multiples.",
+     "confidence": "high",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 2,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:\\Users\\ldelaforcade\\Documents\\Personnel\\My Timeline\\MyTimeline\\frontend\\src\\services\\apiClient.ts",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 1.0,
+      "n": {
+       "identifiers": 1,
+       "values": 2,
+       "terms": 3
+      }
+     },
+     "job": "frontend-core:rediscover:frontend_components_landing_CtaSection.test.tsx:1",
+     "rank_in_lot": 1,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 33,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "frontend-core:rules:4",
+   "section": "rules",
+   "rank": 4,
+   "text": "- Les routes d'auth gérées inline se comparent au pathname en égalité stricte ou en suffixe ancré, et la liste d'opt-out du toast 400 est distincte. [#4bd6c9a0ca5cfb53-1] [#f0014c0cd2d8fdc5-1]",
+   "fact_text": "Les routes d'auth gérées inline se comparent au pathname en égalité stricte ou en suffixe ancré, et la liste d'opt-out du toast 400 est distincte",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-core/4bd6c9a0ca5cfb53-1",
+    "frontend-core/f0014c0cd2d8fdc5-1"
+   ],
+   "files": [
+    "frontend:services/apiClient.ts"
+   ],
+   "ranges": [
+    [
+     "frontend:services/apiClient.ts",
+     114,
+     145,
+     "0ff075335ec45ce8a8fbdd731867cbd0c9096d761377e856fc84e5eebe87e4f0"
+    ],
+    [
+     "frontend:services/apiClient.ts",
+     170,
+     178,
+     "e7dcad9f205eea82d2013ee5533a842ba6ed96ffa0a35bedd5a0809dbe57993c"
+    ]
+   ],
+   "code_sha256": "7182ebce9761cc34298c1d1ca5b4269dd90df4e2b148b6ae12c8eebd483c35b7",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": null,
+      "values": 0.0,
+      "terms": 0.385,
+      "n": {
+       "identifiers": 0,
+       "values": 1,
+       "terms": 13
+      }
+     },
+     "restatement": "`isInlineAuthRequest` compare le pathname de l'URL (parsée avec la base 'http://x') par égalité stricte ou suffixe, à la liste `INLINE_AUTH_ENDPOINTS` (login, register, forgot-password, reset-password, me) ; `isInlineValidationRequest` fait de même avec `/me/change-password`. Une correspondance par sous-chaîne est volontairement évitée.",
+     "confidence": "high",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 2,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:\\Users\\ldelaforcade\\Documents\\Personnel\\My Timeline\\MyTimeline\\frontend\\src\\services\\apiClient.ts",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": null,
+      "values": 1.0,
+      "terms": 0.923,
+      "n": {
+       "identifiers": 0,
+       "values": 1,
+       "terms": 13
+      }
+     },
+     "job": "frontend-core:rediscover:frontend_components_landing_CtaSection.test.tsx:1",
+     "rank_in_lot": 2,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 34,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "frontend-core:rules:5",
+   "section": "rules",
+   "rank": 5,
+   "text": "- Un rafraîchissement du token est planifié toutes les 6 heures, côté navigateur seulement. [#91ed8c86e0840488-1]",
+   "fact_text": "Un rafraîchissement du token est planifié toutes les 6 heures, côté navigateur seulement",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-core/91ed8c86e0840488-1"
+   ],
+   "files": [
+    "frontend:services/apiClient.ts"
+   ],
+   "ranges": [
+    [
+     "frontend:services/apiClient.ts",
+     77,
+     92,
+     "dd84ff2f92650a1ddce9d35ed8c7e2551025a9443306290d4eb2e46d6a67d514"
+    ]
+   ],
+   "code_sha256": "dd84ff2f92650a1ddce9d35ed8c7e2551025a9443306290d4eb2e46d6a67d514",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": null,
+      "values": 1.0,
+      "terms": 0.167,
+      "n": {
+       "identifiers": 0,
+       "values": 1,
+       "terms": 6
+      }
+     },
+     "restatement": "`setupPeriodicRefresh` appelle `refreshToken()` toutes les 6 heures (6 * 60 * 60 * 1000 ms) via `setInterval`, uniquement quand `window` est défini ; les erreurs sont avalées et journalisées en `console.debug`.",
+     "confidence": "high",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 2,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:\\Users\\ldelaforcade\\Documents\\Personnel\\My Timeline\\MyTimeline\\frontend\\src\\services\\apiClient.ts",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": null,
+      "values": 1.0,
+      "terms": 1.0,
+      "n": {
+       "identifiers": 0,
+       "values": 1,
+       "terms": 6
+      }
+     },
+     "job": "frontend-core:rediscover:frontend_components_landing_CtaSection.test.tsx:1",
+     "rank_in_lot": 3,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 35,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "frontend-core:rules:6",
+   "section": "rules",
+   "rank": 6,
+   "text": "- Un service journalise puis relance l'erreur, sauf refreshToken qui renvoie false. [#11c90a5f14af66cf-1] [#e9714435ca4b9b4f-2] [#30dcc47e790a4078-1]",
+   "fact_text": "Un service journalise puis relance l'erreur, sauf refreshToken qui renvoie false",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-core/11c90a5f14af66cf-1",
+    "frontend-core/e9714435ca4b9b4f-2",
+    "frontend-core/30dcc47e790a4078-1"
+   ],
+   "files": [
+    "frontend:services/eventService.ts",
+    "frontend:services/exportService.ts",
+    "frontend:services/authService.ts"
+   ],
+   "ranges": [
+    [
+     "frontend:services/eventService.ts",
+     23,
+     36,
+     "616784ee4dedd3700871eb890b9b2757985fcee311861dbf64379547a9034c9b"
+    ],
+    [
+     "frontend:services/exportService.ts",
+     59,
+     62,
+     "50e58b155436d97a4b4be155f67fc569e4c1b441fa1ca8fa70172a2c978d7d69"
+    ],
+    [
+     "frontend:services/authService.ts",
+     69,
+     69,
+     "740911440cbabaa190088670e00ba2632d087ee71f0960b7564aa884edd069a6"
+    ]
+   ],
+   "code_sha256": "0d4faaedb232e8451c403c3a1c778ab8ccd1197ff728b3801527b2b231c83012",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 6
+      }
+     },
+     "restatement": "previewRecurrence fait un POST sur /events/recurrence-preview puis valide la réponse avec recurrencePreviewResponseSchema.parse ; en cas d'erreur (dont un échec de validation Zod), il journalise via console.error avec safeErrorMessage puis relance l'erreur avec throw. Le commentaire indique que la validation sert à éviter un capped fantôme sur une réponse de contrat dérivé.",
+     "confidence": "high",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 5,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:\\Users\\ldelaforcade\\Documents\\Personnel\\My Timeline\\MyTimeline\\frontend\\src\\services\\authService.ts",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 1.0,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 6
+      }
+     },
+     "job": "frontend-core:rediscover:frontend_components_landing_CtaSection.test.tsx:1",
+     "rank_in_lot": 5,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 36,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "frontend-core:rules:7",
+   "section": "rules",
+   "rank": 7,
+   "text": "- Les réponses sont validées par un schéma Zod avant retour. [#43402f730d804b80-1] [#1cebc3ebe7539af4-1] [#0135de84623de5bb-1]",
+   "fact_text": "Les réponses sont validées par un schéma Zod avant retour",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-core/43402f730d804b80-1",
+    "frontend-core/1cebc3ebe7539af4-1",
+    "frontend-core/0135de84623de5bb-1"
+   ],
+   "files": [
+    "frontend:services/authService.ts",
+    "frontend:services/exportService.ts",
+    "frontend:services/sessionService.ts"
+   ],
+   "ranges": [
+    [
+     "frontend:services/authService.ts",
+     20,
+     20,
+     "a8852f99ba162b264d2b8e6160d37102593008fed4a5e5467b879feb87f06d3d"
+    ],
+    [
+     "frontend:services/exportService.ts",
+     72,
+     72,
+     "e304f23d77403a6b3ae5e50a40389fc7d12217d992944750a5e9a8144a3d02a2"
+    ],
+    [
+     "frontend:services/sessionService.ts",
+     14,
+     17,
+     "8bd74ba2b8336f332c373fa96b402da76d5fdab27a8fa048068e667f192389f9"
+    ]
+   ],
+   "code_sha256": "1d482c62eb52b6055cb5b646389cbcaece2cd31b75ee7b7a445b05432cb6ae78",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 0.25,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 4
+      }
+     },
+     "restatement": "Les services valident la réponse HTTP au runtime avec Zod : authService retourne UserSchema.parse(response.data), exportService retourne exportJobResponseSchema.parse(response.data), et sessionService getActiveSessions retourne SessionListSchema.parse(response.data) pour un GET /sessions. Une réponse malformée lève donc une erreur de parsing au lieu d'être typée sans contrôle.",
+     "confidence": "high",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 4,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:\\Users\\ldelaforcade\\Documents\\Personnel\\My Timeline\\MyTimeline\\frontend\\src\\services\\authService.ts",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 4
+      }
+     },
+     "job": "frontend-core:rediscover:frontend_components_landing_CtaSection.test.tsx:1",
+     "rank_in_lot": 4,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 37,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "frontend-core:rules:8",
+   "section": "rules",
+   "rank": 8,
+   "text": "- Le préfixe /api d'une URL de téléchargement est retiré, car baseURL le porte déjà. [#f61c95693fc0d41d-1]",
+   "fact_text": "Le préfixe /api d'une URL de téléchargement est retiré, car baseURL le porte déjà",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-core/f61c95693fc0d41d-1"
+   ],
+   "files": [
+    "frontend:services/exportService.ts"
+   ],
+   "ranges": [
+    [
+     "frontend:services/exportService.ts",
+     103,
+     103,
+     "ebba2dedb03ceadc5e015a3826acf66eec312b8ea181605f591805d58be11d92"
+    ]
+   ],
+   "code_sha256": "ebba2dedb03ceadc5e015a3826acf66eec312b8ea181605f591805d58be11d92",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
+      "terms": 0.75,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 4
+      }
+     },
+     "restatement": "downloadAsyncExport retire le préfixe /api en début de downloadUrl via la regex /^\\/api(?=\\/)/ pour obtenir le chemin de téléchargement. Seul un /api suivi d'un slash est supprimé, les autres chaînes restent intactes.",
+     "confidence": "high",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 7,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:\\Users\\ldelaforcade\\Documents\\Personnel\\My Timeline\\MyTimeline\\frontend\\src\\services\\exportService.ts",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.75,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 4
+      }
+     },
+     "job": "frontend-core:rediscover:frontend_components_landing_CtaSection.test.tsx:1",
+     "rank_in_lot": 6,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 38,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "frontend-core:rules:9",
+   "section": "rules",
+   "rank": 9,
+   "text": "- Selon la javadoc, le noyau de zoom reste pur, sans React ni réseau. [#33808da4d7c94712-1]",
+   "fact_text": "Selon la javadoc, le noyau de zoom reste pur, sans React ni réseau",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-core/33808da4d7c94712-1"
+   ],
+   "files": [
+    "frontend:components/timeline/zoom.ts"
+   ],
+   "ranges": [
+    [
+     "frontend:components/timeline/zoom.ts",
+     8,
+     8,
+     "89467685e722204b9ceca82d1d130ae79f7d02118d8a8eec2b2fd329f8a29e06"
+    ]
+   ],
+   "code_sha256": "89467685e722204b9ceca82d1d130ae79f7d02118d8a8eec2b2fd329f8a29e06",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [
+     {
+      "id": "frontend-core/33808da4d7c94712-1",
+      "verdict": "confirmed"
+     }
+    ],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Le commentaire de zoom.ts L8 dit sans React ni réseau, et ses seuls imports (L1-2) sont un type et parseLocalDate, sans React, axios ni fetch.",
+      "zoom.ts n'importe que le type FullCalendarEvent et parseLocalDate de '@/lib/date-iso', sans React ni appel réseau.",
+      "zoom.ts n'importe que le type FullCalendarEvent et parseLocalDate depuis '@/lib/date-iso', sans React, axios ni fetch (Grep, lignes 1-2), ce qui est cohérent avec la javadoc."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "scope",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "imports, fetch, axios, XMLHttpRequest dans components/timeline/zoom.ts",
+         "found": "Seulement deux imports, '@/types/event' et '@/lib/date-iso'. Aucun React ni appel réseau."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "import|require|fetch|axios dans components/timeline/zoom.ts",
+         "found": "Deux imports seulement : '@/types/event' et '@/lib/date-iso', aucun React ni réseau."
+        },
+        {
+         "tool": "Glob",
+         "target": "**/*[zZ]oom*.ts dans frontend/src",
+         "found": "zoom.ts, mobile-zoom-anchor.ts et leurs tests, tous dans components/timeline."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "imports/fetch/axios dans components/timeline/zoom.ts",
+         "found": "seulement 2 imports (types et date-iso), aucun React ni réseau"
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "placed": {
+    "pack_line": 40,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "frontend-core:tests:1",
+   "section": "tests",
+   "rank": 1,
+   "text": "- Les gardes prouvent d'abord que le motif fautif est détecté, par fixture virtuelle, commentaire ignoré ou mutation en mémoire, avant d'asserter sur les vrais fichiers [#b624ef68e7fdbbc6-1] [#563f4f6eed8cff91-1] [#82d4c005d5ae0fe0-1].",
+   "fact_text": "Les gardes prouvent d'abord que le motif fautif est détecté, par fixture virtuelle, commentaire ignoré ou mutation en mémoire, avant d'asserter sur les vrais fichiers",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-core/b624ef68e7fdbbc6-1",
+    "frontend-core/563f4f6eed8cff91-1",
+    "frontend-core/82d4c005d5ae0fe0-1"
+   ],
+   "files": [
+    "frontend:styles/__tests__/landing-palette.test.ts",
+    "frontend:styles/__tests__/ink-faint-non-text.test.ts",
+    "frontend:styles/__tests__/storybook-font-shell.test.ts"
+   ],
+   "ranges": [
+    [
+     "frontend:styles/__tests__/landing-palette.test.ts",
+     79,
+     87,
+     "e7eba559adf5376fa9707bed1074dc10d08adad5c8263013ca91dfc3461750f4"
+    ],
+    [
+     "frontend:styles/__tests__/ink-faint-non-text.test.ts",
+     66,
+     77,
+     "c0ee6636dd379f2f90d8997f65796f03239b9a6c9ee02b42dc87989f6c12e409"
+    ],
+    [
+     "frontend:styles/__tests__/storybook-font-shell.test.ts",
+     122,
+     141,
+     "0b616df76750fc3f130f0293ae3f36eb2fd020aa1882799012a3db483bb1482f"
+    ]
+   ],
+   "code_sha256": "c056b1d5718328755226a2a64527873cc9ff468dc66c84379b1ec1ac84f0297d",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 0.2,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 15
+      }
+     },
+     "restatement": "Témoin négatif : le test vérifie que colorLiterals détecte bien deux littéraux hors palette (un hex #8B5CF6 et un rgba(79, 70, 229, 0.25)) dans une fixture CSS, pour éviter qu'un détecteur muet rende les assertions vertes par vacuité. Le test de textInkFaintLines et textualCssUses vérifie de même la détection des usages fautifs de text-ink-faint.",
+     "confidence": "high",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 16,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:\\Users\\ldelaforcade\\Documents\\Personnel\\My Timeline\\MyTimeline\\frontend\\src\\__tests__\\e2e-rate-limit-budget.test.ts",
+     "file_ok": false,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 0.4,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 15
+      }
+     },
+     "job": "frontend-core:rediscover:frontend_components_landing_CtaSection.test.tsx:1",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "landing-palette L83-86 utilise une fixture virtuelle, ink-faint L70 ignore un commentaire, storybook-font-shell L140 mute en mémoire : les trois formes citées sont présentes.",
+      "landing-palette (fixture virtuelle L84-86), ink-faint-non-text (commentaire ignoré L70) et storybook-font-shell (mutation en mémoire L140) prouvent la détection avant les vrais fichiers.",
+      "landing-palette (fixture virtuelle), ink-faint-non-text (commentaire ignoré L70) et storybook-font-shell (mutation en mémoire L140) montrent chacun le témoin négatif avant les vraies assertions."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 84,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "frontend-core:tests:2",
+   "section": "tests",
+   "rank": 2,
+   "text": "- Les tests d'intercepteur remplacent le transport par un adaptateur Axios factice sur apiClient.defaults.adapter (`frontend:contexts/AuthContext.themeSaveToast.test.tsx:146`) et le restaurent en afterEach [#2567fe15abe72281-1] [#8fe6e917cfd6a7e1-1].",
+   "fact_text": "Les tests d'intercepteur remplacent le transport par un adaptateur Axios factice sur apiClient.defaults.adapter (AuthContext.themeSaveToast.test.tsx) et le restaurent en afterEach",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-core/2567fe15abe72281-1",
+    "frontend-core/8fe6e917cfd6a7e1-1"
+   ],
+   "files": [
+    "frontend:contexts/AuthContext.themeSaveToast.test.tsx"
+   ],
+   "ranges": [
+    [
+     "frontend:contexts/AuthContext.themeSaveToast.test.tsx",
+     146,
+     146,
+     "246f095456854cffeea8f12b4ba85a18bb6d9fc886243672d25264761517edab"
+    ],
+    [
+     "frontend:contexts/AuthContext.themeSaveToast.test.tsx",
+     135,
+     140,
+     "b4bc142d809c942b9eee27435eb0069f9430adc9991f7a4ea104c7f3ed59aa6f"
+    ]
+   ],
+   "code_sha256": "1bdcc02026efece1ec11e85af32fef8dc030ecde6e65693758364dfb19db06bb",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.667,
+      "values": null,
+      "terms": 0.4,
+      "n": {
+       "identifiers": 3,
+       "values": 0,
+       "terms": 10
+      }
+     },
+     "restatement": "Le test remplace `apiClient.defaults.adapter` par un `failingAdapter(status)` pour simuler une erreur HTTP ; dans `afterEach`, l'adaptateur d'origine est restauré, le `networkStatusStore` est vidé, le spy `console.error` est restauré et `localStorage` est vidé.",
+     "confidence": "high",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 11,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:\\Users\\ldelaforcade\\Documents\\Personnel\\My Timeline\\MyTimeline\\frontend\\src\\contexts\\AuthContext.themeSaveToast.test.tsx",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.667,
+      "values": null,
+      "terms": 0.8,
+      "n": {
+       "identifiers": 3,
+       "values": 0,
+       "terms": 10
+      }
+     },
+     "job": "frontend-core:rediscover:frontend_components_landing_CtaSection.test.tsx:1",
+     "rank_in_lot": 8,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 85,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "frontend-core:tests:3",
+   "section": "tests",
+   "rank": 3,
+   "text": "- Les tests de composants mockent next-intl en renvoyant la clé telle quelle ou préfixée par son namespace [#67b6193be51eb5f8-2] [#31e4140d2a82fdf7-1].",
+   "fact_text": "Les tests de composants mockent next-intl en renvoyant la clé telle quelle ou préfixée par son namespace",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-core/67b6193be51eb5f8-2",
+    "frontend-core/31e4140d2a82fdf7-1"
+   ],
+   "files": [
+    "frontend:components/landing/CtaSection.test.tsx",
+    "frontend:components/settings/mobile/SettingsIndex.test.tsx"
+   ],
+   "ranges": [
+    [
+     "frontend:components/landing/CtaSection.test.tsx",
+     5,
+     8,
+     "f43c287fbae07d5adef32650bb7338c223eb5016d7b89d90ad08786ff0bfcd1c"
+    ],
+    [
+     "frontend:components/settings/mobile/SettingsIndex.test.tsx",
+     9,
+     12,
+     "1a69156b62cb18817e0ef466037ad3ddbcf6f9ade68dbc3fc36b5a3af9b382f9"
+    ]
+   ],
+   "code_sha256": "c1ceb8b2ec67f50d3c5f20978183108a328669764581415b6733da74deada1fb",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 0.375,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 8
+      }
+     },
+     "restatement": "Deux mocks de `next-intl` : dans CtaSection.test, `useTranslations` renvoie la clé telle quelle et `useLocale` renvoie 'fr' ; dans SettingsIndex.test, `useTranslations(namespace)` renvoie `namespace.key` si un namespace est fourni, sinon la clé seule.",
+     "confidence": "high",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 1,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:\\Users\\ldelaforcade\\Documents\\Personnel\\My Timeline\\MyTimeline\\frontend\\src\\components\\dashboard\\DensityRibbon.intl.test.tsx",
+     "file_ok": false,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 1.0,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 8
+      }
+     },
+     "job": "frontend-core:rediscover:frontend_components_landing_CtaSection.test.tsx:1",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "CtaSection.test.tsx L5-8 renvoie la clé telle quelle, SettingsIndex.test.tsx L9-12 la préfixe par le namespace : la ligne est fidèle.",
+      "CtaSection.test.tsx L5-8 renvoie la clé telle quelle, SettingsIndex.test.tsx L9-12 la préfixe par le namespace : la ligne est fidèle.",
+      "CtaSection.test.tsx L5-8 renvoie la clé telle quelle, SettingsIndex.test.tsx L9-12 la préfixe par le namespace : conforme."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 86,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "frontend-core:tests:4",
+   "section": "tests",
+   "rank": 4,
+   "text": "- Le pont d'erreurs se teste avec un vrai NextIntlClientProvider et les errors.json réels, puis setApiErrorTranslator(null) en afterEach [#bc8390329b6494b1-1] [#e9538199f8ee2b0a-1].",
+   "fact_text": "Le pont d'erreurs se teste avec un vrai NextIntlClientProvider et les errors.json réels, puis setApiErrorTranslator(null) en afterEach",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-core/bc8390329b6494b1-1",
+    "frontend-core/e9538199f8ee2b0a-1"
+   ],
+   "files": [
+    "frontend:services/ApiErrorTranslatorBridge.intl.test.tsx"
+   ],
+   "ranges": [
+    [
+     "frontend:services/ApiErrorTranslatorBridge.intl.test.tsx",
+     24,
+     29,
+     "31849c46ea9ab103337ba78969a412e4f72e514b4c7ee54a80d577d18c728a78"
+    ],
+    [
+     "frontend:services/ApiErrorTranslatorBridge.intl.test.tsx",
+     21,
+     22,
+     "8e66f233630a869b6af4ff472cbd9118dc0ba41bc5b90d4df4c79047f73badbf"
+    ]
+   ],
+   "code_sha256": "413329d1d48e9fde45e33e5c13628e05d041c4f926abc0f32a3db56aca4490dc",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": null,
+      "terms": 0.0,
+      "n": {
+       "identifiers": 4,
+       "values": 0,
+       "terms": 6
+      }
+     },
+     "restatement": "`renderBridge` rend `ApiErrorTranslatorBridge` dans un `NextIntlClientProvider` avec les messages `{ errors: ... }` chargés pour la locale donnée, et `readErrors` lit synchroniquement `public/locales/<locale>/errors.json` depuis `process.cwd()`.",
+     "confidence": "high",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 10,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:\\Users\\ldelaforcade\\Documents\\Personnel\\My Timeline\\MyTimeline\\frontend\\src\\services\\ApiErrorTranslatorBridge.intl.test.tsx",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 4,
+       "values": 0,
+       "terms": 6
+      }
+     },
+     "job": "frontend-core:rediscover:frontend_components_landing_CtaSection.test.tsx:1",
+     "rank_in_lot": 7,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 87,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "frontend-core:tests:5",
+   "section": "tests",
+   "rank": 5,
+   "text": "- Les tests fixent que l'upload d'avatar ne passe aucune config à post (Content-Type non forcé) [#0b961296c4139571-1] et que les options de mise à jour produit arrivent en quatrième paramètre, undefined par défaut [#873e0ac8508f2a1c-1].",
+   "fact_text": "Les tests fixent que l'upload d'avatar ne passe aucune config à post (Content-Type non forcé) et que les options de mise à jour produit arrivent en quatrième paramètre, undefined par défaut",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-core/0b961296c4139571-1",
+    "frontend-core/873e0ac8508f2a1c-1"
+   ],
+   "files": [
+    "frontend:services/userService.test.ts",
+    "frontend:hooks/useUpdateProduct.test.tsx"
+   ],
+   "ranges": [
+    [
+     "frontend:services/userService.test.ts",
+     46,
+     48,
+     "988ebe47021065f32f90208e593686fb8f17ae69683a3e13c473f96b03b4e1d7"
+    ],
+    [
+     "frontend:hooks/useUpdateProduct.test.tsx",
+     49,
+     50,
+     "6c08d208838df9406e49c4d4dc64d1361b544dcf922aefce99b42f8440e0f56a"
+    ]
+   ],
+   "code_sha256": "8a5920210cbaf58a7222a86e1c3d8dbab348d710a130d60d1d6ebb6a38544cb6",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 0.421,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 19
+      }
+     },
+     "restatement": "Le test de uploadAvatar vérifie que le champ 'file' du FormData est bien le fichier fourni et que config est undefined, donc le Content-Type n'est pas forcé pour laisser axios gérer la boundary multipart. Le test de useUpdateProduct vérifie que sans option, updateProduct est appelé avec undefined en quatrième argument, c'est-à-dire sans opt-out.",
+     "confidence": "high",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 17,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:\\Users\\ldelaforcade\\Documents\\Personnel\\My Timeline\\MyTimeline\\frontend\\src\\services\\userService.test.ts",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 0.737,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 19
+      }
+     },
+     "job": "frontend-core:rediscover:frontend_components_landing_CtaSection.test.tsx:1",
+     "rank_in_lot": 9,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 88,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "frontend-core:tests:6",
+   "section": "tests",
+   "rank": 6,
+   "text": "- Un mock utilisé dans une factory vi.mock se déclare avec vi.hoisted [#2bced97a8b32cc87-1].",
+   "fact_text": "Un mock utilisé dans une factory vi.mock se déclare avec vi.hoisted",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-core/2bced97a8b32cc87-1"
+   ],
+   "files": [
+    "frontend:contexts/AuthContext.themeSaveToast.test.tsx"
+   ],
+   "ranges": [
+    [
+     "frontend:contexts/AuthContext.themeSaveToast.test.tsx",
+     34,
+     38,
+     "541c1607f301b61e2e11e9d8a4d9405fd3f7bd5219710f00efd62051000189fd"
+    ]
+   ],
+   "code_sha256": "541c1607f301b61e2e11e9d8a4d9405fd3f7bd5219710f00efd62051000189fd",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
+      "terms": 0.4,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 5
+      }
+     },
+     "restatement": "Le mock de `react-hot-toast` expose `toast.error` et `default.error` comme la même fonction `toastErrorMock` (créée par `vi.hoisted`), ce qui permet au test d'asserter les appels d'erreur ; `success` est un `vi.fn()` distinct.",
+     "confidence": "high",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 1,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:\\Users\\ldelaforcade\\Documents\\Personnel\\My Timeline\\MyTimeline\\frontend\\src\\hooks\\useArchiveProduct.test.tsx",
+     "file_ok": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.8,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 5
+      }
+     },
+     "job": "frontend-core:rediscover:frontend_components_landing_CtaSection.test.tsx:1",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "AuthContext.themeSaveToast.test.tsx L34 déclare toastErrorMock par vi.hoisted puis l'utilise dans la factory vi.mock (L35-38).",
+      "AuthContext.themeSaveToast.test.tsx L34 déclare toastErrorMock avec vi.hoisted avant la factory vi.mock L35-38 qui l'utilise.",
+      "AuthContext.themeSaveToast.test.tsx L34 déclare toastErrorMock avec vi.hoisted et l'utilise dans la factory vi.mock L35-38."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 89,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "frontend-core:tests:7",
+   "section": "tests",
+   "rank": 7,
+   "text": "- Les mocks se réinitialisent en beforeEach par mockReset, sauf exportService qui utilise clearAllMocks en afterEach [#77f33530045e343d-1] [#f3ce40abe29ecdc4-1].",
+   "fact_text": "Les mocks se réinitialisent en beforeEach par mockReset, sauf exportService qui utilise clearAllMocks en afterEach",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-core/77f33530045e343d-1",
+    "frontend-core/f3ce40abe29ecdc4-1"
+   ],
+   "files": [
+    "frontend:services/authService.test.ts",
+    "frontend:services/exportService.test.ts"
+   ],
+   "ranges": [
+    [
+     "frontend:services/authService.test.ts",
+     22,
+     25,
+     "18eeafb8e7143a8cc2f63792e6d9a281d2229a897e7baf798ad5111a3ab31447"
+    ],
+    [
+     "frontend:services/exportService.test.ts",
+     27,
+     27,
+     "0ba590a7f66877291897e3b152de5211a0d24469e377a4908ede4d943cecfc2e"
+    ]
+   ],
+   "code_sha256": "2ce39d7a2789952318e9d70a59d717ddc8e299a4397ae6b805ac7e00f430d0d4",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.333,
+      "n": {
+       "identifiers": 5,
+       "values": 0,
+       "terms": 3
+      }
+     },
+     "restatement": "Le beforeEach de authService.test.ts réinitialise postMock et getMock via mockReset() avant chaque test ; dans exportService.test.ts, afterEach appelle vi.clearAllMocks() après chaque test pour vider les appels des mocks. Aucune règle métier n'est visible dans cet extrait, seulement l'isolation des mocks entre tests.",
+     "confidence": "high",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 14,
+     "within_budget": false,
+     "covered": true,
+     "file": "C:\\Users\\ldelaforcade\\Documents\\Personnel\\My Timeline\\MyTimeline\\frontend\\src\\hooks\\useMobileKeyboard.test.ts",
+     "file_ok": false,
+     "overlap": {
+      "identifiers": 0.8,
+      "values": null,
+      "terms": 1.0,
+      "n": {
+       "identifiers": 5,
+       "values": 0,
+       "terms": 3
+      }
+     },
+     "job": "frontend-core:rediscover:frontend_components_landing_CtaSection.test.tsx:1",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "authService.test.ts L22-25 appelle mockReset en beforeEach, exportService.test.ts L27 utilise vi.clearAllMocks en afterEach : conforme.",
+      "authService.test.ts L22-25 fait mockReset en beforeEach, exportService.test.ts L27 fait vi.clearAllMocks en afterEach : conforme.",
+      "authService.test.ts L22-25 utilise mockReset en beforeEach, exportService.test.ts L27 utilise vi.clearAllMocks en afterEach : conforme."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 90,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "frontend-core:questions:1",
+   "section": "questions",
+   "rank": 1,
+   "text": "- Le calcul des jours de `calculateRemainingTime` est-il voulu avec un `+1` sur le reste modulo 30 ? Le code l'applique aux jours seulement, alors que les mois et années sont tronqués, voir `frontend:utils/time-utils.ts:24` [#075c383c8509607d-2].",
+   "fact_text": "Le calcul des jours de `calculateRemainingTime` est-il voulu avec un `+1` sur le reste modulo 30 ? Le code l'applique aux jours seulement, alors que les mois et années sont tronqués, voir time-utils.ts",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-core/075c383c8509607d-2"
+   ],
+   "files": [
+    "frontend:utils/time-utils.ts"
+   ],
+   "ranges": [
+    [
+     "frontend:utils/time-utils.ts",
+     24,
+     24,
+     "b38e773c1b0c7c649d52af12076d94d51457ba859fa130419d0c06c3283e6959"
+    ]
+   ],
+   "code_sha256": "b38e773c1b0c7c649d52af12076d94d51457ba859fa130419d0c06c3283e6959",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "time-utils.ts L24 applique bien le +1 aux jours seulement (mois et années sont tronqués). Aucun appelant de calculateRemainingTime dans frontend/src, donc c'est du code mort, qui ne tranche pas l'intention. Aucun commentaire ne l'explique non plus.",
+      "time-utils.ts L24 applique +1 aux jours seulement, mais aucun code ni commentaire ne tranche l'intention. Aucun appelant trouvé de calculateRemainingTime hors de sa définition.",
+      "time-utils.ts L24 applique bien +1 aux jours seulement, mais calculateRemainingTime n'a aucun appelant dans le frontend (seule sa définition apparaît), donc le code ne tranche pas l'intention."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "open",
+     "searched": true,
+     "search": {
+      "check": "answer",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Read",
+         "target": "frontend/src/utils/time-utils.ts",
+         "found": "days = Math.floor((diffDays % 30) + 1), months et years tronqués"
+        },
+        {
+         "tool": "Grep",
+         "target": "calculateRemainingTime dans frontend/src",
+         "found": "seule occurrence, la définition ; aucun appelant"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "calculateRemainingTime dans frontend/src",
+         "found": "Seule la définition, aucun appelant."
+        },
+        {
+         "tool": "Read",
+         "target": "time-utils.ts",
+         "found": "+1 sur les jours seulement, rien n'explique l'intention."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "calculateRemainingTime dans frontend",
+         "found": "uniquement la définition dans time-utils.ts L5, pas d'appelant ni de test"
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "answer",
+   "placed": {
+    "pack_line": 94,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "frontend-core:alerts:1",
+   "section": "alerts",
+   "rank": 1,
+   "text": "- `registerUser` retourne l'appel `apiClient.post` sans `await` dans son try, donc le catch ne voit jamais un rejet asynchrone, contrairement à login et getUserProfile. Tout traitement d'erreur ajouté dans ce catch reste inopérant, il faut ajouter `await` avant de s'y fier, voir `frontend:services/authService.ts:32-36` [#9444328f3c65b8bc-1].",
+   "fact_text": "`registerUser` retourne l'appel `apiClient.post` sans `await` dans son try, donc le catch ne voit jamais un rejet asynchrone, contrairement à login et getUserProfile. Tout traitement d'erreur ajouté dans ce catch reste inopérant, il faut ajouter `await` avant de s'y fier, voir authService.ts",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-core/9444328f3c65b8bc-1"
+   ],
+   "files": [
+    "frontend:services/authService.ts"
+   ],
+   "ranges": [
+    [
+     "frontend:services/authService.ts",
+     32,
+     36,
+     "9d01abccfeffa3d8d26c52401420b6f9f9557ff16e7f406a124ec73ba260fd83"
+    ]
+   ],
+   "code_sha256": "9d01abccfeffa3d8d26c52401420b6f9f9557ff16e7f406a124ec73ba260fd83",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "authService.ts L33 retourne apiClient.post sans await dans le try de registerUser, alors que login (L10) et getUserProfile (L19) font await. Le constat est exact. Le seul appelant, AuthContext.tsx L238, fait await registerUser, ce qui réduit le risque sans changer le fait que le catch interne ne voit pas le rejet.",
+      "authService.ts L33 renvoie apiClient.post sans await dans le try, donc le catch L34-36 ne voit pas un rejet asynchrone. L'appelant AuthContext.tsx L238 fait await, ce qui ne change pas le fait.",
+      "registerUser (authService.ts L33) retourne apiClient.post sans await dans le try, contrairement à login et getUserProfile qui await ; le catch ne voit donc pas le rejet. Le seul appelant (AuthContext L238) fait await, ce qui ne remet pas de await dans le catch."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "supported",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "guards",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Read",
+         "target": "frontend/src/services/authService.ts",
+         "found": "registerUser sans await L33, login et getUserProfile avec await"
+        },
+        {
+         "tool": "Grep",
+         "target": "registerUser dans frontend/src",
+         "found": "un seul appelant de production, AuthContext.tsx L238 avec await ; le reste sont des mocks de test"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "registerUser dans frontend/src",
+         "found": "Seul appelant réel AuthContext.tsx L238 avec await. Il ne rend pas le catch de registerUser opérant."
+        }
+       ],
+       [
+        {
+         "tool": "Read",
+         "target": "frontend/src/services/authService.ts",
+         "found": "registerUser sans await à L33, login et getUserProfile avec await"
+        },
+        {
+         "tool": "Grep",
+         "target": "registerUser",
+         "found": "un seul appelant réel, AuthContext.tsx L238 avec await ; le reste sont des mocks de test"
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "guards",
+   "placed": {
+    "pack_line": 98,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "frontend-core:alerts:2",
+   "section": "alerts",
+   "rank": 2,
+   "text": "- Des messages de validation sont écrits en dur, en français dans `eventCreationSchema` et `productUpdateSchema`, en anglais pour l'email de `UserSchema`, alors que les schémas d'édition et category.ts passent par une fabrique i18n. Ces messages ne sont pas traduits dans les quatre locales, donc il faut les passer par la fabrique i18n en modifiant ces schémas, voir `frontend:types/event.ts:90` [#b7b7c6d036cba012-1] [#e08a2298e3f018c0-1] [#6ed86820a433f2e0-1].",
+   "fact_text": "Des messages de validation sont écrits en dur, en français dans `eventCreationSchema` et `productUpdateSchema`, en anglais pour l'email de `UserSchema`, alors que les schémas d'édition et category.ts passent par une fabrique i18n. Ces messages ne sont pas traduits dans les quatre locales, donc il faut les passer par la fabrique i18n en modifiant ces schémas, voir event.ts",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-core/b7b7c6d036cba012-1",
+    "frontend-core/e08a2298e3f018c0-1",
+    "frontend-core/6ed86820a433f2e0-1"
+   ],
+   "files": [
+    "frontend:types/event.ts",
+    "frontend:types/product.ts",
+    "frontend:types/user.ts"
+   ],
+   "ranges": [
+    [
+     "frontend:types/event.ts",
+     90,
+     90,
+     "1f463d1fdb77ef6a09dfaef999415521516d3551d6c75f887c4332ae2009bf21"
+    ],
+    [
+     "frontend:types/product.ts",
+     101,
+     101,
+     "7fc880a78d664e8dac430b973a9c09d76fb287325877a056c56366c75ec273e4"
+    ],
+    [
+     "frontend:types/user.ts",
+     8,
+     8,
+     "7e919d5e8d569bf1b10acd07f15ea4271312141c2f217cae3dce6959eb9d8894"
+    ]
+   ],
+   "code_sha256": "0e4389ec85bd3653970d7d643f2133dc981d573aaf0d4b34881b71fde1fc420e",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "event.ts L90 a un message en français en dur, product.ts L101 aussi, user.ts L8 a 'Invalid email' en anglais. Le constat est exact. Aucun garde-fou i18n trouvé pour ces schémas : productUpdateSchema est parsé directement dans ProductDrawer.tsx L223 et eventCreationSchema est utilisé dans product.ts L67.",
+      "L'extrait montre des messages en dur en français (event.ts L90, product.ts L101) et en anglais (user.ts L8 'Invalid email'), ce qui correspond à la ligne.",
+      "Messages en dur lus dans event.ts L90 (français), product.ts L101 (français) et user.ts L8 (anglais), conformes à la ligne."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "supported",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "guards",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "eventCreationSchema|productUpdateSchema dans frontend",
+         "found": "usages directs sans fabrique i18n (ProductDrawer.tsx L223, product.ts L67)"
+        }
+       ],
+       [],
+       []
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "guards",
+   "placed": {
+    "pack_line": 99,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "frontend-core:alerts:3",
+   "section": "alerts",
+   "rank": 3,
+   "text": "- Selon le commentaire de `stripComments`, le retrait des commentaires avant le balayage par regex est un découpage lexical et non un parseur, et un `//` dans une chaîne est traité comme commentaire. Le test de type scale peut donc rater une violation (faux négatif), il ne faut pas le tenir pour exhaustif, voir `frontend:__tests__/ds-type-scale.test.ts:62-69` [#ef46af165567e658-1] [#8a81048d26d0f4bc-1].",
+   "fact_text": "Selon le commentaire de `stripComments`, le retrait des commentaires avant le balayage par regex est un découpage lexical et non un parseur, et un `//` dans une chaîne est traité comme commentaire. Le test de type scale peut donc rater une violation (faux négatif), il ne faut pas le tenir pour exhaustif, voir ds-type-scale.test.ts",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-core/ef46af165567e658-1",
+    "frontend-core/8a81048d26d0f4bc-1"
+   ],
+   "files": [
+    "frontend:__tests__/ds-type-scale.test.ts"
+   ],
+   "ranges": [
+    [
+     "frontend:__tests__/ds-type-scale.test.ts",
+     62,
+     62,
+     "fe9694a5cc6f965cc585084c244a3d79ad5eb114b98ea657fc4b44da935cc3de"
+    ],
+    [
+     "frontend:__tests__/ds-type-scale.test.ts",
+     67,
+     69,
+     "ba256ea2a2287eb4b4f5b3df51c35ee8669d330f2a74d04307e6e4b5aee5b717"
+    ]
+   ],
+   "code_sha256": "234a0628c76d5c78f49209d4e0734c7083e044fedd7c08624b2df7d67c0c4443",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [
+     {
+      "id": "frontend-core/ef46af165567e658-1",
+      "verdict": "confirmed"
+     }
+    ],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Le commentaire (L62) et stripComments (L67-69) confirment un découpage lexical par regex, avec `[^:]` devant `//`. La ligne attribue bien cela au commentaire.",
+      "stripComments (L67-69) retire les commentaires par regex, et le motif `(^|[^:])//` traite bien un // dans une chaîne comme commentaire, comme dit la ligne.",
+      "stripComments (ds-type-scale.test.ts L62-69) est annoncé comme découpage lexical et le regex `(^|[^:])\\/\\/` traite bien un `//` hors `://` comme commentaire, y compris dans une chaîne, donc le constat est fidèle."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "guards",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [],
+       [],
+       [
+        {
+         "tool": "Read",
+         "target": "excerpt.txt",
+         "found": "commentaire et fonction stripComments lus, conformes"
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "guards",
+   "placed": {
+    "pack_line": 100,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "frontend-core:alerts:4",
+   "section": "alerts",
+   "rank": 4,
+   "text": "- La garde statique des eyebrows signale une ligne seulement si tous les marqueurs regex y correspondent, et selon son commentaire une chaîne de classes coupée sur plusieurs lignes lui échappe. Écrire les classes sur une seule ligne pour que la garde les voie, voir `frontend:styles/__tests__/eyebrow-consumers.test.tsx:129-140` [#5c59fd416c4ec02e-1] [#050064225102bae2-1].",
+   "fact_text": "La garde statique des eyebrows signale une ligne seulement si tous les marqueurs regex y correspondent, et selon son commentaire une chaîne de classes coupée sur plusieurs lignes lui échappe. Écrire les classes sur une seule ligne pour que la garde les voie, voir eyebrow-consumers.test.tsx",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-core/5c59fd416c4ec02e-1",
+    "frontend-core/050064225102bae2-1"
+   ],
+   "files": [
+    "frontend:styles/__tests__/eyebrow-consumers.test.tsx"
+   ],
+   "ranges": [
+    [
+     "frontend:styles/__tests__/eyebrow-consumers.test.tsx",
+     129,
+     134,
+     "92c62c178c4c6a8d9a440072754df11066f8de48efd743d03de7d143919f48a6"
+    ],
+    [
+     "frontend:styles/__tests__/eyebrow-consumers.test.tsx",
+     136,
+     140,
+     "f1f847882d1b1e4b8ffd4559ff7ac5b701144a5e6e265d393e6152fab9117d6f"
+    ]
+   ],
+   "code_sha256": "b1ff1e650c908e929416cdfe8d586e1a34790a2d789053413a16d5cf70be8b5f",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [
+     {
+      "id": "frontend-core/5c59fd416c4ec02e-1",
+      "verdict": "confirmed"
+     }
+    ],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "eyebrow-consumers.test.tsx L146 utilise MARKERS.every sur chaque ligne et le commentaire L132-134 reconnaît qu'une chaîne coupée sur plusieurs lignes échapperait. Le constat est fidèle. La consigne (une seule ligne) découle du commentaire.",
+      "handMadeEyebrows travaille ligne par ligne et exige MARKERS.every (L146). Le commentaire L132-134 reconnaît la limite multi-lignes.",
+      "handMadeEyebrows filtre avec MARKERS.every (L146) ligne par ligne, et le commentaire L132-134 admet que les chaînes coupées sur plusieurs lignes échappent."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "supported",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "guards",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Read",
+         "target": "frontend/src/styles/__tests__/eyebrow-consumers.test.tsx L120-170",
+         "found": "handMadeEyebrows filtre avec MARKERS.every par ligne ; limite connue documentée en commentaire"
+        }
+       ],
+       [
+        {
+         "tool": "Read",
+         "target": "eyebrow-consumers.test.tsx L125-165",
+         "found": "filter MARKERS.every sur chaque ligne, limite multi-lignes dans le commentaire."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "MARKERS dans eyebrow-consumers.test.tsx",
+         "found": "filtre .every sur chaque ligne trimée, commentaires exclus"
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "guards",
+   "placed": {
+    "pack_line": 101,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "frontend-core:alerts:5",
+   "section": "alerts",
+   "rank": 5,
+   "text": "- Selon le commentaire de ce test, le `default export` de la config de requête i18n n'est pas testable sous Vitest, et seuls les cas de `resolveLocale` sont vérifiés. Un changement dans l'export par défaut n'est donc couvert par aucun test, il faut le vérifier à la main, voir `frontend:__tests__/i18n-request-config.test.ts:16-38` [#8c19b67eb94f04f8-1] [#a8a8ff297908ea82-1].",
+   "fact_text": "Selon le commentaire de ce test, le `default export` de la config de requête i18n n'est pas testable sous Vitest, et seuls les cas de `resolveLocale` sont vérifiés. Un changement dans l'export par défaut n'est donc couvert par aucun test, il faut le vérifier à la main, voir i18n-request-config.test.ts",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-core/8c19b67eb94f04f8-1",
+    "frontend-core/a8a8ff297908ea82-1"
+   ],
+   "files": [
+    "frontend:__tests__/i18n-request-config.test.ts"
+   ],
+   "ranges": [
+    [
+     "frontend:__tests__/i18n-request-config.test.ts",
+     16,
+     19,
+     "1c0a2257aa9ff0efc96ead9865fc16d91484e55396849bddfaf1e16d054aa64d"
+    ],
+    [
+     "frontend:__tests__/i18n-request-config.test.ts",
+     22,
+     38,
+     "e04d5f6c070211f522abbeb3a1133c49ec85ebb6fa626f431e1c4c27ceab04f2"
+    ]
+   ],
+   "code_sha256": "e30967ec860e0628fdcbedf04ca161ca0124a7dad02d982d04c0208b522bd9e1",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [
+     {
+      "id": "frontend-core/8c19b67eb94f04f8-1",
+      "verdict": "unverifiable"
+     }
+    ],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Le commentaire L16-19 dit que le default export n'est pas testable sous Vitest, et les tests L22-38 ne couvrent que resolveLocale.",
+      "Le commentaire L16-19 de i18n-request-config.test.ts dit que le default export n'est pas testable et que seul resolveLocale est testé, ce que les cas L22-38 confirment.",
+      "Le commentaire L16-19 de i18n-request-config.test.ts dit que le default export n'est pas testable et les tests ne couvrent que resolveLocale (L22-38)."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "guards",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [],
+       [],
+       [
+        {
+         "tool": "Read",
+         "target": "excerpt.txt",
+         "found": "commentaire et cas resolveLocale conformes"
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "guards",
+   "placed": {
+    "pack_line": 102,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "frontend-core:rules:annex:bdde8fe9",
+   "section": "rules",
+   "rank": 3,
+   "text": "- Les logs d'erreur passent par safeErrorMessage et jamais par l'objet d'erreur brut. [#dfc0144d9d3416d2-1] [#eb86943f3e7064a8-1] [#457358c22316fc79-1]",
+   "fact_text": "Les logs d'erreur passent par safeErrorMessage et jamais par l'objet d'erreur brut",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-core/dfc0144d9d3416d2-1",
+    "frontend-core/eb86943f3e7064a8-1",
+    "frontend-core/457358c22316fc79-1"
+   ],
+   "files": [
+    "frontend:contexts/AuthContext.tsx",
+    "frontend:services/exportService.ts",
+    "frontend:services/productService.ts"
+   ],
+   "ranges": [
+    [
+     "frontend:contexts/AuthContext.tsx",
+     114,
+     114,
+     "8972cc37a76e88a6d93861f5b091535a69f92acf1fabbb9f83224f47f67dd9b2"
+    ],
+    [
+     "frontend:services/exportService.ts",
+     21,
+     21,
+     "54ed5226f7e159fbfee7ea4f03a88f089f7241ec1a58510617839bfa2060d9a4"
+    ],
+    [
+     "frontend:services/productService.ts",
+     11,
+     11,
+     "cab5b757dc046c2d89a21912cfee481347e7c76fcf5570d7d45f8674334c77e7"
+    ]
+   ],
+   "code_sha256": "0311fb3dc015d48837bcd73fcf2875ce8c841d176676441443d6607730bf0f3c",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.6,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 5
+      }
+     },
+     "restatement": "Dans `AuthProvider.loadUser`, un échec de récupération de l'utilisateur est journalisé via `console.error('User fetch failed', safeErrorMessage(error))`, c'est-à-dire seulement un message aseptisé et non l'objet d'erreur brut.",
+     "confidence": "high"
+    },
+    "rediscover": null,
+    "comment": [
+     {
+      "id": "frontend-core/eb86943f3e7064a8-1",
+      "verdict": "confirmed"
+     },
+     {
+      "id": "frontend-core/457358c22316fc79-1",
+      "verdict": "confirmed"
+     }
+    ],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "words:jamais",
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "frontend-core.details.md",
+     "row": 1
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  },
+  {
+   "id": "frontend-core:rules:annex:6bc03d6b",
+   "section": "rules",
+   "rank": 4,
+   "text": "- Une classe du design system déjà posée sur un élément ne se combine pas avec des utilitaires text-* ou tracking-*, car la classe DS est hors layer et l'emporte. [#0a66016217483edc-5]",
+   "fact_text": "Une classe du design system déjà posée sur un élément ne se combine pas avec des utilitaires text-* ou tracking-*, car la classe DS est hors layer et l'emporte",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-core/0a66016217483edc-5"
+   ],
+   "files": [
+    "frontend:components/dashboard/GreetingHeader.tsx"
+   ],
+   "ranges": [
+    [
+     "frontend:components/dashboard/GreetingHeader.tsx",
+     52,
+     52,
+     "c060373dfe58b1dc5b85db759f44e45b897cd18d24bb41a5107c124179dc7a3f"
+    ]
+   ],
+   "code_sha256": "c060373dfe58b1dc5b85db759f44e45b897cd18d24bb41a5107c124179dc7a3f",
+   "verdict": "annex",
+   "reason": "framework",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "frontend-core.details.md",
+     "row": 2
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  },
+  {
+   "id": "frontend-core:rules:annex:22fec0ab",
+   "section": "rules",
+   "rank": 5,
+   "text": "- Un corps FormData passe le timeout à 0 et retire le Content-Type pour laisser le navigateur poser la boundary. [#b54423cc4f5616aa-1]",
+   "fact_text": "Un corps FormData passe le timeout à 0 et retire le Content-Type pour laisser le navigateur poser la boundary",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-core/b54423cc4f5616aa-1"
+   ],
+   "files": [
+    "frontend:services/apiClient.ts"
+   ],
+   "ranges": [
+    [
+     "frontend:services/apiClient.ts",
+     54,
+     61,
+     "37858b30259ac6f07ef7930b2264f39aa92ff9cfad1650d2757588b788d2141c"
+    ]
+   ],
+   "code_sha256": "37858b30259ac6f07ef7930b2264f39aa92ff9cfad1650d2757588b788d2141c",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 0.6,
+      "n": {
+       "identifiers": 1,
+       "values": 1,
+       "terms": 10
+      }
+     },
+     "restatement": "Intercepteur de requête : si `config.data` est un `FormData`, le timeout est mis à 0 et le header `Content-Type` est supprimé, pour laisser le navigateur définir la boundary multipart.",
+     "confidence": "high"
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "frontend-core.details.md",
+     "row": 3
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  },
+  {
+   "id": "frontend-core:rules:annex:d0a4fbb1",
+   "section": "rules",
+   "rank": 13,
+   "text": "- translateApiError retombe sur la table française si le traducteur est absent, lève, ou rend une chaîne vide ou une clé brute. [#9beb4cc78e39f147-1]",
+   "fact_text": "translateApiError retombe sur la table française si le traducteur est absent, lève, ou rend une chaîne vide ou une clé brute",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-core/9beb4cc78e39f147-1"
+   ],
+   "files": [
+    "frontend:services/apiErrorMessages.ts"
+   ],
+   "ranges": [
+    [
+     "frontend:services/apiErrorMessages.ts",
+     81,
+     93,
+     "11a15f79290971049997cfc743c4240f46200787d5dbaf21fbda990be3904f43"
+    ]
+   ],
+   "code_sha256": "11a15f79290971049997cfc743c4240f46200787d5dbaf21fbda990be3904f43",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 10
+      }
+     },
+     "restatement": "`translateApiError` retourne le fallback français `FR_FALLBACK[key]` si le traducteur est null, s'il lève une exception, s'il renvoie une valeur vide ou non-chaîne, ou si le message est égal à la clé ou se termine par `.<key>` (chemin brut non traduit) ; sinon il renvoie le message traduit.",
+     "confidence": "high"
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "frontend-core.details.md",
+     "row": 4
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  },
+  {
+   "id": "frontend-core:rules:annex:124554f4",
+   "section": "rules",
+   "rank": 14,
+   "text": "- Les défauts TanStack Query sont 30 s de fraîcheur, 5 min de gc, pas de refetch au focus et un seul retry. [#57f9dbca2e609908-1]",
+   "fact_text": "Les défauts TanStack Query sont 30 s de fraîcheur, 5 min de gc, pas de refetch au focus et un seul retry",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-core/57f9dbca2e609908-1"
+   ],
+   "files": [
+    "frontend:contexts/QueryProvider.tsx"
+   ],
+   "ranges": [
+    [
+     "frontend:contexts/QueryProvider.tsx",
+     26,
+     33,
+     "51e1d17197eb7634e890ca2a3b496f4df816320d1cef83aefce8fdc5624c7ff3"
+    ]
+   ],
+   "code_sha256": "51e1d17197eb7634e890ca2a3b496f4df816320d1cef83aefce8fdc5624c7ff3",
+   "verdict": "annex",
+   "reason": "framework",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "frontend-core.details.md",
+     "row": 5
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  },
+  {
+   "id": "frontend-core:rules:annex:dd288d09",
+   "section": "rules",
+   "rank": 15,
+   "text": "- Les clés de cache viennent toujours de l'objet queryKeys, jamais d'un tableau littéral. [#443004b918e6296c-1]",
+   "fact_text": "Les clés de cache viennent toujours de l'objet queryKeys, jamais d'un tableau littéral",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-core/443004b918e6296c-1"
+   ],
+   "files": [
+    "frontend:hooks/useCategories.ts"
+   ],
+   "ranges": [
+    [
+     "frontend:hooks/useCategories.ts",
+     5,
+     5,
+     "a00ae9f670502e523ef5744ce4913873aa355e62b13507d2925d85fe1eb3f748"
+    ]
+   ],
+   "code_sha256": "a00ae9f670502e523ef5744ce4913873aa355e62b13507d2925d85fe1eb3f748",
+   "verdict": "annex",
+   "reason": "framework",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "words:toujours,jamais",
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "frontend-core.details.md",
+     "row": 6
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  },
+  {
+   "id": "frontend-core:rules:annex:ef3f8ee9",
+   "section": "rules",
+   "rank": 16,
+   "text": "- Un hook de requête désactive la requête tant que userId manque. [#475836769764d23d-1] [#c2be5e83aee3d7d0-1]",
+   "fact_text": "Un hook de requête désactive la requête tant que userId manque",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-core/475836769764d23d-1",
+    "frontend-core/c2be5e83aee3d7d0-1"
+   ],
+   "files": [
+    "frontend:hooks/useArchivedProducts.ts",
+    "frontend:hooks/useRecurrencePreview.ts"
+   ],
+   "ranges": [
+    [
+     "frontend:hooks/useArchivedProducts.ts",
+     15,
+     20,
+     "8e3ac4ccffac658edfb9e4787d01b5d1a0f5960d4e5c42864e54eceadf34403f"
+    ],
+    [
+     "frontend:hooks/useRecurrencePreview.ts",
+     37,
+     37,
+     "8fad1c87af8c046f4a965d95aee150df3054841e41ea33b7d1d1a7155a681232"
+    ]
+   ],
+   "code_sha256": "4b39b4455732824d8183096e059f721077b1c0f74cb040ead62b07c74d2cc84e",
+   "verdict": "annex",
+   "reason": "framework",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "frontend-core.details.md",
+     "row": 7
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  },
+  {
+   "id": "frontend-core:rules:annex:bea269e9",
+   "section": "rules",
+   "rank": 17,
+   "text": "- Une mutation en erreur n'invalide la liste que sur un statut précis, 404 pour la restauration et 409 pour l'archivage d'événement. [#1b1a02d9d5690415-1] [#2e5f9afb95d39ad1-1]",
+   "fact_text": "Une mutation en erreur n'invalide la liste que sur un statut précis, 404 pour la restauration et 409 pour l'archivage d'événement",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-core/1b1a02d9d5690415-1",
+    "frontend-core/2e5f9afb95d39ad1-1"
+   ],
+   "files": [
+    "frontend:hooks/useRestoreProduct.ts",
+    "frontend:hooks/useSetEventArchived.ts"
+   ],
+   "ranges": [
+    [
+     "frontend:hooks/useRestoreProduct.ts",
+     64,
+     68,
+     "78774939dff1864949e5adf9d34b9d7c9e54f3b6c5d668f0b2353e7c405ecd5d"
+    ],
+    [
+     "frontend:hooks/useSetEventArchived.ts",
+     38,
+     46,
+     "40e5700595238320abb2b5e665e78e0a4093c6b11e372d572ac505c4866403b3"
+    ]
+   ],
+   "code_sha256": "6159abeb6949937137c124f54ad9aa6c14b26e8b45a29a22b082ae27915376b7",
+   "verdict": "annex",
+   "reason": "framework",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "frontend-core.details.md",
+     "row": 8
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  },
+  {
+   "id": "frontend-core:rules:annex:c14afea4",
+   "section": "rules",
+   "rank": 18,
+   "text": "- Le polling d'export s'arrête sur COMPLETED ou FAILED, et les transitions de phase se calculent au rendu et non dans un effet. [#ee885d22ba15ca33-2] [#ee885d22ba15ca33-3]",
+   "fact_text": "Le polling d'export s'arrête sur COMPLETED ou FAILED, et les transitions de phase se calculent au rendu et non dans un effet",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-core/ee885d22ba15ca33-2",
+    "frontend-core/ee885d22ba15ca33-3"
+   ],
+   "files": [
+    "frontend:hooks/useExportFlow.ts"
+   ],
+   "ranges": [
+    [
+     "frontend:hooks/useExportFlow.ts",
+     97,
+     100,
+     "f00f2c34a47c1065db88e3f6f73029a6581ee29567bebe7c50fca6538c93632d"
+    ],
+    [
+     "frontend:hooks/useExportFlow.ts",
+     107,
+     107,
+     "6cb3b292fa06214947c16abb21a568ce11b7e94290ff4a16b2a94133a891b10c"
+    ]
+   ],
+   "code_sha256": "d2c34606eeceee7016c1fbb6c470fce638b33a83bffb2de38b75fff1b3de986d",
+   "verdict": "annex",
+   "reason": "framework",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "frontend-core.details.md",
+     "row": 9
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  },
+  {
+   "id": "frontend-core:rules:annex:04dfbae1",
+   "section": "rules",
+   "rank": 19,
+   "text": "- La suppression de compte vide tout le cache sur succès. [#7cfcf1f22da46870-1]",
+   "fact_text": "La suppression de compte vide tout le cache sur succès",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-core/7cfcf1f22da46870-1"
+   ],
+   "files": [
+    "frontend:hooks/useSettings.ts"
+   ],
+   "ranges": [
+    [
+     "frontend:hooks/useSettings.ts",
+     53,
+     58,
+     "32570d75ebc6092b0ad129e15cdd836f5d48ae43489eb23a8ac891f68d967d80"
+    ]
+   ],
+   "code_sha256": "32570d75ebc6092b0ad129e15cdd836f5d48ae43489eb23a8ac891f68d967d80",
+   "verdict": "annex",
+   "reason": "framework",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "words:tout",
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "frontend-core.details.md",
+     "row": 10
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  },
+  {
+   "id": "frontend-core:rules:annex:ea86c7e1",
+   "section": "rules",
+   "rank": 20,
+   "text": "- useAuth lève une erreur hors de son Provider, alors que useNetworkStatus renvoie une valeur par défaut fail-open. [#f5fbb7ad9178a368-1] [#eea9101b867d8ce5-1]",
+   "fact_text": "useAuth lève une erreur hors de son Provider, alors que useNetworkStatus renvoie une valeur par défaut fail-open",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-core/f5fbb7ad9178a368-1",
+    "frontend-core/eea9101b867d8ce5-1"
+   ],
+   "files": [
+    "frontend:contexts/AuthContext.tsx",
+    "frontend:contexts/NetworkStatusContext.tsx"
+   ],
+   "ranges": [
+    [
+     "frontend:contexts/AuthContext.tsx",
+     284,
+     290,
+     "8648729190cfd328685628de0aaca7aa80d8d3e1c7f1a342b3041361a29f2945"
+    ],
+    [
+     "frontend:contexts/NetworkStatusContext.tsx",
+     53,
+     55,
+     "d40f3f4e05b07a76974b62f984a9e5b388cdb5bb88899bf29d029de9f6c7e4a2"
+    ]
+   ],
+   "code_sha256": "53aba72985f7544af1ce88c69f109017060ac3039c868479353bc42a787acb01",
+   "verdict": "annex",
+   "reason": "framework",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "frontend-core.details.md",
+     "row": 11
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  },
+  {
+   "id": "frontend-core:rules:annex:2c973567",
+   "section": "rules",
+   "rank": 21,
+   "text": "- Le thème s'écrit localement puis est persisté par un persisteur injecté en contexte, sans attendre le réseau. [#b32f2fc5b7361648-1] [#55a1b5b35827b5d5-1]",
+   "fact_text": "Le thème s'écrit localement puis est persisté par un persisteur injecté en contexte, sans attendre le réseau",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-core/b32f2fc5b7361648-1",
+    "frontend-core/55a1b5b35827b5d5-1"
+   ],
+   "files": [
+    "frontend:hooks/useThemeChoice.ts"
+   ],
+   "ranges": [
+    [
+     "frontend:hooks/useThemeChoice.ts",
+     136,
+     142,
+     "912a358db1198c862c93787ba18d53eb1b7aae7310b249ea934defbf2ccc54c3"
+    ],
+    [
+     "frontend:hooks/useThemeChoice.ts",
+     93,
+     93,
+     "30931d684f4ca2e352f711bd5cbf67ae7dfcea41b68dda85783b6c918a83f726"
+    ]
+   ],
+   "code_sha256": "1581350a9ad5250e5fdbef4db744fe6f80ac925847d17fb89fb66f4eda30c180",
+   "verdict": "annex",
+   "reason": "framework",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "frontend-core.details.md",
+     "row": 12
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  },
+  {
+   "id": "frontend-core:rules:annex:a4d69963",
+   "section": "rules",
+   "rank": 22,
+   "text": "- Un hook qui lit le stockage local attend useHydrated et enveloppe lecture et écriture dans un try/catch. [#ba005718baeaff6c-1] [#079354f747ef4c65-1] [#37d909bf39856aa5-1]",
+   "fact_text": "Un hook qui lit le stockage local attend useHydrated et enveloppe lecture et écriture dans un try/catch",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-core/ba005718baeaff6c-1",
+    "frontend-core/079354f747ef4c65-1",
+    "frontend-core/37d909bf39856aa5-1"
+   ],
+   "files": [
+    "frontend:hooks/useDensity.ts"
+   ],
+   "ranges": [
+    [
+     "frontend:hooks/useDensity.ts",
+     38,
+     41,
+     "8857f3b418cc015d4d6f954b034420889da4b3cc4f5b5e1646910c19ce8363ae"
+    ],
+    [
+     "frontend:hooks/useDensity.ts",
+     25,
+     32,
+     "504c18a7bc00da51f2c6ee2114df298933e9104d5f8b0c45823416b3bb1a81a5"
+    ],
+    [
+     "frontend:hooks/useDensity.ts",
+     52,
+     59,
+     "541e68396d808cd0ff0e36b90f744e1bbdfaf34eb5d5b9d3fabf5775d03c879b"
+    ]
+   ],
+   "code_sha256": "8e641928263813415a1f97db588878aaa4feb5b5a9d0078ee8dd296ed64b021a",
+   "verdict": "annex",
+   "reason": "framework",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "frontend-core.details.md",
+     "row": 13
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  },
+  {
+   "id": "frontend-core:rules:annex:01205ad2",
+   "section": "rules",
+   "rank": 23,
+   "text": "- Un focus trap ignore Escape déjà consommé par une couche superposée et restaure le focus au nettoyage. [#a7643996dcc58e88-3] [#a7643996dcc58e88-4]",
+   "fact_text": "Un focus trap ignore Escape déjà consommé par une couche superposée et restaure le focus au nettoyage",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-core/a7643996dcc58e88-3",
+    "frontend-core/a7643996dcc58e88-4"
+   ],
+   "files": [
+    "frontend:components/timeline/useFocusTrap.ts"
+   ],
+   "ranges": [
+    [
+     "frontend:components/timeline/useFocusTrap.ts",
+     58,
+     58,
+     "385e3333170bb3967f6243f672ca0b290ceaa9ef84e915f0c8a60d241d02d352"
+    ],
+    [
+     "frontend:components/timeline/useFocusTrap.ts",
+     91,
+     91,
+     "c79476b8a01fe8fcbfd9e281f73e487b97abc8ed5bd819f7cddb5bd0bcd6f489"
+    ]
+   ],
+   "code_sha256": "7e388960d6b0bb6baec76bd0baed61e6e05eb81517a6da562d8a5f56481a44df",
+   "verdict": "annex",
+   "reason": "framework",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "frontend-core.details.md",
+     "row": 14
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  },
+  {
+   "id": "frontend-core:rules:annex:e364aa5d",
+   "section": "rules",
+   "rank": 25,
+   "text": "- Les positions se calculent en deux passes, en jours puis mises à l'échelle en pixels. [#bea39347624253a8-1]",
+   "fact_text": "Les positions se calculent en deux passes, en jours puis mises à l'échelle en pixels",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-core/bea39347624253a8-1"
+   ],
+   "files": [
+    "frontend:components/timeline/zoom.ts"
+   ],
+   "ranges": [
+    [
+     "frontend:components/timeline/zoom.ts",
+     341,
+     345,
+     "c63bdf7cdd577235ed883dc29374e6b63d1d3766f47e9a7c552edacc6cba8ac1"
+    ]
+   ],
+   "code_sha256": "c63bdf7cdd577235ed883dc29374e6b63d1d3766f47e9a7c552edacc6cba8ac1",
+   "verdict": "annex",
+   "reason": "framework",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "frontend-core.details.md",
+     "row": 15
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  },
+  {
+   "id": "frontend-core:rules:annex:6e62bfed",
+   "section": "rules",
+   "rank": 26,
+   "text": "- Les dates ISO se parsent par parseLocalDate et les écarts en jours se ramènent à minuit. [#f4fdd6fbabd6ef9a-1] [#cad2170f51fa3218-1]",
+   "fact_text": "Les dates ISO se parsent par parseLocalDate et les écarts en jours se ramènent à minuit",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-core/f4fdd6fbabd6ef9a-1",
+    "frontend-core/cad2170f51fa3218-1"
+   ],
+   "files": [
+    "frontend:components/timeline/zoom.ts"
+   ],
+   "ranges": [
+    [
+     "frontend:components/timeline/zoom.ts",
+     2,
+     2,
+     "667da66762116ba8b6ee1660376566e3881e104d115cde9d616e9ad5ff239710"
+    ],
+    [
+     "frontend:components/timeline/zoom.ts",
+     127,
+     135,
+     "16439d31e3a66abbbab48063edc385fe7ba7796fdb4bd277b994242a1f50a263"
+    ]
+   ],
+   "code_sha256": "41ce18415ea81393909d2cfa9aec8d95e68c43e2fb47608c21c4acf913739194",
+   "verdict": "annex",
+   "reason": "framework",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "frontend-core.details.md",
+     "row": 16
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  },
+  {
+   "id": "frontend-core:rules:annex:2a049d29",
+   "section": "rules",
+   "rank": 27,
+   "text": "- Un DTO est un schéma nommé en Schema, son type vient de z.infer, et les formulaires traduits passent par une fabrique qui reçoit t. [#43e2ce77516cb967-1] [#85929289f5d61052-1] [#dc66ca8a8c68863e-1]",
+   "fact_text": "Un DTO est un schéma nommé en Schema, son type vient de z.infer, et les formulaires traduits passent par une fabrique qui reçoit t",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-core/43e2ce77516cb967-1",
+    "frontend-core/85929289f5d61052-1",
+    "frontend-core/dc66ca8a8c68863e-1"
+   ],
+   "files": [
+    "frontend:types/category.ts"
+   ],
+   "ranges": [
+    [
+     "frontend:types/category.ts",
+     26,
+     26,
+     "540bce4908e7c4f20d4b19077b7dc45ff764e17959a91e94b9ef7131a75d93ac"
+    ],
+    [
+     "frontend:types/category.ts",
+     36,
+     36,
+     "a538947c99dee0ae10b00fb291866404bfa65cd443b8cdd59394550916a8efdb"
+    ],
+    [
+     "frontend:types/category.ts",
+     79,
+     79,
+     "8baf1de11ff404496c8570b943fa2330a0ff453b680a3b83530a38317a46c878"
+    ]
+   ],
+   "code_sha256": "702554c07f17306ab5d82bdc13e8900254c8ac6c44ecfda157baf4569378f92c",
+   "verdict": "annex",
+   "reason": "framework",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "frontend-core.details.md",
+     "row": 17
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  },
+  {
+   "id": "frontend-core:rules:annex:867ca309",
+   "section": "rules",
+   "rank": 28,
+   "text": "- La traduction formulaire vers payload de création se fait dans une seule fonction, `frontend:types/event.ts:435`. [#e1f61a0325088578-1]",
+   "fact_text": "La traduction formulaire vers payload de création se fait dans une seule fonction, event.ts",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-core/e1f61a0325088578-1"
+   ],
+   "files": [
+    "frontend:types/event.ts"
+   ],
+   "ranges": [
+    [
+     "frontend:types/event.ts",
+     435,
+     435,
+     "3cc68a497d740dc189aeaf820a73ddef3955347f02dce82832204c6be02b4bf0"
+    ]
+   ],
+   "code_sha256": "3cc68a497d740dc189aeaf820a73ddef3955347f02dce82832204c6be02b4bf0",
+   "verdict": "annex",
+   "reason": "framework",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "frontend-core.details.md",
+     "row": 18
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  },
+  {
+   "id": "frontend-core:rules:annex:bf4be4c4",
+   "section": "rules",
+   "rank": 29,
+   "text": "- Les règles entre champs passent par superRefine avec un path ciblé. [#b7b7c6d036cba012-2]",
+   "fact_text": "Les règles entre champs passent par superRefine avec un path ciblé",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-core/b7b7c6d036cba012-2"
+   ],
+   "files": [
+    "frontend:types/event.ts"
+   ],
+   "ranges": [
+    [
+     "frontend:types/event.ts",
+     99,
+     99,
+     "d224f9619c4b745f48c75b3d9deb8d8666ec9f50e1bbf2a71017ed3a4ed07ebb"
+    ]
+   ],
+   "code_sha256": "d224f9619c4b745f48c75b3d9deb8d8666ec9f50e1bbf2a71017ed3a4ed07ebb",
+   "verdict": "annex",
+   "reason": "framework",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "frontend-core.details.md",
+     "row": 19
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  },
+  {
+   "id": "frontend-core:rules:annex:898a7d97",
+   "section": "rules",
+   "rank": 30,
+   "text": "- Les gardes statiques excluent leur propre fichier, les tests et stories, et déclarent leurs exceptions dans un Set commenté. [#2438aac9fa665a6a-1] [#88cd9d892f334cae-1] [#826d206128cb3fee-1]",
+   "fact_text": "Les gardes statiques excluent leur propre fichier, les tests et stories, et déclarent leurs exceptions dans un Set commenté",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-core/2438aac9fa665a6a-1",
+    "frontend-core/88cd9d892f334cae-1",
+    "frontend-core/826d206128cb3fee-1"
+   ],
+   "files": [
+    "frontend:__tests__/ds-type-scale.test.ts",
+    "frontend:__tests__/i18n-namespaces.test.ts",
+    "frontend:styles/__tests__/eyebrow-consumers.test.tsx"
+   ],
+   "ranges": [
+    [
+     "frontend:__tests__/ds-type-scale.test.ts",
+     112,
+     112,
+     "7146a80716a11a2376083e1e687bc0652e5c15c1b49614395af3e634fda2f311"
+    ],
+    [
+     "frontend:__tests__/i18n-namespaces.test.ts",
+     94,
+     107,
+     "72d6dc9e44fc2b53e3ff829f2386a44ae668781f21520b50141cd40c90ccce10"
+    ],
+    [
+     "frontend:styles/__tests__/eyebrow-consumers.test.tsx",
+     153,
+     153,
+     "d08c8df66fd1ee372e7f29fe134e5ca40aa728bced93bc5d523a88fb2caf501a"
+    ]
+   ],
+   "code_sha256": "7332d1ccb8d36422345fb5808d21d0c9f8e5ed1a029cc714a961d496a41a6bd0",
+   "verdict": "annex",
+   "reason": "framework",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "frontend-core.details.md",
+     "row": 20
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  },
+  {
+   "id": "frontend-core:tests:annex:a57bb330",
+   "section": "tests",
+   "rank": 5,
+   "text": "- Les tests TanStack Query créent un QueryClient neuf avec retry désactivé, et absorbent le rejet de mutation par un MutationCache à onError vide [#3567e8ecf8cbb6a3-1] [#8dd03e17489c8b12-1] [#9ca3ebac108c3813-1].",
+   "fact_text": "Les tests TanStack Query créent un QueryClient neuf avec retry désactivé, et absorbent le rejet de mutation par un MutationCache à onError vide",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-core/3567e8ecf8cbb6a3-1",
+    "frontend-core/8dd03e17489c8b12-1",
+    "frontend-core/9ca3ebac108c3813-1"
+   ],
+   "files": [
+    "frontend:hooks/useProductsWithEvents.test.tsx",
+    "frontend:contexts/NetworkStatusContext.test.tsx",
+    "frontend:hooks/useSessionManager.test.tsx"
+   ],
+   "ranges": [
+    [
+     "frontend:hooks/useProductsWithEvents.test.tsx",
+     30,
+     37,
+     "eb9dc841780c4161e3992d9371815010381461ae1f3130818acc4f4a1eaa289e"
+    ],
+    [
+     "frontend:contexts/NetworkStatusContext.test.tsx",
+     38,
+     42,
+     "05e8af824fe72dc89906f4c9652235fb93a4787d775d6f222a47bb23bd85e6fe"
+    ],
+    [
+     "frontend:hooks/useSessionManager.test.tsx",
+     31,
+     39,
+     "9faeeac8dd06ae9ed447996ac68a94e77cc86c2963df9bdc1b06f89d2698ff92"
+    ]
+   ],
+   "code_sha256": "e8fc4b35604968189983d6339de3b31a2ac7d9f1e217813592428e06ba6f9dc3",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 0.75,
+      "values": null,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 4,
+       "values": 0,
+       "terms": 10
+      }
+     },
+     "restatement": "Les helpers de test créent un `QueryClient` avec `retry: false` et `gcTime: 0` (`makeWrapper` de useProductsWithEvents), ou `gcTime: Infinity` et `staleTime: 0` (`makeClient` de NetworkStatusContext), ou un `MutationCache` avec `onError` vide et `retry: false` pour les requêtes et mutations (`makeWrapper` de useSessionManager).",
+     "confidence": "high"
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "frontend-core.details.md",
+     "row": 21
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  },
+  {
+   "id": "frontend-core:tests:annex:95963f82",
+   "section": "tests",
+   "rank": 6,
+   "text": "- Une mise à jour du store réseau depuis un test passe par act [#627a77b7049c5912-1].",
+   "fact_text": "Une mise à jour du store réseau depuis un test passe par act",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-core/627a77b7049c5912-1"
+   ],
+   "files": [
+    "frontend:contexts/NetworkStatusContext.test.tsx"
+   ],
+   "ranges": [
+    [
+     "frontend:contexts/NetworkStatusContext.test.tsx",
+     152,
+     153,
+     "495d104fc165c5703d21ff6b14cb67b70815d474a89e64841a42b49bb3c3c43e"
+    ]
+   ],
+   "code_sha256": "495d104fc165c5703d21ff6b14cb67b70815d474a89e64841a42b49bb3c3c43e",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 0.667,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 6
+      }
+     },
+     "restatement": "Dans le test, `networkStatusStore.reportServerError()` est appelé à l'intérieur d'un `act(...)` car le store notifie le `useSyncExternalStore` du provider monté, ce qui impose d'envelopper la mise à jour d'état React.",
+     "confidence": "high"
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "frontend-core.details.md",
+     "row": 22
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  },
+  {
+   "id": "frontend-core:tests:annex:8bd4e48d",
+   "section": "tests",
+   "rank": 7,
+   "text": "- Les tests fixent que en, de et es exposent les mêmes namespaces que fr [#4b7f79446e4b86e1-1].",
+   "fact_text": "Les tests fixent que en, de et es exposent les mêmes namespaces que fr",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-core/4b7f79446e4b86e1-1"
+   ],
+   "files": [
+    "frontend:__tests__/i18n-namespaces.test.ts"
+   ],
+   "ranges": [
+    [
+     "frontend:__tests__/i18n-namespaces.test.ts",
+     175,
+     183,
+     "142b9e72ee0c0ac97de733084b87355a2d51e1845a2c4b2fa2f80dc98ed10bc4"
+    ]
+   ],
+   "code_sha256": "142b9e72ee0c0ac97de733084b87355a2d51e1845a2c4b2fa2f80dc98ed10bc4",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 0.75,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 4
+      }
+     },
+     "restatement": "Le test vérifie que les 4 locales (fr, en, de, es) exposent exactement les mêmes namespaces de premier niveau que `fr`, en comparant les clés triées de `loadMessages(locale)` à la référence `fr`.",
+     "confidence": "high"
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "frontend-core.details.md",
+     "row": 23
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  },
+  {
+   "id": "frontend-core:tests:annex:87d9a258",
+   "section": "tests",
+   "rank": 9,
+   "text": "- Les tests fixent que useAuth lève hors Provider, avec console.error espionné [#0dda85ff5207150e-2] [#e4d52b686118e74f-1].",
+   "fact_text": "Les tests fixent que useAuth lève hors Provider, avec console.error espionné",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "frontend-core/0dda85ff5207150e-2",
+    "frontend-core/e4d52b686118e74f-1"
+   ],
+   "files": [
+    "frontend:contexts/AuthContext.test.tsx",
+    "frontend:contexts/AuthContext.themeSaveToast.test.tsx"
+   ],
+   "ranges": [
+    [
+     "frontend:contexts/AuthContext.test.tsx",
+     203,
+     207,
+     "43a4f48d7fb92af5d4963e5566f99d7a69192c96d8b2713e64723a12ac900ad7"
+    ],
+    [
+     "frontend:contexts/AuthContext.themeSaveToast.test.tsx",
+     132,
+     132,
+     "e849eeb78e8264c77b5e0ee6466e96e91849a869fc975b76ac82ef7e6e80a15b"
+    ]
+   ],
+   "code_sha256": "7d377e1c5b71da72357c826a0412b1db27b11c3997e27998e7a3dbcec498c9e0",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.6,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 5
+      }
+     },
+     "restatement": "Le test attend que `useAuth` lève une erreur mentionnant 'AuthProvider' quand `UserBadge` est rendu hors d'un `<AuthProvider>` ; `console.error` est espionné et neutralisé pendant l'assertion puis restauré. Le second bloc se contente d'installer le spy `console.error` dans le fichier themeSaveToast.",
+     "confidence": "high"
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "frontend-core.details.md",
+     "row": 24
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  }
+ ],
+ "comment_facts": [
+  {
+   "id": "frontend-core/87ba3444819c3487-1",
+   "verdict": "unverifiable",
+   "code_says": "Le fichier n'utilise aucun appel `.nullish()`. Il combine `.nullable().optional()` sur plusieurs champs de `eventSchema` (par exemple `durationValue`, `recurrenceEndDate`, `version`), ce qui est équivalent à un `.nullish()`, avec des commentaires qui justifient ce choix (défensif, rétro-compat).",
+   "code_line_start": 0,
+   "code_line_end": 0,
+   "code_evidence": "",
+   "evidence_check": null,
+   "code_file": "",
+   "invalid": false,
+   "cache_digest": "beccd85b5679ade158a7943315b8440a161cff51e140f23cb80af9f686638b58",
+   "reused": true,
+   "reused_from": "2026-11-20T12:20:00Z",
+   "cited_by": [
+    "frontend-core:rules:1"
+   ],
+   "structure_rows_removed": []
+  },
+  {
+   "id": "frontend-core/33808da4d7c94712-1",
+   "verdict": "confirmed",
+   "code_says": "Le module n'importe que le type FullCalendarEvent et parseLocalDate, sans React ni appel réseau. Ses fonctions (dont le reducer zoomReducer, qui retourne un nouvel état sans effet de bord) sont pures. La consommation par useReducer dans TimelineView n'est pas visible dans ce fichier.",
+   "code_line_start": 1,
+   "code_line_end": 2,
+   "code_evidence": "import { parseLocalDate } from '@/lib/date-iso'",
+   "evidence_check": null,
+   "code_file": "frontend:components/timeline/zoom.ts",
+   "invalid": false,
+   "cache_digest": "83f9c2ce40fefbdff0128d3a2fe93d54506b5b50e4d960851f98f7d85948e8d8",
+   "reused": true,
+   "reused_from": "2026-11-20T12:20:00Z",
+   "cited_by": [
+    "frontend-core:rules:9"
+   ],
+   "structure_rows_removed": []
+  },
+  {
+   "id": "frontend-core/ef46af165567e658-1",
+   "verdict": "confirmed",
+   "code_says": "stripComments retire d'abord les commentaires de bloc, puis toute portion allant de // jusqu'à la fin de ligne, sauf quand le // est précédé de deux-points. Un // dans une chaîne est donc bien traité comme commentaire, ce qui correspond à l'approximation lexicale annoncée.",
+   "code_line_start": 67,
+   "code_line_end": 69,
+   "code_evidence": "replace(/(^|[^:])\\/\\/[^\\n]*/g, '$1')",
+   "evidence_check": null,
+   "code_file": "frontend:__tests__/ds-type-scale.test.ts",
+   "invalid": false,
+   "cache_digest": "0898b88996b0a7cc9a48845f70d6ca192b85a7f80164be4a7309bcfaa4af6690",
+   "reused": true,
+   "reused_from": "2026-11-20T12:20:00Z",
+   "cited_by": [
+    "frontend-core:alerts:3"
+   ],
+   "structure_rows_removed": []
+  },
+  {
+   "id": "frontend-core/5c59fd416c4ec02e-1",
+   "verdict": "confirmed",
+   "code_says": "handMadeEyebrows découpe la source ligne par ligne, retire les lignes de commentaire, puis ne garde que les lignes où les trois MARKERS (font-mono, tracking-widest, uppercase) matchent ensemble. Une classe répartie sur plusieurs lignes ne satisfait donc jamais le filtre, ce qui correspond à la limite annoncée.",
+   "code_line_start": 141,
+   "code_line_end": 147,
+   "code_evidence": "MARKERS.every((re) => re.test(line)))",
+   "evidence_check": null,
+   "code_file": "frontend:styles/__tests__/eyebrow-consumers.test.tsx",
+   "invalid": false,
+   "cache_digest": "0aaed115c28a06737023c19ff3e12e8913fbeaf50854fa7301c8d7cad105d4b8",
+   "reused": true,
+   "reused_from": "2026-11-20T12:20:00Z",
+   "cited_by": [
+    "frontend-core:alerts:4"
+   ],
+   "structure_rows_removed": []
+  },
+  {
+   "id": "frontend-core/8c19b67eb94f04f8-1",
+   "verdict": "unverifiable",
+   "code_says": "Le fichier n'implémente pas de default export : il importe resolveLocale et loadMessages depuis '../../i18n' et teste resolveLocale. Le corps de getRequestConfig, qui porte le default export, n'est pas dans ce fichier et aucun fichier d'implémentation n'est listé.",
+   "code_line_start": 0,
+   "code_line_end": 0,
+   "code_evidence": "",
+   "evidence_check": null,
+   "code_file": "",
+   "invalid": false,
+   "cache_digest": "c329d916152e2607c5a4bcaaae474d88c2e68d7cfecb3ecc2f644b8f5ad30b5e",
+   "reused": true,
+   "reused_from": "2026-11-20T12:20:00Z",
+   "cited_by": [
+    "frontend-core:alerts:5"
+   ],
+   "structure_rows_removed": []
+  }
+ ],
+ "facts_validated": [
+  "frontend-core/87ba3444819c3487-1",
+  "frontend-core/9bc256ea7132e8fc-1",
+  "frontend-core/2da5f9f87ce62f1b-3",
+  "frontend-core/33808da4d7c94712-1",
+  "frontend-core/b624ef68e7fdbbc6-1",
+  "frontend-core/563f4f6eed8cff91-1",
+  "frontend-core/82d4c005d5ae0fe0-1",
+  "frontend-core/67b6193be51eb5f8-2",
+  "frontend-core/31e4140d2a82fdf7-1",
+  "frontend-core/2bced97a8b32cc87-1",
+  "frontend-core/77f33530045e343d-1",
+  "frontend-core/f3ce40abe29ecdc4-1",
+  "frontend-core/075c383c8509607d-2",
+  "frontend-core/9444328f3c65b8bc-1",
+  "frontend-core/b7b7c6d036cba012-1",
+  "frontend-core/e08a2298e3f018c0-1",
+  "frontend-core/6ed86820a433f2e0-1",
+  "frontend-core/ef46af165567e658-1",
+  "frontend-core/8a81048d26d0f4bc-1",
+  "frontend-core/5c59fd416c4ec02e-1",
+  "frontend-core/050064225102bae2-1",
+  "frontend-core/8c19b67eb94f04f8-1",
+  "frontend-core/a8a8ff297908ea82-1"
+ ],
+ "counts": {
+  "units": 46,
+  "admit": 22,
+  "annex": 24,
+  "drop": 0,
+  "hold": 0,
+  "pending": 0,
+  "consigne_before_unsupported": 0,
+  "consigne_after_dropped": 0,
+  "structure_rows_removed": 0,
+  "framework": 17,
+  "guarded_elsewhere": 0,
+  "resolved": 0,
+  "restricted": 0,
+  "counterexample": 0,
+  "promoted": 0,
+  "kept_for": {
+   "rediscovered": 9
+  },
+  "pointers_removed": 0,
+  "restored_alerts": 0,
+  "budget_cut": 0
+ },
+ "answers": [],
+ "budget_cut": [],
+ "structure_rows_removed": [],
+ "notes": [],
+ "base_sha256_after": "c791a5180bd2233bde2ce44e0781e72a6c23674349601b8b20a482dcb74ebf96",
+ "bases_touched": {
+  "frontend-core": {
+   "fingerprint": "5b369c83ce0a659d4cdb23d1194415d4e3f008efd2c977562298044b0d84e91a",
+   "sha256_after": "c791a5180bd2233bde2ce44e0781e72a6c23674349601b8b20a482dcb74ebf96"
+  }
+ },
+ "lint": {
+  "ok": true,
+  "errors": 0,
+  "warnings": 0
+ }
+}

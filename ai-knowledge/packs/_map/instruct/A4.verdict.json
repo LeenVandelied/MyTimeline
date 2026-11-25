@@ -1,0 +1,44 @@
+{
+  "id": "A4",
+  "verdict": "confirmed",
+  "evidence": [
+    {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/components/timeline/TimelineView.tsx",
+      "line_start": 97,
+      "line_end": 97,
+      "quote": "la frise n'affiche que les events fournis en props"
+    },
+    {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/components/timeline/TimelineView.tsx",
+      "line_start": 650,
+      "line_end": 650,
+      "quote": "events: FullCalendarEvent[]"
+    },
+    {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/components/timeline/TimelineView.tsx",
+      "line_start": 740,
+      "line_end": 740,
+      "quote": "computeRange(events, now)"
+    },
+    {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/components/timeline/TimelineView.tsx",
+      "line_start": 772,
+      "line_end": 772,
+      "quote": "indexEventsByResource(events, rangeStart, now)"
+    },
+    {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/components/timeline/TimelineMobilePortrait.tsx",
+      "line_start": 317,
+      "line_end": 317,
+      "quote": "{laneEvents.map(({ item: { event }, row }) => {"
+    },
+    {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/components/timeline/TimelineEditHost.tsx",
+      "line_start": 178,
+      "line_end": 178,
+      "quote": "await deleteEvent(id, HANDLES_FORBIDDEN_INLINE)"
+    }
+  ],
+  "statement": "La frise desktop reçoit en props la liste des événements (FullCalendarEvent), calcule l'étendue temporelle et le positionnement à partir de ces événements, puis les range par produit (lane). Les vues mobiles portrait et paysage réutilisent la même chaîne de calcul, et l'édition ou la suppression d'un événement depuis la frise passe par les services d'événements.",
+  "proposed_decision": "event"
+}
