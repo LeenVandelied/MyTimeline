@@ -1,7 +1,8 @@
 'use client'
 
 import * as React from 'react'
-import { useTranslations } from 'next-intl'
+import Link from 'next/link'
+import { useTranslations, useLocale } from 'next-intl'
 import toast from 'react-hot-toast'
 import { ArchiveRestore } from 'lucide-react'
 
@@ -26,8 +27,8 @@ import { RestoreProductDialog } from './RestoreProductDialog'
  * Revue Designer S93 : structure du tableau de `ProductsListView`, colonnes réduites à
  * Produit (pastille + nom + catégorie en mention) et Actions ; bouton `outline` `sm` +
  * `ArchiveRestore` (calque du désarchivage d'événement de `ProductDetailView`) ; état vide
- * `EmptyState` sans CTA ni frise. Les lignes ne sont PAS des liens : le détail d'un produit
- * archivé est introuvable (404) tant qu'il n'est pas restauré.
+ * `EmptyState` sans CTA ni frise. #718 : le nom de chaque ligne est un lien vers la fiche en
+ * lecture seule `/<locale>/products/{id}` ; Désarchiver reste en place.
  *
  * Désarchiver → `RestoreProductDialog` (confirmation non destructive) → `useRestoreProduct`
  * (ligne retirée EN PLACE, listes produits/catégories invalidées) → toast au succès seulement ;
@@ -36,6 +37,7 @@ import { RestoreProductDialog } from './RestoreProductDialog'
 export function ArchivedProductsView() {
   const t = useTranslations('products.archived')
   const tToast = useTranslations('common.toast')
+  const locale = useLocale()
   const { user } = useAuth()
   const userId = user?.id
 
@@ -118,7 +120,12 @@ export function ArchivedProductsView() {
                           aria-hidden="true"
                         />
                         <div className="flex min-w-0 flex-col">
-                          <span className="text-ink truncate font-medium">{product.name}</span>
+                          <Link
+                            href={`/${locale}/products/${product.id}`}
+                            className="text-ink truncate font-medium hover:underline"
+                          >
+                            {product.name}
+                          </Link>
                           <span
                             className="text-ink-muted truncate font-mono text-xs"
                             data-testid={`products-archived-row-category-${product.id}`}

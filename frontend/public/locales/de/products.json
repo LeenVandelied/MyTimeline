@@ -154,6 +154,7 @@
   "detail": {
     "back": "Zurück zu den Produkten",
     "notFound": "Produkt nicht gefunden oder archiviert.",
+    "loadError": "Das Produkt konnte nicht geladen werden.",
     "loading": "Produkt wird geladen…",
     "newEvent": "Neues Ereignis",
     "edit": "Bearbeiten",
@@ -224,6 +225,13 @@
     },
     "restore": "Wiederherstellen",
     "restoreLabel": "{name} wiederherstellen"
+  },
+  "archivedDetail": {
+    "banner": "Dieses Produkt ist archiviert. Du siehst es nur lesend.",
+    "restore": "Wiederherstellen",
+    "eventsTitle": "Ereignisse",
+    "eventsEmpty": "Keine Ereignisse.",
+    "eventArchived": "archiviert"
   },
   "restoreDialog": {
     "title": "Dieses Produkt wiederherstellen?",

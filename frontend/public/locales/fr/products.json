@@ -154,6 +154,7 @@
   "detail": {
     "back": "Retour aux produits",
     "notFound": "Produit introuvable ou archivé.",
+    "loadError": "Impossible de charger le produit.",
     "loading": "Chargement du produit…",
     "newEvent": "Nouvel événement",
     "edit": "Modifier",
@@ -224,6 +225,13 @@
     },
     "restore": "Désarchiver",
     "restoreLabel": "Désarchiver {name}"
+  },
+  "archivedDetail": {
+    "banner": "Ce produit est archivé. Tu le consultes en lecture seule.",
+    "restore": "Désarchiver",
+    "eventsTitle": "Événements",
+    "eventsEmpty": "Aucun événement.",
+    "eventArchived": "archivé"
   },
   "restoreDialog": {
     "title": "Désarchiver ce produit ?",

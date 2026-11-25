@@ -41,5 +41,12 @@ public interface ProductService {
      */
     void restoreProduct(UUID productId, UUID userId);
 
+    /**
+     * #718 (BR-PRO-011) : fiche en lecture seule d'un produit archivé, événements inclus.
+     * Throws ProductNotFoundException for an unknown id, an active product or another
+     * user's product (a single outcome on purpose: anti-enumeration).
+     */
+    Product getArchivedProductDetail(UUID productId, UUID userId);
+
     boolean existsById(UUID id);
 }

@@ -44,7 +44,8 @@ export const eventSchema = z.object({
   type: z.string(),
   durationValue: z.number().nullable().optional(),
   durationUnit: durationUnitEnum.nullable().optional(),
-  isRecurring: z.boolean().optional(),
+  // #718 : le backend émet `null` (Boolean boxé) pour un événement créé via un produit.
+  isRecurring: z.boolean().nullable().optional(),
   recurrenceUnit: recurrenceUnitEnum.nullable().optional(),
   recurrenceEndDate: z.string().nullable().optional(),
   startDate: z.string(),
@@ -212,7 +213,7 @@ export const mapToFullCalendarEvent = (
       type: event.type,
       // #81 — propage la récurrence au view-model (BR-EVE-006) pour l'aria-label
       // agrégé de la frise. Ne modifie ni le DTO ni le schéma Zod.
-      isRecurring: event.isRecurring,
+      isRecurring: event.isRecurring ?? undefined,
       recurrenceUnit: event.recurrenceUnit,
       // #676 — propage la borne de série (BR-EVE-012) : pré-remplissage de l'édition
       // depuis la frise, et donc `capped` correct côté preview.

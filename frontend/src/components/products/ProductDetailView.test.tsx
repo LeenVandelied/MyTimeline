@@ -31,6 +31,13 @@ const setArchivedMock = vi.fn()
 vi.mock('@/hooks/useProductsWithEvents', () => ({
   useProductsWithEvents: (...args: unknown[]) => useProductsMock(...args),
 }))
+// #718 — produit absent des actifs : la vue interroge les archivés. Ici aucun archivé (404), le
+// cas « introuvable » reste celui des tests ; la fiche archivée est couverte par
+// `ArchivedProductDetailView.test.tsx`.
+const archivedDetailMock = vi.fn()
+vi.mock('@/hooks/useArchivedProductDetail', () => ({
+  useArchivedProductDetail: (...args: unknown[]) => archivedDetailMock(...args),
+}))
 vi.mock('@/hooks/useAuth', () => ({
   useAuth: () => ({ user: { id: 'user-1' } }),
 }))
@@ -200,6 +207,12 @@ function mockData(overrides: Record<string, unknown> = {}) {
 beforeEach(() => {
   vi.clearAllMocks()
   mockData()
+  archivedDetailMock.mockReturnValue({
+    data: undefined,
+    isLoading: false,
+    isError: true,
+    error: { response: { status: 404 } },
+  })
 })
 
 afterEach(() => vi.clearAllMocks())
@@ -209,6 +222,87 @@ describe('ProductDetailView', () => {
     render(<ProductDetailView productId="p-alpha" />)
     expect(screen.getByTestId('product-detail-card')).toHaveTextContent('Alpha')
     expect(screen.getByTestId('product-detail-category')).toHaveTextContent('Véhicules')
+  })
+
+  it('#718 — produit actif : la recherche parmi les archivés n’est jamais lancée', () => {
+    render(<ProductDetailView productId="p-alpha" />)
+    expect(screen.getByTestId('product-detail-card')).toBeInTheDocument()
+    expect(archivedDetailMock).not.toHaveBeenCalled()
+  })
+
+  it('#718 — produit absent des actifs : la recherche archivée est lancée avec son identifiant', () => {
+    render(<ProductDetailView productId="inconnu" />)
+    expect(screen.getByTestId('product-detail-not-found')).toBeInTheDocument()
+    expect(archivedDetailMock).toHaveBeenCalledWith('user-1', 'inconnu')
+  })
+
+  it('#718 — erreur autre que 404 (5xx) : état d’erreur, pas « introuvable »', () => {
+    archivedDetailMock.mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      isError: true,
+      error: { response: { status: 500 } },
+    })
+    render(<ProductDetailView productId="inconnu" />)
+    expect(screen.getByTestId('product-detail-error')).toHaveTextContent(
+      'products.detail.loadError',
+    )
+    expect(screen.queryByTestId('product-detail-not-found')).not.toBeInTheDocument()
+  })
+
+  it('#718 — erreur réseau (sans réponse) : état d’erreur, pas « introuvable »', () => {
+    archivedDetailMock.mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      isError: true,
+      error: new Error('Network Error'),
+    })
+    render(<ProductDetailView productId="inconnu" />)
+    expect(screen.getByTestId('product-detail-error')).toBeInTheDocument()
+    expect(screen.queryByTestId('product-detail-not-found')).not.toBeInTheDocument()
+  })
+
+  it('#718 — 403 : état d’erreur, pas « introuvable »', () => {
+    archivedDetailMock.mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      isError: true,
+      error: { response: { status: 403 } },
+    })
+    render(<ProductDetailView productId="inconnu" />)
+    expect(screen.getByTestId('product-detail-error')).toBeInTheDocument()
+    expect(screen.queryByTestId('product-detail-not-found')).not.toBeInTheDocument()
+  })
+
+  it('#718 — fiche gardée en cache puis dernière réponse en 404 : « introuvable », plus de fiche', () => {
+    archivedDetailMock.mockReturnValue({
+      data: {
+        id: 'p-gone',
+        name: 'Restauré ailleurs',
+        color: null,
+        category: { id: 'c-1', name: 'Cat', color: null },
+        events: [],
+      },
+      isLoading: false,
+      isError: true,
+      error: { response: { status: 404 } },
+    })
+    render(<ProductDetailView productId="p-gone" />)
+    expect(screen.getByTestId('product-detail-not-found')).toBeInTheDocument()
+    expect(screen.queryByTestId('archived-product-detail-view')).not.toBeInTheDocument()
+  })
+
+  it('#718 — chargement des archivés : squelette, ni « introuvable » ni erreur', () => {
+    archivedDetailMock.mockReturnValue({
+      data: undefined,
+      isLoading: true,
+      isError: false,
+      error: null,
+    })
+    render(<ProductDetailView productId="inconnu" />)
+    expect(screen.getByTestId('product-detail-loading')).toBeInTheDocument()
+    expect(screen.queryByTestId('product-detail-not-found')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('product-detail-error')).not.toBeInTheDocument()
   })
 
   // #606 — fiche d'inventaire = motif DS `.mt-drawer__row/__k/__v` (libellé mono à gauche,
@@ -413,6 +507,8 @@ describe('ProductDetailView', () => {
       expect(notFoundSeen.value, 'la fiche ne doit pas passer sur « introuvable »').toBe(false)
       expect(screen.getByTestId('product-detail-card')).toHaveTextContent('Alpha')
       expect(toastSuccessMock).toHaveBeenCalledWith('common.toast.productArchived')
+      // #718 : pendant `archivedHere` la fiche vient du dernier état connu, pas des archivés.
+      expect(archivedDetailMock).not.toHaveBeenCalled()
     })
 
     it('produit retiré du cache SANS archivage lancé d’ici (archivé ailleurs) : « introuvable »', async () => {

@@ -154,6 +154,7 @@
   "detail": {
     "back": "Back to products",
     "notFound": "Product not found or archived.",
+    "loadError": "Could not load the product.",
     "loading": "Loading product…",
     "newEvent": "New event",
     "edit": "Edit",
@@ -224,6 +225,13 @@
     },
     "restore": "Unarchive",
     "restoreLabel": "Unarchive {name}"
+  },
+  "archivedDetail": {
+    "banner": "This product is archived. You are viewing it read-only.",
+    "restore": "Unarchive",
+    "eventsTitle": "Events",
+    "eventsEmpty": "No events.",
+    "eventArchived": "archived"
   },
   "restoreDialog": {
     "title": "Unarchive this product?",

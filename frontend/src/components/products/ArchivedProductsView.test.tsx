@@ -29,6 +29,7 @@ vi.mock('@/hooks/useRestoreProduct', () => ({
 }))
 vi.mock('next-intl', () => ({
   useTranslations: (namespace: string) => (key: string) => `${namespace}.${key}`,
+  useLocale: () => 'fr',
 }))
 vi.mock('react-hot-toast', () => ({
   default: { success: toastSuccessMock, error: vi.fn() },
@@ -145,5 +146,26 @@ describe('ArchivedProductsView', () => {
       'notFound',
     )
     expect(toastSuccessMock).not.toHaveBeenCalled()
+  })
+
+  // #718 — le nom de chaque produit mène à sa fiche en lecture seule ; Désarchiver reste actif.
+  it('links each archived row to its read-only product page', async () => {
+    const user = userEvent.setup()
+    restoreMutateAsync.mockResolvedValue(undefined)
+    useArchivedMock.mockReturnValue(queryState({ data: PRODUCTS }))
+    render(<ArchivedProductsView />)
+
+    const velo = within(screen.getByTestId('products-archived-row-p-1')).getByRole('link', {
+      name: 'Vélo',
+    })
+    expect(velo).toHaveAttribute('href', '/fr/products/p-1')
+    const box = within(screen.getByTestId('products-archived-row-p-2')).getByRole('link', {
+      name: 'Box',
+    })
+    expect(box).toHaveAttribute('href', '/fr/products/p-2')
+
+    await user.click(screen.getByTestId('products-archived-restore-p-2'))
+    await user.click(await screen.findByTestId('product-restore-confirm-button'))
+    await waitFor(() => expect(restoreMutateAsync).toHaveBeenCalledWith({ productId: 'p-2' }))
   })
 })

@@ -154,6 +154,7 @@
   "detail": {
     "back": "Volver a los productos",
     "notFound": "Producto no encontrado o archivado.",
+    "loadError": "No se pudo cargar el producto.",
     "loading": "Cargando producto…",
     "newEvent": "Nuevo evento",
     "edit": "Editar",
@@ -224,6 +225,13 @@
     },
     "restore": "Desarchivar",
     "restoreLabel": "Desarchivar {name}"
+  },
+  "archivedDetail": {
+    "banner": "Este producto está archivado. Lo ves en modo de solo lectura.",
+    "restore": "Desarchivar",
+    "eventsTitle": "Eventos",
+    "eventsEmpty": "Sin eventos.",
+    "eventArchived": "archivado"
   },
   "restoreDialog": {
     "title": "¿Desarchivar este producto?",
