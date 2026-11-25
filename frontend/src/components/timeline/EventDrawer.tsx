@@ -83,9 +83,7 @@ export const EventDrawer: React.FC<EventDrawerProps> = ({ event, locale, onClose
             {/* #518 — convention DS (`i18n.css` §7) : une date se rend en `<time>`.
                 `.mt-date--long` vaut `font-size:13px`, EXACTEMENT la valeur que
                 `.mt-drawer__row` pose déjà (`timeline.css`) : la migration ne change
-                donc que la fonte (mono + tabular-nums) et le `nowrap`, pas la taille.
-                Pas `.mt-date--short` : elle force `uppercase` + 11px (arbitrage
-                Designer resté ouvert, cf. #517 et le précédent #72). */}
+                donc que la fonte (mono + tabular-nums) et le `nowrap`, pas la taille. */}
             <time
               className="mt-drawer__v mt-date--long"
               dateTime={toLocalIsoDate(startDate) ?? undefined}
