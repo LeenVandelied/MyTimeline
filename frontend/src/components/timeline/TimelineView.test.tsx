@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { IntlMessageFormat } from 'intl-messageformat'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import type { FullCalendarEvent } from '@/types/event'
 import type { Resource } from './lib'
@@ -25,9 +26,26 @@ import { CreateEventProvider } from '@/components/layout/CreateEventContext'
 
 // #593 — les valeurs interpolées sont rendues après la clé : la lecture « 1 px = X h »
 // doit être observable sous le mock.
+// #673 — le compteur du pied se rend avec le VRAI message fr (pluriels ICU) : sans lui, le
+// mock ne montrerait que des nombres derrière une clé et ne prouverait ni le libellé ni
+// l'accord. Clé absente de `dashboard.json` → rendu par défaut (clé + valeurs), l'assertion échoue.
+const FOOTER_COUNTER_KEY = 'dashboard.timeline.footer.counter'
+function realFrCounter(values: Record<string, unknown>): string | null {
+  const messages = JSON.parse(
+    readFileSync(resolve(__dirname, '../../../public/locales/fr/dashboard.json'), 'utf8'),
+  )
+  const message: unknown = messages.timeline?.footer?.counter
+  if (typeof message !== 'string') return null
+  return String(new IntlMessageFormat(message, 'fr').format(values as Record<string, number>))
+}
+
 vi.mock('next-intl', () => ({
   useTranslations: (namespace?: string) => (key: string, values?: Record<string, unknown>) => {
     const full = namespace ? `${namespace}.${key}` : key
+    if (full === FOOTER_COUNTER_KEY && values) {
+      const real = realFrCounter(values)
+      if (real !== null) return real
+    }
     return values ? `${full} ${Object.values(values).join(' ')}` : full
   },
 }))
@@ -1242,6 +1260,90 @@ describe('TimelineView', () => {
       renderToolbar({ onOpenCreate: null })
       expect(screen.getByTestId('timeline-today-button')).toBeInTheDocument()
       expect(screen.queryByTestId('timeline-new-event')).not.toBeInTheDocument()
+    })
+  })
+
+  // ==================== #673 — pied de frise (layout screen) ====================
+  // Câblage seulement : la grille et la tenue de la barre sur une ligne se prouvent au
+  // navigateur (`e2e/sprint-85-timeline-toolbar.spec.ts`), jsdom n'applique aucune feuille.
+  describe('#673 pied de frise (layout screen)', () => {
+    const mk = (id: string, resourceId: string, category: string, start: string) => ({
+      id,
+      title: `Event ${id}`,
+      start,
+      end: start,
+      allDay: true,
+      resourceId,
+      color: '#3B62D4',
+      extendedProps: { productId: resourceId, productName: resourceId, category, type: 'single' },
+    })
+    const renderScreen = (events: FullCalendarEvent[], resources: Resource[]) =>
+      render(
+        <TimelineView
+          events={events}
+          resources={resources}
+          locale="fr-FR"
+          today={new Date(2026, 6, 15)}
+          layout="screen"
+        />,
+      )
+    const counterText = () => screen.queryByTestId('timeline-footer-counter')?.textContent?.trim()
+
+    // 4 événements, 3 produits, 3 catégories : Cat A porte 2 événements du produit pa.
+    const FOUR_EVENTS: FullCalendarEvent[] = [
+      mk('a1', 'pa', 'Cat A', '2026-07-10'),
+      mk('a2', 'pa', 'Cat A', '2026-07-11'),
+      mk('b1', 'pb', 'Cat B', '2026-07-18'),
+      mk('c1', 'pc', 'Cat C', '2026-07-26'),
+    ]
+    const THREE_PRODUCTS: Resource[] = [
+      { id: 'pa', title: 'Prod A', category: 'Cat A' },
+      { id: 'pb', title: 'Prod B', category: 'Cat B' },
+      { id: 'pc', title: 'Prod C', category: 'Cat C' },
+    ]
+
+    it('screen layout renders the minimap in the footer, not in the toolbar', () => {
+      const { container } = renderScreen(EVENTS, RESOURCES)
+      const toolbar = container.querySelector('.mt-tlv__toolbar') as HTMLElement
+      const footer = screen.queryByTestId('timeline-footer')
+      expect(toolbar.querySelector('[data-testid="timeline-minimap"]')).toBeNull()
+      expect(footer?.querySelector('[data-testid="timeline-minimap"]')).not.toBeNull()
+      expect(footer).not.toBeNull()
+      // Sous la frise : le pied vient après la zone de défilement.
+      expect(
+        screen.getByTestId('timeline-scroll').compareDocumentPosition(footer!) &
+          Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy()
+    })
+
+    it('footer shows the events and products counter', () => {
+      // 3 événements répartis sur 2 produits.
+      renderScreen([...EVENTS, mk('e3', 'p1', 'Frais', '2026-07-12')], RESOURCES)
+      expect(counterText()).toBe('3 événements · 2 produits')
+      expect(screen.getByTestId('timeline-footer')).toContainElement(
+        screen.getByTestId('timeline-footer-counter'),
+      )
+    })
+
+    it('footer counter uses singular forms for one event and one product', () => {
+      renderScreen([EVENTS[0]], [RESOURCES[0]])
+      expect(counterText()).toBe('1 événement · 1 produit')
+    })
+
+    it('footer counter excludes hidden categories', async () => {
+      const user = userEvent.setup()
+      renderScreen(FOUR_EVENTS, THREE_PRODUCTS)
+      expect(counterText()).toBe('4 événements · 3 produits')
+
+      const filterB = screen
+        .getAllByTestId('timeline-sidebar-filter')
+        .find((b) => b.getAttribute('data-category') === 'Cat B')!
+      await user.click(filterB)
+      expect(counterText()).toBe('3 événements · 2 produits')
+
+      // Réafficher la catégorie rend le total.
+      await user.click(filterB)
+      expect(counterText()).toBe('4 événements · 3 produits')
     })
   })
 })

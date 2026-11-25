@@ -100,6 +100,9 @@
       "year": "Jahr",
       "scale": "1 px = {hours} h"
     },
+    "footer": {
+      "counter": "{events, plural, one {# Ereignis} other {# Ereignisse}} · {products, plural, one {# Produkt} other {# Produkte}}"
+    },
     "minimap": {
       "label": "Zeitleisten-Übersicht",
       "toggle": "Übersicht ein- oder ausblenden"

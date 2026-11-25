@@ -1,5 +1,5 @@
 import { test, expect } from './support/fixtures'
-import { type Locator, type Page, type Route } from '@playwright/test'
+import { type Page, type Route } from '@playwright/test'
 import { ensureAuthenticated } from './support/auth'
 import { PROD } from './support/accounts'
 import { sessionState } from './support/session'
@@ -206,33 +206,62 @@ test.describe('#602 /timeline — « Aujourd’hui »', () => {
   })
 })
 
-test.describe('#602 /timeline — la barre tient à toute largeur (minimap non écrasée)', () => {
-  const minimapSlot = (page: Page): Locator => page.locator('.mt-tlv__minimap-slot')
-
+/**
+ * #673 — la minimap quitte la barre pour un pied : la barre ne porte plus de contrôle
+ * élastique et doit tenir sur UNE ligne à toute largeur (PIT-S85-002 : un contrôle
+ * élastique écrasé ne se voit pas comme un débordement, `scrollWidth` reste juste).
+ * On mesure donc aussi la ligne (même centre vertical pour tous les contrôles peints,
+ * hauteur de barre d'une seule ligne) et l'absence d'écrasement (aucun contrôle dont le
+ * contenu est plus large que sa boîte).
+ */
+test.describe('#673 /timeline — la barre tient sur une seule ligne sans débordement', () => {
   for (const locale of ['fr', 'de']) {
-    test(`${locale} : aucun débordement de barre, minimap ≥ 160 px, « Nouvel événement » dans la barre`, async ({
+    test(`${locale}: toolbar stays on one line without overflow from 768 to 1280 px`, async ({
       page,
     }) => {
       for (const width of [768, 900, 1024, 1280]) {
         await page.setViewportSize({ width, height: 900 })
         await gotoTimeline(page, locale)
         const toolbar = page.locator('.mt-tlv__toolbar')
-        const metrics = await toolbar.evaluate((el) => ({
-          scrollWidth: el.scrollWidth,
-          clientWidth: el.clientWidth,
-        }))
+        const m = await toolbar.evaluate((el) => {
+          const bar = el.getBoundingClientRect()
+          const painted = Array.from(el.children)
+            .map((c) => ({ c, r: c.getBoundingClientRect() }))
+            .filter(({ r }) => r.width > 0 && r.height > 0)
+          return {
+            scrollWidth: el.scrollWidth,
+            clientWidth: el.clientWidth,
+            barHeight: bar.height,
+            count: painted.length,
+            centers: painted.map(({ r }) => r.top + r.height / 2),
+            tallest: Math.max(...painted.map(({ r }) => r.height)),
+            // Contrôle écrasé : son contenu dépasse sa boîte.
+            crushed: painted
+              .filter(({ c }) => c.scrollWidth > c.clientWidth + 1)
+              .map(({ c }) => c.getAttribute('data-testid') ?? c.className),
+          }
+        })
+        const at = `${locale} ${width} px`
+        expect(m.scrollWidth, `${at} : barre sans débordement`).toBeLessThanOrEqual(m.clientWidth)
+        expect(m.crushed, `${at} : aucun contrôle écrasé`).toEqual([])
         expect(
-          metrics.scrollWidth,
-          `${locale} ${width} px : barre sans débordement`,
-        ).toBeLessThanOrEqual(metrics.clientWidth)
-        const slot = (await minimapSlot(page).boundingBox())!
-        expect(slot.width, `${locale} ${width} px : minimap utilisable`).toBeGreaterThanOrEqual(160)
+          Math.max(...m.centers) - Math.min(...m.centers),
+          `${at} : tous les contrôles sur la même ligne`,
+        ).toBeLessThanOrEqual(2)
+        // Une seule ligne = hauteur de la barre ≈ contrôle le plus haut + son padding (2 × 8 px)
+        // + bordure basse ; une 2e ligne ajouterait au moins une hauteur de contrôle.
+        expect(m.barHeight, `${at} : barre d'une seule ligne`).toBeLessThan(m.tallest + 16 + 8)
         const bar = (await toolbar.boundingBox())!
         const create = (await page.getByTestId('timeline-new-event').boundingBox())!
         expect(
           create.x + create.width,
-          `${locale} ${width} px : CTA dans la barre`,
+          `${at} : « Nouvel événement » dans la barre`,
         ).toBeLessThanOrEqual(bar.x + bar.width)
+        // R5 : la vue d'ensemble n'est plus dans la barre (le correctif #602 n'a plus d'objet).
+        await expect(
+          toolbar.getByTestId('timeline-minimap'),
+          `${at} : minimap hors barre`,
+        ).toHaveCount(0)
       }
     })
   }

@@ -1191,6 +1191,10 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
         : events.filter((e) => !hiddenResourceIds.has(e.resourceId)),
     [events, hiddenResourceIds],
   )
+  const visibleProductCount = useMemo(
+    () => visibleGroups.reduce((n, [, resList]) => n + resList.length, 0),
+    [visibleGroups],
+  )
   const buckets = useMemo(
     () => buildMinimapBuckets(minimapEvents, rangeStart, totalDays),
     [minimapEvents, rangeStart, totalDays],
@@ -1884,6 +1888,19 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
     }
   })
 
+  // #673 — même instance de minimap, posée dans la barre (embedded) ou dans le pied (screen).
+  const minimap = (
+    <div className="mt-tlv__minimap-slot min-w-0 flex-1">
+      <Minimap
+        buckets={buckets}
+        viewportStart={viewportStart}
+        viewportRatio={viewportRatio}
+        onSeek={onMinimapSeek}
+        ariaLabel={t('dashboard.timeline.minimap.label')}
+      />
+    </div>
+  )
+
   // Bulle `?` (layout `embedded` seulement) : même source que le pied de sidebar.
   const shortcuts = isScreen ? [] : buildTimelineShortcuts((key) => t(`dashboard.timeline.${key}`))
 
@@ -1891,7 +1908,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
     // #81 — REGION LANDMARK : la frise est un repère navigable pour les lecteurs
     // d'écran (`role="region"` explicite + `aria-label` descriptif). L'aide
     // clavier sr-only (`aria-describedby`) est lue à l'entrée dans la région.
-    // #592 — en `screen`, la section devient une grille [sidebar | barre + frise]
+    // #592 — en `screen`, la section devient une grille [sidebar | barre + frise + pied (#673)]
     // (`timeline.css`, `.mt-tlv--screen`) ; le plein écran (`rootRef`) l'inclut.
     <section
       className={isScreen ? 'mt-tlv mt-tlv--screen' : 'mt-tlv'}
@@ -1988,15 +2005,8 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
           </button>
         )}
 
-        <div className="mt-tlv__minimap-slot min-w-0 flex-1">
-          <Minimap
-            buckets={buckets}
-            viewportStart={viewportStart}
-            viewportRatio={viewportRatio}
-            onSeek={onMinimapSeek}
-            ariaLabel={t('dashboard.timeline.minimap.label')}
-          />
-        </div>
+        {/* #673 — en `screen`, la minimap vit dans le pied sous la frise. */}
+        {!isScreen && minimap}
 
         <button
           type="button"
@@ -2154,6 +2164,20 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
           ))}
         </div>
       </div>
+
+      {/* #673 — Pied (screen seulement) : vue d'ensemble + compteur, sur la même source
+          que la minimap (catégories affichées, #592). */}
+      {isScreen && (
+        <div className="mt-tlv__footer" data-testid="timeline-footer">
+          {minimap}
+          <span className="mt-tlv__footer-counter" data-testid="timeline-footer-counter">
+            {t('dashboard.timeline.footer.counter', {
+              events: minimapEvents.length,
+              products: visibleProductCount,
+            })}
+          </span>
+        </div>
+      )}
 
       {/* #712 — « Éditer » ouvre `EventFormDrawer` via `TimelineEditHost`, monté HORS
           de `rootRef` (comme le toaster qui confirmera l'enregistrement, #621) : on
