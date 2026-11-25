@@ -549,6 +549,8 @@ interface TimelineLaneRowProps {
   /** Clé de navigation (`navKeyOf`) de la pastille portant `tabIndex=0`, si elle est ici. */
   rovingKey: string | null
   locale: string
+  /** #812 — jour de référence de l'état « passé » des pastilles. */
+  today: Date
   t: (key: string) => string
   onToggle: (resourceId: string) => void
   onSelect: (event: PositionedEvent) => void
@@ -574,6 +576,7 @@ function TimelineLaneRowView({
   navLine0,
   rovingKey,
   locale,
+  today,
   t,
   onToggle,
   onSelect,
@@ -640,6 +643,8 @@ function TimelineLaneRowView({
             key={event.id}
             event={event}
             ariaLabel={buildEventAriaLabel(event, locale, t)}
+            past={event.past}
+            today={today}
             onSelect={onSelect}
             tabIndex={rovingKey === key ? 0 : -1}
             navKey={key}
@@ -2143,6 +2148,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
                       navLine0={lane.navLine0}
                       rovingKey={lane.rovingKey}
                       locale={locale}
+                      today={now}
                       t={translate}
                       onToggle={toggleResource}
                       onSelect={setSelected}

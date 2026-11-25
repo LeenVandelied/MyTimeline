@@ -5,7 +5,13 @@ import { Minus, MoreHorizontal, Plus } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { FullCalendarEvent } from '@/types/event'
 import { cn } from '@/lib/utils'
-import { buildEventAriaLabel, categoryColorsOf, eventInkColor, Resource } from './lib'
+import {
+  buildEventAriaLabel,
+  categoryColorsOf,
+  eventInkColor,
+  isPastTimelineEvent,
+  Resource,
+} from './lib'
 import { Minimap } from './Minimap'
 import { TimelineBottomSheet } from './TimelineBottomSheet'
 import { TimelineActionSheet } from './TimelineActionSheet'
@@ -319,6 +325,8 @@ export const TimelineMobilePortrait: React.FC<TimelineMobilePortraitProps> = ({
                           // #230 (BR-EVE-011/013) — archivé = GRISÉ, pas masqué.
                           // Même traitement que la frise desktop (`EventPill`).
                           const archived = event.extendedProps?.archived === true
+                          // #812 — passé (règle de l'historique produit) : pastille grisée.
+                          const past = event.past ?? isPastTimelineEvent(event, state.now)
                           // #230 (correction review S61) — encre calculée sur la
                           // couleur RENDUE : le DS désature la barre archivée, donc
                           // l'encre doit suivre le gris peint (cf. `eventInkColor`),
@@ -385,6 +393,7 @@ export const TimelineMobilePortrait: React.FC<TimelineMobilePortraitProps> = ({
                                       className={cn(
                                         'mt-tlm__evt-dot',
                                         archived && 'mt-evt--archived',
+                                        past && 'mt-evt--past',
                                       )}
                                       style={{ background: statusToVar(event.status) }}
                                       aria-hidden="true"

@@ -1,5 +1,7 @@
 import { FullCalendarEvent } from '@/types/event'
 import { parseLocalDate } from '@/lib/date-iso'
+import { isPastTimelineEvent } from './lib'
+import { occurrenceStart, seriesHorizon, MAX_OCCURRENCES } from '@/lib/recurrence'
 
 /**
  * #55 — Cœur (pur, testable) de la Vue Timeline desktop.
@@ -365,6 +367,8 @@ export interface PositionedEvent extends FullCalendarEvent {
    */
   labelTrailPx?: number
   status: 'expired' | 'ongoing' | 'upcoming'
+  /** #812 — verdict « passé » calculé par `indexEventsByResource` ; absent = à calculer. */
+  past?: boolean
 }
 
 /**
@@ -495,6 +499,42 @@ export interface EventGeometry {
   /** Durée en jours (≥ 1). */
   spanDays: number
   status: PositionedEvent['status']
+  /** #812 — verdict « passé » (`isPastEvent`), calculé UNE fois ici, pas à chaque rendu. */
+  past: boolean
+}
+
+/**
+ * #812 — Une occurrence réelle de l'événement couvre-t-elle le jour civil de `today` ?
+ * Ponctuel ou borné : début ≤ aujourd'hui ≤ fin. Série : dernière occurrence dont le
+ * début est ≤ aujourd'hui (et ≤ `seriesHorizon`, borne incluse), même calcul que la frise
+ * et `isPastEvent` (`occurrenceStart` depuis l'origine), durée = celle de la 1re.
+ */
+function occurrenceCoversDay(
+  event: FullCalendarEvent,
+  start: Date,
+  end: Date,
+  today: Date,
+): boolean {
+  const day = startOfDay(today).getTime()
+  const origin = startOfDay(start)
+  const span = Math.max(0, daysBetween(origin, end))
+  const props = event.extendedProps
+  const unit = props?.isRecurring ? props.recurrenceUnit : null
+  if (!unit) return origin.getTime() <= day && day <= addDays(origin, span).getTime()
+
+  const bound = props?.recurrenceEndDate ? parseLocalDate(props.recurrenceEndDate) : null
+  const horizon = seriesHorizon({
+    start: origin,
+    unit,
+    endDate: bound && !Number.isNaN(bound.getTime()) ? startOfDay(bound) : null,
+  }).getTime()
+  let lastStart: Date | null = null
+  for (let k = 0; k < MAX_OCCURRENCES; k++) {
+    const next = occurrenceStart(origin, unit, k)
+    if (next.getTime() > day || next.getTime() > horizon) break
+    lastStart = next
+  }
+  return lastStart !== null && day <= addDays(lastStart, span).getTime()
 }
 
 /**
@@ -519,16 +559,27 @@ export function indexEventsByResource(
     const dayOffset = daysBetween(rangeStart, eventStart)
     const spanDays = Math.max(1, daysBetween(eventStart, eventEnd))
 
-    let status: PositionedEvent['status'] = 'upcoming'
-    if (eventEnd < now) status = 'expired'
-    else if (eventStart <= now && now <= eventEnd) status = 'ongoing'
+    // #812 — statut exact, dérivé de DEUX questions distinctes :
+    //  - « Terminé » = `isPastEvent` (règle de l'historique produit) : fin strictement
+    //    antérieure à aujourd'hui, dernière occurrence réelle pour une série bornée ;
+    //  - « En cours » = une occurrence RÉELLE couvre aujourd'hui. Une série entre deux
+    //    occurrences n'est pas en cours (« À venir »), même si son premier événement est
+    //    révolu et sa borne de série lointaine. Un événement qui finit aujourd'hui est en
+    //    cours : la comparaison se fait en jours civils, pas en instants (minuit de fin
+    //    < maintenant ferait basculer à tort).
+    const past = isPastTimelineEvent(event, now)
+    const status: PositionedEvent['status'] = past
+      ? 'expired'
+      : occurrenceCoversDay(event, eventStart, eventEnd, now)
+        ? 'ongoing'
+        : 'upcoming'
 
     let bucket = map.get(resourceId)
     if (!bucket) {
       bucket = []
       map.set(resourceId, bucket)
     }
-    bucket.push({ event, dayOffset, spanDays, status })
+    bucket.push({ event, dayOffset, spanDays, status, past })
   }
   return map
 }
@@ -560,6 +611,7 @@ export function scaleEventPositions(
             ? pinFootprintPx
             : Math.max(minWidth, g.spanDays * dayWidth),
         status: g.status,
+        past: g.past,
       }
     }
     map.set(resourceId, positioned)

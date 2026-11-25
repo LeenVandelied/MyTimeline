@@ -106,7 +106,9 @@
 .mt-evt--draft{background:color-mix(in srgb, var(--mt-evt, var(--color-accent)) 8%, var(--color-surface)); border:1.5px dashed var(--mt-evt-outline, var(--mt-evt, var(--color-rule-emphasis))); color:var(--color-ink-muted); box-shadow:none;}
 .dark .mt-evt--draft, [data-theme="dark"] .mt-evt--draft{border-color:var(--mt-evt-outline-dark, var(--mt-evt, var(--color-rule-emphasis)));}
 .mt-evt--archived{opacity:.45; filter:grayscale(.5);}
-/* #607 — ÉVÉNEMENT PASSÉ (historique du détail produit, handoff §5 « gris désaturé »).
+/* #607 — ÉVÉNEMENT PASSÉ (historique du détail produit, handoff §5 « gris désaturé »),
+   #812 — réutilisée telle quelle par la frise (desktop, mobile portrait et paysage).
+   Sur la frise elle ne se pose que sur `.mt-tlv__evt-dot` / `.mt-tlm__evt-dot`.
    Réservé, comme `.mt-evt--archived`, à la PASTILLE décorative (`aria-hidden`) : grisage
    COMPLET, SANS opacité. Le TEXTE de la ligne passe, lui, à l'encre `ink-muted` (token
    AA) côté composant — jamais de filtre ni d'opacité sur du texte (PIT-S61-003 : le

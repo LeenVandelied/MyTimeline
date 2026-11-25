@@ -222,3 +222,17 @@ describe('#230 garde-fou contraste vs état ARCHIVÉ (grisage DS)', () => {
     expect(eventInkColor(undefined, true)).toBe('var(--color-ink)')
   })
 })
+
+describe('#812 état passé annoncé une seule fois', () => {
+  it('announces the past state once', () => {
+    const label = buildEventAriaLabel(
+      { ...evt({ end: '2026-07-14' }), status: 'expired' } as never,
+      'fr-FR',
+      t,
+    )
+    const parts = label.split(', ')
+    // L'état « Terminé » est dit une fois, et aucune seconde mention « passé » ne s'y ajoute.
+    expect(parts.filter((p) => p === 'dashboard.timeline.status.expired')).toHaveLength(1)
+    expect(parts.filter((p) => /past|pass[eé]/i.test(p))).toHaveLength(0)
+  })
+})

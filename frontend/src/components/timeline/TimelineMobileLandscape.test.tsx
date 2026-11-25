@@ -481,3 +481,25 @@ describe('#596 — zébrures de lanes (paysage)', () => {
     })
   })
 })
+
+describe('#812 pastille grisée d’un événement passé (paysage)', () => {
+  // `today` = 15/07/2026 : e1 (10→14/07) est passé, `upcoming` (20→25/07) ne l'est pas.
+  const upcoming: FullCalendarEvent = {
+    ...EVENTS[1],
+    id: 'e3',
+    title: 'Livraison longue',
+    end: '2026-07-25',
+    extendedProps: { ...EVENTS[1].extendedProps, type: 'duration' },
+  }
+
+  it('greys the dot of a past event in landscape', () => {
+    renderLandscape({ events: [EVENTS[0], upcoming] })
+    const dotOf = (title: string) =>
+      screen
+        .getAllByTestId('timeline-event')
+        .find((n) => n.getAttribute('data-event-title') === title)
+        ?.querySelector('.mt-tlm__evt-dot')
+    expect(dotOf(EVENTS[0].title)).toHaveClass('mt-evt--past')
+    expect(dotOf('Livraison longue')).not.toHaveClass('mt-evt--past')
+  })
+})
