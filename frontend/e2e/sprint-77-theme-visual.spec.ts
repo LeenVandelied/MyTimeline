@@ -111,7 +111,7 @@ import { expect, test, type Locator, type Page, type TestInfo } from '@playwrigh
  *   PLAYWRIGHT_BASE_URL=http://localhost:3000 npx playwright test sprint-77-theme-visual --project=chromium
  *
  * ⚠ Les références sont suffixées `-linux` : elles ont été générées en conteneur
- * (`mcr.microsoft.com/playwright:v1.61.1-jammy`) pour être COMPARABLES en CI, qui tourne
+ * (`mcr.microsoft.com/playwright:v1.61.1-noble`) pour être COMPARABLES en CI, qui tourne
  * sur `ubuntu-latest`. Un rejeu sur macOS demanderait des références `-darwin` que le
  * dépôt ne porte pas — Playwright les ÉCRIRAIT au premier run (et échouerait), il ne
  * faut donc pas committer ce qu'un run macOS produit. Régénérer passe par le conteneur ;
@@ -135,8 +135,9 @@ const RESET_TOKEN = 'e2e-visual-reference-token'
 /**
  * Carte des 4 écrans d'authentification.
  * `app/[locale]/{login,register,forgot-password,reset-password}/page.tsx` rendent tous
- * la MÊME enveloppe : `div.bg-surface.border-rule.w-full.max-w-md.rounded-lg.border.p-6.shadow-xs`,
- * centrée dans un `min-h-screen`. On capture cette carte — elle porte le titre, la description
+ * la MÊME enveloppe, la carte `auth-form-card` du gabarit `AuthSplitLayout` (#625, 380 px au
+ * plus, `border-rule shadow-xs`), centrée dans la zone de droite d'un `min-h-screen`.
+ * On capture cette carte — elle porte le titre, la description
  * et le formulaire, c'est-à-dire l'écran ; le `LanguageSelector` (positionné `absolute` dans
  * un coin) et l'`AppFooter` en sont exclus, et c'est voulu : ils ne sont pas l'écran
  * d'auth et bougent pour des raisons qui lui sont étrangères.
@@ -147,7 +148,7 @@ const RESET_TOKEN = 'e2e-visual-reference-token'
  * `.border-rule`, le filet 1 px qui est un CRITÈRE D'ACCEPTATION de #574 (donc un
  * invariant de la charte), et non sur l'élévation qui, elle, reste facultative.
  */
-const AUTH_CARD = 'div.bg-surface.border-rule.max-w-md.rounded-lg'
+const AUTH_CARD = '[data-testid="auth-form-card"]'
 
 /**
  * HABILLAGE DÉPENDANT DE L'ENVIRONNEMENT — la découverte qui a réorienté cette spec.
@@ -309,7 +310,7 @@ const NEGATIVE_CONTROL_CSS = 'section.section-animation h1 { letter-spacing: 0.0
  *
  * ── CE QUE LA TOLÉRANCE NE PEUT PAS SAUVER (à lire avant de la remonter) ───────────
  *
- * Les références sont générées en conteneur `mcr.microsoft.com/playwright:v1.61.1-jammy`
+ * Les références sont générées en conteneur `mcr.microsoft.com/playwright:v1.61.1-noble`
  * (Ubuntu 22.04) et la CI tourne sur `ubuntu-latest` (24.04 « noble »). Playwright nomme
  * les DEUX `linux` : les références SERONT donc bien comparées en CI, il n'y aura pas
  * d'erreur explicite « référence manquante ». Si les deux distributions rastérisaient le

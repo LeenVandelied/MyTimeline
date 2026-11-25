@@ -238,3 +238,32 @@ for (const vp of VIEWPORTS) {
     }
   })
 }
+
+/**
+ * #625 — palier tablette : la carte (380 px au plus) ne doit pas passer sous le coin
+ * thème et langue. De `md` à `xl` la zone du formulaire porte une marge haute de 64 px ;
+ * on mesure des boîtes disjointes, sans bannière.
+ */
+const TABLET_VIEWPORTS = [
+  { width: 768, height: 600 },
+  { width: 1024, height: 600 },
+] as const
+
+for (const vp of TABLET_VIEWPORTS) {
+  test.describe(`#625 — carte vs coin thème et langue (${vp.width}x${vp.height})`, () => {
+    test.use({ viewport: { width: vp.width, height: vp.height } })
+
+    for (const authPage of AUTH_PAGES) {
+      test(`${authPage.name} — carte sous le coin`, async ({ page }) => {
+        await page.goto(authPage.path)
+
+        const controls = await box(page, CONTROLS)
+        const card = await box(page, '[data-testid="auth-form-card"]')
+        expect(
+          card.y,
+          `la carte ${fmt(card)} passe sous le coin ${fmt(controls)}`,
+        ).toBeGreaterThanOrEqual(controls.y + controls.height - EPSILON)
+      })
+    }
+  })
+}
