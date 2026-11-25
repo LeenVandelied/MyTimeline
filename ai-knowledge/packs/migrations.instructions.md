@@ -2,16 +2,16 @@
 pack: migrations
 kind: technical
 name: Migrations de base
-generated_at: 2026-11-20T11:40:00Z
+generated_at: 2026-11-24T17:40:00
 generator: synth/1
-base_sha256: 3bd9bb6bb28b4ab74b570b812508347517ac257ecf5cf3b24bc17ee5bc03d9d4
-facts_in_base: 26
-facts_in_pool: 26
-facts_cited: 19
+base_sha256: fd0e93169b94b58b466bfc5fccfebb7fb198c35a780848766a5780aea8d69240
+facts_in_base: 36
+facts_in_pool: 36
+facts_cited: 21
 sections: migrations.sections.json
 details: [migrations.details.md]
 lang: fr
-curated_at: 2026-11-20T12:45:00Z
+curated_at: 2026-11-25T15:00:00
 curation: migrations.curation.json
 ---
 ## 1. Quand activer {#activate}
@@ -28,25 +28,19 @@ Aucun fait de la base ne relève de cette section.
 ## 3. Conventions {#rules}
 
 ### Invariants
-- Selon le commentaire de V5, une migration déjà appliquée n'est jamais éditée (checksum Flyway), tout changement de schéma passe par un nouveau fichier V{N}. [#b4c3437f3d5ac7fd-1]
-- Selon le commentaire de V10, le schéma d'une nouvelle table reflète exactement l'entité JPA, car ddl-auto=validate est actif en dev, test et prod. [#8fb5ac9e1a1bd779-1]
-- Selon le commentaire de V13, les fichiers se nomment V{N}__description_en_snake_case.sql et s'ouvrent par un en-tête (version, issue, objet). [#6c3f33bf03f6d301-1]
-- Les migrations qui suivent les trois premières se terminent par un bloc ROLLBACK manuel en commentaire, car Flyway Community ne rejoue pas les undo, mais les trois premières n'en ont pas [#ea5494905e3041ae-1]
-### Contraintes
-- Un CHECK se nomme ck_{table}_{colonne} et est précédé d'un drop constraint if exists, ce qui rend la migration rejouable. [#0bf834cf43bcb2f4-1]
-- Dans un create table, les CHECK sont des constraint nommées dans la définition. [#a90b094c8792fdd0-1]
-- Un CHECK conditionnel sur un booléen nullable s'écrit avec is not true, ce qui laisse passer NULL. [#40c035e935fae1d6-1]
-- Un UNIQUE se pose par add constraint uq_{table}_{colonne}. [#51d3cbc0f484b438-1]
-- Une clé étrangère se nomme fk_{table}_{...} et déclare on delete cascade pour une table rattachée à un compte. [#391e17b474f53011-1] [#a56e52c557fc0098-1]
-### Table existante
-- Une migration pose set local lock_timeout = '5s' avant son ALTER TABLE. [#60d03ad1ee427f99-1]
-- Sur une base peuplée, un bloc do $$ contrôle les lignes non conformes et lève raise exception avant tout ALTER. [#6368ffc6f56a88a7-1]
-- Durcir une colonne se fait dans l'ordre update d'assainissement, set not null, puis CHECK nommé. [#f577509d29c8efd4-1]
-- Une colonne ajoutée utilise add column if not exists, avec le CHECK dans le même alter table. [#ed0a32438c043501-1]
-- Une valeur texte se normalise par case lower(trim(...)) avec else conservant la valeur, puis un second update neutralise à null. [#b7719716a7380b00-1]
-### Tables et colonnes
-- Les tables auditées ont created_at, updated_at (timestamp not null default now()) et version integer not null default 0 pour @Version. [#cc18856949ee1abb-1] [#20d423176902d752-1]
-- Une table est au pluriel en snake_case avec id uuid not null et primary key (id). [#36e3dcb5b8dc6e04-1]
+- Selon les commentaires de V5 et V17, une migration appliquée n'est jamais éditée (checksum Flyway), tout changement passe par un nouveau fichier V{N}. [#b4c3437f3d5ac7fd-1] [#0561b3b3607e0fc6-1]
+- Selon le commentaire de V10, le schéma reflète exactement l'entité JPA, car ddl-auto=validate est actif. [#8fb5ac9e1a1bd779-1] [#a41fd867e19b6713-1]
+- Selon les commentaires de V5 et V17, le rollback est un bloc de commentaire manuel en fin de fichier, sans undo. [#ea5494905e3041ae-1] [#cb73ba0b5b893e48-1]
+- Selon le commentaire de V13, les fichiers se nomment V{N}__description_snake_case.sql avec un en-tête (version, issue, objet). [#6c3f33bf03f6d301-1]
+### Contraintes et nommage
+- Un CHECK conditionnel sur booléen nullable s'écrit avec is not true pour laisser passer NULL. [#40c035e935fae1d6-1]
+- Les UNIQUE sont nommés uq_{table}_{colonne} et les clés étrangères fk_{table}_{cible}, avec on delete cascade pour les tables de sessions, jetons de réinitialisation et jobs d'export rattachées à un compte, mais pas pour toutes [#51d3cbc0f484b438-1] [#391e17b474f53011-1] [#a56e52c557fc0098-1]
+- Une table est au pluriel snake_case avec id uuid. [#36e3dcb5b8dc6e04-1] [#fd36df130202be28-1]
+### Tables existantes
+- Dans les migrations de préférence de thème et de niveau utilisateur, un lock_timeout local de 5s précède l'ALTER, les autres migrations ne le posent pas [#60d03ad1ee427f99-1] [#ed0a32438c043501-1]
+- Pour durcir une colonne, update d'assainissement, puis not null, puis CHECK nommé. [#f577509d29c8efd4-1] [#b7719716a7380b00-1]
+- Sur base peuplée, un bloc do $$ lève une exception avant tout ALTER si des lignes sont non conformes. [#6368ffc6f56a88a7-1]
+- Les tables auditées ont created_at, updated_at et version integer default 0. [#cc18856949ee1abb-1] [#20d423176902d752-1]
 
 ## 4. Structure {#structure}
 
@@ -58,10 +52,11 @@ Aucun fait de la base ne relève de cette section.
 
 ## 6. Fichiers critiques {#files}
 
-Fichiers du pool au poids le plus élevé (7 sur 15), le poids étant la somme des scores de spécificité de leurs faits. Liste complète : annexe.
+Fichiers du pool au poids le plus élevé (8 sur 16), le poids étant la somme des scores de spécificité de leurs faits. Liste complète : annexe.
 
 | Fichier | Faits | Sortes dominantes |
 |---|---|---|
+| `backend:src/main/resources/db/migration/V17__user_tier.sql` | 10 | db_change 6, convention 3, suspicious 1 |
 | `backend:src/main/resources/db/migration/V10__create_sessions.sql` | 4 | convention 2, other 1, suspicious 1 |
 | `backend:src/main/resources/db/migration/V13__export_jobs.sql` | 3 | convention 2, suspicious 1 |
 | `backend:src/main/resources/db/migration/V5__fk_indexes.sql` | 3 | convention 2, db_change 1 |
@@ -72,7 +67,7 @@ Fichiers du pool au poids le plus élevé (7 sur 15), le poids étant la somme d
 
 ## 7. Relations avec d'autres packs {#relations}
 
-- Faits du pool par pack d'origine : migrations 26
+- Faits du pool par pack d'origine : migrations 36
 
 ## 8. Tests attendus {#tests}
 
@@ -88,9 +83,9 @@ Aucun fait de la base ne relève de cette section.
 
 ## 11. Couverture {#coverage}
 
-- Fichiers du pack : 16 ; avec au moins un fait en base : 15 ; sans fait après remise en file : 0.
-- Faits en base : 26, repris d'autres packs : +0, hors périmètre : -0, doublons écartés à la déduplication : -0, soit 26 dans le pool.
+- Fichiers du pack : 17 ; avec au moins un fait en base : 16 ; sans fait après remise en file : 0.
+- Faits en base : 36, repris d'autres packs : +0, hors périmètre : -0, doublons écartés à la déduplication : -0, soit 36 dans le pool.
 - Faits du pool venus d'un autre pack : 0 (par pack : section Relations).
-- Destination des 26 faits du pool : Conventions 19 ; Alertes / Questions ouvertes 1 ; annexe seule 4 ; écartés (sorte `other` ou inconnue) 2.
-- Passe technique : scope 16 fichiers, lus 15 (93 %), non lus 1 : ce pack décrit le socle sur un échantillon, pas sur tout son scope.
-- Base : sha256 3bd9bb6bb28b…, générée le 2026-11-20.
+- Destination des 36 faits du pool : Conventions 22 ; Alertes / Questions ouvertes 1 ; annexe seule 11 ; écartés (sorte `other` ou inconnue) 2.
+- Passe technique : scope 17 fichiers, lus 16 (94 %), non lus 1 : ce pack décrit le socle sur un échantillon, pas sur tout son scope.
+- Base : sha256 fd0e93169b94…, générée le 2026-11-24.

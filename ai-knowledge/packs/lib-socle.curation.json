@@ -1,20 +1,20 @@
 {
  "pack": "lib-socle",
  "schema": 1,
- "curated_at": "2026-11-20T12:45:00Z",
+ "curated_at": "2026-11-25T15:00:00",
  "curator": "curate/1",
  "base_sha256": "fa7c3cbaaf35177c67667df6c0dd2d0e977e65d080ade8b5a532ff9f8c379aa8",
- "pack_sha256_before": "937d9f46269ac1768fb5b3467f240eec8e1f7e4f71a485cf2862e38c159e2837",
- "pack_sha256_after": "9b9d3d7f824ed9cd1fd4879ac4c9485ffb7482be5a659dcdbd1f71b2a5f487f0",
- "criteria_sha256": "48e0e20f086c5b11deecfecdc547ba1d6115faee1597a5aaf682f6c699e92423",
+ "pack_sha256_before": "80199546ceb1f394b04e77f2d7f74e905217eff00963f8e09d3c09a769e626d2",
+ "pack_sha256_after": "4e21568ac20336b29368e78af8ff7806409f2ec67b676d961688b3e2cc543489",
+ "criteria_sha256": "ab7790cd5eeee6662e4839ed473485849ec7230c69cee20910a09fbe76ae6957",
  "models": {
   "measure": "haiku",
   "refute": "sonnet"
  },
  "base_fingerprint": "3aa1816a25007d9b21673b59a0f0f9eea64f1c5f26358518bcc34e55c033fdf3",
  "bytes": {
-  "before": 5389,
-  "after": 5389,
+  "before": 5388,
+  "after": 5388,
   "by_section": {
    "activate": {
     "before": 166,
@@ -83,16 +83,16 @@
      "frontend:lib/date-iso.ts",
      62,
      62,
-     "4487e4f53bd5fed728f5b3f0f759b0aac8cb383dac3cf4506427be87b90afdd3"
+     "12e49aaf71c7379dcbd9cca26023f12ab5f0f18e7d6643acac9df2edb0c42507"
     ],
     [
      "frontend:lib/date-iso.ts",
      94,
      94,
-     "892b46faaaa1390a0f78464d4112736bb370a3ba0aa8a23047905d16ff4a887c"
+     "32433d8696ba58386e393d5bdb1a23a47b9c41619c2a2f37667068e46adbff68"
     ]
    ],
-   "code_sha256": "3191f9a061ac22ff3544709062d4979ff81b1346be1b7b5a377fe44cfd1c477b",
+   "code_sha256": "1b23d331886b3376fc3179c62511ebef48c2625370baced632e27284db2b6699",
    "verdict": "admit",
    "reason": "admitted",
    "final": true,
@@ -114,7 +114,7 @@
      "confidence": "high",
      "files_read_missing": true,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "rediscover": {
      "found": true,
@@ -135,7 +135,7 @@
      },
      "job": "lib-socle:rediscover:frontend_lib_color.ts:1",
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "comment": [
      {
@@ -194,7 +194,7 @@
       "unproven": 0
      },
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     }
    },
    "contrary": null,
@@ -226,16 +226,16 @@
      "frontend:lib/date-iso.ts",
      31,
      36,
-     "d65827b87f33a9182db375b7246ee59c2369db5a05c74afcd98a2500deae6781"
+     "36e47ec0490cd9322465b9e8b41bf159d591890a5f6b8e4b8910b00a8b5ffd2b"
     ],
     [
      "frontend:lib/date-iso.ts",
      73,
      73,
-     "415bd315086830a738e5e211bc7c91e80aa92e1d248cb62ff2346a7cbce2c875"
+     "f158753aa7df5e9f89059e9b0fa61eef1111b33ac601fe3f0d28a86d5915955d"
     ]
    ],
-   "code_sha256": "564befe8f26b4bf1f3a9d99d03d384b1852806d2a38910e209dab97b8258f371",
+   "code_sha256": "2f12100c70e36ded4b6f1ca433d82043d0d5851648f73a7baa1d20e09d6b5b4d",
    "verdict": "admit",
    "reason": "rediscovered",
    "final": true,
@@ -257,7 +257,7 @@
      "confidence": "high",
      "files_read_missing": true,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "rediscover": {
      "found": true,
@@ -279,7 +279,7 @@
      "job": "lib-socle:rediscover:frontend_lib_color.ts:1",
      "rank_in_lot": 2,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "comment": [],
     "refute": null
@@ -313,10 +313,10 @@
      "frontend:lib/date-iso.ts",
      128,
      135,
-     "86a9a44aee2861849022390839692d915d27564af6713bd18e1af392a12205d8"
+     "7562f66bf936898586075735c3b56fdc16a166bc89ded4dd27e4100a2e03da17"
     ]
    ],
-   "code_sha256": "86a9a44aee2861849022390839692d915d27564af6713bd18e1af392a12205d8",
+   "code_sha256": "7562f66bf936898586075735c3b56fdc16a166bc89ded4dd27e4100a2e03da17",
    "verdict": "admit",
    "reason": "admitted",
    "final": true,
@@ -338,7 +338,7 @@
      "confidence": "high",
      "files_read_missing": true,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "rediscover": {
      "found": true,
@@ -359,7 +359,7 @@
      },
      "job": "lib-socle:rediscover:frontend_lib_color.ts:1",
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "comment": [],
     "refute": {
@@ -413,7 +413,7 @@
       "unproven": 0
      },
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     }
    },
    "contrary": null,
@@ -444,10 +444,10 @@
      "frontend:lib/date-iso.ts",
      98,
      100,
-     "4659a8920a65cab43ab6837d292c53482270b9130daafe2512459433953b5ed5"
+     "a1fcd0e0d367366cf669963ff257300756613dbb945699875979b0565c968457"
     ]
    ],
-   "code_sha256": "4659a8920a65cab43ab6837d292c53482270b9130daafe2512459433953b5ed5",
+   "code_sha256": "a1fcd0e0d367366cf669963ff257300756613dbb945699875979b0565c968457",
    "verdict": "admit",
    "reason": "rediscovered",
    "final": true,
@@ -469,7 +469,7 @@
      "confidence": "high",
      "files_read_missing": true,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "rediscover": {
      "found": true,
@@ -491,7 +491,7 @@
      "job": "lib-socle:rediscover:frontend_lib_color.ts:1",
      "rank_in_lot": 3,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "comment": [],
     "refute": null
@@ -527,22 +527,22 @@
      "frontend:lib/color.ts",
      222,
      222,
-     "abbeee701fc6140e0f9ea43daa6801ea3c0a535c78db194e170f8faa0f1b6569"
+     "3f76bd856f84c106b14a03eec330d9d1cc04118b571cc85f1c70cc4a5cf5d08f"
     ],
     [
      "frontend:lib/color.ts",
      227,
      227,
-     "dec02e917e976672ac955edc457c0a4853de7541037112679639fd87cc4e56d2"
+     "3bbd0d59d54b8d549bea4446d9f8d3761c9a3021776333bb97a5ecb9f4b6f649"
     ],
     [
      "frontend:lib/color.ts",
      229,
      232,
-     "999b7cb2439bd1e97df8861edbebdd0a8ddfb59121c9bdb0cfc399bc4be40597"
+     "03d7c238f211504d949fa2b81bf9ca451757f2f8ae4fecbc722a8fec563a969c"
     ]
    ],
-   "code_sha256": "a4b17a4c2627cff906b778dcbf6e3926190541694643c76490a322da205e9db9",
+   "code_sha256": "783d40305d372e3ef516b3310f6bec53d5794b4a0915d9f6649da243caea03d1",
    "verdict": "admit",
    "reason": "rediscovered",
    "final": true,
@@ -564,7 +564,7 @@
      "confidence": "high",
      "files_read_missing": true,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "rediscover": {
      "found": true,
@@ -586,7 +586,7 @@
      "job": "lib-socle:rediscover:frontend_lib_color.ts:1",
      "rank_in_lot": 4,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "comment": [],
     "refute": null
@@ -620,10 +620,10 @@
      "frontend:lib/color.ts",
      148,
      148,
-     "615b79b50d515aced2f4e1cff367aa8926a391bd7d32f3aeb191083748e0f79f"
+     "a0c1c9a9c0a830b4d6c75d3c0c43fce2017aee8ac76b8e3bdb8e4373065e8171"
     ]
    ],
-   "code_sha256": "615b79b50d515aced2f4e1cff367aa8926a391bd7d32f3aeb191083748e0f79f",
+   "code_sha256": "a0c1c9a9c0a830b4d6c75d3c0c43fce2017aee8ac76b8e3bdb8e4373065e8171",
    "verdict": "admit",
    "reason": "rediscovered",
    "final": true,
@@ -645,7 +645,7 @@
      "confidence": "high",
      "files_read_missing": true,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "rediscover": {
      "found": true,
@@ -667,7 +667,7 @@
      "job": "lib-socle:rediscover:frontend_lib_color.ts:1",
      "rank_in_lot": 1,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "comment": [],
     "refute": null
@@ -702,16 +702,16 @@
      "frontend:lib/color.ts",
      61,
      62,
-     "d103ca2ab3bc4a281313787a87acd750d24dd63d9d8ec942c177f9a26a80c88a"
+     "75e1d85cd54a508f1ae71e5cf3e82f44bf741114a77d0514f7f4a8f31e152287"
     ],
     [
      "frontend:lib/color.ts",
      65,
      65,
-     "260e3c19664b0c473ade9c150555d1e54f735a3d7c0a0412d506a14922dcb382"
+     "068d29fc8456dbb7f04110b9ff1b57618459779ecc63fab27328cf679291b725"
     ]
    ],
-   "code_sha256": "b17612b6c85f3ee4a9e56b09e5eb3b9c2cc465deb3c13a391ec4796c0d131edc",
+   "code_sha256": "16c874279e81aecc8f0592e868d09d515de3dc42f13079d69e074cb5f45ba051",
    "verdict": "admit",
    "reason": "rediscovered",
    "final": true,
@@ -733,7 +733,7 @@
      "confidence": "high",
      "files_read_missing": true,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "rediscover": {
      "found": true,
@@ -755,7 +755,7 @@
      "job": "lib-socle:rediscover:frontend_lib_color.ts:1",
      "rank_in_lot": 5,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "comment": [],
     "refute": null
@@ -791,22 +791,22 @@
      "frontend:lib/query-keys.ts",
      19,
      22,
-     "684e809fb7d00747ac2e6e76419c7d283b8051054daa3a9fc10546729c20b613"
+     "dee80f59b8e13e48a6ca297a96b844e1655f19403cc869dd8162506c93e4494a"
     ],
     [
      "frontend:lib/query-keys.ts",
      28,
      28,
-     "fea35d569d3369c166306fc6e0d18ad02b09500ae5ecc5b2be8ef8a6451ed5f2"
+     "556bc02b727541bffb3ffaaded122043f3bd140afb2a52ff81b5d278ca83d7fb"
     ],
     [
      "frontend:lib/query-keys.ts",
      49,
      49,
-     "75330faf231bc99263a88d041e49376cd2f7df56198e4fdbd44e09b2748900f7"
+     "3d2276ec38780d7acb96392f80eb0b108862da4beae9f098d2d20eb06be23e0b"
     ]
    ],
-   "code_sha256": "32948c2b9230c32fbfb44f48ffb665d15ac07005027f827309d349c518a4ee40",
+   "code_sha256": "bc6ab05f2f699fbdf3c974674f6cdc0c39c0f1892be1f3a4254baf61cf812d06",
    "verdict": "admit",
    "reason": "admitted",
    "final": true,
@@ -828,7 +828,7 @@
      "confidence": "high",
      "files_read_missing": true,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "rediscover": {
      "found": true,
@@ -849,7 +849,7 @@
      },
      "job": "lib-socle:rediscover:frontend_lib_color.ts:1",
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "comment": [],
     "refute": {
@@ -918,7 +918,7 @@
       "unproven": 0
      },
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     }
    },
    "contrary": null,
@@ -949,10 +949,10 @@
      "frontend:lib/density.test.ts",
      60,
      60,
-     "0ebdf68cc9ef0bce7585a46fec086b34224744472bce78a1455af8195e8621db"
+     "0cd86e6b89167196d42fdc4d6a057eb6e8f02dcfb6a244f539c083ddc6163599"
     ]
    ],
-   "code_sha256": "0ebdf68cc9ef0bce7585a46fec086b34224744472bce78a1455af8195e8621db",
+   "code_sha256": "0cd86e6b89167196d42fdc4d6a057eb6e8f02dcfb6a244f539c083ddc6163599",
    "verdict": "admit",
    "reason": "rediscovered",
    "final": true,
@@ -974,7 +974,7 @@
      "confidence": "medium",
      "files_read_missing": true,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "rediscover": {
      "found": true,
@@ -996,7 +996,7 @@
      "job": "lib-socle:rediscover:frontend_lib_color.ts:1",
      "rank_in_lot": 6,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "comment": [],
     "refute": null
@@ -1028,10 +1028,10 @@
      "frontend:lib/density.test.ts",
      29,
      30,
-     "c039ed8996d328a2ed3b1742cec774b85d59a4742d6a9611e63171aebdd04f54"
+     "509de86802f150a1fff7f3a3f34885f381c2ed2c37d33d46493c0576e91cfca7"
     ]
    ],
-   "code_sha256": "c039ed8996d328a2ed3b1742cec774b85d59a4742d6a9611e63171aebdd04f54",
+   "code_sha256": "509de86802f150a1fff7f3a3f34885f381c2ed2c37d33d46493c0576e91cfca7",
    "verdict": "admit",
    "reason": "admitted",
    "final": true,
@@ -1053,7 +1053,7 @@
      "confidence": "high",
      "files_read_missing": true,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "rediscover": {
      "found": true,
@@ -1074,7 +1074,7 @@
      },
      "job": "lib-socle:rediscover:frontend_lib_color.ts:1",
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "comment": [
      {
@@ -1099,7 +1099,7 @@
      "consigne_verdict": "n/a",
      "question_verdict": "n/a",
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     }
    },
    "contrary": null,
@@ -1128,10 +1128,10 @@
      "frontend:lib/ephemeris.test.ts",
      40,
      40,
-     "48ddb54f9765eadbe041efd333a793ffa2651079cf8f4bfe97dd08defa9c4d30"
+     "80851a60b898f29f100e661476faaca0e26defad8edfd744d347fa49dc6e814a"
     ]
    ],
-   "code_sha256": "48ddb54f9765eadbe041efd333a793ffa2651079cf8f4bfe97dd08defa9c4d30",
+   "code_sha256": "80851a60b898f29f100e661476faaca0e26defad8edfd744d347fa49dc6e814a",
    "verdict": "admit",
    "reason": "admitted",
    "final": true,
@@ -1153,7 +1153,7 @@
      "confidence": "high",
      "files_read_missing": true,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "rediscover": {
      "found": true,
@@ -1174,7 +1174,7 @@
      },
      "job": "lib-socle:rediscover:frontend_lib_color.ts:1",
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "comment": [],
     "refute": {
@@ -1194,7 +1194,7 @@
      "consigne_verdict": "n/a",
      "question_verdict": "n/a",
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     }
    },
    "contrary": null,
@@ -1223,10 +1223,10 @@
      "frontend:lib/touchTarget.test.ts",
      17,
      18,
-     "ae19b259ae67d60ef3166cde8e2b5e8928a2db9ec353e6e382b9952eb5e09850"
+     "2dbefc8236e6906d30b3ff4e7b38ae2ecd459f22cafa72caaf10fc3fa1e8701b"
     ]
    ],
-   "code_sha256": "ae19b259ae67d60ef3166cde8e2b5e8928a2db9ec353e6e382b9952eb5e09850",
+   "code_sha256": "2dbefc8236e6906d30b3ff4e7b38ae2ecd459f22cafa72caaf10fc3fa1e8701b",
    "verdict": "admit",
    "reason": "admitted",
    "final": true,
@@ -1248,7 +1248,7 @@
      "confidence": "high",
      "files_read_missing": true,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "rediscover": {
      "found": true,
@@ -1269,7 +1269,7 @@
      },
      "job": "lib-socle:rediscover:frontend_lib_color.ts:1",
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "comment": [],
     "refute": {
@@ -1289,7 +1289,7 @@
      "consigne_verdict": "n/a",
      "question_verdict": "n/a",
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     }
    },
    "contrary": null,
@@ -1318,10 +1318,10 @@
      "frontend:lib/touchTarget.test.ts",
      22,
      27,
-     "f2a39ca8d3e9f43a962ece2fd7bde9e2f2709b85a993b80d2260a56965817139"
+     "eade6fae24e7cfc2d0d00f4c21989e40c443296ea576ed2357a8535f20a38710"
     ]
    ],
-   "code_sha256": "f2a39ca8d3e9f43a962ece2fd7bde9e2f2709b85a993b80d2260a56965817139",
+   "code_sha256": "eade6fae24e7cfc2d0d00f4c21989e40c443296ea576ed2357a8535f20a38710",
    "verdict": "admit",
    "reason": "admitted",
    "final": true,
@@ -1343,7 +1343,7 @@
      "confidence": "high",
      "files_read_missing": true,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "rediscover": {
      "found": true,
@@ -1364,7 +1364,7 @@
      },
      "job": "lib-socle:rediscover:frontend_lib_color.ts:1",
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "comment": [],
     "refute": {
@@ -1384,7 +1384,7 @@
      "consigne_verdict": "n/a",
      "question_verdict": "n/a",
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     }
    },
    "contrary": null,
@@ -1415,16 +1415,16 @@
      "frontend:lib/density.test.ts",
      39,
      43,
-     "6bf8439af1b1abd45c1d5660df235d809febbf8e5267791c1f298ae8cbeae87c"
+     "ede68a5e7374e8e2d335d89c13248561326a29d27bd82ae77e239547095e237c"
     ],
     [
      "frontend:lib/ephemeris.test.ts",
      42,
      47,
-     "39658ce34509aa18c9805e020b7038b7eda540d4f6d5549b505a503fcfdfe9b4"
+     "0b20f2ba29e126e20a1221c74d7ac44742b02fef10f4c41580a74d4ddf452ab8"
     ]
    ],
-   "code_sha256": "9274b8f6527e49441865b825aad9e2509550ef18dac6e4f172f995aad0a61d5d",
+   "code_sha256": "3677d40caf6cfdaa858f400aa3eb77de1d4f3cb577674d42cbbaf9dc1b1c46e2",
    "verdict": "admit",
    "reason": "admitted",
    "final": true,
@@ -1446,7 +1446,7 @@
      "confidence": "high",
      "files_read_missing": true,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "rediscover": {
      "found": false,
@@ -1467,7 +1467,7 @@
      },
      "job": "lib-socle:rediscover:frontend_lib_color.ts:1",
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "comment": [],
     "refute": {
@@ -1487,7 +1487,7 @@
      "consigne_verdict": "n/a",
      "question_verdict": "n/a",
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     }
    },
    "contrary": null,
@@ -1517,16 +1517,16 @@
      "frontend:lib/touchTarget.ts",
      36,
      38,
-     "78a3bc8d6d9b22f9227f8b4be6c9d317c45c8accff4ffc40c953d2e873f10f82"
+     "720c5364e0b570e165bbe4054ba74456fd75fb6ca97cdf83b16198e940ff295c"
     ],
     [
      "frontend:lib/touchTarget.ts",
      40,
      41,
-     "a9bea0d41d741520e2a5b8f042caf1c288405c3c40aefc50ca7b9784c95fcb0a"
+     "b9cd5271ca3c8d1b6c14b68f9d38bc0a79c740b4c040d7e55b23edf15859ac19"
     ]
    ],
-   "code_sha256": "1de5b0651ca5758f7b794b074c0623eab82c69694cef8dee96b8f81ac6e59adc",
+   "code_sha256": "9b40cb7dfb2b7cdc7e5388610010d2eed8afaaaa7a76f0e5ef0653d818772e05",
    "verdict": "admit",
    "reason": "admitted",
    "final": true,
@@ -1591,7 +1591,7 @@
       "unproven": 0
      },
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     }
    },
    "contrary": null,
@@ -1673,7 +1673,7 @@
     }
    },
    "uses": 0,
-   "carried_from": "2026-11-20T12:20:00Z"
+   "carried_from": "2026-11-24T17:40:00"
   },
   {
    "id": "lib-socle:rules:annex:5f480602",
@@ -1741,7 +1741,7 @@
     }
    },
    "uses": 0,
-   "carried_from": "2026-11-20T12:20:00Z"
+   "carried_from": "2026-11-24T17:40:00"
   },
   {
    "id": "lib-socle:rules:annex:fa036e5e",
@@ -1802,7 +1802,7 @@
     }
    },
    "uses": 0,
-   "carried_from": "2026-11-20T12:20:00Z"
+   "carried_from": "2026-11-24T17:40:00"
   },
   {
    "id": "lib-socle:rules:annex:7e2e69fe",
@@ -1863,7 +1863,7 @@
     }
    },
    "uses": 0,
-   "carried_from": "2026-11-20T12:20:00Z"
+   "carried_from": "2026-11-24T17:40:00"
   }
  ],
  "comment_facts": [
@@ -1879,7 +1879,7 @@
    "invalid": false,
    "cache_digest": "25f3562efd899c556a7c36b75bf670c19f2c3680818479fd35f54946df661d37",
    "reused": true,
-   "reused_from": "2026-11-20T12:20:00Z",
+   "reused_from": "2026-11-24T17:40:00",
    "cited_by": [
     "lib-socle:rules:1"
    ],
@@ -1897,7 +1897,7 @@
    "invalid": false,
    "cache_digest": "ba487a4a094937ecf42b96292055cbebe2a8d1d90c1e3e83938cdc786104f477",
    "reused": true,
-   "reused_from": "2026-11-20T12:20:00Z",
+   "reused_from": "2026-11-24T17:40:00",
    "cited_by": [
     "lib-socle:tests:2"
    ],
@@ -1915,7 +1915,7 @@
    "invalid": false,
    "cache_digest": "90c8436c8539cdfdb6962302dda672f603f62dd836bed212f9f91ca12dbb312a",
    "reused": true,
-   "reused_from": "2026-11-20T12:20:00Z",
+   "reused_from": "2026-11-24T17:40:00",
    "cited_by": [
     "lib-socle:alerts:1"
    ],

@@ -11,7 +11,7 @@ facts_cited: 24
 sections: lib-socle.sections.json
 details: [lib-socle.details.md]
 lang: fr
-curated_at: 2026-11-20T12:45:00Z
+curated_at: 2026-11-25T15:00:00
 curation: lib-socle.curation.json
 ---
 ## 1. Quand activer {#activate}

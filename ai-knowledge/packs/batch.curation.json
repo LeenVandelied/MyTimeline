@@ -1,20 +1,20 @@
 {
  "pack": "batch",
  "schema": 1,
- "curated_at": "2026-11-20T12:45:00Z",
+ "curated_at": "2026-11-25T15:00:00",
  "curator": "curate/1",
  "base_sha256": "9e97af04975c41ce788ad93bf53b2ef7d1625d32f0a7a5a5f85c5fdbae16de10",
- "pack_sha256_before": "4ed3d68b0321bfd63873af6d602a10ce6976f2f9e04d17938431a70a53064650",
- "pack_sha256_after": "49b851e2896e8dca83c1808a68376370cf7e0082d52001adcb2537d1abd3849e",
- "criteria_sha256": "48e0e20f086c5b11deecfecdc547ba1d6115faee1597a5aaf682f6c699e92423",
+ "pack_sha256_before": "df48e9a10a8806efc8c76bb206f1b4d84446f9bde5973a3b2eedfd0f86e67c42",
+ "pack_sha256_after": "345a50e8eba88356a93ffac386cbbf47933a62a91c2923f92ebf0986af3465b8",
+ "criteria_sha256": "ab7790cd5eeee6662e4839ed473485849ec7230c69cee20910a09fbe76ae6957",
  "models": {
   "measure": "haiku",
   "refute": "sonnet"
  },
  "base_fingerprint": "ad4a2f961b36d296efbc961d7f112e7cf0080d85aa0b5cfe74900e7bb19a3243",
  "bytes": {
-  "before": 8509,
-  "after": 8509,
+  "before": 8204,
+  "after": 8204,
   "by_section": {
    "activate": {
     "before": 319,
@@ -33,8 +33,8 @@
     "after": 835
    },
    "surface": {
-    "before": 670,
-    "after": 670
+    "before": 367,
+    "after": 367
    },
    "files": {
     "before": 1256,
@@ -84,16 +84,16 @@
      "backend:src/main/java/com/matimeline/eventmanager/application/services/PasswordResetTokenPurgeScheduler.java",
      38,
      40,
-     "65093b8fce1fbf71baf3cd79295923e6cda84b87c37fcc1d097fe61523b9957e"
+     "880f80470b0289d89c2307dc9f985840524573ca389bf53f33bdd5354abcf610"
     ],
     [
      "backend:src/main/java/com/matimeline/eventmanager/infrastructure/config/SchedulingConfig.java",
      4,
      18,
-     "974d19cb798339b306f15756ce18b76a3aa00aca48babb1a0db4240c421820b0"
+     "d72bdd0badd2b51315865f30affba897801a5bf8b4386b601138a96ca9b0effc"
     ]
    ],
-   "code_sha256": "c85c95522c417c83d7e202d950e016bbc9bf686d50766ffec80a5aedb5fac51f",
+   "code_sha256": "8104b51769283511d496e60359259c88335946617e1fca40d5e6d051ca5642f4",
    "verdict": "admit",
    "reason": "rediscovered",
    "final": true,
@@ -115,7 +115,7 @@
      "confidence": "high",
      "files_read_missing": true,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "rediscover": {
      "found": true,
@@ -137,7 +137,7 @@
      "job": "batch:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_services_AsyncExportRunner.java:1",
      "rank_in_lot": 2,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "comment": [
      {
@@ -177,16 +177,16 @@
      "backend:src/main/java/com/matimeline/eventmanager/application/services/AsyncExportRunner.java",
      61,
      68,
-     "3ee47f204f752217fc6e99aae5a3d1c6c3c8c1e98fab0a4e03de6472fc0e4b7b"
+     "b3bced65a2182950d0f928ea84ed53f1fcc3f920fdd253f3b00266b1b63f22f7"
     ],
     [
      "backend:src/main/java/com/matimeline/eventmanager/application/services/AsyncExportRunner.java",
      75,
      79,
-     "7cc5aa490b8fa83193df898109d2458be1b2d6b8cd6705873fb0856625582709"
+     "3c571c41ac8406736aaeb5592a74a7943a0ed0202b5fc02749ec9976e880ed74"
     ]
    ],
-   "code_sha256": "96dafe2fd5b9dbf608a7665d062fedeabbfd5464b8cf87ff75019240964c2d8e",
+   "code_sha256": "9504fe51144fd7fda1d3abcb2a126a806a9ef0543a55f6795b78849701464adc",
    "verdict": "admit",
    "reason": "rediscovered",
    "final": true,
@@ -208,7 +208,7 @@
      "confidence": "high",
      "files_read_missing": true,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "rediscover": {
      "found": true,
@@ -230,7 +230,7 @@
      "job": "batch:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_services_AsyncExportRunner.java:1",
      "rank_in_lot": 3,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "comment": [],
     "refute": null
@@ -264,10 +264,10 @@
      "backend:src/main/java/com/matimeline/eventmanager/application/services/ExportPurgeScheduler.java",
      53,
      62,
-     "4414f0f95934f12b4cb4b75165e0f99c83ad09b7d49bb9a4cbc283e7e7726fb6"
+     "d2991d1b83c90459204e5d3de38013683213dc3bffb4033658ef1129ad25f6a9"
     ]
    ],
-   "code_sha256": "4414f0f95934f12b4cb4b75165e0f99c83ad09b7d49bb9a4cbc283e7e7726fb6",
+   "code_sha256": "d2991d1b83c90459204e5d3de38013683213dc3bffb4033658ef1129ad25f6a9",
    "verdict": "admit",
    "reason": "admitted",
    "final": true,
@@ -289,7 +289,7 @@
      "confidence": "high",
      "files_read_missing": true,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "rediscover": {
      "found": true,
@@ -310,7 +310,7 @@
      },
      "job": "batch:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_services_AsyncExportRunner.java:1",
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "comment": [],
     "refute": {
@@ -364,7 +364,7 @@
       "unproven": 0
      },
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     }
    },
    "contrary": null,
@@ -397,22 +397,22 @@
      "backend:src/main/java/com/matimeline/eventmanager/application/services/PasswordResetTokenPurgeScheduler.java",
      55,
      58,
-     "57ed5bac06164897b17e4a0796e3a257a4ab2b0d81db4bcd74b05241fe72220c"
+     "9acbb3e572db2092c4d107839800aeb322d279ade8250163f9361f2d89061c49"
     ],
     [
      "backend:src/main/java/com/matimeline/eventmanager/application/services/PasswordResetTokenPurgeScheduler.java",
      70,
      73,
-     "d4bcb8077297e20a3c0c011131de185d3132086d0a1701156ab7d1c6ea07a89d"
+     "c071496e6b9dfed4cda3410cc7b3eaba70f9de707e63cf0ed0a25fd4493f8d57"
     ],
     [
      "backend:src/main/java/com/matimeline/eventmanager/application/services/PasswordResetTokenPurgeScheduler.java",
      74,
      75,
-     "49c1e86a9b1b0da1b04e8b6227b68ca6fd71e1d1c5a201e7c45893f0c64b93d0"
+     "7a4b8e1e7e740ebea9dcc99bf6cf656142ba3f400a9037adadce256d8ddcf426"
     ]
    ],
-   "code_sha256": "10a288600dcd090491bca74abdedb9ad235730d06c1260ca70758851cfe8f70d",
+   "code_sha256": "f6304216e76a001876ceab05664ed4c0d8756ddd4881e2e6b35fcc70ac5b2913",
    "verdict": "admit",
    "reason": "rediscovered",
    "final": true,
@@ -434,7 +434,7 @@
      "confidence": "high",
      "files_read_missing": true,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "rediscover": {
      "found": true,
@@ -456,7 +456,7 @@
      "job": "batch:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_services_AsyncExportRunner.java:1",
      "rank_in_lot": 1,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "comment": [],
     "refute": null
@@ -490,10 +490,10 @@
      "backend:src/main/java/com/matimeline/eventmanager/application/services/PasswordResetTokenPurgeScheduler.java",
      29,
      30,
-     "073154fed4d46a8aff513ea85ca0493fec48c32979e2c7770b79d49ca150cd51"
+     "33b2c23228583fab4f422269e0c7cf5205483555fca826b2dc76114139f7b6b5"
     ]
    ],
-   "code_sha256": "073154fed4d46a8aff513ea85ca0493fec48c32979e2c7770b79d49ca150cd51",
+   "code_sha256": "33b2c23228583fab4f422269e0c7cf5205483555fca826b2dc76114139f7b6b5",
    "verdict": "admit",
    "reason": "admitted",
    "final": true,
@@ -578,7 +578,7 @@
       "unproven": 0
      },
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     }
    },
    "contrary": null,
@@ -611,16 +611,16 @@
      "backend:src/main/java/com/matimeline/eventmanager/application/services/PasswordResetServiceImpl.java",
      99,
      100,
-     "0ac4fc233410715872f65d7e4f459f71cd061bfcf30bf36d6a7aa64477ecd13d"
+     "21eb8fcc9ed3e8f58a49f88a380492b31d1cdefac145b80bf031accb8967fa53"
     ],
     [
      "backend:src/main/java/com/matimeline/eventmanager/infrastructure/config/AsyncConfig.java",
      34,
      43,
-     "240c244e5643ec78fe184cb7cd0e555c09f6fad4cca5e7d666ac13ca6a6ad031"
+     "ac3b1f5481737386951a408012fb63c23b0393c6a6b35c1064b7f3d283874a8c"
     ]
    ],
-   "code_sha256": "7c33d581666090f70abbe06c2685a6dbcd9bd22a23a9b2dc5cad8d9a2f309784",
+   "code_sha256": "0cbfa004042ad2ff663f2b973bc7267bb2e278281dc6097103a2b5d01c0b4685",
    "verdict": "admit",
    "reason": "admitted",
    "final": true,
@@ -642,7 +642,7 @@
      "confidence": "high",
      "files_read_missing": true,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "rediscover": {
      "found": true,
@@ -663,7 +663,7 @@
      },
      "job": "batch:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_services_AsyncExportRunner.java:1",
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "comment": [],
     "refute": {
@@ -722,7 +722,7 @@
       "unproven": 0
      },
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     }
    },
    "contrary": null,
@@ -738,151 +738,12 @@
    "id": "batch:surface:1",
    "section": "surface",
    "rank": 1,
-   "text": "- Le planificateur `backend:src/main/java/com/matimeline/eventmanager/application/services/ExportPurgeScheduler.java:62-64` lit à chaque tick les jobs d'export expirés à l'instant courant, dans une transaction [#2bdf2db83a151dc3-1] [#export/bb8b6ba05aa82340-2]",
-   "fact_text": "Le planificateur ExportPurgeScheduler.java lit à chaque tick les jobs d'export expirés à l'instant courant, dans une transaction",
+   "text": "- Le scheduler de purge confie la suppression des jetons consommés ou expirés au port du dépôt, qui renvoie le nombre de lignes purgées, voir `backend:src/main/java/com/matimeline/eventmanager/application/services/PasswordResetTokenPurgeScheduler.java:75` [#9f17520211d2f332-1]",
+   "fact_text": "Le scheduler de purge confie la suppression des jetons consommés ou expirés au port du dépôt, qui renvoie le nombre de lignes purgées, voir PasswordResetTokenPurgeScheduler.java",
    "consigne": null,
    "consigne_dropped": false,
    "cites": [
-    "batch/2bdf2db83a151dc3-1",
-    "export/bb8b6ba05aa82340-2"
-   ],
-   "files": [
-    "backend:src/main/java/com/matimeline/eventmanager/application/services/ExportPurgeScheduler.java"
-   ],
-   "ranges": [
-    [
-     "backend:src/main/java/com/matimeline/eventmanager/application/services/ExportPurgeScheduler.java",
-     62,
-     64,
-     "b627ce0d839f16a40f6f5fd0372568895ab6a6c9a461046f54261d4cbe5bca4f"
-    ],
-    [
-     "backend:src/main/java/com/matimeline/eventmanager/application/services/ExportPurgeScheduler.java",
-     63,
-     64,
-     "3722590de756084e48d0243f1f610d1fb9d8b6e047d6842e080311045ae7cf03"
-    ]
-   ],
-   "code_sha256": "28bbc1030cae5ce14092531934cbb8541eae4731ee8c85b36415f8c01a85018f",
-   "verdict": "admit",
-   "reason": "admitted",
-   "final": true,
-   "measures": {
-    "fidelity": null,
-    "deduce": {
-     "covered": false,
-     "overlap": {
-      "identifiers": 0.0,
-      "values": null,
-      "terms": 0.25,
-      "n": {
-       "identifiers": 1,
-       "values": 0,
-       "terms": 8
-      }
-     },
-     "restatement": "Au début de purgeExpired, l'heure now est calculée via LocalDateTime.now(clock), puis findExpired(now) renvoie la liste des jobs expirés. L'horloge injectée rend le temps testable.",
-     "confidence": "high",
-     "files_read_missing": true,
-     "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
-    },
-    "rediscover": {
-     "found": true,
-     "cost": 3,
-     "within_budget": true,
-     "covered": false,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/application/services/ExportPurgeScheduler.java",
-     "file_ok": true,
-     "overlap": {
-      "identifiers": 1.0,
-      "values": null,
-      "terms": 0.25,
-      "n": {
-       "identifiers": 1,
-       "values": 0,
-       "terms": 8
-      }
-     },
-     "job": "batch:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_services_AsyncExportRunner.java:1",
-     "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
-    },
-    "comment": [],
-    "refute": {
-     "votes": 3,
-     "refuted": 0,
-     "refute_unproven": 0,
-     "reasons": [
-      "purgeExpired (L61-64) est @Transactional et appelle exportJobRepository.findExpired(LocalDateTime.now(clock)) à chaque exécution.",
-      "purgeExpired (L61-64) est @Transactional et appelle exportJobRepository.findExpired(LocalDateTime.now(clock)) à chaque exécution.",
-      "purgeExpired L62-64 lit LocalDateTime.now(clock) puis exportJobRepository.findExpired(now), sous @Transactional (L61), à chaque exécution planifiée."
-     ],
-     "evidence": [
-      "",
-      "",
-      ""
-     ],
-     "consigne_verdict": "n/a",
-     "question_verdict": "n/a",
-     "searched": true,
-     "search": {
-      "check": "scope",
-      "outcome": null,
-      "votes": 3,
-      "supporters": 0,
-      "budget": 30,
-      "searches": [
-       [
-        {
-         "tool": "Read",
-         "target": "ExportPurgeScheduler.java",
-         "found": "Lecture à chaque tick de findExpired(now) dans une méthode @Transactional, sans condition préalable."
-        }
-       ],
-       [
-        {
-         "tool": "Read",
-         "target": "ExportPurgeScheduler.java",
-         "found": "un seul point d'entrée planifié, lit findExpired(now) à chaque appel, sans condition"
-        }
-       ],
-       [
-        {
-         "tool": "Grep",
-         "target": "@Scheduled dans backend/src/main",
-         "found": "Un seul planificateur d'export (ExportPurgeScheduler), sans autre chemin de lecture des jobs expirés."
-        }
-       ]
-      ],
-      "untraced": 0,
-      "over_budget": 0,
-      "unproven": 0
-     },
-     "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
-    }
-   },
-   "contrary": null,
-   "check": "scope",
-   "general": "words:chaque,a chaque",
-   "placed": {
-    "pack_line": 53,
-    "annex_table": null
-   },
-   "uses": 0
-  },
-  {
-   "id": "batch:surface:2",
-   "section": "surface",
-   "rank": 2,
-   "text": "- Le planificateur `backend:src/main/java/com/matimeline/eventmanager/application/services/PasswordResetTokenPurgeScheduler.java:75` confie la suppression des jetons consommés ou expirés au port du dépôt, qui renvoie le nombre de lignes purgées [#9f17520211d2f332-1] [#user/80685ae3287ab06e-1]",
-   "fact_text": "Le planificateur PasswordResetTokenPurgeScheduler.java confie la suppression des jetons consommés ou expirés au port du dépôt, qui renvoie le nombre de lignes purgées",
-   "consigne": null,
-   "consigne_dropped": false,
-   "cites": [
-    "batch/9f17520211d2f332-1",
-    "user/80685ae3287ab06e-1"
+    "batch/9f17520211d2f332-1"
    ],
    "files": [
     "backend:src/main/java/com/matimeline/eventmanager/application/services/PasswordResetTokenPurgeScheduler.java"
@@ -892,16 +753,10 @@
      "backend:src/main/java/com/matimeline/eventmanager/application/services/PasswordResetTokenPurgeScheduler.java",
      75,
      75,
-     "b1578f245708df414d73c8cc184594f5e253dbf440213649b81d52f7f6c3c7c6"
-    ],
-    [
-     "backend:src/main/java/com/matimeline/eventmanager/application/services/PasswordResetTokenPurgeScheduler.java",
-     75,
-     79,
-     "41210abacc2bee3aa06fc15518cd166e19efa9e5096957e96f65fb177cc71ee2"
+     "43e34a48fd9bf58aa3d948b1ace4b6835f1083b1c632591dd90000d3623bd37f"
     ]
    ],
-   "code_sha256": "166a2fe7b65b674cc95abf2c4577459c5c328fa58f7c1b320193763dcf7cd9e8",
+   "code_sha256": "43e34a48fd9bf58aa3d948b1ace4b6835f1083b1c632591dd90000d3623bd37f",
    "verdict": "admit",
    "reason": "admitted",
    "final": true,
@@ -910,41 +765,40 @@
     "deduce": {
      "covered": false,
      "overlap": {
-      "identifiers": 0.0,
+      "identifiers": 1.0,
       "values": null,
-      "terms": 0.25,
+      "terms": 0.417,
       "n": {
        "identifiers": 1,
        "values": 0,
        "terms": 12
       }
      },
-     "restatement": "purgeConsumedAndExpired calcule expiredBefore = maintenant moins retention, puis appelle tokenRepository.deleteConsumedOrExpiredBefore(expiredBefore) qui renvoie le nombre de lignes supprimées. Le log n'est émis que si purged est supérieur à 0 et ne contient que le nombre, sans donnée personnelle.",
-     "confidence": "high",
-     "files_read_missing": true,
+     "restatement": "La ligne 75 de PasswordResetTokenPurgeScheduler.purgeConsumedAndExpired appelle tokenRepository.deleteConsumedOrExpiredBefore(expiredBefore) et stocke le nombre retourné dans purged. Le code suppose que la méthode supprime les jetons consommés ou expirés antérieurs au seuil expiredBefore. Le calcul de expiredBefore et l'usage de purged ne figurent pas dans l'extrait.",
+     "confidence": "medium",
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "rediscover": {
      "found": true,
-     "cost": 5,
+     "cost": 2,
      "within_budget": true,
      "covered": false,
      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/application/services/PasswordResetTokenPurgeScheduler.java",
      "file_ok": true,
      "overlap": {
-      "identifiers": 0.0,
+      "identifiers": 1.0,
       "values": null,
-      "terms": 0.333,
+      "terms": 0.417,
       "n": {
        "identifiers": 1,
        "values": 0,
        "terms": 12
       }
      },
-     "job": "batch:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_services_AsyncExportRunner.java:1",
+     "job": "batch:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_services_PasswordResetTokenPurgeScheduler.java:1",
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "comment": [],
     "refute": {
@@ -952,9 +806,9 @@
      "refuted": 0,
      "refute_unproven": 0,
      "reasons": [
-      "Ligne 75 : tokenRepository.deleteConsumedOrExpiredBefore(expiredBefore) renvoie un int purged, journalisé ligne 78.",
-      "Ligne 75 : int purged = tokenRepository.deleteConsumedOrExpiredBefore(expiredBefore) ; le planificateur délègue au port et récupère un compte.",
-      "L75 appelle tokenRepository.deleteConsumedOrExpiredBefore et stocke le int purged, utilisé dans le log L76-78."
+      "L75 de PasswordResetTokenPurgeScheduler.purgeConsumedAndExpired appelle tokenRepository.deleteConsumedOrExpiredBefore(expiredBefore) et stocke le résultat dans un int purged, ce qui est cohérent avec le constat. Je n'ai pas lu le fichier complet : le caractère de port du dépôt n'est pas vérifié, mais rien ne contredit la ligne.",
+      "L75 de purgeConsumedAndExpired appelle tokenRepository.deleteConsumedOrExpiredBefore(expiredBefore) et stocke le résultat entier dans purged, ce qui correspond au constat. Rien dans l'extrait ne le contredit.",
+      "Ligne 75 de PasswordResetTokenPurgeScheduler.purgeConsumedAndExpired : `int purged = tokenRepository.deleteConsumedOrExpiredBefore(expiredBefore)` délègue la suppression au dépôt et récupère le nombre de lignes, ce qui correspond au constat."
      ],
      "evidence": [
       "",
@@ -964,12 +818,12 @@
      "consigne_verdict": "n/a",
      "question_verdict": "n/a",
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     }
    },
    "contrary": null,
    "placed": {
-    "pack_line": 55,
+    "pack_line": 53,
     "annex_table": null
    },
    "uses": 0
@@ -994,16 +848,16 @@
      "backend:src/test/java/com/matimeline/eventmanager/application/services/ExportPurgeSchedulerIntegrationTest.java",
      94,
      106,
-     "8a2f3eed20f21043d7e66a95c6caedd7636839519357ddd8787c0acd241b67ab"
+     "5201ce5a9a3eed6dacd4d66a85b35867f2267ee486fcd05c792f791690372ddc"
     ],
     [
      "backend:src/test/java/com/matimeline/eventmanager/application/services/ExportPurgeSchedulerIntegrationTest.java",
      109,
      118,
-     "6b2af6340885e207d2ab8a9ea2e3d1bdfcd57d1d9b7f7692264af968c7f029dd"
+     "33a4da813e2020167506ca77c2db89f684535261886c1da91fde64df485500f8"
     ]
    ],
-   "code_sha256": "0b1d3f2c5b4c98ae369121eeb1a2f0c003ef725e884ef50634b529fe6c1ebe9d",
+   "code_sha256": "a1211c3be09b25313272079e895a48f923f4dda59b572dd682dc3cc8ae99bc79",
    "verdict": "admit",
    "reason": "rediscovered",
    "final": true,
@@ -1025,7 +879,7 @@
      "confidence": "high",
      "files_read_missing": true,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "rediscover": {
      "found": true,
@@ -1047,7 +901,7 @@
      "job": "batch:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_services_AsyncExportRunner.java:1",
      "rank_in_lot": 4,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "comment": [],
     "refute": null
@@ -1055,7 +909,7 @@
    "contrary": null,
    "kept_for": "rediscovered",
    "placed": {
-    "pack_line": 85,
+    "pack_line": 83,
     "annex_table": null
    },
    "uses": 0
@@ -1079,10 +933,10 @@
      "backend:src/test/java/com/matimeline/eventmanager/application/services/PasswordResetTokenPurgeSchedulerIntegrationTest.java",
      88,
      116,
-     "da25b2ac30bcfaf9f34f044ae754e4d8960005c627279e38cd030779ac9b7948"
+     "636f7d07bd434628e0e7a2aa1eefd8df7f0ee8cc26722a7dc9ba0ca51e65c201"
     ]
    ],
-   "code_sha256": "da25b2ac30bcfaf9f34f044ae754e4d8960005c627279e38cd030779ac9b7948",
+   "code_sha256": "636f7d07bd434628e0e7a2aa1eefd8df7f0ee8cc26722a7dc9ba0ca51e65c201",
    "verdict": "admit",
    "reason": "admitted",
    "final": true,
@@ -1104,7 +958,7 @@
      "confidence": "high",
      "files_read_missing": true,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "rediscover": {
      "found": true,
@@ -1125,7 +979,7 @@
      },
      "job": "batch:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_services_AsyncExportRunner.java:1",
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "comment": [],
     "refute": {
@@ -1145,12 +999,12 @@
      "consigne_verdict": "n/a",
      "question_verdict": "n/a",
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     }
    },
    "contrary": null,
    "placed": {
-    "pack_line": 86,
+    "pack_line": 84,
     "annex_table": null
    },
    "uses": 0
@@ -1174,10 +1028,10 @@
      "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ForgotPasswordAsyncTest.java",
      88,
      113,
-     "8812b2faba7f130c5d68a6b06d43ab631100cd9cfbdd30abaaf1927e156038c8"
+     "21668cd714818eca4bb61a4728e751d4971e48253f8c4a725e6d00e282a5c000"
     ]
    ],
-   "code_sha256": "8812b2faba7f130c5d68a6b06d43ab631100cd9cfbdd30abaaf1927e156038c8",
+   "code_sha256": "21668cd714818eca4bb61a4728e751d4971e48253f8c4a725e6d00e282a5c000",
    "verdict": "admit",
    "reason": "admitted",
    "final": true,
@@ -1199,7 +1053,7 @@
      "confidence": "high",
      "files_read_missing": true,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "rediscover": {
      "found": true,
@@ -1220,7 +1074,7 @@
      },
      "job": "batch:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_services_AsyncExportRunner.java:1",
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "comment": [],
     "refute": {
@@ -1240,12 +1094,12 @@
      "consigne_verdict": "n/a",
      "question_verdict": "n/a",
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     }
    },
    "contrary": null,
    "placed": {
-    "pack_line": 87,
+    "pack_line": 85,
     "annex_table": null
    },
    "uses": 0
@@ -1269,10 +1123,10 @@
      "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ForgotPasswordAsyncTest.java",
      119,
      132,
-     "8158946593c31bd9b0fb55f470682050a87a1519b5885df073d12f8c741d9e57"
+     "1eef0d84a0518538b42091673803011ba7aee6804c64643b8196c4a7a5da9649"
     ]
    ],
-   "code_sha256": "8158946593c31bd9b0fb55f470682050a87a1519b5885df073d12f8c741d9e57",
+   "code_sha256": "1eef0d84a0518538b42091673803011ba7aee6804c64643b8196c4a7a5da9649",
    "verdict": "admit",
    "reason": "admitted",
    "final": true,
@@ -1294,7 +1148,7 @@
      "confidence": "high",
      "files_read_missing": true,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "rediscover": {
      "found": true,
@@ -1315,7 +1169,7 @@
      },
      "job": "batch:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_services_AsyncExportRunner.java:1",
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "comment": [],
     "refute": {
@@ -1335,12 +1189,12 @@
      "consigne_verdict": "n/a",
      "question_verdict": "n/a",
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     }
    },
    "contrary": null,
    "placed": {
-    "pack_line": 88,
+    "pack_line": 86,
     "annex_table": null
    },
    "uses": 0
@@ -1364,10 +1218,10 @@
      "backend:src/main/java/com/matimeline/eventmanager/application/services/PasswordResetServiceImpl.java",
      103,
      108,
-     "224e604825a68d89030673949ac6dbadd25081dd1a712bfcd33f1fe5d32c76e1"
+     "42c21a14f7e5f8db0cce373b74b55d33fdf8d07cc5d7e102e1867d9d367d2512"
     ]
    ],
-   "code_sha256": "224e604825a68d89030673949ac6dbadd25081dd1a712bfcd33f1fe5d32c76e1",
+   "code_sha256": "42c21a14f7e5f8db0cce373b74b55d33fdf8d07cc5d7e102e1867d9d367d2512",
    "verdict": "admit",
    "reason": "admitted",
    "final": true,
@@ -1443,13 +1297,13 @@
       "contradicted": 3
      },
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     }
    },
    "contrary": null,
    "check": "answer",
    "placed": {
-    "pack_line": 92,
+    "pack_line": 90,
     "annex_table": null
    },
    "uses": 0
@@ -1474,16 +1328,16 @@
      "backend:src/main/java/com/matimeline/eventmanager/infrastructure/config/AsyncConfig.java",
      30,
      32,
-     "ed0475ff3b929b19bc24ec7398660b8fefd75bf3d6e0c573106979b484306f04"
+     "c34a053dd197d6e95ce77c428aa3d51050d27151ce69e953921fb1c454653bec"
     ],
     [
      "backend:src/main/java/com/matimeline/eventmanager/infrastructure/config/AsyncConfig.java",
      34,
      43,
-     "240c244e5643ec78fe184cb7cd0e555c09f6fad4cca5e7d666ac13ca6a6ad031"
+     "ac3b1f5481737386951a408012fb63c23b0393c6a6b35c1064b7f3d283874a8c"
     ]
    ],
-   "code_sha256": "b18cb6d91433894cf52a1e2428754a9f94c2e74c595c9e35a9462970057ff28f",
+   "code_sha256": "61625e98ed0f8a3774579b75b3a9086f18ed2aa5d7617a6d9704a1f006e7a956",
    "verdict": "admit",
    "reason": "admitted",
    "final": true,
@@ -1553,7 +1407,7 @@
       "unproven": 0
      },
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     }
    },
    "contrary": null,
@@ -1562,7 +1416,7 @@
    ],
    "check": "guards",
    "placed": {
-    "pack_line": 96,
+    "pack_line": 94,
     "annex_table": null
    },
    "uses": 0
@@ -1587,16 +1441,16 @@
      "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ForgotPasswordAsyncTest.java",
      116,
      117,
-     "e515f3253a1b477facf2e2cf8bff5022071e56ed5af4d67c9bc7698083c150fb"
+     "4148cbf2a1a6a474fbde683ac697e62f901cfa51a111a4e4a16d79bd7c23a21a"
     ],
     [
      "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ForgotPasswordAsyncTest.java",
      119,
      132,
-     "8158946593c31bd9b0fb55f470682050a87a1519b5885df073d12f8c741d9e57"
+     "1eef0d84a0518538b42091673803011ba7aee6804c64643b8196c4a7a5da9649"
     ]
    ],
-   "code_sha256": "8ce910cf44da23aee0a1142d6666e269b94f850002e611a860169a22a49292d7",
+   "code_sha256": "d1ea92cdaa66c5c9b4a5cc39e853bd71860c02c07cb3fb56270a6caf0d2638ae",
    "verdict": "admit",
    "reason": "admitted",
    "final": true,
@@ -1661,16 +1515,76 @@
       "unproven": 0
      },
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     }
    },
    "contrary": null,
    "check": "guards",
    "placed": {
-    "pack_line": 97,
+    "pack_line": 95,
     "annex_table": null
    },
    "uses": 0
+  },
+  {
+   "id": "batch:surface:annex:67d28b53",
+   "section": "surface",
+   "rank": 1,
+   "text": "- Le scheduler d'export lit à chaque tick les jobs expirés à l'instant courant, dans une transaction, via `backend:src/main/java/com/matimeline/eventmanager/application/services/ExportPurgeScheduler.java:62-64` [#2bdf2db83a151dc3-1]",
+   "fact_text": "Le scheduler d'export lit à chaque tick les jobs expirés à l'instant courant, dans une transaction, via ExportPurgeScheduler.java",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "batch/2bdf2db83a151dc3-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/application/services/ExportPurgeScheduler.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/services/ExportPurgeScheduler.java",
+     62,
+     64,
+     "b627ce0d839f16a40f6f5fd0372568895ab6a6c9a461046f54261d4cbe5bca4f"
+    ]
+   ],
+   "code_sha256": "b627ce0d839f16a40f6f5fd0372568895ab6a6c9a461046f54261d4cbe5bca4f",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 8
+      }
+     },
+     "restatement": "La méthode ExportPurgeScheduler.purgeExpired calcule l'instant courant avec LocalDateTime.now(clock), puis récupère les ExportJob expirés via exportJobRepository.findExpired(now). L'extrait s'arrête là : la suppression effective des jobs trouvés n'apparaît pas.",
+     "confidence": "high"
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "words:chaque,a chaque",
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "batch.details.md",
+     "row": 6
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-24T17:40:00"
   },
   {
    "id": "batch:rules:annex:81956bec",
@@ -1739,7 +1653,7 @@
     }
    },
    "uses": 0,
-   "carried_from": "2026-11-20T12:20:00Z"
+   "carried_from": "2026-11-24T17:40:00"
   },
   {
    "id": "batch:rules:annex:7f107fea",
@@ -1800,7 +1714,7 @@
     }
    },
    "uses": 0,
-   "carried_from": "2026-11-20T12:20:00Z"
+   "carried_from": "2026-11-24T17:40:00"
   },
   {
    "id": "batch:rules:annex:b7cbae04",
@@ -1861,7 +1775,7 @@
     }
    },
    "uses": 0,
-   "carried_from": "2026-11-20T12:20:00Z"
+   "carried_from": "2026-11-24T17:40:00"
   },
   {
    "id": "batch:rules:annex:5548c826",
@@ -1922,7 +1836,7 @@
     }
    },
    "uses": 0,
-   "carried_from": "2026-11-20T12:20:00Z"
+   "carried_from": "2026-11-24T17:40:00"
   },
   {
    "id": "batch:tests:annex:5d7be297",
@@ -1981,7 +1895,7 @@
     }
    },
    "uses": 0,
-   "carried_from": "2026-11-20T12:20:00Z"
+   "carried_from": "2026-11-24T17:40:00"
   }
  ],
  "comment_facts": [
@@ -1997,7 +1911,7 @@
    "invalid": false,
    "cache_digest": "2d14c061d78c6be801a468c284bf0f23dfaa7ab7c2e61a603457fca8140e90d9",
    "reused": true,
-   "reused_from": "2026-11-20T12:20:00Z",
+   "reused_from": "2026-11-24T17:40:00",
    "cited_by": [
     "batch:rules:1"
    ],
@@ -2015,7 +1929,7 @@
    "invalid": false,
    "cache_digest": "0f546f77c7f308696ded1b5cd351a9adc96259895969bdf8d649cd755cd53db7",
    "reused": true,
-   "reused_from": "2026-11-20T12:20:00Z",
+   "reused_from": "2026-11-24T17:40:00",
    "cited_by": [
     "batch:rules:5"
    ],
@@ -2033,7 +1947,7 @@
    "invalid": false,
    "cache_digest": "71f9a4b0ab5a03d5bc1ae027201f662d57e76e560dfb780c6c1c80919b63f5df",
    "reused": true,
-   "reused_from": "2026-11-20T12:20:00Z",
+   "reused_from": "2026-11-24T17:40:00",
    "cited_by": [
     "batch:questions:1"
    ],
@@ -2051,7 +1965,7 @@
    "invalid": false,
    "cache_digest": "7244c9ff087a4834717c1394fcd8a95f3b26b8d9fb113b3eab1b17983829ea53",
    "reused": true,
-   "reused_from": "2026-11-20T12:20:00Z",
+   "reused_from": "2026-11-24T17:40:00",
    "cited_by": [
     "batch:alerts:1"
    ],
@@ -2069,7 +1983,7 @@
    "invalid": false,
    "cache_digest": "2b44dd1a854e3903aaa2213d8ddeac8038e4b2e4c79467ce9aabdf35663b7dbf",
    "reused": true,
-   "reused_from": "2026-11-20T12:20:00Z",
+   "reused_from": "2026-11-24T17:40:00",
    "cited_by": [
     "batch:alerts:2"
    ],
@@ -2081,10 +1995,7 @@
   "batch/ca82cae005b299e2-2",
   "batch/eeb34aa142262593-2",
   "batch/c856ebdf3b1791e2-1",
-  "batch/2bdf2db83a151dc3-1",
-  "export/bb8b6ba05aa82340-2",
   "batch/9f17520211d2f332-1",
-  "user/80685ae3287ab06e-1",
   "batch/1ffca7439a8f14e1-1",
   "batch/0457acca23533817-1",
   "batch/9c0729d39059d8b1-1",
@@ -2094,8 +2005,8 @@
  ],
  "counts": {
   "units": 20,
-  "admit": 15,
-  "annex": 5,
+  "admit": 14,
+  "annex": 6,
   "drop": 0,
   "hold": 0,
   "pending": 0,
@@ -2124,14 +2035,6 @@
   "batch": {
    "fingerprint": "ad4a2f961b36d296efbc961d7f112e7cf0080d85aa0b5cfe74900e7bb19a3243",
    "sha256_after": "9e97af04975c41ce788ad93bf53b2ef7d1625d32f0a7a5a5f85c5fdbae16de10"
-  },
-  "export": {
-   "fingerprint": "29daa3321baa8cdda09f77ad6ddd284cc57a82aa3a443299c2b21bb195e138f1",
-   "sha256_after": "15d469e8b955837daa03bfeb3a69513db756be6099428def2d930731644e956d"
-  },
-  "user": {
-   "fingerprint": "d80ca607e97586deb1b527cce148f6b5066bb5389cb65d8abc86c170d9a13ab1",
-   "sha256_after": "11e5cef4b1de5d0509506bcbd57f241683e97905b17546e5510aca6aa403729a"
   }
  },
  "lint": {

@@ -1,11 +1,11 @@
 # Catalogue des packs (carte du système)
 
-Mode rejeu. 700 fichiers, 700 rattachés (100.0 %), 0 restants. Porte mécanique : 0 erreurs, 0 avertissements.
+Mode rejeu. 727 fichiers, 727 rattachés (100.0 %), 0 restants. Porte mécanique : 0 erreurs, 0 avertissements.
 
 
 ## domain
 
-### event : Événement  (49 fichiers, 255 ko)
+### event : Événement  (53 fichiers, 274 ko)
 - Le groupe Event compte 135 fichiers et 590 ko, avec EventController et RecurrencePreviewController sur /api/events. La taille du groupe entier est portée par ce pack pivot, les packs session et export (fondus dans ce groupe) sont à 0.
 - seeds : Event
 - entité pivot : EventEntity
@@ -18,7 +18,7 @@ Mode rejeu. 700 fichiers, 700 rattachés (100.0 %), 0 restants. Porte mécanique
 - alias : timeline, recurrence
 - hypothèse A4 [confirmed, low, R3 dossier d'écran sans entité, alias timeline rattaché au p] : Pages timeline : event ou autre pack ?
 
-### user : Utilisateur et authentification  (81 fichiers, 397 ko)
+### user : Utilisateur et authentification  (84 fichiers, 409 ko)
 - Le groupe User compte 80 fichiers et 480 ko, avec 3 controllers (/api/auth, /api/me, /api/test-support) et 41 liens entrants depuis Event.
 - seeds : User, PasswordResetToken
 - entité pivot : UserEntity
@@ -35,7 +35,7 @@ Mode rejeu. 700 fichiers, 700 rattachés (100.0 %), 0 restants. Porte mécanique
 - hypothèse A12 [open, high, R11 User est importée par 3 seeds sur 6 (Category, Product, ] : User, entité hub : son seed garde-t-il son propre pack, et AvatarService lui revient-il ?
 - hypothèse A13 [open, high, R11 entité hub : importée par 3/6 seeds d'entité, ses arêtes] : L'entité hub User (importée par 3 seeds d'entité) reste-t-elle dans son pack ?
 
-### product : Produit  (18 fichiers, 129 ko)
+### product : Produit  (28 fichiers, 170 ko)
 - Le groupe Product compte 18 fichiers et 129 ko (au-dessus de pack_min_kb=15) avec un ProductController et un ProductService propres.
 - seeds : Product
 - entité pivot : ProductEntity
@@ -46,7 +46,7 @@ Mode rejeu. 700 fichiers, 700 rattachés (100.0 %), 0 restants. Porte mécanique
 - motifs de noms : **/Product*, **/*product*
 - alias : products, productId
 
-### session : Session et jetons  (23 fichiers, 108 ko)
+### session : Session et jetons  (25 fichiers, 143 ko)
 - Le seed Session pèse 24 fichiers (fondus par le script dans Event à 4 liens sur 4) avec SessionController, JwksController et JwtService sur /api/sessions. Sa taille est comptée dans le pack event, d'où 0 ici.
 - seeds : Session
 - entité pivot : SessionEntity
@@ -85,21 +85,21 @@ Mode rejeu. 700 fichiers, 700 rattachés (100.0 %), 0 restants. Porte mécanique
 
 ## transversal
 
-### authorization : Autorisation et sécurité  (35 fichiers, 313 ko)
+### authorization : Autorisation et sécurité  (37 fichiers, 351 ko)
 - Le motif authorization touche 35 fichiers (SecurityConfig 19 occurrences, JwtFilter 11), répartis entre User (14), Event (7) et le socle (14). Taille en ko inconnue, mise à 0.
 - motif : authorization
 - déclencheurs keywords : authorization, autorisation, security, sécurité, rate limit, role, jwt
 - règles de chemin : ^backend:src/.*/(SecurityConfig|JwtFilter|JwtService|UserRateLimitingFilter|CustomUserDetailsService|ExportTokenService)[^/]*\.java$
 - traverse : user, session, export
-- fichiers revendiqués en recouvrement : 35
+- fichiers revendiqués en recouvrement : 37
 
-### integrations : Intégrations et services externes  (98 fichiers, 767 ko)
+### integrations : Intégrations et services externes  (110 fichiers, 830 ko)
 - Le motif integrations touche 97 fichiers (ZipExportRenderer 33 occurrences, apiClient 9), répartis sur Event (39), le socle (26), User (21), Product (6) et Category (5). Taille en ko inconnue, mise à 0.
 - motif : integrations
 - déclencheurs keywords : integration, intégration, storage, stockage, brevo, renderer, apiclient
 - règles de chemin : ^backend:src/.*/(ZipExportRenderer|MarkdownExportRenderer|JsonExportRenderer|CsvExportRenderer|LocalStorageAdapter|BrevoEmailService|BrevoHealthIndicator)[^/]*\.java$ ; ^frontend:.*/apiClient[^/]*$
 - traverse : user, event, export, session, product, category
-- fichiers revendiqués en recouvrement : 98
+- fichiers revendiqués en recouvrement : 110
 
 ### batch : Tâches planifiées et asynchrones  (9 fichiers, 42 ko)
 - Le motif batch touche 9 fichiers (PasswordResetTokenPurgeScheduler 6 occurrences, ExportPurgeScheduler 5) répartis entre Event (5), User (2) et le socle (2). Taille en ko inconnue, mise à 0.
@@ -112,7 +112,7 @@ Mode rejeu. 700 fichiers, 700 rattachés (100.0 %), 0 restants. Porte mécanique
 
 ## technical
 
-### backend-core : Socle backend  (38 fichiers, 318 ko)
+### backend-core : Socle backend  (45 fichiers, 340 ko)
 - 36 fichiers techniques backend sans seed (33 en infrastructure, 2 à la racine, 1 de support), plus 2 tests non rattachés (ArchitectureTest, BomDriftTest), migrations exclues. Taille en ko inconnue, mise à 0.
 - dossiers purs (>= 80 %, >= 5 fichiers) : backend:src/main/java/com/matimeline/eventmanager/infrastructure/config/
 - règles de chemin : ^backend:(?!src/main/resources/db/migration/)src/(main|test)/(java|resources)/
@@ -132,7 +132,7 @@ Mode rejeu. 700 fichiers, 700 rattachés (100.0 %), 0 restants. Porte mécanique
 - déclencheurs keywords : lib, socle
 - règles de chemin : ^frontend:lib/
 
-### migrations : Migrations de base  (16 fichiers, 47 ko)
+### migrations : Migrations de base  (17 fichiers, 49 ko)
 - pack technique déclaré par map.tech_packs
 - déclencheurs keywords : migrations
 - dossiers purs (>= 80 %, >= 5 fichiers) : backend:src/main/resources/db/

@@ -1,6 +1,6 @@
 # Groupes candidats (passe déterministe)
 
-Projet mytimeline. 700 fichiers (4513 ko), 7 seeds ({'entity': 7}), 4 groupes, 406 techniques, 0 dans un foyer transversal, 40 non rattachés dont 0 à égalité de votes. Arêtes : regex.
+Projet mytimeline. 727 fichiers (4644 ko), 7 seeds ({'entity': 7}), 6 groupes, 424 techniques, 0 dans un foyer transversal, 46 non rattachés dont 0 à égalité de votes. Arêtes : regex.
 
 Seuils : pack_min_kb=15, min_seed_files=6, merge_ratio=0.9, max_merge_target=40, hub_share=0.5.
 
@@ -19,28 +19,60 @@ Règles par défaut :
 - R12 : Un fichier de couche `db` (migration, changelog) que matche une `path_rule` d'un pack `technical` est possédé par ce pack (la plus longue règle l'emporte), même quand son nom le rattache à un seed (`V16__user_theme_preference.sql` reste dans `migrations`, pas dans `user`). Le lien au domaine reste lisible par le nom, et le chargeur charge les deux (§5) (high)
 - R13 : Un fichier d'un dossier de `tech_folders` n'est rattaché à aucun seed, ni par son nom ni par le vote de ses imports : il est technique, puis R10 (high)
 
-## Event  (135 fichiers, 590 ko)
-- seeds : Event, ExportJob, PasswordResetToken, Session
-- entités : EventEntity, ExportJobEntity, PasswordResetTokenEntity, SessionEntity
-- couches : {'backend/infrastructure': 49, 'backend/domain': 38, 'backend/application': 28, 'backend/db': 8, 'frontend/lib/lib': 8, 'frontend/services/services': 2, 'backend/utils': 2}
-- controllers : EventController, ExportController, JwksController, RecurrencePreviewController, SessionController
-- préfixes de routes serveur : /api/events, /api/export, /api/sessions
-- dossiers front : lib, services
-- services : AvatarService, EventService, ExportService, ExportTokenService, JwtService, RecurrenceExpansionService, SessionService
-- motifs : {'state-machine': 20, 'authorization': 76, 'integrations': 249, 'batch': 23}
-- rattachement : {'name': 82, 'fanin': 18, 'imports': 35}
-
-## User  (80 fichiers, 480 ko)
+## User  (75 fichiers, 374 ko)
 - seeds : User
 - entités : UserEntity
-- couches : {'backend/infrastructure': 32, 'backend/application': 19, 'backend/domain': 12, 'frontend/lib/lib': 9, 'frontend/services/services': 4, 'backend/db': 2, 'frontend/i18n/i18n': 2}
+- couches : {'backend/infrastructure': 34, 'backend/application': 20, 'backend/domain': 12, 'frontend/services/services': 4, 'backend/db': 3, 'frontend/i18n/i18n': 2}
 - controllers : AuthController, E2eResetTokenController, UserController
 - préfixes de routes serveur : /api/auth, /api/me, /api/test-support
-- URL front : api/export, api/me, api/me/avatar, api/me/export, export, http, me, me/avatar, me/export
-- dossiers front : i18n, lib, services
+- URL front : api/export, api/me, api/me/avatar, api/me/export, export, me, me/avatar, me/export
+- dossiers front : i18n, services
 - services : BrevoEmailService, CustomUserDetailsService, EmailService, PasswordResetService, UserService
-- motifs : {'authorization': 112, 'batch': 10, 'state-machine': 2, 'integrations': 109}
-- rattachement : {'name': 70, 'fanin': 4, 'imports': 6}
+- motifs : {'authorization': 113, 'batch': 10, 'state-machine': 4, 'integrations': 119}
+- rattachement : {'name': 65, 'fanin': 4, 'imports': 6}
+
+## Event  (70 fichiers, 336 ko)
+- seeds : Event, PasswordResetToken
+- entités : EventEntity, PasswordResetTokenEntity
+- couches : {'backend/infrastructure': 27, 'backend/domain': 21, 'backend/application': 14, 'backend/db': 5, 'backend/utils': 2, 'frontend/services/services': 1}
+- controllers : EventController, RecurrencePreviewController
+- préfixes de routes serveur : /api/events
+- dossiers front : services
+- services : EventService, RecurrenceExpansionService
+- motifs : {'state-machine': 3, 'authorization': 7, 'integrations': 128, 'batch': 10}
+- rattachement : {'name': 58, 'fanin': 4, 'imports': 8}
+
+## ExportJob  (37 fichiers, 111 ko)
+- seeds : ExportJob
+- entités : ExportJobEntity
+- couches : {'backend/domain': 14, 'backend/infrastructure': 13, 'backend/application': 8, 'backend/db': 2}
+- controllers : ExportController
+- préfixes de routes serveur : /api/export
+- services : AvatarService, ExportService, ExportTokenService
+- motifs : {'state-machine': 17, 'integrations': 111, 'batch': 13, 'authorization': 10}
+- rattachement : {'name': 10, 'imports': 18, 'fanin': 9}
+
+## Product  (28 fichiers, 170 ko)
+- seeds : Product
+- entités : ProductEntity
+- couches : {'backend/infrastructure': 11, 'backend/application': 9, 'backend/domain': 7, 'frontend/services/services': 1}
+- controllers : ProductController
+- préfixes de routes serveur : /api
+- dossiers front : services
+- services : ProductService
+- motifs : {'integrations': 49, 'authorization': 12}
+- rattachement : {'name': 25, 'fanin': 2, 'imports': 1}
+
+## Session  (26 fichiers, 146 ko)
+- seeds : Session
+- entités : SessionEntity
+- couches : {'backend/infrastructure': 14, 'backend/application': 6, 'backend/domain': 4, 'backend/db': 1, 'frontend/services/services': 1}
+- controllers : JwksController, SessionController
+- préfixes de routes serveur : /api/sessions
+- dossiers front : services
+- services : JwtService, SessionService
+- motifs : {'authorization': 73, 'integrations': 36}
+- rattachement : {'name': 17, 'imports': 6, 'fanin': 3}
 
 ## Category  (21 fichiers, 97 ko)
 - seeds : Category
@@ -53,35 +85,29 @@ Règles par défaut :
 - motifs : {'integrations': 24}
 - rattachement : {'name': 21}
 
-## Product  (18 fichiers, 129 ko)
-- seeds : Product
-- entités : ProductEntity
-- couches : {'backend/application': 7, 'backend/infrastructure': 6, 'backend/domain': 4, 'frontend/services/services': 1}
-- controllers : ProductController
-- préfixes de routes serveur : /api
-- dossiers front : services
-- services : ProductService
-- motifs : {'integrations': 29, 'authorization': 2}
-- rattachement : {'name': 18}
-
 ## Liens entre groupes (arêtes, top 40)
-- Event -> User : 41
-- User -> Event : 34
-- Event -> Product : 25
-- Product -> Event : 15
-- Product -> Category : 14
-- Product -> User : 11
-- Event -> Category : 9
+- Event -> Product : 34
+- Product -> Event : 27
+- Event -> User : 26
+- Product -> User : 19
+- Product -> Category : 17
+- User -> Event : 16
+- ExportJob -> User : 15
+- Event -> Category : 13
+- User -> Session : 9
+- User -> Product : 7
+- User -> ExportJob : 7
+- Category -> Product : 6
 - User -> Category : 5
-- User -> Product : 5
-- Category -> Product : 4
+- Session -> User : 5
 - Category -> User : 4
-- Category -> Event : 2
+- Event -> ExportJob : 4
+- Event -> Session : 2
+- Session -> Product : 2
+- ExportJob -> Product : 1
 
 ## Fusions faites par le script
 - PasswordResetToken (14 fichiers) fondu dans Event : 1/1 liens
-- Session (24 fichiers) fondu dans Event : 4/4 liens
-- ExportJob (37 fichiers) fondu dans Event : 5/5 liens
 
 ## Entités hub
 - User (UserEntity) : importée par 3/6 seeds d'entité (Category, Product, Session), traitée comme propriété / multi-tenant : ses arêtes ne votent pas la fusion
@@ -90,25 +116,25 @@ Règles par défaut :
 - aucun
 
 ## Motifs transversaux (fichiers avec >= 3 occurrences)
-- authorization : 35 fichiers (6 à 10+), par groupe {'(tech/non rattaché)': 14, 'User': 14, 'Event': 7}
-  top : SecurityConfig.java(19), JwtServiceRs256Test.java(16), UserRateLimitingFilterTest.java(12), JwtFilter.java(11), ExportTokenServiceTest.java(10), AuthController.java(10), CallerResolverTest.java(9), ExportTokenService.java(9), CustomUserDetailsService.java(9), JwtFilterTest.java(8), UserRateLimitingFilter.java(8), JwtService.java(8)
-- state-machine : 2 fichiers (0 à 10+), par groupe {'Event': 1, '(tech/non rattaché)': 1}
+- authorization : 37 fichiers (7 à 10+), par groupe {'(tech/non rattaché)': 14, 'User': 14, 'Session': 7, 'ExportJob': 1, 'Product': 1}
+  top : JwtServiceRs256Test.java(20), SecurityConfig.java(19), JwtServiceKeyRotationTest.java(13), UserRateLimitingFilterTest.java(12), JwtFilter.java(11), ExportTokenServiceTest.java(10), AuthController.java(10), CallerResolverTest.java(9), JwtService.java(9), ExportTokenService.java(9), CustomUserDetailsService.java(9), JwtFilterTest.java(8)
+- state-machine : 2 fichiers (0 à 10+), par groupe {'ExportJob': 1, '(tech/non rattaché)': 1}
   top : ExportJob.java(8), export.ts(4)
-- integrations : 97 fichiers (4 à 10+), par groupe {'Event': 39, '(tech/non rattaché)': 26, 'User': 21, 'Product': 6, 'Category': 5}
+- integrations : 109 fichiers (4 à 10+), par groupe {'(tech/non rattaché)': 27, 'Event': 25, 'User': 23, 'ExportJob': 12, 'Product': 10, 'Session': 7, 'Category': 5}
   top : ExportRenderersTest.java(34), ZipExportRenderer.java(33), TimelineEditHost.forbidden.test.tsx(10), LocalStorageAdapter.java(10), apiClient.ts(9), apiClient.multipart.test.ts(9), LocalStorageAdapterTest.java(9), AuthContext.themeSaveToast.test.tsx(8), E2eTestSupportProfileTest.java(8), MarkdownExportRenderer.java(8), JsonExportRenderer.java(8), CsvExportRenderer.java(8)
-- batch : 9 fichiers (0 à 10+), par groupe {'Event': 5, 'User': 2, '(tech/non rattaché)': 2}
+- batch : 9 fichiers (0 à 10+), par groupe {'ExportJob': 3, 'Event': 2, 'User': 2, '(tech/non rattaché)': 2}
   top : PasswordResetTokenPurgeScheduler.java(6), ExportPurgeScheduler.java(5), ForgotPasswordAsyncTest.java(4), PasswordResetTokenPurgeSchedulerIntegrationTest.java(4), ExportPurgeSchedulerIntegrationTest.java(4), SchedulingConfig.java(4), PasswordResetServiceImpl.java(4), AsyncConfig.java(3), AsyncExportRunner.java(3)
 
-## Fichiers techniques sans seed (406)
-- par couche : {'frontend/components/components': 253, 'frontend/hooks/hooks': 44, 'backend/infrastructure': 33, 'frontend/lib/lib': 18, 'frontend/services/services': 12, 'frontend/__tests__/__tests__': 9, 'frontend/styles/styles': 9, 'frontend/types/types': 9, 'frontend-app/(root)': 8, 'frontend/contexts/contexts': 7, 'backend/(root)': 2, 'backend/support': 1, 'frontend/utils/utils': 1}
-- les plus importés : safe-error.ts[4 groupes], apiClient.ts[4 groupes], inlineErrorHandling.ts[4 groupes], product.ts[2 groupes], settings.ts[2 groupes], ProductCarousel.tsx[1 groupes], ProductList.tsx[1 groupes], WeekAgenda.tsx[1 groupes], lib.ts[1 groupes], PasswordStrength.tsx[1 groupes], EventDrawer.tsx[1 groupes], TimelineBottomSheet.tsx[1 groupes], TimelineLandscapeDrawer.tsx[1 groupes], fixtures.tsx[1 groupes], lib.ts[1 groupes], zoom.ts[1 groupes], useDashboardData.ts[1 groupes], auth.ts[1 groupes], category.ts[1 groupes], event.ts[1 groupes], user.ts[1 groupes], EventmanagerApplication.java[0 groupes], ErrorCode.java[0 groupes], BrevoHealthIndicator.java[0 groupes], E2eResetTokenFinder.java[0 groupes]
+## Fichiers techniques sans seed (424)
+- par couche : {'frontend/components/components': 253, 'frontend/hooks/hooks': 44, 'frontend/lib/lib': 35, 'backend/infrastructure': 34, 'frontend/services/services': 12, 'frontend/__tests__/__tests__': 9, 'frontend/styles/styles': 9, 'frontend/types/types': 9, 'frontend-app/(root)': 8, 'frontend/contexts/contexts': 7, 'backend/(root)': 2, 'backend/support': 1, 'frontend/utils/utils': 1}
+- les plus importés : apiClient.ts[5 groupes], safe-error.ts[4 groupes], inlineErrorHandling.ts[4 groupes], settings.ts[2 groupes], auth.ts[1 groupes], category.ts[1 groupes], event.ts[1 groupes], product.ts[1 groupes], user.ts[1 groupes], EventmanagerApplication.java[0 groupes], ErrorCode.java[0 groupes], BrevoHealthIndicator.java[0 groupes], E2eResetTokenFinder.java[0 groupes], E2eTestSupportSecurityConfig.java[0 groupes], AsyncConfig.java[0 groupes], ClockConfig.java[0 groupes], JpaSharedEntityManagerConfig.java[0 groupes], ProdConfigStartupLogger.java[0 groupes], ProfileSafetyGuard.java[0 groupes], SchedulingConfig.java[0 groupes], RateLimitConfig.java[0 groupes], RateLimitingFilter.java[0 groupes], RsaKeyMaterial.java[0 groupes], EventmanagerApplicationTests.java[0 groupes], LocalStorageAdapterTest.java[0 groupes]
 
-## Fichiers non rattachés (40)
-- par couche : {'frontend-app/[locale]': 33, 'backend/db': 5, 'backend/architecture': 1, 'backend/build': 1}
+## Fichiers non rattachés (46)
+- par couche : {'frontend-app/[locale]': 33, 'backend/db': 5, 'backend/architecture': 3, 'backend/com': 2, 'backend/build': 2, 'backend/application': 1}
 - frontend-app:[locale]/(app)/dashboard/page.tsx (12 ko) tokens=['page'] égalité=None motifs={}
+- backend:src/test/java/com/matimeline/eventmanager/architecture/ArchitectureTest.java (12 ko) tokens=['architecture', 'test'] égalité=None motifs={'integrations': 2}
 - frontend-app:[locale]/privacy/page.tsx (10 ko) tokens=['page'] égalité=None motifs={}
 - frontend-app:[locale]/register/page.tsx (9 ko) tokens=['page'] égalité=None motifs={'integrations': 3}
-- backend:src/test/java/com/matimeline/eventmanager/architecture/ArchitectureTest.java (8 ko) tokens=['architecture', 'test'] égalité=None motifs={'integrations': 2}
 - frontend-app:[locale]/terms/page.tsx (8 ko) tokens=['page'] égalité=None motifs={}
 - backend:src/test/java/com/matimeline/eventmanager/build/BomDriftTest.java (8 ko) tokens=['bom', 'drift', 'test'] égalité=None motifs={'authorization': 1}
 - frontend-app:[locale]/reset-password/page.tsx (8 ko) tokens=['page'] égalité=None motifs={'integrations': 3}
@@ -120,14 +146,17 @@ Règles par défaut :
 - backend:src/main/resources/db/migration/V7__design_v3_schema.sql (5 ko) tokens=['design', 'schema'] égalité=None motifs={'state-machine': 2}
 - frontend-app:[locale]/(app)/timeline/page.tsx (5 ko) tokens=['page'] égalité=None motifs={}
 - frontend-app:[locale]/register/page.test.tsx (4 ko) tokens=['page'] égalité=None motifs={'integrations': 1}
+- backend:src/test/java/com/matimeline/eventmanager/architecture/FreezeStoreGuardTest.java (4 ko) tokens=['freeze', 'store', 'guard', 'test'] égalité=None motifs={}
 - frontend-app:[locale]/login/page.test.tsx (4 ko) tokens=['page'] égalité=None motifs={'integrations': 1}
 - frontend-app:[locale]/error.test.tsx (4 ko) tokens=['error'] égalité=None motifs={}
 - frontend-app:[locale]/reset-password/page.test.tsx (4 ko) tokens=['page'] égalité=None motifs={'integrations': 1}
 - frontend-app:[locale]/(app)/dashboard/loading.tsx (4 ko) tokens=['loading'] égalité=None motifs={}
 - frontend-app:[locale]/(app)/settings/page.tsx (3 ko) tokens=['page'] égalité=None motifs={}
+- backend:src/test/java/com/matimeline/eventmanager/build/PomHygieneTest.java (3 ko) tokens=['pom', 'hygiene', 'test'] égalité=None motifs={'authorization': 2, 'integrations': 1}
 - frontend-app:[locale]/forgot-password/page.test.tsx (3 ko) tokens=['page'] égalité=None motifs={}
 - frontend-app:[locale]/(app)/products/page.tsx (3 ko) tokens=['page'] égalité=None motifs={}
 - frontend-app:[locale]/error.tsx (3 ko) tokens=['error'] égalité=None motifs={'integrations': 1}
+- backend:src/test/java/com/matimeline/eventmanager/architecture/ControllerRuleStrictnessTest.java (2 ko) tokens=['controller', 'rule', 'strictness', 'test'] égalité=None motifs={'integrations': 1}
 - frontend-app:[locale]/(app)/settings/loading.tsx (2 ko) tokens=['loading'] égalité=None motifs={}
 - frontend-app:[locale]/(app)/products/loading.tsx (2 ko) tokens=['loading'] égalité=None motifs={}
 - backend:src/main/resources/db/migration/V1__baseline.sql (2 ko) tokens=['baseline'] égalité=None motifs={}
@@ -143,8 +172,11 @@ Règles par défaut :
 - frontend-app:[locale]/(app)/layout.tsx (1 ko) tokens=['layout'] égalité=None motifs={}
 - frontend-app:[locale]/(app)/products/[productId]/loading.test.tsx (1 ko) tokens=['loading'] égalité=None motifs={}
 - frontend-app:[locale]/page.tsx (0 ko) tokens=['page'] égalité=None motifs={}
+- backend:src/test/java/com/matimeline/archfixtures/FakeMisplacedController.java (0 ko) tokens=['fake', 'misplaced', 'controller'] égalité=None motifs={}
 - backend:src/main/resources/db/migration/V2__unique_constraints.sql (0 ko) tokens=['unique', 'constraint'] égalité=None motifs={}
 - frontend-app:[locale]/home/page.tsx (0 ko) tokens=['page'] égalité=None motifs={}
+- backend:src/test/java/com/matimeline/archfixtures/FakeMisplacedAdvice.java (0 ko) tokens=['fake', 'misplaced', 'advice'] égalité=None motifs={}
+- backend:src/test/java/com/matimeline/eventmanager/application/services/fixtures/FakeConcreteServiceImpl.java (0 ko) tokens=['fake', 'concrete', 'service', 'impl'] égalité=None motifs={}
 
 ## Foyers transversaux sans seed (0)
 - {}
