@@ -9,24 +9,32 @@
 | `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapter.java` | 9 | convention 4, validation 3, config 1 |
 | `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenEndpointIntegrationTest.java` | 9 | convention 3, test_case 3, endpoint 2 |
 | `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailService.java` | 8 | external_call 5, convention 2, config 1 |
-| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/JwksEndpointIntegrationTest.java` | 8 | test_case 4, convention 1, endpoint 1 |
 | `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/export/ExportRenderersTest.java` | 8 | test_case 6, convention 2 |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/EventOptimisticLockConflictIntegrationTest.java` | 8 | test_case 4, other 2, convention 1 |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/JwksEndpointIntegrationTest.java` | 7 | test_case 6, convention 1 |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/KeyRotationSessionIntegrationTest.java` | 7 | test_case 5, config 1, convention 1 |
 | `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/PasswordResetEndpointsIntegrationTest.java` | 7 | test_case 5, convention 1, external_call 1 |
 | `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailServiceLocaleTest.java` | 7 | test_case 6, other 1 |
-| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/EventDeleteStatisticsIntegrationTest.java` | 7 | test_case 3, convention 2, config 1 |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/EventDeleteStatisticsIntegrationTest.java` | 7 | test_case 3, other 2, config 1 |
 | `frontend:services/apiClient.multipart.test.ts` | 7 | convention 3, test_case 3, other 1 |
 | `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/EventConditionalCheckConstraintIntegrationTest.java` | 6 | convention 2, validation 2, persistence_query 1 |
-| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/ProductArchivedFilterIntegrationTest.java` | 6 | convention 3, other 1, persistence_query 1 |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/ProductEventCreationIntegrationTest.java` | 6 | convention 3, test_case 3 |
 | `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoHealthIndicator.java` | 5 | other 3, config 1, convention 1 |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductPathOwnershipIntegrationTest.java` | 5 | convention 3, role_check 1, test_case 1 |
 | `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductRestoreIntegrationTest.java` | 5 | convention 3, persistence_query 1, role_check 1 |
-| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/ProductEventCreationIntegrationTest.java` | 5 | convention 4, test_case 1 |
 | `frontend:services/productService.ts` | 5 | convention 3, suspicious 2 |
 | `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/CsvExportRenderer.java` | 4 | convention 4 |
 | `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenFinderJpaAdapter.java` | 4 | persistence_query 2, convention 1, suspicious 1 |
 | `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapterTest.java` | 4 | test_case 4 |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/UserTierProfilePatchIntegrationTest.java` | 4 | convention 3, test_case 1 |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/ProductArchivedFilterIntegrationTest.java` | 4 | convention 2, test_case 2 |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/UserTierPersistenceIntegrationTest.java` | 4 | test_case 3, persistence_query 1 |
 | `frontend:components/shared/DeleteConfirmDialog.forbidden.test.tsx` | 4 | other 2, convention 1, test_case 1 |
 | `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/JsonExportRenderer.java` | 3 | convention 2, other 1 |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/EventQuotaExceededIntegrationTest.java` | 3 | config 1, convention 1, test_case 1 |
 | `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoHealthIndicatorTest.java` | 3 | test_case 3 |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/EventQuotaCountIntegrationTest.java` | 3 | test_case 2, convention 1 |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/EventQuotaCountScopeIntegrationTest.java` | 3 | test_case 3 |
 | `frontend:components/categories/CategoryDrawer.forbidden.test.tsx` | 3 | test_case 3 |
 | `frontend:components/timeline/TimelineEditHost.forbidden.test.tsx` | 3 | convention 1, external_call 1, test_case 1 |
 | `frontend:contexts/AuthContext.themeSaveToast.test.tsx` | 3 | convention 1, external_call 1, other 1 |
@@ -35,12 +43,13 @@
 | `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/MarkdownExportRenderer.java` | 2 | convention 1, suspicious 1 |
 | `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/ZipExportRenderer.java` | 2 | convention 1, other 1 |
 | `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AccountDeletionIntegrationTest.java` | 2 | test_case 2 |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/EventQuotaDefaultsIntegrationTest.java` | 2 | convention 1, test_case 1 |
 | `frontend-app:[locale]/register/page.tsx` | 2 | convention 1, external_call 1 |
 | `frontend:components/products/ProductDrawer.forbidden.test.tsx` | 2 | test_case 2 |
 | `frontend:services/inlineErrorHandling.test.ts` | 2 | suspicious 1, test_case 1 |
 | `backend:src/main/java/com/matimeline/eventmanager/domain/ports/services/ExportRenderer.java` | 1 | convention 1 |
 | `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ExportJobRepositoryJpaImpl.java` | 1 | convention 1 |
-| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ProductRepositoryJpaImpl.java` | 1 | convention 1 |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductControllerOwnershipTest.java` | 1 | other 1 |
 | `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/UserRoleConstraintIntegrationTest.java` | 1 | convention 1 |
 | `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/PasswordResetTokenCreateStatisticsIntegrationTest.java` | 1 | convention 1 |
 | `frontend-app:[locale]/login/page.tsx` | 1 | external_call 1 |
@@ -48,25 +57,16 @@
 | `frontend:components/settings/ProfileSection.tsx` | 1 | external_call 1 |
 | `frontend:services/inlineErrorHandling.ts` | 1 | convention 1 |
 
-## Lignes hors budget {#t-cut_lines}
-
-| Section | Ligne |
-|---|---|
-| tests | - Le test de suppression de compte attend 204, un cookie jwt à MaxAge 0, puis 401, et compte les produits archivés par requête native. [#f2246d8f6a77ed7d-1] [#f2246d8f6a77ed7d-2] |
-
 ## Lignes rétrogradées {#t-demoted_lines}
 
 | Section | Ligne | Motif |
 |---|---|---|
-| rules | - Le stockage local ne reprend jamais le nom de fichier du client. Il génère un UUID plus une extension de 1 à 5 caractères a-z0-9, sinon IllegalArgumentException. [#a3b8181473ac234b-1] [#eb4a963db93f2f39-1] | deducible |
-| rules | - Sans clé API (brevo.api.key vide par défaut), l'envoi journalise un avertissement et ne fait aucun appel HTTP. [#25504d1bcaa2eac3-1] [#34158f5b5cd49dab-2] | deducible |
-| rules | - Une RestClientException est interceptée, seul le nom de la classe est journalisé, et l'erreur n'est pas propagée au contrôleur. [#825c5740d504fe2d-2] | deducible |
-| rules | - Selon la javadoc, la clé n'est jamais journalisée, même en fragment, et le health n'en reporte que la présence. L'indicateur n'existe qu'en profil prod. [#37058764e7c3f146-1] [#4b57f02866d02453-1] [#178a2c7117dea14c-1] | deducible |
 | rules | - Le renderer est choisi par supports parmi la liste injectée, et un format sans renderer lève ExportFormatNotSupportedException. [#93753e4c74dda84a-1] [#2159cc39fc42ef57-1] | deducible |
-| tests | - Les tests fixent que le stockage local rejette par IllegalArgumentException une extension ou une référence avec chemin relatif, que la référence n'a aucun séparateur et qu'un second delete est sans effet. [#6088a4bc8a147988-1] [#43b2edbc9209445c-1] [#ec871153fc886e17-1] [#b194bc3ae8e99e9d-1] | deducible |
-| tests | - Les tests fixent que l'email Brevo retombe en français pour une locale nulle ou inconnue, échappe le nom en HTML, ne lève jamais d'exception et n'envoie rien sans clé API. [#3ed12223e1cbaea3-1] [#d1466f3125d055e6-1] [#d1ec0fa0c1cb7fa1-1] [#09a37a45eae01aae-1] | deducible |
-| tests | - Les tests fixent que le timeout est 0 pour un FormData et reste positif pour un corps JSON. [#55f5e5ec1f18de4b-2] [#8cb6008ae671bb41-1] | deducible |
-| rules | - Une référence de stockage vide, contenant un séparateur de chemin ou '..' est rejetée, et le chemin résolu doit rester sous le répertoire de base [#68cad5d7a30c3ac4-1] [#68cad5d7a30c3ac4-2] | deducible |
+| rules | - Une RestClientException est journalisée par nom de classe et n'est pas propagée au contrôleur. [#825c5740d504fe2d-2] | deducible |
+| tests | - Selon le commentaire du test, le refresh révoque l'ancien jti. [#a76028b650713dd2-2] | deducible |
+| tests | - Les tests fixent que le stockage local rejette extension et références de traversée par IllegalArgumentException, et que delete est idempotent. [#6088a4bc8a147988-1] [#43b2edbc9209445c-1] [#b194bc3ae8e99e9d-1] | deducible |
+| tests | - Pour un FormData le timeout vaut 0 et le Content-Type n'est pas JSON. [#55f5e5ec1f18de4b-1] [#55f5e5ec1f18de4b-2] | deducible |
+| rules | - Hors routes auth inline, un 403 ou un 500 affiche un toast sauf si la requête déclare le statut traité inline, et un 400 en affiche un sauf pour /me/change-password [#ebe8f14e30148918-4] [#ebe8f14e30148918-7] [#0ef3c42e524af8fe-1] | deducible |
 
 ## Validations {#t-validation}
 
@@ -83,6 +83,7 @@
 
 | Pointeur | Énoncé | Fait |
 |---|---|---|
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductPathOwnershipIntegrationTest.java:122-130` | Un utilisateur authentifié qui appelle le chemin d'un autre user répond 403 avec la vraie chaîne de sécurité. | [#f5aa8e220a8b8ddc-1] |
 | `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductRestoreIntegrationTest.java:208-225` | Javadoc : Selon la javadoc, la restauration d'un archivé appartenant à un autre utilisateur renvoie 404 et non 403, et le produit reste archivé en base. | [#be58d90301a09953-1] |
 
 ## Traitements batch {#t-batch_job}
@@ -97,7 +98,7 @@
 |---|---|---|
 | `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/MarkdownExportRenderer.java:64-65` | Le nom de catégorie, saisi par l'utilisateur, est inséré dans le Markdown sans échappement des caractères spéciaux, à la différence de la neutralisation appliquée au CSV. | [#75dbb39e88e401fb-1] |
 | `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenFinderJpaAdapter.java:41-53` | Le commentaire indique que expiresAt DESC est un proxy de la récence, la table n'ayant aucune colonne de création, et que l'id UUID aléatoire ne sert qu'à départager. | [#949ac578b33a4870-1] |
-| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/JwksEndpointIntegrationTest.java:62-67` | Selon le commentaire, si ce test renvoie 401 il ne faut pas modifier l'assertion, car cela signale que la whitelist de SecurityConfig a sauté et que la découverte de clé du middleware Next boucle. | [#342785e73525bb29-1] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/EventOptimisticLockConflictIntegrationTest.java:171-176` | Deux blocs javadoc se suivent sans méthode entre eux (lignes 171 à 175 puis 176 à 194), le premier décrivant le helper isOptimisticLockFailure mais placé avant le bloc consacré à #175. | [#52418f91d6cd74f4-1] |
 | `frontend:services/inlineErrorHandling.test.ts:18-23` | Le mock de apiClient ne fournit que post et patch, donc le transport de l'option vers delete, utilisé par deleteProduct et deleteCategory, n'est couvert par aucun test de ce fichier. | [#e882b29be28028b9-1] |
 | `frontend:services/productService.ts:6-16` | getProducts retourne response.data sans validation Zod, alors que getCategories valide la réponse du même type de transport, ce qui constitue une incohérence avec la convention de categoryService. | [#bdb861ee54c6c577-1] |
 | `frontend:services/productService.ts:124-131` | restoreProduct n'accepte pas de paramètre options, contrairement aux autres mutations produit, et ne peut donc pas déclarer un 403 traité inline. | [#145742ba350d6f89-1] |
@@ -134,7 +135,7 @@
 | `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductRestoreIntegrationTest.java:112-117` | Le helper lit directement la colonne archived de la table products par SQL natif pour vérifier l'état en base après la requête HTTP. | [#92f4076df0c73295-1] |
 | `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/CategoryDeleteReassignIntegrationTest.java:167-171` | Le test relit l'état de la base avec une requête SQL native (count sur products) pour vérifier la catégorie cible de chaque produit. | [#fd09bf5780389ca4-1] |
 | `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/EventConditionalCheckConstraintIntegrationTest.java:71-85` | La méthode insertEvent exécute un INSERT natif dans la table events avec executeUpdate, en bindant les colonnes optionnelles qui peuvent valoir NULL. | [#efc264656be90767-1] |
-| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/ProductArchivedFilterIntegrationTest.java:217-221` | Le test relit la ligne archivée par une requête SQL native pour confirmer qu'elle existe encore dans la table products. | [#a8372db4b40a8774-1] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/UserTierPersistenceIntegrationTest.java:36-40` | Le helper rawTier lit la valeur brute de la colonne tier par requête SQL native, sans passer par l'entité JPA. | [#db5aa2cd6d6d8d95-1] |
 
 ## Configuration {#t-config}
 
@@ -143,6 +144,8 @@
 | `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapter.java:12-19` | Javadoc : Selon la javadoc, deux instances distinctes de l'adapter servent les avatars et les exports RGPD, chacune avec sa clé de configuration app.storage et son répertoire de base. | [#74e2f13b9e1f877d-1] |
 | `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailService.java:63-68` | La clé Brevo est lue depuis la propriété brevo.api.key avec une valeur vide par défaut, et l'expéditeur, son nom et l'URL de réinitialisation sont aussi lus depuis des propriétés avec valeurs par défaut. | [#34158f5b5cd49dab-2] |
 | `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoHealthIndicator.java:26-27` | L'indicateur de santé Brevo est annoté @Profile("prod"), il n'existe donc que dans le profil prod. | [#178a2c7117dea14c-1] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/EventQuotaExceededIntegrationTest.java:40-43` | La classe de test force app.monetization.enabled à true et app.monetization.free-limit à 0 pour son propre contexte Spring. | [#fa850b9768ba5ffd-1] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/KeyRotationSessionIntegrationTest.java:62-68` | Le test injecte les propriétés jwt.private-key (paire courante) et jwt.previous-public-key (clé publique de l'ancienne paire) via DynamicPropertySource. | [#77b8779d7cc86940-1] |
 | `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/EventDeleteStatisticsIntegrationTest.java:169` | Javadoc : Selon la javadoc, spring.jpa.open-in-view est actif, et le contrôleur et le service partagent alors le même contexte de persistance sur une requête HTTP. | [#3decbad8f1653486-1] |
 | `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenEndpointIntegrationTest.java:43` | La classe active le profil e2e, qui s'ajoute au profil test hérité de AbstractPostgresIntegrationTest. | [#44932808c858ddf9-1] |
 | `frontend:services/apiClient.ts:15` | Le timeout par défaut des requêtes API vaut 15 000 ms. | [#99da2bca3c86383d-1] |
@@ -169,13 +172,21 @@
 | `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/MarkdownExportRenderer.java:16-19` | Javadoc : Selon la javadoc, le rendu Markdown est une construction de chaîne pure, sans bibliothèque externe. | [#04172a4c4cc45b47-1] |
 | `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/ZipExportRenderer.java:43-54` | L'archive ZIP compose les rendus JSON, Markdown et CSV dans les entrées data.json, data.md et data.csv, sans logique de rendu dupliquée. | [#19b3fc4ec346a739-1] |
 | `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ExportJobRepositoryJpaImpl.java:44-46` | La méthode save est annotée @Transactional sans attribut, et met à jour les seuls champs de statut, stockage, erreur, complétion et expiration si le job existe. | [#89cb2baa33276845-2] |
-| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ProductRepositoryJpaImpl.java:20` | Convention : l'adaptateur JPA sous infrastructure/adapters implémente le port du domaine ProductRepository et délègue la persistance à EntityManager et aux mappers. | [#6589022a1b409a2a-1] |
 | `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenFinderJpaAdapter.java:26-28` | L'adaptateur implémente l'interface E2eResetTokenFinder et n'est actif que sous le profil e2e, ce qui est indiqué par @Profile au-dessus de la classe. | [#a74b4c401e7c3017-1] |
-| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/JwksEndpointIntegrationTest.java:37-38` | Javadoc : Selon la javadoc, SecurityConfig termine par anyRequest().authenticated(), donc l'oubli du permitAll sur le JWKS produirait un 401 pour un appel anonyme. | [#9452b0b6b0b4a11c-1] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/EventQuotaDefaultsIntegrationTest.java:60` | Les IP de login de cette classe de test sont générées dans le sous-réseau 10.189.x.y, distinct de celui de l'autre classe de test. | [#50575c6bf051d742-1] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/EventQuotaExceededIntegrationTest.java:64` | Les IP de login de cette classe de test sont générées dans le sous-réseau 10.188.x.y, distinct de celui de l'autre classe de test. | [#ca948e3e8477822e-1] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/JwksEndpointIntegrationTest.java:67-69` | Javadoc : La javadoc indique que si ce test renvoie 401, la whitelist de SecurityConfig a sauté et il ne faut pas modifier l'assertion. Selon la javadoc, la découverte de clé du middleware boucle alors. | [#f3b5f265303d01f1-1] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/KeyRotationSessionIntegrationTest.java:88-95` | Commentaire : Les tests sur /refresh attribuent une IP distincte par test dans le sous-réseau 10.89.x.x, selon le commentaire, pour éviter une collision de bucket de rate-limit. | [#f2556a50a508e0cc-1] |
 | `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/PasswordResetEndpointsIntegrationTest.java:20-27` | Javadoc : Selon la javadoc, les endpoints /api/auth/** sont accessibles sans token via permitAll et un bypass de JwtFilter, et les tests passent par la vraie chaîne Spring Security. | [#f61f6c016e2d6728-1] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductPathOwnershipIntegrationTest.java:31-35` | Javadoc : Selon la javadoc, la classe contrôle le userId du path avec la vraie chaîne de sécurité, le cookie JWT compris. | [#6be5c3e0c7437618-1] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductPathOwnershipIntegrationTest.java:52-58` | La classe génère une IP 10.240.x.y distincte à chaque login via nextIp, transmise à la requête par setRemoteAddr. | [#66d078794a1900e5-1] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductPathOwnershipIntegrationTest.java:88-100` | Le helper login appelle /api/auth/login avec une IP dédiée puis lit le cookie jwt de la réponse. | [#1e0ee164151873f2-1] |
 | `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductRestoreIntegrationTest.java:33-36` | Javadoc : Selon la javadoc, le test s'exécute avec la chaîne Spring Security réelle, un CallerResolver réel lisant l'utilisateur en base et du SQL natif sur Postgres, sans service mocké. | [#e5717bf26868c222-1] |
 | `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductRestoreIntegrationTest.java:51-54` | La classe de test d'intégration combine @SpringBootTest, @AutoConfigureMockMvc et @Transactional et étend AbstractPostgresIntegrationTest pour une base Postgres. | [#fc1214a23e5bc828-2] |
 | `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductRestoreIntegrationTest.java:102-105` | Les requêtes du test sont authentifiées via le post-processor user() de Spring Security avec l'autorité ROLE_USER. | [#89d6bab37e66089f-1] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/UserTierProfilePatchIntegrationTest.java:33-36` | Javadoc : Selon la javadoc, le palier n'est écrit que par un chemin dédié, et un PATCH /api/me qui reconstruit un User ne doit pas le rabaisser. | [#ce506e20ee10b824-1] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/UserTierProfilePatchIntegrationTest.java:53-59` | Commentaire : La classe génère une IP 10.190.x.y distincte par appel via nextIp, avec le même mécanisme que les autres tests d'intégration du motif. | [#a3ff44ee97725d81-1] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/UserTierProfilePatchIntegrationTest.java:89-101` | Le helper login appelle /api/auth/login avec une IP dédiée puis lit le cookie jwt de la réponse. | [#af890e68672969ec-1] |
 | `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/export/ExportRenderersTest.java:186-190` | Le test fixe que les noms de fichiers d'export commencent par mytimeline-export- et portent l'extension du format, sans identifiant utilisateur. | [#0fde468ee74ce390-1] |
 | `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/export/ExportRenderersTest.java:194-200` | Le test fixe que chaque renderer ne déclare la prise en charge que de son propre format d'export, le renderer ZIP acceptant le format ZIP. | [#9ee3206a436d828a-1] |
 | `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/CategoryDeleteReassignIntegrationTest.java:26-27` | Javadoc : Selon la javadoc, les tests de suppression de catégorie tournent contre un Postgres jetable avec Flyway V1..V8. | [#c4738550f975df33-1] |
@@ -183,16 +194,15 @@
 | `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/CategoryDeleteReassignIntegrationTest.java:37-39` | La classe de test étend AbstractPostgresIntegrationTest et porte les annotations @SpringBootTest et @Transactional. | [#c4738550f975df33-3] |
 | `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/EventConditionalCheckConstraintIntegrationTest.java:22` | Javadoc : Selon la javadoc, les tests vérifient les contraintes CHECK de V11 sur un Postgres jetable avec Flyway V1..V11. | [#82653a6d64c70442-1] |
 | `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/EventConditionalCheckConstraintIntegrationTest.java:29` | Javadoc : Selon la javadoc, les insertions sont faites en SQL natif pour court-circuiter les validations applicatives et frapper directement le CHECK DB. | [#82653a6d64c70442-2] |
-| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/EventDeleteStatisticsIntegrationTest.java:49-51` | Les tests de ce fichier étendent AbstractPostgresIntegrationTest et sont annotés @SpringBootTest et @Transactional. | [#1bdc8dc5c45d822e-1] |
-| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/EventDeleteStatisticsIntegrationTest.java:70-71` | Une implémentation concrète EventRepositoryJpaImpl est injectée uniquement pour le contrôle négatif, afin d'accéder aux méthodes héritées de SimpleJpaRepository. | [#c32c8b7a4fe1d4b5-1] |
-| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/ProductArchivedFilterIntegrationTest.java:28` | Javadoc : Selon la javadoc, le soft delete repose sur @SQLRestriction("archived = false") posé sur ProductEntity. | [#c369fbe7ea06f05b-1] |
-| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/ProductArchivedFilterIntegrationTest.java:35` | Javadoc : Selon la javadoc, les tests s'exécutent sur un Postgres jetable Testcontainers avec Flyway V1..V7. | [#17ce43a8f74ebddd-1] |
-| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/ProductArchivedFilterIntegrationTest.java:38-40` | La classe de test étend AbstractPostgresIntegrationTest et porte les annotations @SpringBootTest et @Transactional. | [#f2436ebb8e628a4f-1] |
-| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/ProductEventCreationIntegrationTest.java:29` | Javadoc : Selon la javadoc, les tests couvrent le chemin de création domaine réel contre un Postgres jetable Testcontainers. | [#caa2baa82d637261-1] |
-| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/ProductEventCreationIntegrationTest.java:31` | Javadoc : Selon la javadoc, le chemin de création traverse le service, le constructeur du domaine, le mapper puis super.save pour persister. | [#200270ca80d13b04-1] |
-| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/ProductEventCreationIntegrationTest.java:36` | Javadoc : Selon la javadoc, ProductEntity et EventEntity portent @Version et @GeneratedValue(AUTO), ce qui distingue ce chemin des autres tests qui seedent sans setId. | [#fdbf6c17cb567aa8-1] |
-| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/ProductEventCreationIntegrationTest.java:42-44` | La classe de test étend AbstractPostgresIntegrationTest et porte les annotations @SpringBootTest et @Transactional. | [#caa2baa82d637261-2] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/EventDeleteStatisticsIntegrationTest.java:49-51` | La classe de test étend AbstractPostgresIntegrationTest et porte @SpringBootTest et @Transactional, ce qui fait tourner le test sur un contexte Spring réel. | [#1bdc8dc5c45d822e-1] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/EventOptimisticLockConflictIntegrationTest.java:50-54` | Javadoc : Selon la javadoc, la classe n'est pas annotée @Transactional car des commits réels sont requis, et le code étend AbstractPostgresIntegrationTest sans @Transactional. | [#67ab29dec5293812-1] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/ProductArchivedFilterIntegrationTest.java:27-36` | Javadoc : Selon la javadoc, le soft delete repose sur @SQLRestriction posé sur ProductEntity, et les tests s'exécutent sur un Postgres jetable Testcontainers avec Flyway. | [#17ce43a8f74ebddd-1] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/ProductArchivedFilterIntegrationTest.java:38-40` | La classe étend AbstractPostgresIntegrationTest et porte @SpringBootTest et @Transactional, ce qui annule les écritures en fin de chaque test. | [#f2436ebb8e628a4f-1] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/ProductEventCreationIntegrationTest.java:28-29` | Javadoc : Selon la javadoc, la classe couvre le chemin de création domaine réel contre un vrai Postgres jetable (Testcontainers). | [#caa2baa82d637261-1] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/ProductEventCreationIntegrationTest.java:35-37` | Javadoc : Selon la javadoc, les autres tests d'intégration seedent via em.persist sans setId, si bien que le chemin de sauvegarde d'une entité neuve à id pré-assigné n'était pas couvert. | [#fdbf6c17cb567aa8-1] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/ProductEventCreationIntegrationTest.java:43` | La classe de test d'intégration étend AbstractPostgresIntegrationTest, qui fournit le Postgres jetable, et est annotée @SpringBootTest et @Transactional. | [#caa2baa82d637261-2] |
 | `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/UserRoleConstraintIntegrationTest.java:31-33` | Le test d'intégration étend AbstractPostgresIntegrationTest et s'exécute sur une base Postgres jetable avec Flyway V1 à V12, selon la convention des tests d'intégration. | [#65b4d343cd2ebb81-1] |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/EventQuotaCountIntegrationTest.java:29-31` | La classe de test étend AbstractPostgresIntegrationTest et est annotée @SpringBootTest et @Transactional, avec un rollback après chaque test. | [#15f17d71141fce84-1] |
 | `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/PasswordResetTokenCreateStatisticsIntegrationTest.java:35-36` | Le test d'intégration de création de token étend AbstractPostgresIntegrationTest, comme les autres tests d'intégration Postgres du projet. | [#e7d0ff73a3ee1cff-1] |
 | `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenEndpointIntegrationTest.java:63-64` | Les dates de référence des tokens sont calculées à partir du bean Clock injecté, et non via LocalDateTime.now() sans argument. | [#9fab6efb3012109b-1] |
 | `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenEndpointIntegrationTest.java:115` | Commentaire : Selon le commentaire, l'id d'un User créé reste null, car @GeneratedValue refuse un id pré-assigné au persist. | [#9f4165a4a9055c11-1] |

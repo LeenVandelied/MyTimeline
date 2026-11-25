@@ -1,14 +1,18 @@
 {
  "schema": 1,
- "stage": "packs",
- "checked_at": "2026-11-20T10:16:18Z",
+ "stage": "map",
+ "checked_at": "2026-11-24T16:19:40Z",
  "verdict": "vert",
- "expectations_sha256": "c3b6537c5990b4645c62bb64c8023abf8060bd849f037921f2b3544000dd6b3e",
+ "expectations_sha256": "c739a618c5a28c6f4c6b7822d5f15c5dddf1d3c5b27e7b4af851e9bfe89fcf6e",
  "failures": [],
  "passed": [
-  "loader_trial",
-  "index_links",
-  "zero_count"
+  "language_mismatch",
+  "domain_count",
+  "dominant_pack",
+  "layer_orphans",
+  "tech_uncovered",
+  "layer_name",
+  "loader_trial"
  ],
  "skipped": []
 }

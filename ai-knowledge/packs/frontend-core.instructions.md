@@ -2,16 +2,16 @@
 pack: frontend-core
 kind: technical
 name: Socle frontend
-generated_at: 2026-11-20T11:40:00Z
+generated_at: 2026-11-25T15:00:00
 generator: synth/1
-base_sha256: 93654c09e064b3def871d8c6328ab29aaa56afbb681e61cbad9097ce488f0e06
-facts_in_base: 312
-facts_in_pool: 310
-facts_cited: 40
+base_sha256: 28f319258ab29f86376493e7e720f97dfaca1186d90c289b1309d44b9b8034e3
+facts_in_base: 330
+facts_in_pool: 328
+facts_cited: 41
 sections: frontend-core.sections.json
 details: [frontend-core.details.md]
 lang: fr
-curated_at: 2026-11-20T12:45:00Z
+curated_at: 2026-11-25T15:00:00
 curation: frontend-core.curation.json
 ---
 ## 1. Quand activer {#activate}
@@ -38,6 +38,7 @@ Aucun fait de la base ne relève de cette section.
 - Le préfixe /api d'une URL de téléchargement est retiré, car baseURL le porte déjà. [#f61c95693fc0d41d-1]
 ### Frise
 - Selon la javadoc, le noyau de zoom reste pur, sans React ni réseau. [#33808da4d7c94712-1]
+- Selon le commentaire de `frontend:styles/__tests__/i18n-date-long-declarations.test.ts:1`, ce test déclare l'environnement vitest node en tête de fichier. [#9c9c50a8a68a9eb0-1]
 
 ## 4. Structure {#structure}
 
@@ -49,7 +50,7 @@ Aucun fait de la base ne relève de cette section.
 
 ## 6. Fichiers critiques {#files}
 
-Fichiers du pool au poids le plus élevé (12 sur 77), le poids étant la somme des scores de spécificité de leurs faits. Liste complète : annexe.
+Fichiers du pool au poids le plus élevé (12 sur 82), le poids étant la somme des scores de spécificité de leurs faits. Liste complète : annexe.
 
 | Fichier | Faits | Sortes dominantes |
 |---|---|---|
@@ -77,17 +78,15 @@ Packs liés par des faits repris, des faits équivalents écartés à la dédupl
 | product | 6 | 2 |  |
 | session | 2 | 1 |  |
 
-- Faits du pool par pack d'origine : frontend-core 262, user 26, event 14, product 6, session 2
+- Faits du pool par pack d'origine : frontend-core 280, user 26, event 14, product 6, session 2
 
 ## 8. Tests attendus {#tests}
 
-- Les gardes prouvent d'abord que le motif fautif est détecté, par fixture virtuelle, commentaire ignoré ou mutation en mémoire, avant d'asserter sur les vrais fichiers [#b624ef68e7fdbbc6-1] [#563f4f6eed8cff91-1] [#82d4c005d5ae0fe0-1].
-- Les tests d'intercepteur remplacent le transport par un adaptateur Axios factice sur apiClient.defaults.adapter (`frontend:contexts/AuthContext.themeSaveToast.test.tsx:146`) et le restaurent en afterEach [#2567fe15abe72281-1] [#8fe6e917cfd6a7e1-1].
-- Les tests de composants mockent next-intl en renvoyant la clé telle quelle ou préfixée par son namespace [#67b6193be51eb5f8-2] [#31e4140d2a82fdf7-1].
-- Le pont d'erreurs se teste avec un vrai NextIntlClientProvider et les errors.json réels, puis setApiErrorTranslator(null) en afterEach [#bc8390329b6494b1-1] [#e9538199f8ee2b0a-1].
-- Les tests fixent que l'upload d'avatar ne passe aucune config à post (Content-Type non forcé) [#0b961296c4139571-1] et que les options de mise à jour produit arrivent en quatrième paramètre, undefined par défaut [#873e0ac8508f2a1c-1].
-- Un mock utilisé dans une factory vi.mock se déclare avec vi.hoisted [#2bced97a8b32cc87-1].
-- Les mocks se réinitialisent en beforeEach par mockReset, sauf exportService qui utilise clearAllMocks en afterEach [#77f33530045e343d-1] [#f3ce40abe29ecdc4-1].
+- Les tests fixent que les locales en, de et es ont les mêmes namespaces que fr [#4b7f79446e4b86e1-1], et que le pont d'erreurs lit les vrais fichiers errors.json sous un vrai NextIntlClientProvider [#e9538199f8ee2b0a-1] [#bc8390329b6494b1-1].
+- Les tests d'auth mockent authService par vi.mock, vident localStorage à chaque cas [#0d1c19772e7e890d-1] [#2f220e471b229ba0-1] et fixent que useAuth lève hors Provider [#0dda85ff5207150e-2].
+- Les tests d'intercepteur remplacent apiClient.defaults.adapter par un adaptateur factice et le restaurent en afterEach [#2567fe15abe72281-1] [#8fe6e917cfd6a7e1-1].
+- Les tests TanStack Query créent un QueryClient dédié avec retry désactivé [#8dd03e17489c8b12-1] [#3567e8ecf8cbb6a3-1], un MutationCache à onError vide pour les mutations [#9ca3ebac108c3813-1], et enveloppent les mises à jour du store externe dans act [#627a77b7049c5912-1].
+- Les tests fixent que l'upload d'avatar n'impose pas le Content-Type [#0b961296c4139571-1] et que options est transmis en quatrième paramètre, undefined par défaut [#873e0ac8508f2a1c-1].
 
 ## 9. Questions ouvertes {#questions}
 
@@ -103,9 +102,9 @@ Packs liés par des faits repris, des faits équivalents écartés à la dédupl
 
 ## 11. Couverture {#coverage}
 
-- Fichiers du pack : 300 ; avec au moins un fait en base : 77 ; sans fait après remise en file : 0.
-- Faits en base : 312, repris d'autres packs : +0, hors périmètre : -0, doublons écartés à la déduplication : -2, soit 310 dans le pool.
+- Fichiers du pack : 301 ; avec au moins un fait en base : 82 ; sans fait après remise en file : 0.
+- Faits en base : 330, repris d'autres packs : +0, hors périmètre : -0, doublons écartés à la déduplication : -2, soit 328 dans le pool.
 - Faits du pool venus d'un autre pack : 48 (par pack : section Relations).
-- Destination des 310 faits du pool : Conventions 213 ; Tests attendus 65 ; Alertes / Questions ouvertes 21 ; annexe seule 4 ; écartés (sorte `other` ou inconnue) 7.
-- Passe technique : scope 300 fichiers, lus 77 (25 %), non lus 223 : ce pack décrit le socle sur un échantillon, pas sur tout son scope.
-- Base : sha256 93654c09e064…, générée le 2026-11-20.
+- Destination des 328 faits du pool : Conventions 220 ; Tests attendus 70 ; Alertes / Questions ouvertes 26 ; annexe seule 4 ; écartés (sorte `other` ou inconnue) 8.
+- Passe technique : scope 301 fichiers, lus 82 (27 %), non lus 219 : ce pack décrit le socle sur un échantillon, pas sur tout son scope.
+- Base : sha256 28f319258ab2…, générée le 2026-11-25.

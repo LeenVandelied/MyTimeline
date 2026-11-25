@@ -2,16 +2,16 @@
 pack: batch
 kind: transversal
 name: Tâches planifiées et asynchrones
-generated_at: 2026-11-20T11:40:00Z
+generated_at: 2026-11-24T17:40:00
 generator: synth/1
-base_sha256: 0d07ab7cb84e04d03c30302c0ea27f37d98e2a7b72d8508752a362b0e5dda6f1
+base_sha256: 9e97af04975c41ce788ad93bf53b2ef7d1625d32f0a7a5a5f85c5fdbae16de10
 facts_in_base: 36
 facts_in_pool: 34
-facts_cited: 24
+facts_cited: 21
 sections: batch.sections.json
 details: [batch.details.md]
 lang: fr
-curated_at: 2026-11-20T12:45:00Z
+curated_at: 2026-11-25T15:00:00
 curation: batch.curation.json
 ---
 ## 1. Quand activer {#activate}
@@ -49,10 +49,8 @@ Aucun fait de la base ne relève de cette section.
 
 ## 5. Mise en œuvre par domaine {#surface}
 
-### Export de données
-- Le planificateur `backend:src/main/java/com/matimeline/eventmanager/application/services/ExportPurgeScheduler.java:62-64` lit à chaque tick les jobs d'export expirés à l'instant courant, dans une transaction [#2bdf2db83a151dc3-1] [#export/bb8b6ba05aa82340-2]
 ### Réinitialisation de mot de passe
-- Le planificateur `backend:src/main/java/com/matimeline/eventmanager/application/services/PasswordResetTokenPurgeScheduler.java:75` confie la suppression des jetons consommés ou expirés au port du dépôt, qui renvoie le nombre de lignes purgées [#9f17520211d2f332-1] [#user/80685ae3287ab06e-1]
+- Le scheduler de purge confie la suppression des jetons consommés ou expirés au port du dépôt, qui renvoie le nombre de lignes purgées, voir `backend:src/main/java/com/matimeline/eventmanager/application/services/PasswordResetTokenPurgeScheduler.java:75` [#9f17520211d2f332-1]
 
 ## 6. Fichiers critiques {#files}
 
@@ -75,7 +73,7 @@ Packs liés par des faits repris, des faits équivalents écartés à la dédupl
 | Pack | Faits repris | Faits équivalents | Catalogue |
 |---|---|---|---|
 | export | 15 | 10 | oui |
-| user | 14 | 9 | oui |
+| user | 14 | 8 | oui |
 | backend-core | 5 | 0 |  |
 
 - Faits du pool par pack d'origine : export 15, user 14, backend-core 5
@@ -103,4 +101,4 @@ Packs liés par des faits repris, des faits équivalents écartés à la dédupl
 - Faits du pool venus d'un autre pack : 34 (par pack : section Relations).
 - Destination des 34 faits du pool : Règles du motif 21 ; Mise en œuvre par domaine 2 ; Tests attendus 7 ; Alertes / Questions ouvertes 3 ; annexe seule 0 ; écartés (sorte `other` ou inconnue) 1.
 - Passe transversale : scope 9 fichiers, tous lus.
-- Base : sha256 0d07ab7cb84e…, générée le 2026-11-20.
+- Base : sha256 9e97af04975c…, générée le 2026-11-20.

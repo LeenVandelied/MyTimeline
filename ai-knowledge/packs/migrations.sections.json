@@ -3,14 +3,14 @@
  "schema": 1,
  "kind": "technical",
  "lang": "fr",
- "generated_at": "2026-11-20T11:40:00Z",
- "base_sha256": "3bd9bb6bb28b4ab74b570b812508347517ac257ecf5cf3b24bc17ee5bc03d9d4",
- "pack_bytes": 5474,
+ "generated_at": "2026-11-24T17:40:00",
+ "base_sha256": "fd0e93169b94b58b466bfc5fccfebb7fb198c35a780848766a5780aea8d69240",
+ "pack_bytes": 5059,
  "pack_budget_bytes": 26000,
  "details": [
   {
    "file": "migrations.details.md",
-   "bytes": 8182
+   "bytes": 10853
   }
  ],
  "sections": [
@@ -31,7 +31,8 @@
    "lots": 0,
    "merged": false,
    "review": null,
-   "never_truncate": false
+   "never_truncate": false,
+   "copied": false
   },
   {
    "id": "lexicon",
@@ -57,7 +58,8 @@
     "rejected": 0,
     "unreviewed": 0
    },
-   "never_truncate": false
+   "never_truncate": false,
+   "copied": true
   },
   {
    "id": "rules",
@@ -65,10 +67,10 @@
    "title": "Conventions",
    "heading": "## 3. Conventions {#rules}",
    "line_start": 28,
-   "line_end": 50,
-   "bytes": 2389,
+   "line_end": 44,
+   "bytes": 1863,
    "budget_bytes": 2500,
-   "cut_lines": 1,
+   "cut_lines": 0,
    "writer": "agent",
    "kinds": [
     "convention",
@@ -76,44 +78,47 @@
     "business_rule",
     "validation"
    ],
-   "facts_available": 19,
+   "facts_available": 22,
    "facts_cited": [
     "b4c3437f3d5ac7fd-1",
+    "0561b3b3607e0fc6-1",
     "8fb5ac9e1a1bd779-1",
-    "6c3f33bf03f6d301-1",
+    "a41fd867e19b6713-1",
     "ea5494905e3041ae-1",
-    "0bf834cf43bcb2f4-1",
-    "a90b094c8792fdd0-1",
+    "cb73ba0b5b893e48-1",
+    "6c3f33bf03f6d301-1",
     "40c035e935fae1d6-1",
     "51d3cbc0f484b438-1",
     "391e17b474f53011-1",
     "a56e52c557fc0098-1",
+    "36e3dcb5b8dc6e04-1",
+    "fd36df130202be28-1",
     "60d03ad1ee427f99-1",
-    "6368ffc6f56a88a7-1",
-    "f577509d29c8efd4-1",
     "ed0a32438c043501-1",
+    "f577509d29c8efd4-1",
     "b7719716a7380b00-1",
+    "6368ffc6f56a88a7-1",
     "cc18856949ee1abb-1",
-    "20d423176902d752-1",
-    "36e3dcb5b8dc6e04-1"
+    "20d423176902d752-1"
    ],
    "lots": 1,
    "merged": false,
    "review": {
-    "lines": 21,
-    "kept": 21,
-    "rejected": 0,
-    "unreviewed": 4
+    "lines": 15,
+    "kept": 14,
+    "rejected": 1,
+    "unreviewed": 3
    },
-   "never_truncate": false
+   "never_truncate": false,
+   "copied": false
   },
   {
    "id": "structure",
    "order": 4,
    "title": "Structure",
    "heading": "## 4. Structure {#structure}",
-   "line_start": 51,
-   "line_end": 54,
+   "line_start": 45,
+   "line_end": 48,
    "bytes": 82,
    "budget_bytes": 2000,
    "cut_lines": 0,
@@ -130,15 +135,16 @@
    "lots": 0,
    "merged": false,
    "review": null,
-   "never_truncate": false
+   "never_truncate": false,
+   "copied": false
   },
   {
    "id": "surface",
    "order": 5,
    "title": "Points d'entrée du socle",
    "heading": "## 5. Points d'entrée du socle {#surface}",
-   "line_start": 55,
-   "line_end": 58,
+   "line_start": 49,
+   "line_end": 52,
    "bytes": 96,
    "budget_bytes": 4000,
    "cut_lines": 0,
@@ -164,16 +170,17 @@
     "rejected": 0,
     "unreviewed": 0
    },
-   "never_truncate": false
+   "never_truncate": false,
+   "copied": true
   },
   {
    "id": "files",
    "order": 6,
    "title": "Fichiers critiques",
    "heading": "## 6. Fichiers critiques {#files}",
-   "line_start": 59,
-   "line_end": 72,
-   "bytes": 940,
+   "line_start": 53,
+   "line_end": 67,
+   "bytes": 1052,
    "budget_bytes": 2000,
    "cut_lines": 0,
    "writer": "script",
@@ -183,15 +190,16 @@
    "lots": 0,
    "merged": false,
    "review": null,
-   "never_truncate": false
+   "never_truncate": false,
+   "copied": false
   },
   {
    "id": "relations",
    "order": 7,
    "title": "Relations avec d'autres packs",
    "heading": "## 7. Relations avec d'autres packs {#relations}",
-   "line_start": 73,
-   "line_end": 76,
+   "line_start": 68,
+   "line_end": 71,
    "bytes": 102,
    "budget_bytes": 1500,
    "cut_lines": 0,
@@ -202,15 +210,16 @@
    "lots": 0,
    "merged": false,
    "review": null,
-   "never_truncate": false
+   "never_truncate": false,
+   "copied": false
   },
   {
    "id": "tests",
    "order": 8,
    "title": "Tests attendus",
    "heading": "## 8. Tests attendus {#tests}",
-   "line_start": 77,
-   "line_end": 80,
+   "line_start": 72,
+   "line_end": 75,
    "bytes": 83,
    "budget_bytes": 2000,
    "cut_lines": 0,
@@ -228,15 +237,16 @@
     "rejected": 0,
     "unreviewed": 0
    },
-   "never_truncate": false
+   "never_truncate": false,
+   "copied": true
   },
   {
    "id": "questions",
    "order": 9,
    "title": "Questions ouvertes",
    "heading": "## 9. Questions ouvertes {#questions}",
-   "line_start": 81,
-   "line_end": 84,
+   "line_start": 76,
+   "line_end": 79,
    "bytes": 352,
    "budget_bytes": 1500,
    "cut_lines": 0,
@@ -256,15 +266,16 @@
     "rejected": 0,
     "unreviewed": 0
    },
-   "never_truncate": false
+   "never_truncate": false,
+   "copied": true
   },
   {
    "id": "alerts",
    "order": 10,
    "title": "Alertes",
    "heading": "## 10. Alertes {#alerts}",
-   "line_start": 85,
-   "line_end": 88,
+   "line_start": 80,
+   "line_end": 83,
    "bytes": 78,
    "budget_bytes": 4000,
    "cut_lines": 0,
@@ -282,16 +293,17 @@
     "rejected": 0,
     "unreviewed": 0
    },
-   "never_truncate": true
+   "never_truncate": true,
+   "copied": true
   },
   {
    "id": "coverage",
    "order": 11,
    "title": "Couverture",
    "heading": "## 11. Couverture {#coverage}",
-   "line_start": 89,
-   "line_end": 96,
-   "bytes": 686,
+   "line_start": 84,
+   "line_end": 91,
+   "bytes": 687,
    "budget_bytes": 1500,
    "cut_lines": 0,
    "writer": "script",
@@ -301,20 +313,35 @@
    "lots": 0,
    "merged": false,
    "review": null,
-   "never_truncate": false
+   "never_truncate": false,
+   "copied": false
   }
  ],
  "dedup": {
-  "base": 26,
+  "base": 36,
   "taken_in": 0,
   "out_of_scope": 0,
-  "pool_before": 26,
-  "pool_after": 26,
+  "pool_before": 36,
+  "pool_after": 36,
   "related_pairs": 0
  },
  "lint": {
   "ok": true,
   "errors": 0,
   "warnings": 0
+ },
+ "refresh": {
+  "mode": "only-changed",
+  "at": "2026-11-24T17:40:00",
+  "rewritten": [
+   "rules"
+  ],
+  "copied": [
+   "lexicon",
+   "surface",
+   "tests",
+   "questions",
+   "alerts"
+  ]
  }
 }

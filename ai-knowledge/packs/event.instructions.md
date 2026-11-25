@@ -2,16 +2,16 @@
 pack: event
 kind: domain
 name: Événement
-generated_at: 2026-11-20T11:40:00Z
+generated_at: 2026-11-25T16:00:00
 generator: synth/1
-base_sha256: a2e0d8fa4a000ba1866f795abff26f6fb88f1748ae6a9b2813517206595203be
-facts_in_base: 306
-facts_in_pool: 361
-facts_cited: 54
+base_sha256: 736eefba730216ccf4ac39ec8959fb42a61143ae9a1358f18002f0d91a0ca530
+facts_in_base: 353
+facts_in_pool: 439
+facts_cited: 57
 sections: event.sections.json
 details: [event.details.md]
 lang: fr
-curated_at: 2026-11-20T12:45:00Z
+curated_at: 2026-11-25T15:00:00
 curation: event.curation.json
 ---
 ## 1. Quand activer {#activate}
@@ -26,74 +26,75 @@ Ce pack s'active quand la demande ou le code touche l'un de ces éléments.
 
 | Terme | Sens dans ce projet | Faits |
 |---|---|---|
-| Unité de récurrence | Enum à trois valeurs, portée par le champ recurrenceUnit de l'événement du domaine, qui exprime la périodicité d'un événement (pointeur `backend:src/main/java/com/matimeline/eventmanager/domain/models/RecurrenceUnit.java:15-18`). | [#53c142807d114b66-1] [#9f47cf2ed415c352-1] |
-| Version | Colonne de verrouillage optimiste non nulle de l'entité events, présente aussi dans le modèle de domaine sans annotation JPA. | [#14dc8524b3c647c3-1] [#9f47cf2ed415c352-1] |
-| Égalité d'entité | Deux EventEntity sont égales seulement si leur id est non nul et identique, et le hash est celui de la classe, donc commun à toutes les instances. | [#8f73b2f51593d54c-1] |
-| Produit de l'événement | Rattachement obligatoire d'un événement à un product via product_id, alors que le domaine ne porte que productId. | [#14dc8524b3c647c3-1] [#9f47cf2ed415c352-1] |
+| recurrenceUnit | Unité de récurrence d'un événement, portée par le modèle de domaine et typée par une énumération dédiée, définie dans `backend:src/main/java/com/matimeline/eventmanager/domain/models/RecurrenceUnit.java:15-18`. | [#9f47cf2ed415c352-1] [#53c142807d114b66-1] |
+| productId | Référence au produit auquel l'événement appartient, côté domaine, sans annotation JPA. | [#9f47cf2ed415c352-1] |
+| product_id | Côté persistance, relation ManyToOne obligatoire de la table events vers product, mappée dans `backend:src/main/java/com/matimeline/eventmanager/infrastructure/entities/EventEntity.java:16-61`. | [#14dc8524b3c647c3-1] |
+| version | Colonne annotée @Version, non nulle, de l'entité événement, aussi présente comme champ du modèle de domaine. | [#14dc8524b3c647c3-1] [#9f47cf2ed415c352-1] |
+| égalité d'EventEntity | Deux entités sont égales seulement si leur id est non nul et identique, le hashCode ne dépend que de la classe (`backend:src/main/java/com/matimeline/eventmanager/infrastructure/entities/EventEntity.java:187-198`). | [#8f73b2f51593d54c-1] |
 
 ## 3. Règles {#rules}
 
-### Mise à jour partielle
-- Un PATCH n'applique que les champs non null, puis contrôle l'état fusionné. Un événement récurrent sans recurrenceUnit lève RecurrenceUnitRequiredException (400) [#98cf4b5faf0ea7a3-1] [#e627418030325863-1].
-- Une recurrenceEndDate avant startDate lève RecurrenceEndDateBeforeStartException (422), l'égalité est tolérée [#98cf4b5faf0ea7a3-2] [#a2b9636c20b33081-1].
-- Pour un autre type sans endDate explicite, endDate est alignée sur startDate [#469d0ef9c8a70cdc-2].
-- Sur conflit de verrou optimiste, le contrôleur recharge l'état serveur et le joint à EventConflictException [#fd4d8848bb37eb45-1].
-### Type et durée
-- Un type autre que duration, ou une durée null, donne endDate égale à startDate [#f4f32f85e851330e-2] [#9d8ca0954a7123c8-3].
-### Récurrence
-- À la création, isRecurring à true exige un recurrenceUnit non vide [#6a6a2db764ed3efc-1].
-- Une série sans fin est développée jusqu'à startDate plus MAX_UNBOUNDED_EXPANSION_YEARS ans, une borne explicite est honorée [#592a138d8cdd8079-1].
-- expand lève IllegalArgumentException si startDate ou unit est null, ou si la fin précède le début, et la prévisualisation la traduit en 422 [#1a1f018e6f7eaffc-3] [#260f81d202fbedaa-1].
+### Création
+- Si le propriétaire du produit existe, planPolicy compare le nombre d'events actifs au plafond et refuse avec EventQuotaExceededException (402), sans propriétaire aucun plafond ne s'applique. [#1426ab5c3f700cf3-2] [#cdf027b2e9c1f145-1]
+- Un type hors duration et single lève InvalidEventTypeException (422) avant l'enregistrement. [#0b4bcf2c88504a14-1] [#a2b9636c20b33081-1]
+- Une récurrence active exige un recurrenceUnit non vide, à la création comme sur l'état fusionné d'une mise à jour. [#6a6a2db764ed3efc-1] [#98cf4b5faf0ea7a3-1]
+### Mise à jour
+- Un échec de verrou optimiste dans le contrôleur recharge l'état serveur et lève EventConflictException avec sa version. [#fd4d8848bb37eb45-1]
+- Pour un autre type, endDate prend startDate si un facteur de date change sans endDate explicite. [#469d0ef9c8a70cdc-2]
+- Le produit d'origine est réaffecté avant la sauvegarde, il ne se change pas par mise à jour. [#9734119e4856c768-2]
+### Récurrence et durée
+- Une série sans recurrenceEndDate est développée jusqu'à startDate plus MAX_UNBOUNDED_EXPANSION_YEARS ans, et capped n'est vrai que si l'occurrence suivante reste dans la fenêtre. [#592a138d8cdd8079-1] [#592a138d8cdd8079-2]
+- expand lève IllegalArgumentException, la prévisualisation la traduit en 422 si la fin précède le début. [#1a1f018e6f7eaffc-3] [#260f81d202fbedaa-1]
 ### Vérifié dans le code
-- RecurrenceExpansionService.expand est appelé par RecurrencePreviewController, qui expose expansion.capped() dans la réponse recurrence-preview [#integrations/fa220ac41b24d700-1] [#260f81d202fbedaa-1] `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/RecurrencePreviewController.java:65-75`.
+- RecurrenceExpansion.capped est exposé par POST /api/events/recurrence-preview (RecurrencePreviewController, RecurrencePreviewResponse) : ne pas le supprimer, la javadoc affirmant l'absence de consommateur est périmée [#2b0d742a9f9403eb-1] [#integrations/fa220ac41b24d700-1] [#260f81d202fbedaa-1] `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/RecurrencePreviewController.java:56-75`.
+- Avant EventRepository.save avec un id renseigné, vérifier l'existence de l'événement, comme le fait EventServiceImpl.updateEvent via findEventById [#98cf4b5faf0ea7a3-4] `backend:src/main/java/com/matimeline/eventmanager/application/services/EventServiceImpl.java:98-99`.
+- Dans toute purge de compte, appeler EventRepository.deleteAllByUserId avant ProductRepository.deleteAllByUserId, comme UserServiceImpl [#user/c65286231ca612ed-1] [#user/0ec9a144d275a5ac-1] `backend:src/main/java/com/matimeline/eventmanager/application/services/UserServiceImpl.java:117-118`.
 
 ## 4. Structure {#structure}
 
-#### backend:src/main/java/com/matimeline/eventmanager/application/services/EventServiceImpl.java
-| Symbole | Énoncé | Lignes | Fait |
-|---|---|---|---|
-| EventServiceImpl.updateEvent | Quand un facteur de date change, endDate est recalculée depuis startDate pour type duration, et suit startDate pour les autres types sans endDate explicite. (partiel) | L169-184 | [#469d0ef9c8a70cdc-1] |
-#### backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/GlobalExceptionHandler.java
-| Symbole | Énoncé | Lignes | Fait |
-|---|---|---|---|
-| GlobalExceptionHandler.handleNotFound | Traduit EventNotFoundException, ProductNotFoundException, CategoryNotFoundException, UserNotFoundException, SessionNotFoundException et AvatarNotFoundException en 404 avec le message fixe Resource not found et le code NOT_FOUND. | L41-53 | [#272f8d8d7d9c6abc-1] |
 #### backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/EventController.java
 | Symbole | Énoncé | Lignes | Fait |
 |---|---|---|---|
-| EventController | Le contrôleur EventController expose ses routes sous le préfixe /api/events. | L29-30 | [#bf198858d7b51045-1] |
-| EventController.createEvent | POST /api/events accepte un EventCreationRequest validé et répond avec un EventResponse. | L46-69 | [#c2d52af73209c0c3-1] |
-| EventController.createEvent | La création répond 201 CREATED avec un EventResponse construit depuis l'Event créé. | L66-68 | [#c2d52af73209c0c3-2] |
-| EventController.updateEvent | PATCH /api/events/{id} accepte un EventUpdateRequest validé et répond avec un EventResponse. | L71-73 | [#15b09c65b34b16dc-1] |
-| EventController.deleteEvent | DELETE /api/events/{id} vérifie la propriété de l'événement puis appelle deleteById. | L97-105 | [#b47e4a8d8516d040-1] |
-| EventController.deleteEvent | La suppression répond 200 OK sans corps après l'appel à deleteById. | L103-104 | [#19d5aee4350efd9d-1] |
+| EventController | Le contrôleur expose ses routes sous le préfixe /api/events. | L29-30 | [#bf198858d7b51045-1] |
+| EventController.createEvent | POST /api/events reçoit un EventCreationRequest validé et renvoie un EventResponse. | L46-47 | [#c2d52af73209c0c3-1] |
+| EventController.createEvent | createEvent répond 201 Created avec le corps EventResponse.fromDomain de l'event créé. | L68 | [#c2d52af73209c0c3-2] |
+| EventController.updateEvent | PATCH /api/events/{id} reçoit un EventUpdateRequest validé et renvoie un EventResponse en 200. | L71-73 | [#15b09c65b34b16dc-1] |
+| EventController.deleteEvent | DELETE /api/events/{id} vérifie la propriété puis supprime l'event via eventService.deleteById et répond 200 sans corps. | L97-105 | [#b47e4a8d8516d040-1] |
+#### backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/EventControllerOwnershipTest.java
+| Symbole | Énoncé | Lignes | Fait |
+|---|---|---|---|
+| EventControllerOwnershipTest.createEvent_owner_returns201_withEventResponseBody | POST /api/events par le propriétaire renvoie 201 avec un corps JSON contenant id, title, type, isAllDay, color, archived et productId. | L178-214 | [#f392a4b7cf0135bc-1] |
+#### backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/RecurrencePreviewController.java
+| Symbole | Énoncé | Lignes | Fait |
+|---|---|---|---|
+| RecurrencePreviewController.previewRecurrence | Expose POST /api/events/recurrence-preview, qui valide le corps RecurrencePreviewRequest avec @Valid et renvoie un RecurrencePreviewResponse. | L56-58 | [#2b0d742a9f9403eb-1] |
 
 ## 5. Endpoints et écrans {#surface}
 
-- Les routes événement sont dans `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/EventController.java:29-30` sous /api/events [#bf198858d7b51045-1], et le client front est `frontend:services/eventService.ts:23-144` [#233f4b0dbeb05d4c-1].
-- Un produit sans utilisateur ou appartenant à un autre caller lève AccessDeniedException, ce qui donne un 403 au JSON forbidden, et la suppression n'est alors pas exécutée [#integrations/31be9b56a73503a4-2] [#cd37dea64799f734-1].
-- La suppression est un DELETE en une instruction sans clause de version et répond 200 sans corps, alors que le PATCH fait un contrôle optimiste de version [#b2c8a12ba0d6c2cb-1] [#19d5aee4350efd9d-1] [#c82b76bcb3e888be-1].
-- Un id absent à la suppression lève EventNotFoundException quand aucune ligne n'est touchée, et le gestionnaire global la traduit en 404 au message fixe, comme les autres not found [#bec625ceb1fa0d16-1] [#272f8d8d7d9c6abc-1].
-- POST /api/events/recurrence-preview est dans un contrôleur séparé de EventController, et le front valide sa réponse par schéma [#2b0d742a9f9403eb-1] [#233f4b0dbeb05d4c-1].
-- Côté front, createEvent ne valide pas la réponse du serveur, alors que updateEventColor envoie un PATCH avec la seule couleur et échoue si la réponse est vide [#5a914d0f71ef712d-1] [#a176e19a8b475347-1].
-- Le front liste les événements d'un produit par /users/{userId}/products/{productId}/events, une route hors du préfixe /api/events [#e1636c6acf0f6a7a-1].
+- Les routes événement sont sous /api/events dans `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/EventController.java:29-30` [#bf198858d7b51045-1], et le front les appelle depuis `frontend:services/eventService.ts:51-59` [#5a914d0f71ef712d-1].
+- La création vérifie que le produit cible appartient à l'appelant, sinon elle lève AccessDeniedException avec le message forbidden [#integrations/c97d5db852535a9b-1].
+- La modification et la suppression passent par checkEventOwnership, qui renvoie 401 sans appelant, 404 si l'event ou son produit manque, et lève AccessDeniedException si le produit n'est pas à l'appelant [#27e1056000133833-1] [#b47e4a8d8516d040-1] [#integrations/31be9b56a73503a4-1].
+- Un PATCH ou un DELETE par un autre utilisateur donne 403 avec un corps JSON d'erreur forbidden, et le service n'est jamais appelé [#54cad8471b6e9acf-1] [#f0c1d069bda91d63-1].
+- La liste des events d'un produit n'est pas sous /api/events, le front appelle /users/{userId}/products/{productId}/events [#e1636c6acf0f6a7a-1].
+- La création force archived à false, recurrenceEndDate à null et calcule endDate, quelle que soit la requête [#bbfc6cf3890cac2d-1].
 
 ## 6. Fichiers critiques {#files}
 
-Fichiers du pool au poids le plus élevé (11 sur 51), le poids étant la somme des scores de spécificité de leurs faits. Liste complète : annexe.
+Fichiers du pool au poids le plus élevé (11 sur 57), le poids étant la somme des scores de spécificité de leurs faits. Liste complète : annexe.
 
 | Fichier | Faits | Sortes dominantes |
 |---|---|---|
-| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/GlobalExceptionHandler.java` | 23 | validation 14, other 4, convention 2 |
-| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/EventController.java` | 20 | endpoint 6, role_check 6, convention 4 |
-| `backend:src/main/java/com/matimeline/eventmanager/application/services/EventServiceImpl.java` | 18 | validation 7, service_method 5, business_rule 2 |
-| `backend:src/test/java/com/matimeline/eventmanager/application/services/EventServiceImplTest.java` | 34 | test_case 23, validation 5, business_rule 2 |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/GlobalExceptionHandler.java` | 29 | validation 13, other 5, business_rule 4 |
+| `backend:src/test/java/com/matimeline/eventmanager/application/services/EventServiceImplTest.java` | 31 | business_rule 13, test_case 10, validation 6 |
+| `backend:src/main/java/com/matimeline/eventmanager/application/services/EventServiceImpl.java` | 26 | business_rule 8, convention 5, service_method 5 |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/EventController.java` | 15 | role_check 6, endpoint 5, convention 2 |
 | `backend:src/main/java/com/matimeline/eventmanager/utils/Utils.java` | 13 | convention 5, business_rule 3, validation 3 |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/EventRepositoryJpaImpl.java` | 20 | persistence_query 8, other 6, convention 4 |
 | `frontend:services/eventService.ts` | 17 | service_method 5, convention 4, other 4 |
 | `backend:src/test/java/com/matimeline/eventmanager/utils/UtilsTest.java` | 12 | business_rule 3, convention 3, test_case 3 |
-| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/EventConditionalCheckConstraintIntegrationTest.java` | 14 | test_case 5, convention 3, persistence_query 2 |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/EventConditionalCheckConstraintIntegrationTest.java` | 16 | test_case 7, convention 3, persistence_query 2 |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/EventOptimisticLockConflictIntegrationTest.java` | 20 | test_case 8, other 5, business_rule 2 |
 | `backend:src/test/java/com/matimeline/eventmanager/application/services/RecurrenceExpansionServiceImplTest.java` | 14 | test_case 7, other 3, validation 3 |
-| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/ProductEventCreationIntegrationTest.java` | 11 | convention 8, test_case 3 |
-| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/CallerResolver.java` | 8 | convention 5, other 1, role_check 1 |
 
 ## 7. Relations avec d'autres packs {#relations}
 
@@ -101,36 +102,35 @@ Packs liés par des faits repris, des faits équivalents écartés à la dédupl
 
 | Pack | Faits repris | Faits équivalents | Catalogue |
 |---|---|---|---|
-| integrations | 38 | 13 |  |
-| backend-core | 27 | 7 |  |
+| integrations | 46 | 36 |  |
+| backend-core | 54 | 14 |  |
 | frontend-core | 12 | 2 |  |
-| authorization | 2 | 1 |  |
+| authorization | 3 | 0 |  |
 
 ## 8. Tests attendus {#tests}
 
-- Les tests fixent qu'un PATCH n'applique que les champs fournis et laisse le reste intact, dont productId, titre et endDate [#08a1a691c6416d10-1] [#78cddbd17e183338-1] [#89813e6014818567-1] [#50713e907064d823-1].
-- Les tests fixent qu'une endDate explicite sur un single est persistée telle quelle, et qu'une endDate égale à startDate est tolérée [#749db667a0d97e9e-1] [#0bacc6b111c7d53a-1].
-- Un test de contrat DTO reste une classe JUnit sans contexte Spring avec un ObjectMapper instancié directement [#backend-core/f8c15a124e9472b2-2].
+- Les tests fixent que la prévisualisation renvoie 422 si la fin précède le début, et 400 sans startDate ou avec une unité en minuscules, le service n'étant pas appelé [#82e1a17509802d6c-1] [#68836e1845d29a69-1] [#b33cbd89169e2c51-1].
+- Les tests fixent que le quota renvoie 402 event_quota_exceeded, que les événements archivés et ceux d'un produit archivé ne comptent pas, et qu'un récurrent compte pour un [#43df9b18444a5c92-1] [#9732305a169027cb-1] [#65854e5316a4e8ea-1] [#aa8cc13fdb91de2b-1].
+- Les tests fixent que la base rejette un récurrent sans recurrence_unit et un type duration sans duration_unit [#33d5c419a48bee4e-1] [#fde144e77ad6ffaf-1].
+- Les tests fixent qu'une suppression émet une seule instruction JDBC et l'emporte sur une édition concurrente [#b1309cfd2133ba3c-1] [#c3bb287829b2fbd5-1].
+- Un test de service configure PlanPolicy en lenient pour autoriser la création par défaut [#57ff0ea0969cfde2-1].
 
 ## 9. Questions ouvertes {#questions}
 
-- Les violations d'intégrité autres que l'unicité de catégorie finissent-elles toutes en 500 générique ? Selon le commentaire, le handler global DataIntegrityViolationException a été supprimé [#7f719a0e8a07aa0d-1], aucun fait de code ne le confirme.
-- La relation EventEntity.product sans FetchType explicite est-elle voulue, alors que CategoryEntity.owner déclare LAZY [#backend-core/018b247f5c65754e-1] ?
-- Les pluriels legacy de RecurrenceUnit sont-ils encore nécessaires ? La javadoc les garde jusqu'au réalignement Zod S10/S11 [#8f187701c95e76b2-1], le code les accepte toujours [#248944a8cbcae2ab-1].
-- Pourquoi seul updateEvent côté frontend traite une réponse sans corps comme un échec, contrairement à createEvent et setEventArchived [#3ce22bef0fa348e3-1] ?
+- Le champ color du DTO de création n'a aucun contrôle de format, et le commentaire dit que la répercussion frontend reste à faire. Une validation est-elle prévue ? [#c79d155872b82780-1] [#backend-core/af3d8994f27f9508-1]
 
 ## 10. Alertes {#alerts}
 
-- Le commentaire de CallerResolver.currentUser dit que la méthode ne lève jamais d'exception, mais elle délègue à userService sans garde locale [#0bc1c107d4295cab-1]. Un appelant qui compte sur ce contrat peut recevoir une exception, donc il faut la gérer ou ajouter la garde dans `backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/CallerResolver.java:69-74`.
-- Selon le commentaire du port, deleteByIdReturningRowCount supprime sans contrôle du verrou optimiste, perte assumée et renvoyée à un test d'intégration . Le port ne prend qu'un id et rend un nombre de lignes , donc une suppression ne détecte pas un PATCH concurrent ⇒ Ne pas compter sur la version pour protéger la suppression [#8634b19eb71898e8-2] [#92ea5b8b1d75d1d3-1]
-- Le champ color n'a aucun contrôle de format hex dans le DTO de création , et le commentaire dit que la répercussion côté frontend reste à faire . Le serveur accepte donc toute chaîne [#backend-core/af3d8994f27f9508-1] [#c79d155872b82780-1]
-- Le setter de Event s'appelle setProduct alors qu'il reçoit et stocke productId, comme le getter et le champ [#7da0b405589ec288-1]. Chercher setProductId ne trouve rien et setProduct ne prend pas une entité produit, donc l'appeler avec un UUID de produit (`backend:src/main/java/com/matimeline/eventmanager/domain/models/Event.java:79`).
-- Les tests de rejet du CHECK sur durationUnit n'affirment qu'une Exception générique [#27b42a4cf6d2382f-1]. Ils passent pour n'importe quel échec, donc ils ne protègent pas la contrainte ck_events_duration_unit_required. Asserter la cause exacte en les modifiant.
+- Dans `buildBody`, Map.of rejette les valeurs null alors que plusieurs handlers lui passent ex.getMessage(), ce qui peut lever une NullPointerException au lieu de la réponse d'erreur attendue. Garantir un message non null avant d'ajouter ou de modifier un handler (`backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/GlobalExceptionHandler.java:311-318`). [#07464037695a9960-1]
+- Selon la javadoc, la suppression perd volontairement le verrou optimiste, et le port ne reçoit aucune version. Ne pas compter sur un conflit de version à la suppression (`backend:src/main/java/com/matimeline/eventmanager/domain/ports/repositories/EventRepository.java:37-41`). [#8634b19eb71898e8-2] [#92ea5b8b1d75d1d3-1]
+- Le commentaire de `updateEvent` dit que startDate n'est pas modifiable via EventUpdateRequest, alors que le code applique command.startDate() à l'entité. Se fier au code et corriger le commentaire (`backend:src/main/java/com/matimeline/eventmanager/application/services/EventServiceImpl.java:136-162`). [#818442b52d5bb0f8-2] [#98cf4b5faf0ea7a3-4]
+- Deux tests de contrainte CHECK n'attendent que la classe Exception générique, donc tout échec de la requête les satisfait. Ils ne prouvent pas la contrainte, il faut asserter la violation précise (`backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/EventPatchAndRecurrenceIntegrationTest.java:298-300`). [#6e7f988b3d4eb7f7-1] [#27b42a4cf6d2382f-1]
+- Le setter s'appelle `setProduct` alors que le champ et le getter portent le nom productId. Utiliser `setProduct` pour renseigner productId, sans le confondre avec une entité (`backend:src/main/java/com/matimeline/eventmanager/domain/models/Event.java:79`). [#7da0b405589ec288-1]
 
 ## 11. Couverture {#coverage}
 
-- Fichiers du pack : 49 ; avec au moins un fait en base : 49 ; sans fait après remise en file : 0.
-- Faits en base : 306, repris d'autres packs : +102, hors périmètre : -0, doublons écartés à la déduplication : -47, soit 361 dans le pool.
-- Faits du pool venus d'un autre pack : 79 (par pack : section Relations).
-- Destination des 361 faits du pool : Lexique 4 ; Règles 72 ; Endpoints et écrans 37 ; Tests attendus 78 ; Alertes / Questions ouvertes 29 ; annexe seule 83 ; écartés (sorte `other` ou inconnue) 58.
-- Base : sha256 a2e0d8fa4a00…, générée le 2026-11-20.
+- Fichiers du pack : 53 ; avec au moins un fait en base : 53 ; sans fait après remise en file : 0.
+- Faits en base : 353, repris d'autres packs : +167, hors périmètre : -0, doublons écartés à la déduplication : -81, soit 439 dans le pool.
+- Faits du pool venus d'un autre pack : 115 (par pack : section Relations).
+- Destination des 439 faits du pool : Lexique 4 ; Règles 77 ; Endpoints et écrans 41 ; Tests attendus 91 ; Alertes / Questions ouvertes 49 ; annexe seule 101 ; écartés (sorte `other` ou inconnue) 76.
+- Base : sha256 736eefba7302…, générée le 2026-11-24.

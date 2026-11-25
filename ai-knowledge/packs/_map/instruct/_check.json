@@ -1,34 +1,7 @@
 {
- "checked": 3,
+ "checked": 0,
  "outcomes": {
-  "refuted": 1,
-  "skipped_not_open": 6,
-  "confirmed": 2
+  "skipped_not_open": 9
  },
- "details": [
-  {
-   "id": "A3",
-   "verdict": "refuted",
-   "outcome": "refuted",
-   "verified": 4,
-   "rejected": 0,
-   "rejections": {}
-  },
-  {
-   "id": "A10",
-   "verdict": "confirmed",
-   "outcome": "confirmed",
-   "verified": 7,
-   "rejected": 0,
-   "rejections": {}
-  },
-  {
-   "id": "A11",
-   "verdict": "confirmed",
-   "outcome": "confirmed",
-   "verified": 7,
-   "rejected": 0,
-   "rejections": {}
-  }
- ]
+ "details": []
 }

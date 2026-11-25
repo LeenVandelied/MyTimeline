@@ -51,8 +51,8 @@
    "motif": null,
    "rationale": "Le groupe Event compte 135 fichiers et 590 ko, avec EventController et RecurrencePreviewController sur /api/events. La taille du groupe entier est portée par ce pack pivot, les packs session et export (fondus dans ce groupe) sont à 0.",
    "size": {
-    "files": 74,
-    "kb": 366
+    "files": 56,
+    "kb": 289
    }
   },
   {
@@ -126,8 +126,8 @@
    "motif": null,
    "rationale": "Le groupe User compte 80 fichiers et 480 ko, avec 3 controllers (/api/auth, /api/me, /api/test-support) et 41 liens entrants depuis Event.",
    "size": {
-    "files": 80,
-    "kb": 480
+    "files": 89,
+    "kb": 421
    }
   },
   {
@@ -168,8 +168,8 @@
    "motif": null,
    "rationale": "Le groupe Product compte 18 fichiers et 129 ko (au-dessus de pack_min_kb=15) avec un ProductController et un ProductService propres.",
    "size": {
-    "files": 18,
-    "kb": 129
+    "files": 28,
+    "kb": 170
    }
   },
   {
@@ -213,8 +213,8 @@
    "motif": null,
    "rationale": "Le seed Session pèse 24 fichiers (fondus par le script dans Event à 4 liens sur 4) avec SessionController, JwksController et JwtService sur /api/sessions. Sa taille est comptée dans le pack event, d'où 0 ici.",
    "size": {
-    "files": 24,
-    "kb": 111
+    "files": 26,
+    "kb": 146
    }
   },
   {
@@ -540,7 +540,11 @@
    "aliases": [],
    "crosses": [],
    "motif": null,
-   "rationale": "pack technique déclaré par map.tech_packs"
+   "rationale": "pack technique déclaré par map.tech_packs",
+   "size": {
+    "files": 0,
+    "kb": 0
+   }
   },
   {
    "slug": "migrations",
@@ -565,7 +569,11 @@
    "aliases": [],
    "crosses": [],
    "motif": null,
-   "rationale": "pack technique déclaré par map.tech_packs"
+   "rationale": "pack technique déclaré par map.tech_packs",
+   "size": {
+    "files": 0,
+    "kb": 0
+   }
   }
  ],
  "deferred_packs": [

@@ -4,6 +4,7 @@
 
 | Fichier | Faits | Sortes |
 |---|---|---|
+| `backend:src/main/resources/db/migration/V17__user_tier.sql` | 10 | db_change 6, convention 3, suspicious 1 |
 | `backend:src/main/resources/db/migration/V10__create_sessions.sql` | 4 | convention 2, other 1, suspicious 1 |
 | `backend:src/main/resources/db/migration/V13__export_jobs.sql` | 3 | convention 2, suspicious 1 |
 | `backend:src/main/resources/db/migration/V5__fk_indexes.sql` | 3 | convention 2, db_change 1 |
@@ -20,18 +21,13 @@
 | `backend:src/main/resources/db/migration/V8__category_ownership.sql` | 1 | suspicious 1 |
 | `backend:src/main/resources/db/migration/V9__neutralize_invalid_recurrence_unit.sql` | 1 | convention 1 |
 
-## Lignes hors budget {#t-cut_lines}
-
-| Section | Ligne |
-|---|---|
-| rules | - Selon le commentaire de V1, PK et FK sont en uuid et les String non bornés en varchar(255) [#fd36df130202be28-1] |
-
 ## Faits suspects {#t-suspicious}
 
 | Pointeur | Énoncé | Fait |
 |---|---|---|
 | `backend:src/main/resources/db/migration/V10__create_sessions.sql:30` | Le commentaire de V10 réserve V11 à #78, alors que le fichier V11 existant porte l'issue #128. L'écart de numérotation n'est pas expliqué dans les fichiers du lot. | [#74d577652399ad7c-1] |
 | `backend:src/main/resources/db/migration/V13__export_jobs.sql:16` | Le commentaire de V13 indique que la purge des fichiers générés sur disque reste une dette, sans scheduler de nettoyage dans les fichiers du lot. | [#7d39e13db0dba6c7-1] |
+| `backend:src/main/resources/db/migration/V17__user_tier.sql:35` | Le rollback documenté supprime la colonne et fait perdre les valeurs de palier déjà posées, ce que le commentaire signale comme non reconstructible. | [#b9ae4b94b9c829f7-1] |
 | `backend:src/main/resources/db/migration/V8__category_ownership.sql:43` | L'index sur owner_id est nommé ix_categories_owner_id, alors que les index de clés étrangères des autres migrations suivent le préfixe idx_{table}_{colonne}. | [#5d29ca418c49ce28-1] |
 
 ## Changements de base {#t-db_change}
@@ -39,6 +35,12 @@
 | Pointeur | Énoncé | Fait |
 |---|---|---|
 | `backend:src/main/resources/db/migration/V14__idx_export_jobs_expires_at.sql:18` | Un index sur une colonne sans clé étrangère suit le même modèle create index idx_{table}_{colonne} on {table} ({colonne}), sans clause if not exists. | [#cd42ade2a009e3d8-1] |
+| `backend:src/main/resources/db/migration/V17__user_tier.sql:1-2` | Commentaire : Une migration Flyway est un fichier nommé V{N}__{sujet}.sql dans backend/src/main/resources/db/migration, commençant par un bloc d'en-tête commenté en français qui cite le numéro d'issue. | [#9364419c484548e1-1] |
+| `backend:src/main/resources/db/migration/V17__user_tier.sql:7-9` | Commentaire : Une colonne NOT NULL ajoutée à une table existante reçoit un DEFAULT constant, ce qui évite la réécriture de la table sous PostgreSQL 11 et plus, sans backfill des lignes existantes. | [#83b219a0ecf42bae-1] |
+| `backend:src/main/resources/db/migration/V17__user_tier.sql:14-15` | Commentaire : L'idempotence est assurée par ADD COLUMN IF NOT EXISTS et DROP CONSTRAINT IF EXISTS, sur le modèle des migrations précédentes du lot. | [#83b219a0ecf42bae-2] |
+| `backend:src/main/resources/db/migration/V17__user_tier.sql:14-15` | Commentaire : Une contrainte CHECK est nommée avec le préfixe ck_ et précédée d'un DROP CONSTRAINT IF EXISTS du même nom, ce qui rend la migration rejouable. | [#d5b07105c49570ed-1] |
+| `backend:src/main/resources/db/migration/V17__user_tier.sql:20-22` | La migration fixe un lock_timeout local de 5 secondes avec SET LOCAL, et regroupe les changements de table dans un seul ALTER TABLE pour ne prendre qu'un verrou. | [#ecda39e759695b82-1] |
+| `backend:src/main/resources/db/migration/V17__user_tier.sql:24-28` | Les modifications d'une table sont groupées dans un seul ALTER TABLE, avec ADD COLUMN puis DROP CONSTRAINT puis ADD CONSTRAINT, chaque clause sur sa propre ligne indentée. | [#4fb665d4a5d4cc11-1] |
 | `backend:src/main/resources/db/migration/V5__fk_indexes.sql:25` | Chaque colonne de clé étrangère reçoit un index nommé idx_{table}_{colonne}, créé avec create index if not exists pour rester rejouable. | [#23e6ccafd3906cf1-1] |
 
 ## Conventions {#t-convention}
@@ -55,6 +57,9 @@
 | `backend:src/main/resources/db/migration/V15__password_reset_tokens_version.sql:28-29` | Un verrou optimiste @Version est porté par une colonne version integer not null default 0, de même type Integer que les autres entités auditées. | [#20d423176902d752-1] |
 | `backend:src/main/resources/db/migration/V16__user_theme_preference.sql:35` | Une migration sur une table existante pose set local lock_timeout = '5s' avant son ALTER TABLE. | [#60d03ad1ee427f99-1] |
 | `backend:src/main/resources/db/migration/V16__user_theme_preference.sql:37-41` | Une colonne ajoutée à une table existante utilise add column if not exists, et le CHECK nommé est regroupé dans le même alter table avec drop constraint if exists. | [#ed0a32438c043501-1] |
+| `backend:src/main/resources/db/migration/V17__user_tier.sql:11-12` | Commentaire : L'en-tête de migration documente le mapping JPA attendu de la colonne (champ d'entité, @Enumerated(EnumType.STRING), nullable, longueur) et rappelle que ddl-auto=validate exige un nom et un type identiques. | [#a41fd867e19b6713-1] |
+| `backend:src/main/resources/db/migration/V17__user_tier.sql:17` | Commentaire : Les migrations déjà appliquées ne sont jamais modifiées : toute évolution de schéma passe par un nouveau fichier V{N} suivant. | [#0561b3b3607e0fc6-1] |
+| `backend:src/main/resources/db/migration/V17__user_tier.sql:31-36` | Commentaire : Le rollback n'est pas un fichier undo : il est documenté en commentaire manuel à la fin du fichier, car Flyway Community ne rejoue pas les undo, avec un avertissement sur la perte des données. | [#cb73ba0b5b893e48-1] |
 | `backend:src/main/resources/db/migration/V1__baseline.sql:15` | Commentaire : Les clés primaires et étrangères sont en uuid, les String non bornés en varchar(255) et les LocalDateTime en timestamp. | [#fd36df130202be28-1] |
 | `backend:src/main/resources/db/migration/V2__unique_constraints.sql:14` | Une contrainte UNIQUE se pose par add constraint nommé uq_{table}_{colonne}, et la nomination est stable pour que Flyway reste la source de vérité. | [#51d3cbc0f484b438-1] |
 | `backend:src/main/resources/db/migration/V3__add_audit_columns.sql:16-19` | Les tables auditées reçoivent created_at et updated_at en timestamp not null default now(), et version en integer not null default 0 pour le mapping @Version. | [#cc18856949ee1abb-1] |

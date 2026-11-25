@@ -23,6 +23,7 @@
 | rules | - Pour chaque export expiré, le fichier est supprimé avant la ligne, seulement si la référence de stockage existe. [#5715b77c36e0dbb9-2] | deducible |
 | rules | - Une erreur sur un job est isolée, journalisée par type d'exception seul, et la purge continue avec les suivants. [#d40ee25765e10173-1] | deducible |
 | tests | - Les tests fixent que la purge est idempotente, car un job expiré dont le fichier est déjà absent est purgé sans exception et sa ligne est supprimée [#3e2957bcbbbe0496-1]. | deducible |
+| surface | - Le scheduler d'export lit à chaque tick les jobs expirés à l'instant courant, dans une transaction, via `backend:src/main/java/com/matimeline/eventmanager/application/services/ExportPurgeScheduler.java:62-64` [#2bdf2db83a151dc3-1] | deducible |
 
 ## Règles métier {#t-business_rule}
 

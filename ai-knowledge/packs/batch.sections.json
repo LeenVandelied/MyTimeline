@@ -3,14 +3,14 @@
  "schema": 1,
  "kind": "transversal",
  "lang": "fr",
- "generated_at": "2026-11-20T11:40:00Z",
- "base_sha256": "0d07ab7cb84e04d03c30302c0ea27f37d98e2a7b72d8508752a362b0e5dda6f1",
- "pack_bytes": 8509,
+ "generated_at": "2026-11-24T17:40:00",
+ "base_sha256": "9e97af04975c41ce788ad93bf53b2ef7d1625d32f0a7a5a5f85c5fdbae16de10",
+ "pack_bytes": 8204,
  "pack_budget_bytes": 26000,
  "details": [
   {
    "file": "batch.details.md",
-   "bytes": 9287
+   "bytes": 9549
   }
  ],
  "sections": [
@@ -31,7 +31,8 @@
    "lots": 0,
    "merged": false,
    "review": null,
-   "never_truncate": false
+   "never_truncate": false,
+   "copied": false
   },
   {
    "id": "lexicon",
@@ -58,7 +59,8 @@
     "rejected": 0,
     "unreviewed": 0
    },
-   "never_truncate": false
+   "never_truncate": false,
+   "copied": true
   },
   {
    "id": "rules",
@@ -103,7 +105,8 @@
     "rejected": 1,
     "unreviewed": 4
    },
-   "never_truncate": false
+   "never_truncate": false,
+   "copied": true
   },
   {
    "id": "structure",
@@ -132,7 +135,8 @@
    "lots": 0,
    "merged": false,
    "review": null,
-   "never_truncate": false
+   "never_truncate": false,
+   "copied": false
   },
   {
    "id": "surface",
@@ -140,8 +144,8 @@
    "title": "Mise en œuvre par domaine",
    "heading": "## 5. Mise en œuvre par domaine {#surface}",
    "line_start": 50,
-   "line_end": 56,
-   "bytes": 670,
+   "line_end": 54,
+   "bytes": 367,
    "budget_bytes": 4000,
    "cut_lines": 0,
    "writer": "agent",
@@ -154,10 +158,7 @@
    ],
    "facts_available": 2,
    "facts_cited": [
-    "2bdf2db83a151dc3-1",
-    "export/bb8b6ba05aa82340-2",
-    "9f17520211d2f332-1",
-    "user/80685ae3287ab06e-1"
+    "9f17520211d2f332-1"
    ],
    "lots": 1,
    "merged": false,
@@ -167,15 +168,16 @@
     "rejected": 0,
     "unreviewed": 2
    },
-   "never_truncate": false
+   "never_truncate": false,
+   "copied": false
   },
   {
    "id": "files",
    "order": 6,
    "title": "Fichiers critiques",
    "heading": "## 6. Fichiers critiques {#files}",
-   "line_start": 57,
-   "line_end": 70,
+   "line_start": 55,
+   "line_end": 68,
    "bytes": 1256,
    "budget_bytes": 2000,
    "cut_lines": 0,
@@ -186,15 +188,16 @@
    "lots": 0,
    "merged": false,
    "review": null,
-   "never_truncate": false
+   "never_truncate": false,
+   "copied": false
   },
   {
    "id": "relations",
    "order": 7,
    "title": "Relations avec d'autres packs",
    "heading": "## 7. Relations avec d'autres packs {#relations}",
-   "line_start": 71,
-   "line_end": 82,
+   "line_start": 69,
+   "line_end": 80,
    "bytes": 384,
    "budget_bytes": 1500,
    "cut_lines": 0,
@@ -205,15 +208,16 @@
    "lots": 0,
    "merged": false,
    "review": null,
-   "never_truncate": false
+   "never_truncate": false,
+   "copied": false
   },
   {
    "id": "tests",
    "order": 8,
    "title": "Tests attendus",
    "heading": "## 8. Tests attendus {#tests}",
-   "line_start": 83,
-   "line_end": 89,
+   "line_start": 81,
+   "line_end": 87,
    "bytes": 1338,
    "budget_bytes": 2000,
    "cut_lines": 0,
@@ -237,15 +241,16 @@
     "rejected": 1,
     "unreviewed": 0
    },
-   "never_truncate": false
+   "never_truncate": false,
+   "copied": true
   },
   {
    "id": "questions",
    "order": 9,
    "title": "Questions ouvertes",
    "heading": "## 9. Questions ouvertes {#questions}",
-   "line_start": 90,
-   "line_end": 93,
+   "line_start": 88,
+   "line_end": 91,
    "bytes": 401,
    "budget_bytes": 1500,
    "cut_lines": 0,
@@ -265,15 +270,16 @@
     "rejected": 0,
     "unreviewed": 0
    },
-   "never_truncate": false
+   "never_truncate": false,
+   "copied": true
   },
   {
    "id": "alerts",
    "order": 10,
    "title": "Alertes",
    "heading": "## 10. Alertes {#alerts}",
-   "line_start": 94,
-   "line_end": 98,
+   "line_start": 92,
+   "line_end": 96,
    "bytes": 1092,
    "budget_bytes": 4000,
    "cut_lines": 0,
@@ -296,15 +302,16 @@
     "rejected": 0,
     "unreviewed": 0
    },
-   "never_truncate": true
+   "never_truncate": true,
+   "copied": true
   },
   {
    "id": "coverage",
    "order": 11,
    "title": "Couverture",
    "heading": "## 11. Couverture {#coverage}",
-   "line_start": 99,
-   "line_end": 106,
+   "line_start": 97,
+   "line_end": 104,
    "bytes": 655,
    "budget_bytes": 1500,
    "cut_lines": 0,
@@ -315,7 +322,8 @@
    "lots": 0,
    "merged": false,
    "review": null,
-   "never_truncate": false
+   "never_truncate": false,
+   "copied": false
   }
  ],
  "dedup": {
@@ -324,11 +332,25 @@
   "out_of_scope": 2,
   "pool_before": 34,
   "pool_after": 34,
-  "related_pairs": 19
+  "related_pairs": 18
  },
  "lint": {
   "ok": true,
   "errors": 0,
   "warnings": 0
+ },
+ "refresh": {
+  "mode": "only-changed",
+  "at": "2026-11-24T17:40:00",
+  "rewritten": [
+   "surface"
+  ],
+  "copied": [
+   "lexicon",
+   "rules",
+   "tests",
+   "questions",
+   "alerts"
+  ]
  }
 }
