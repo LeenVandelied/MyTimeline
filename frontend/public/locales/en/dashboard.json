@@ -97,7 +97,8 @@
       "week": "Week",
       "month": "Month",
       "quarter": "Quarter",
-      "year": "Year"
+      "year": "Year",
+      "scale": "1 px = {hours} h"
     },
     "minimap": {
       "label": "Timeline overview",

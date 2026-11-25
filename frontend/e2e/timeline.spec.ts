@@ -5,6 +5,15 @@ import { PROD } from './support/accounts'
 import { sessionState } from './support/session'
 import { getUserId, seedCategory, seedProduct, todayIsoDate, unique } from './support/products'
 import { LANE_GUTTER_PX, revealSeededLane } from './support/timeline-lanes'
+import {
+  INITIAL_PX_PER_DAY,
+  MAX_PX_PER_DAY,
+  SCALES_FROM_MAX_TO_MIN,
+  ZOOM_STEPS_INITIAL_TO_MAX,
+  scaleAfterSteps,
+  scaleReadout,
+} from './support/timeline-zoom'
+import { FIT_MIN_PX_PER_DAY } from '../src/components/timeline/zoom'
 
 /**
  * #330 (lot b) — stub PAGE de l'API Fullscreen pour `timeline-fullscreen` (cf.
@@ -625,16 +634,16 @@ async function gotoTimelineWithProduct(page: Page): Promise<void> {
 }
 
 test.describe('#330 Toolbar desktop — zoom-out / today / weekend / aide / plein écran', () => {
-  test('zoom-out : dézoome (Mois → Trimestre), oracle timeline-zoom-level', async ({ page }) => {
+  test('zoom-out : dézoome d’un cran, oracle timeline-zoom-level', async ({ page }) => {
     await gotoTimelineWithProduct(page)
     const level = page.getByTestId('timeline-zoom-level')
-    await expect(level).toHaveText('Mois')
+    await expect(level).toHaveText(scaleReadout(INITIAL_PX_PER_DAY))
 
     await page.getByTestId('timeline-zoom-out').click()
 
-    // Dézoomer élargit l'échelle (Mois -> Trimestre) : une assertion « le texte a
-    // changé » laisserait passer un zoom-IN accidentel sur le mauvais bouton.
-    await expect(level).toHaveText('Trimestre')
+    // #593 — dézoomer élargit l'échelle (« 1 px = 2 h » → « 1 px = 3 h ») : une assertion
+    // « le texte a changé » laisserait passer un zoom-IN accidentel sur le mauvais bouton.
+    await expect(level).toHaveText(scaleReadout(scaleAfterSteps(-1)))
   })
 
   test('today : badge positionnel visible, dont la position suit le zoom (pas de clic, cf. note ci-dessus)', async ({
@@ -654,14 +663,17 @@ test.describe('#330 Toolbar desktop — zoom-out / today / weekend / aide / plei
     }).toPass()
   })
 
-  test('weekend : motif calendaire réel (paire samedi/dimanche, écarts 34/204px) au zoom Semaine', async ({
+  test('weekend : motif calendaire réel (paire samedi/dimanche, écarts 1 j / 6 j) dès le seuil semaine', async ({
     page,
   }) => {
     await gotoTimelineWithProduct(page)
     await expect(page.getByTestId('timeline-weekend')).toHaveCount(0) // zoom Mois par défaut : []
 
-    await page.getByTestId('timeline-zoom-in').click()
-    await expect(page.getByTestId('timeline-zoom-level')).toHaveText('Semaine')
+    // #593 — zoom continu : l'overlay apparaît dès 34 px/j (ancien palier semaine),
+    // atteint au 3e cran depuis le mois (12 × 1,5³ = 40,5 px/j).
+    const dayWidth = scaleAfterSteps(3)
+    for (let i = 0; i < 3; i++) await page.getByTestId('timeline-zoom-in').click()
+    await expect(page.getByTestId('timeline-zoom-level')).toHaveText(scaleReadout(dayWidth))
 
     const segments = page.getByTestId('timeline-weekend')
     const count = await segments.count()
@@ -688,8 +700,9 @@ test.describe('#330 Toolbar desktop — zoom-out / today / weekend / aide / plei
       )
     ).sort((a, b) => a - b)
     for (let i = 1; i < lefts.length; i++) {
-      const delta = Math.round(lefts[i] - lefts[i - 1])
-      expect([34, 204], `écart ${delta}px entre segments ${i - 1} et ${i}`).toContain(delta)
+      const delta = lefts[i] - lefts[i - 1]
+      const gap = Math.min(Math.abs(delta - dayWidth), Math.abs(delta - 6 * dayWidth))
+      expect(gap, `écart ${delta}px entre segments ${i - 1} et ${i}`).toBeLessThan(0.5)
     }
   })
 
@@ -915,9 +928,11 @@ test.describe('#330 Minimap / états transitoires / contraste (desktop)', () => 
     // La section scroll ci-dessous zoomait sur 'Jour' pour garantir le même
     // presupposé (`geometry.scrollWidth > clientWidth`) — il fallait l'établir
     // AVANT le test clavier aussi, pas seulement avant le scroll.
-    await page.getByTestId('timeline-zoom-in').click()
-    await page.getByTestId('timeline-zoom-in').click()
-    await expect(page.getByTestId('timeline-zoom-level')).toHaveText('Jour')
+    // #593 — zoom continu : cinq crans depuis le mois (91 px/j, proche de l'ancien 'Jour').
+    for (let i = 0; i < 5; i++) await page.getByTestId('timeline-zoom-in').click()
+    await expect(page.getByTestId('timeline-zoom-level')).toHaveText(
+      scaleReadout(scaleAfterSteps(5)),
+    )
 
     const scrollEl = page.getByTestId('timeline-scroll')
     const geometry = await scrollEl.evaluate((el) => ({
@@ -1036,7 +1051,8 @@ test.describe('#330 Minimap / états transitoires / contraste (desktop)', () => 
     await expect(live).toHaveText('')
 
     await page.getByTestId('timeline-zoom-out').click()
-    await expect(live).toHaveText('Niveau de zoom : Trimestre')
+    // #593 — l'annonce reprend la lecture « 1 px = X h ».
+    await expect(live).toHaveText(`Niveau de zoom : ${scaleReadout(scaleAfterSteps(-1))}`)
 
     // #330-fix (Sprint 54) — BUG PRODUIT trouvé à la mesure (signalé, pas maquillé) :
     // au zoom Trimestre, un événement proche du début de l'étendue (`rangeStart`,
@@ -1231,10 +1247,17 @@ const STICKY_CATEGORY_ID = '3a1f0000-0000-4000-8000-000000000394'
  * (`computeRange`, padDays=30) et donc `dayOffset = 30` exactement.
  * Couleur `#1D4ED8` (ratio 6.70 > AA) : évite le libellé extérieur de secours,
  * qui ajouterait un nœud parasite au voisinage de la pastille (cf. #81 point 6).
+ * `extraProducts` : produits ajoutés APRÈS celui-ci (le recadrage `F` à l'échelle la
+ * plus large demande une étendue longue ; un événement futur ne change pas `rangeStart`).
  */
-async function stubStickyLaneFixture(page: Page, productName: string): Promise<void> {
+async function stubStickyLaneFixture(
+  page: Page,
+  productName: string,
+  extraProducts: unknown[] = [],
+): Promise<void> {
   const today = todayIsoDate()
   await stubProductsList(page, [
+    ...extraProducts,
     {
       id: STICKY_PRODUCT_ID,
       name: productName,
@@ -1307,8 +1330,11 @@ test.describe('#392 /timeline — en-tête de lane sticky et pastilles atteignab
     await gotoTimeline(page)
     await expect(page.getByTestId('timeline-host')).toBeVisible()
 
-    await page.getByTestId('timeline-zoom-out').click()
-    await expect(page.getByTestId('timeline-zoom-level')).toHaveText('Trimestre')
+    // #593 — zoom continu : trois crans arrière ramènent à la borne trimestre (5 px/j).
+    for (let i = 0; i < 3; i++) await page.getByTestId('timeline-zoom-out').click()
+    await expect(page.getByTestId('timeline-zoom-level')).toHaveText(
+      scaleReadout(scaleAfterSteps(-3)),
+    )
 
     // Prémisse : à ce zoom la pastille tombe bien dans la zone que l'en-tête
     // recouvrait (30j * 5px = 150px < 176px, gouttière #674). Sans cette garde le test pourrait
@@ -1336,7 +1362,7 @@ test.describe('#392 /timeline — en-tête de lane sticky et pastilles atteignab
    * étaient rouges, les étroits (Jour, Semaine, Mois) doivent le rester verts —
    * un correctif qui décalerait la piste dans le mauvais sens les casserait.
    */
-  test('les 5 niveaux de zoom : la pastille ne démarre jamais sous l’en-tête sticky', async ({
+  test('de l’heure au trimestre : la pastille ne démarre jamais sous l’en-tête sticky', async ({
     page,
   }) => {
     const productName = unique('Sticky Zoom Prod')
@@ -1345,14 +1371,19 @@ test.describe('#392 /timeline — en-tête de lane sticky et pastilles atteignab
     await expect(page.getByTestId('timeline-host')).toBeVisible()
 
     const level = page.getByTestId('timeline-zoom-level')
-    // Départ 'Mois' (initialZoomState) → on descend jusqu'à 'Jour', puis on
-    // remonte niveau par niveau : les 5 sont traversés dans un ordre connu.
-    await page.getByTestId('timeline-zoom-in').click()
-    await page.getByTestId('timeline-zoom-in').click()
-    await expect(level).toHaveText('Jour')
+    // #593 — zoom continu : départ au mois (12 px/j), crans avant jusqu'à la borne fine
+    // (`MAX_PX_PER_DAY`, zone horaire), puis un cran arrière à la fois jusqu'à la borne
+    // trimestre (5 px/j). L'ancien niveau année, lui, ne s'atteint que par `F` (test
+    // suivant).
+    for (let i = 0; i < ZOOM_STEPS_INITIAL_TO_MAX; i++) {
+      await page.getByTestId('timeline-zoom-in').click()
+    }
+    await expect(level).toHaveText(scaleReadout(MAX_PX_PER_DAY))
+    const scales = SCALES_FROM_MAX_TO_MIN
 
-    for (const expected of ['Jour', 'Semaine', 'Mois', 'Trimestre', 'Année']) {
-      if (expected !== 'Jour') await page.getByTestId('timeline-zoom-out').click()
+    for (const [i, scale] of scales.entries()) {
+      if (i > 0) await page.getByTestId('timeline-zoom-out').click()
+      const expected = scaleReadout(scale)
       await expect(level).toHaveText(expected)
 
       // Aux zooms étroits la pastille (30 j après `rangeStart`) sort de la bande
@@ -1371,6 +1402,55 @@ test.describe('#392 /timeline — en-tête de lane sticky et pastilles atteignab
   })
 
   /**
+   * #593 — l'ancien niveau année (2,2 px/j) ne s'atteint plus qu'au recadrage `F`. Une
+   * étendue longue (événement futur à J+1500, autre produit) fait descendre `F` à
+   * `FIT_MIN_PX_PER_DAY` : la pastille du jour, 30 j × 2,2 = 66 px après l'origine,
+   * tomberait sous l'en-tête sans le décalage de piste de #392.
+   */
+  test('recadrage F à 2,2 px/j : la pastille ne démarre pas sous l’en-tête sticky', async ({
+    page,
+  }) => {
+    const productName = unique('Sticky Fit Prod')
+    const farId = '3a1f0000-0000-4000-8000-000000000395'
+    const farDate = isoOffsetDate(1500)
+    await stubStickyLaneFixture(page, productName, [
+      {
+        id: farId,
+        name: unique('Sticky Fit Far'),
+        color: '#1D4ED8',
+        category: { id: `${farId}-cat`, name: 'Sticky Far Cat', color: '#1D4ED8' },
+        events: [
+          {
+            id: `${farId}-evt`,
+            title: 'Sticky Far',
+            type: 'single',
+            startDate: farDate,
+            endDate: farDate,
+            productId: farId,
+            color: '#1D4ED8',
+            archived: false,
+          },
+        ],
+      },
+    ])
+    await gotoTimeline(page)
+    await expect(page.getByTestId('timeline-host')).toBeVisible()
+    await expect(resourceHead(page, productName)).toBeVisible()
+
+    await page.keyboard.press('f')
+    await expect(page.getByTestId('timeline-zoom-level')).toHaveText(
+      scaleReadout(FIT_MIN_PX_PER_DAY),
+    )
+
+    const { pillRailX, headWidth } = await laneOcclusionGeometry(page, productName)
+    expect(
+      pillRailX,
+      `F à 2,2 px/j : la pastille démarre à ${pillRailX}px de l'origine du rail, ` +
+        `sous les ${headWidth}px recouverts en permanence par l'en-tête sticky`,
+    ).toBeGreaterThanOrEqual(headWidth - 0.5)
+  })
+
+  /**
    * PARCOURS 3 — contre-preuve exigée par le plan : l'en-tête de lane est
    * LUI-MÊME interactif (accordéon produit #195). Un correctif par
    * `pointer-events:none` non borné rendrait ce test rouge — c'est précisément
@@ -1383,8 +1463,10 @@ test.describe('#392 /timeline — en-tête de lane sticky et pastilles atteignab
     await gotoTimeline(page)
     await expect(page.getByTestId('timeline-host')).toBeVisible()
 
-    await page.getByTestId('timeline-zoom-out').click()
-    await expect(page.getByTestId('timeline-zoom-level')).toHaveText('Trimestre')
+    for (let i = 0; i < 3; i++) await page.getByTestId('timeline-zoom-out').click()
+    await expect(page.getByTestId('timeline-zoom-level')).toHaveText(
+      scaleReadout(scaleAfterSteps(-3)),
+    )
 
     const head = resourceHead(page, productName)
     const pill = resourceRow(page, productName).locator('[data-testid="timeline-event"]')
@@ -1521,7 +1603,9 @@ test.describe('#449 /timeline — le zoom arrière conserve la zone temporelle',
     await expect(todayPill, 'la pastille du jour est montée avant le zoom').toHaveCount(1)
 
     await page.getByTestId('timeline-zoom-out').click()
-    await expect(page.getByTestId('timeline-zoom-level')).toHaveText('Trimestre')
+    await expect(page.getByTestId('timeline-zoom-level')).toHaveText(
+      scaleReadout(scaleAfterSteps(-1)),
+    )
 
     const after = await settledScroll(page)
     expect(
@@ -1602,9 +1686,12 @@ const PERIOD_PRESSES = 10
 const LANE_TRACK_OFFSET_PX = LANE_GUTTER_PX
 /** #594 — demi-largeur du pin d'un ponctuel = `PIN_HALF_WIDTH_PX` (`zoom.ts`). */
 const PIN_HALF_WIDTH_PX = 5
-/** Échelles px/jour des deux niveaux traversés (`DAY_WIDTH_PX`, `zoom.ts`). */
-const DAY_WIDTH_MONTH_PX = 12
-const DAY_WIDTH_QUARTER_PX = 5
+/**
+ * Échelles px/jour traversées : le mois au chargement, puis un cran arrière
+ * (#593 : zoom continu, 12 / 1,5 = 8 px/j).
+ */
+const DAY_WIDTH_MONTH_PX = INITIAL_PX_PER_DAY
+const DAY_WIDTH_ONE_STEP_OUT_PX = scaleAfterSteps(-1)
 
 /**
  * UN produit, TROIS events. Les deux bornes fixent une étendue de 5501 jours
@@ -1696,11 +1783,13 @@ test.describe('#451 /timeline — le zoom arrière conserve le JOUR regardé, pa
     //    aucun rabattement n'est possible au zoom arrière. Ce que la spec
     //    éprouve est donc l'ANCRAGE, pas le clamp du navigateur.
     await page.getByTestId('timeline-zoom-out').click()
-    await expect(page.getByTestId('timeline-zoom-level')).toHaveText('Trimestre')
+    await expect(page.getByTestId('timeline-zoom-level')).toHaveText(
+      scaleReadout(DAY_WIDTH_ONE_STEP_OUT_PX),
+    )
     const after = await settledScroll(page)
     expect(
       before.scrollLeft,
-      'la position d’avant zoom doit rester DANS les bornes du zoom Trimestre : ' +
+      'la position d’avant zoom doit rester DANS les bornes du zoom arrière : ' +
         'sans cela le défaut se confondrait avec le rabattement déjà couvert par #449',
     ).toBeLessThan(after.maxScroll)
 
@@ -1716,9 +1805,9 @@ test.describe('#451 /timeline — le zoom arrière conserve le JOUR regardé, pa
     expect(
       after.scrollLeft,
       `re-projection d’ancre : scrollLeft doit passer de ${before.scrollLeft} px ` +
-        `(${DAY_WIDTH_MONTH_PX} px/j) à ${targetDay * DAY_WIDTH_QUARTER_PX} px ` +
-        `(${DAY_WIDTH_QUARTER_PX} px/j) — même JOUR, échelle différente`,
-    ).toBe(targetDay * DAY_WIDTH_QUARTER_PX)
+        `(${DAY_WIDTH_MONTH_PX} px/j) à ${targetDay * DAY_WIDTH_ONE_STEP_OUT_PX} px ` +
+        `(${DAY_WIDTH_ONE_STEP_OUT_PX} px/j) — même JOUR, échelle différente`,
+    ).toBe(targetDay * DAY_WIDTH_ONE_STEP_OUT_PX)
 
     // 4. NON-RÉGRESSION #392 — repère PISTE conservé de part et d'autre du zoom :
     //    la pastille affleure l'en-tête sticky, elle ne passe pas dessous.
@@ -1805,15 +1894,15 @@ const ZOOM_IN_PRODUCT_ID = '4a1f0000-0000-4000-8000-000000000477'
 
 /** Nombre de `]` joués au zoom Mois : 4 × 30 j = jour 120 de l'étendue. */
 const ZOOM_IN_PERIOD_PRESSES = 4
-/** Échelles px/jour des deux niveaux ATTEINTS par zoom avant (`DAY_WIDTH_PX`). */
-const DAY_WIDTH_WEEK_PX = 34
-const DAY_WIDTH_DAY_PX = 96
+/** Échelles px/jour ATTEINTES par un puis deux crans avant (#593 : 18 puis 27 px/j). */
+const DAY_WIDTH_ONE_STEP_IN_PX = scaleAfterSteps(1)
+const DAY_WIDTH_TWO_STEPS_IN_PX = scaleAfterSteps(2)
 
 /**
  * UN produit, TROIS events : J−600, J−510 (l'ORACLE) et J+70. `computeRange`
  * (padDays = 30) rend une étendue de 731 jours démarrant à J−630 — donc
  * l'oracle au jour 120 et AUJOURD'HUI au jour 630, à 510 jours de là. À
- * l'échelle la plus fine traversée (96 px/j) cela fait 48 960 px d'écart : un
+ * l'échelle la plus fine traversée (27 px/j) cela fait 13 770 px d'écart : un
  * recentrage sur aujourd'hui — le faux correctif que #451 documente — ne peut
  * en aucun cas laisser la pastille de l'oracle dans la bande de rendu.
  *
@@ -1899,11 +1988,11 @@ async function expectDayStillAnchored(
   oracleTitle: string,
   targetDay: number,
   dayWidth: number,
-  levelLabel: string,
 ): Promise<void> {
   const oraclePill = page.locator(
     `[data-testid="timeline-event"][data-event-title="${oracleTitle}"]`,
   )
+  const levelLabel = scaleReadout(dayWidth)
   await expect(page.getByTestId('timeline-zoom-level')).toHaveText(levelLabel)
 
   await expect(
@@ -1933,14 +2022,16 @@ async function expectDayStillAnchored(
 }
 
 test.describe('#477 /timeline — le zoom AVANT conserve le JOUR regardé', () => {
-  test('raccourcis « + » puis « = » : Mois → Semaine → Jour, le jour ancré ne bouge pas', async ({
+  test('raccourcis « + » puis « = » : deux crans avant, le jour ancré ne bouge pas', async ({
     page,
   }) => {
     const oracleTitle = unique('ZoomIn Oracle')
     await stubZoomInRangeFixture(page, oracleTitle)
     await gotoTimeline(page)
     await expect(page.getByTestId('timeline-host')).toBeVisible()
-    await expect(page.getByTestId('timeline-zoom-level')).toHaveText('Mois')
+    await expect(page.getByTestId('timeline-zoom-level')).toHaveText(
+      scaleReadout(INITIAL_PX_PER_DAY),
+    )
 
     const { targetDay, offsetBefore } = await anchorAtDay120(page, oracleTitle)
     expect(
@@ -1948,29 +2039,31 @@ test.describe('#477 /timeline — le zoom AVANT conserve le JOUR regardé', () =
       `#392 avant le zoom : la pastille affleure déjà l’en-tête sticky (${LANE_TRACK_OFFSET_PX} px)`,
     ).toBe(LANE_TRACK_OFFSET_PX)
 
-    // COUPLE 1 — Mois (12 px/j) → Semaine (34 px/j), raccourci `+`.
+    // COUPLE 1 — 12 → 18 px/j, raccourci `+`.
     await page.keyboard.press('+')
-    await expectDayStillAnchored(page, oracleTitle, targetDay, DAY_WIDTH_WEEK_PX, 'Semaine')
+    await expectDayStillAnchored(page, oracleTitle, targetDay, DAY_WIDTH_ONE_STEP_IN_PX)
 
-    // COUPLE 2 — Semaine (34 px/j) → Jour (96 px/j), alias `=` du même raccourci.
+    // COUPLE 2 — 18 → 27 px/j, alias `=` du même raccourci.
     await page.keyboard.press('=')
-    await expectDayStillAnchored(page, oracleTitle, targetDay, DAY_WIDTH_DAY_PX, 'Jour')
+    await expectDayStillAnchored(page, oracleTitle, targetDay, DAY_WIDTH_TWO_STEPS_IN_PX)
   })
 
-  test('bouton « timeline-zoom-in » : Mois → Semaine, le jour ancré ne bouge pas', async ({
+  test('bouton « timeline-zoom-in » : un cran avant, le jour ancré ne bouge pas', async ({
     page,
   }) => {
     const oracleTitle = unique('ZoomIn Btn Oracle')
     await stubZoomInRangeFixture(page, oracleTitle)
     await gotoTimeline(page)
     await expect(page.getByTestId('timeline-host')).toBeVisible()
-    await expect(page.getByTestId('timeline-zoom-level')).toHaveText('Mois')
+    await expect(page.getByTestId('timeline-zoom-level')).toHaveText(
+      scaleReadout(INITIAL_PX_PER_DAY),
+    )
 
     const { targetDay } = await anchorAtDay120(page, oracleTitle)
 
     // Le bouton dispatche le MÊME `ZOOM_IN` que le raccourci, mais c'est la
     // commande visible de l'écran, et aucune spec d'ancrage ne l'empruntait.
     await page.getByTestId('timeline-zoom-in').click()
-    await expectDayStillAnchored(page, oracleTitle, targetDay, DAY_WIDTH_WEEK_PX, 'Semaine')
+    await expectDayStillAnchored(page, oracleTitle, targetDay, DAY_WIDTH_ONE_STEP_IN_PX)
   })
 })

@@ -3,6 +3,7 @@ import { type Page, type Route } from '@playwright/test'
 import { ensureAuthenticated } from './support/auth'
 import { PROD } from './support/accounts'
 import { sessionState } from './support/session'
+import { INITIAL_PX_PER_DAY, MAX_PX_PER_DAY, scaleReadout } from './support/timeline-zoom'
 
 /**
  * Sprint 105 #597 — la touche `F` RECADRE la frise bureau sur les événements AFFICHÉS
@@ -23,12 +24,11 @@ import { sessionState } from './support/session'
  * FIXTURE — listing produits STUBBÉ (motif `sprint-105-lane-zebra`) : le compte PROD
  * accumule les semis des autres specs, dont les dates fausseraient l'étendue. Ponctuels :
  * Alpha −120 j, Beta +10 j, Gamma +200 j ; et, pour la 2e spec seulement, Omega −400 j.
- *  - 1re spec (Alpha/Beta/Gamma affichés) : 320 j → `year` (2,2 px/j, 704 px ; `quarter`
- *    en demanderait 1600). Le rail entier tient alors dans le viewport : le cadrage est
- *    borné au bord gauche du rail (30 j de marge de `computeRange`), pas centré.
- *  - 2e spec : Omega et Gamma MASQUÉES → Alpha..Beta, 130 j → `quarter` (650 px), et le
- *    rail (étendu par les masquées) laisse la place de CENTRER. Un cadrage qui compterait
- *    les masquées resterait en `year` et ne centrerait pas Alpha..Beta.
+ *  - 1re spec (Alpha/Beta/Gamma affichés) : 320 j. #593 — `F` pose l'échelle CONTINUE
+ *    qui fait tenir l'étendue (bornée en dessous à 2,2 px/j, l'ancien `year`).
+ *  - 2e spec : Omega et Gamma MASQUÉES → Alpha..Beta, 130 j, et le rail (étendu par les
+ *    masquées) laisse la place de CENTRER. Un cadrage qui compterait les masquées
+ *    resterait à 2,2 px/j et ne centrerait pas Alpha..Beta.
  * Prémisse assertée : piste utile hors marges dans [704, 1560[ — mesurée à 798 px pour un
  * viewport de 1600 (shell + sidebar), d'où un viewport de 1920.
  *
@@ -247,7 +247,7 @@ test.describe('#597 — touche F : recadrage de la frise', () => {
     await expectPinsFramed(page, shown, 'Omega et Gamma masquées')
     const framed = await readFrame(page, shown)
     const spanShown = (framed.pins[1]?.left ?? 0) - (framed.pins[0]?.left ?? 0)
-    // … même écart en jours, échelle 5 / 2,2 : l'écart Alpha→Beta s'élargit.
+    // … même écart en jours, échelle plus fine : l'écart Alpha→Beta s'élargit.
     expect(spanShown / spanAll).toBeGreaterThan(2)
     // … et Alpha..Beta est CENTRÉ (ni Omega ni Gamma ne tirent le cadrage), sans
     // rabattement du navigateur à l'un des bords du rail.
@@ -295,15 +295,16 @@ test.describe('#597 — touche F : recadrage de la frise', () => {
  *    près), et pas d'ellipse (`scrollWidth ≤ clientWidth`) ;
  *  - événement de TÊTE : bord gauche − bord de piste ≥ 35 px.
  *
- * JEUX SERRÉS, calculés depuis la piste MESURÉE (`usablePx`) : les niveaux étant discrets,
- * une étendue quelconque laisse jusqu'à un niveau entier de mou et le libellé tient même
- * avec les marges d'avant #804 (mesuré : 150 à 570 px d'air à 1920 px — spec vacante).
- * L'étendue retenue est donc la PLUS GRANDE qui tient au niveau visé avec les marges
- * réelles (mou < 1 jour) : toute marge droite plus petite ferait déborder le libellé.
+ * JEUX SERRÉS, calculés depuis la piste MESURÉE (`usablePx`) : l'étendue retenue est la
+ * PLUS GRANDE qui tient à l'échelle visée avec les marges réelles (mou < 1 jour). #593 —
+ * `F` pose désormais l'échelle continue qui fait tenir l'étendue EXACTEMENT (juste
+ * au-dessus de l'échelle visée) : l'air de queue vaut la marge droite, au pixel près, et
+ * toute marge droite plus petite ferait déborder le libellé. L'échelle attendue se lit
+ * dans « 1 px = X h » (`expectedScale`).
  * Le pin SEUL n'a pas d'étendue : son oracle est le CENTRAGE de l'emprise pin + libellé
  * (`[date − 5, date + 100]`), qu'une marge symétrique décale de 95 px.
- * Jamais en niveau `year` (30 j de marge de rail = 66 px < 135 : le navigateur rabattrait
- * le défilement, PIT-S105-003) — prémisse assertée par le libellé du niveau.
+ * Jamais à 2,2 px/j, l'ancien `year` (30 j de marge de rail = 66 px < 135 : le navigateur
+ * rabattrait le défilement, PIT-S105-003) — prémisse assertée par la lecture de l'échelle.
  * Le 4e jeu porte un titre de queue de 31 caractères (> 19) : au-delà du plancher de
  * 100 px, seule la réserve réelle du libellé (#804 suite, `trailingLabelReservePx`, même
  * estimation 11 + ⌈31 × 6,3⌉ = 207 px) le garde entier.
@@ -316,7 +317,8 @@ test.describe('#597 — touche F : recadrage de la frise', () => {
 const PIN_FOOTPRINT_PX = 100
 /** Réserve estimée du libellé long du jeu 4 (`pinFootprintPx`, 31 car. × 6,3 + 11). */
 const LONG_TAIL_RESERVE_PX = 11 + Math.ceil(31 * 6.3)
-const DAY_WIDTH = { day: 96, week: 34, quarter: 5 } as const
+/** Échelles visées par les jeux serrés (anciens paliers semaine et trimestre). */
+const DAY_WIDTH = { week: 34, quarter: 5 } as const
 
 type FitEvent = { title: string; start: number; end?: number }
 
@@ -412,9 +414,16 @@ async function readLabelFrame(page: Page, head: string, tail: string) {
 const tightSpan = (usablePx: number, trailPx: number, dayWidth: number) =>
   Math.floor((usablePx - FIT_LEAD_PX - trailPx) / dayWidth)
 
+/** #593 — échelle continue posée par `F` : la piste utile hors marges / l'étendue. */
+const fitScale = (usablePx: number, trailPx: number, dayWidth: number) =>
+  (usablePx - FIT_LEAD_PX - trailPx) / tightSpan(usablePx, trailPx, dayWidth)
+
+const LONG_TAIL_TRAIL_PX = Math.max(FIT_TRAIL_PX, LONG_TAIL_RESERVE_PX + FIT_EDGE_AIR_PX)
+
 const LABEL_CASES: ReadonlyArray<{
   name: string
-  level: string
+  /** Échelle (px/jour) attendue après `F`, pour la piste mesurée. */
+  expectedScale: (usablePx: number) => number
   head: string
   tail: string
   events: (usablePx: number) => FitEvent[]
@@ -431,7 +440,7 @@ const LABEL_CASES: ReadonlyArray<{
 }> = [
   {
     name: '2 pins, étendue serrée en `week`',
-    level: 'Semaine',
+    expectedScale: (u) => fitScale(u, FIT_TRAIL_PX, DAY_WIDTH.week),
     head: 'S117 Tête A',
     tail: 'S117 Queue A',
     events: (u) => [
@@ -441,7 +450,7 @@ const LABEL_CASES: ReadonlyArray<{
   },
   {
     name: 'barre + pin, étendue serrée en `quarter`',
-    level: 'Trimestre',
+    expectedScale: (u) => fitScale(u, FIT_TRAIL_PX, DAY_WIDTH.quarter),
     head: 'S117 Barre B',
     tail: 'S117 Queue B',
     events: (u) => [
@@ -451,7 +460,8 @@ const LABEL_CASES: ReadonlyArray<{
   },
   {
     name: 'pin seul (emprise centrée)',
-    level: 'Jour',
+    // Étendue nulle : l'échelle la plus fine (heure).
+    expectedScale: () => MAX_PX_PER_DAY,
     head: 'S117 Seul C',
     tail: 'S117 Seul C',
     events: () => [{ title: 'S117 Seul C', start: 40 }],
@@ -459,7 +469,7 @@ const LABEL_CASES: ReadonlyArray<{
   },
   {
     name: '2 pins, titre de queue de 31 caractères, étendue serrée en `week`',
-    level: 'Semaine',
+    expectedScale: (u) => fitScale(u, LONG_TAIL_TRAIL_PX, DAY_WIDTH.week),
     head: 'S117 Tête D',
     tail: 'S117 échéance de queue allongée',
     fontDependentWidth: true,
@@ -467,13 +477,7 @@ const LABEL_CASES: ReadonlyArray<{
       { title: 'S117 Tête D', start: 15 },
       {
         title: 'S117 échéance de queue allongée',
-        start:
-          15 +
-          tightSpan(
-            u,
-            Math.max(FIT_TRAIL_PX, LONG_TAIL_RESERVE_PX + FIT_EDGE_AIR_PX),
-            DAY_WIDTH.week,
-          ),
+        start: 15 + tightSpan(u, LONG_TAIL_TRAIL_PX, DAY_WIDTH.week),
       },
     ],
   },
@@ -484,13 +488,14 @@ test.describe('#804 — touche F : libellé du pin de queue entier', () => {
     test(`${c.name} : libellé de queue entier, tête à ≥ 35 px de la gouttière`, async ({
       page,
     }) => {
-      await gotoTimelineSized(page, (usablePx) => [fitProduct(i + 1, c.events(usablePx))])
+      const usablePx = await gotoTimelineSized(page, (u) => [fitProduct(i + 1, c.events(u))])
       const level = page.getByTestId('timeline-zoom-level')
-      await expect(level).toHaveText('Mois')
+      await expect(level).toHaveText(scaleReadout(INITIAL_PX_PER_DAY))
       await page.keyboard.press('f')
-      // Chaque jeu se cadre à un AUTRE niveau que `month` (initial) : l'attendre prouve que
-      // le cadrage est appliqué — et que le jeu n'est pas tombé en `year` (rail rabattu).
-      await expect(level).toHaveText(c.level)
+      // Chaque jeu se cadre à une AUTRE échelle que celle du mois (initiale) : l'attendre
+      // prouve que le cadrage est appliqué — et que le jeu n'est pas tombé à 2,2 px/j
+      // (rail rabattu).
+      await expect(level).toHaveText(scaleReadout(c.expectedScale(usablePx)))
       await expect
         .poll(async () => {
           const f = await readLabelFrame(page, c.head, c.tail)

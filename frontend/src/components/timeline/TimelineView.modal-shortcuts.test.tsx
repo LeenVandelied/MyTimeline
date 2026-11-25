@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest'
 
 import { TimelineView } from './TimelineView'
+import { formatHoursPerPx } from './zoom'
 import { NewEventDrawer } from '@/components/events/NewEventDrawer'
 import type { FullCalendarEvent } from '@/types/event'
 import type { Product } from '@/types/product'
@@ -26,9 +27,12 @@ import type { Resource } from './lib'
  * déjà (PIT-S82-001 — une assertion doit pouvoir rougir sur la violation).
  */
 
+// #593 — valeurs interpolées rendues après la clé : la lecture « 1 px = X h » suit le zoom.
 vi.mock('next-intl', () => ({
-  useTranslations: (namespace?: string) => (key: string) =>
-    namespace ? `${namespace}.${key}` : key,
+  useTranslations: (namespace?: string) => (key: string, values?: Record<string, unknown>) => {
+    const full = namespace ? `${namespace}.${key}` : key
+    return values ? `${full} ${Object.values(values).join(' ')}` : full
+  },
   useLocale: () => 'fr',
 }))
 
@@ -208,10 +212,11 @@ describe('#672 raccourcis de la frise sous le panneau de création du shell', ()
     fireEvent.keyDown(window, { key: 't' })
     await waitFor(() => expect(scroll.scrollLeft).toBe(420))
 
-    // #597 — F RECADRE (4 j dans 744 px utiles → niveau `day`), sans plein écran.
+    // #597 — F RECADRE (4 j dans 649 px utiles → 162,25 px/j, #593 échelle continue),
+    // sans plein écran.
     Object.defineProperty(scroll, 'clientWidth', { configurable: true, value: 1000 })
     fireEvent.keyDown(window, { key: 'f' })
-    await waitFor(() => expect(level).toHaveTextContent('dashboard.timeline.zoom.day'))
+    await waitFor(() => expect(level).toHaveTextContent(formatHoursPerPx(649 / 4, 'fr-FR')))
     expect(requestFullscreenMock).not.toHaveBeenCalled()
   })
 

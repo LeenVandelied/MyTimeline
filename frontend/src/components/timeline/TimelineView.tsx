@@ -32,22 +32,28 @@ import { Minimap } from './Minimap'
 import { EventDrawer } from './EventDrawer'
 import { EventPill } from './EventPill'
 import {
-  DAY_WIDTH_PX,
-  ZOOM_LEVELS,
+  MAX_PX_PER_DAY,
+  MIN_PX_PER_DAY,
   buildMinimapBuckets,
-  buildRulerTicks,
+  buildRulerTicksForScale,
   buildWeekendSegments,
   computeFit,
   computeRange,
+  continuousZoomReducer,
+  cursorDayFromScroll,
   daysBetween,
   displayedEventDayExtent,
+  formatHoursPerPx,
   indexEventsByResource,
-  initialZoomState,
+  initialContinuousZoomState,
   scaleEventPositions,
+  scrollLeftForCursorDay,
   eventKind,
   eventTrackExtent,
   SUMMARY_PIN_WIDTH_PX,
-  zoomReducer,
+  tickUnitForScale,
+  wheelZoomFactor,
+  zoomLevelForScale,
   type PositionedEvent,
   type RulerTick,
 } from './zoom'
@@ -90,7 +96,7 @@ import {
  *
  * Orchestre les primitives #47 (Resource/groupResourcesByCategory) + un cœur
  * pur (`zoom.ts`) pour offrir : frise continue scrollable, zoom Cmd+molette
- * (5 niveaux), règle sticky adaptative, minimap waveform draggable, accordéons
+ * (continu de l'heure au trimestre, #593), règle sticky adaptative, minimap waveform draggable, accordéons
  * catégorie, drawer détail, raccourcis clavier, overlay week-end, indicateur
  * TODAY. Migré sur les classes `.mt-*` du DS (décision Designer S17).
  *
@@ -124,8 +130,9 @@ import {
  *    custom (pas de double-ouverture). Les lanes COLLAPSÉES sont exclues de la
  *    navigation (leurs pastilles ne sont pas rendues).
  *
- *  - ANNONCES `aria-live="polite"` : une région sr-only annonce (1) le niveau de
- *    zoom à chaque changement et (2) l'event sélectionné à l'ouverture du drawer.
+ *  - ANNONCES `aria-live="polite"` : une région sr-only annonce (1) l'échelle
+ *    (« 1 px = X h ») une fois le geste de zoom apaisé et (2) l'event sélectionné à
+ *    l'ouverture du drawer.
  *
  *  - Minimap NON concernée : elle est DÉJÀ roving (`role=slider`, #55). Ne pas la
  *    refaire ici.
@@ -183,6 +190,10 @@ const PENDING_FOCUS_TTL_MS = 1000
 const NO_EVENTS: WindowedEvent[] = []
 /** #601 — Catégorie repliée absente de la table (ne devrait pas arriver) : rien à résumer. */
 const NO_POSITIONED: PositionedEvent[] = []
+/** #593 — Règle horaire : générée par bande, jamais mise en cache par échelle. */
+const NO_TICKS: RulerTick[] = []
+/** #593 — Calme (ms) après le dernier changement d'échelle avant de l'annoncer. */
+const ZOOM_ANNOUNCE_DELAY_MS = 300
 
 /**
  * #392 — GOUTTIÈRE DE PISTE (px). Largeur réservée en tête de rail pour
@@ -283,28 +294,37 @@ function propsEqualByContent<P extends object>(byContent: {
 }
 
 /**
- * #349 — Mémoïsation par NIVEAU DE ZOOM, purgée dès que la `source` change
+ * #349 — Mémoïsation par ÉCHELLE DE ZOOM, purgée dès que la `source` change
  * d'identité (nouveaux events, nouvelle étendue). `useMemo` n'a qu'UN seul
  * emplacement : un aller-retour de zoom recalculait donc tout à chaque
- * passage. Ici, revenir à un niveau déjà visité est gratuit — le cache est
- * borné par le nombre de niveaux de zoom (5).
+ * passage. Ici, revenir à une échelle déjà visitée est gratuit.
+ * #593 — l'échelle est continue (chaque cran de molette en crée une) : le cache
+ * ne garde que les `ZOOM_CACHE_SIZE` dernières clés, la moins récente sort.
  *
  * La clé est fournie par l'APPELANT et doit couvrir TOUTES les entrées de
- * `compute`. Clé sur le seul `dayWidth` = piège : `buildRulerTicks` consomme
- * aussi `zoom.level`, et deux niveaux partageant une largeur de jour se
+ * `compute`. Clé sur le seul `dayWidth` = piège : la règle consomme aussi
+ * l'unité de graduation, et deux entrées partageant une largeur de jour se
  * seraient alors volé leurs graduations SANS erreur ni test rouge.
  *
  * La valeur est BOÎTÉE (`{ value }`) : la présence en cache se teste sur
  * l'entrée, jamais sur la valeur — un `compute()` retournant légitimement
  * `undefined` reste un hit au lieu d'être recalculé à chaque rendu.
  */
-function createKeyedCache<T>(): (key: string, compute: () => T) => T {
+export const ZOOM_CACHE_SIZE = 8
+
+export function createKeyedCache<T>(): (key: string, compute: () => T) => T {
   const byKey = new Map<string, { value: T }>()
   return (key, compute) => {
     const hit = byKey.get(key)
-    if (hit) return hit.value
+    if (hit) {
+      // Ordre d'insertion de `Map` = ordre d'usage : l'entrée relue repasse en dernier.
+      byKey.delete(key)
+      byKey.set(key, hit)
+      return hit.value
+    }
     const value = compute()
     byKey.set(key, { value })
+    if (byKey.size > ZOOM_CACHE_SIZE) byKey.delete(byKey.keys().next().value as string)
     return value
   }
 }
@@ -696,7 +716,8 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
   // celui du `t` courant — une ref écrite en effet l'aurait au contraire PÉRIMÉ d'un
   // rendu sur une lane re-rendue dans la même passe qu'un changement de locale.
   const translate = useCallback((key: string) => t(key), [t])
-  const [zoom, dispatch] = useReducer(zoomReducer, initialZoomState)
+  // #593 — zoom CONTINU (px/jour) ; les frises mobiles gardent `zoomReducer` à paliers.
+  const [zoom, dispatch] = useReducer(continuousZoomReducer, initialContinuousZoomState)
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({})
   // #195 — Accordéon de 2e niveau : état collapse par PRODUIT (lane), keyé par
   // `resource.id`. Indépendant de `collapsed` (catégorie) : replier un produit
@@ -735,7 +756,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
 
   const now = useMemo(() => today ?? new Date(), [today])
 
-  const dayWidth = DAY_WIDTH_PX[zoom.level]
+  const dayWidth = zoom.pxPerDay
 
   const { rangeStart, totalDays } = useMemo(() => computeRange(events, now), [events, now])
 
@@ -755,13 +776,15 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
   )
 
   // #349 — La règle est dominée par les `Intl.format` (une par graduation,
-  // jusqu'à ~460 au zoom `day`) : mémoïsée PAR niveau, pas seulement pour le
-  // dernier niveau visité.
-  // Clé COMPOSITE : `buildRulerTicks` dépend du niveau (granularité des
-  // graduations) ET de la largeur de jour. Clé sur `dayWidth` seul, deux
-  // niveaux de même largeur se voleraient leurs graduations.
-  const ticks = useZoomCache(zoomSource, `${zoom.level}|${dayWidth}`, () =>
-    buildRulerTicks(rangeStart, totalDays, zoom.level, dayWidth, locale),
+  // jusqu'à ~460 au zoom `day`) : mémoïsée PAR échelle, pas seulement pour la
+  // dernière visitée.
+  // Clé COMPOSITE : la règle dépend de l'unité de graduation ET de la largeur de
+  // jour (#593 : unité dérivée de l'échelle par seuils, `tickUnitForScale`).
+  const tickUnit = tickUnitForScale(dayWidth)
+  const scaleTicks = useZoomCache(zoomSource, `${tickUnit}|${dayWidth}`, () =>
+    tickUnit === 'hour'
+      ? NO_TICKS
+      : buildRulerTicksForScale(rangeStart, totalDays, dayWidth, locale),
   )
 
   // #349 — Positionnement en DEUX passes : la géométrie en jours (parsing des
@@ -856,7 +879,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
     [dayWidth, totalDays, resources.length, collapsed, hiddenCats],
   )
   const viewport = useTimelineViewport(scrollRef, railRef, geometryKey)
-  const { ensureVisible, resync } = viewport
+  const { ensureVisible, resync, syncNow } = viewport
 
   // #349 — `useTimelineViewport` republie un OBJET `metrics` neuf à chaque
   // franchissement de bande, même quand les trois hauteurs sont identiques
@@ -936,6 +959,23 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
       end: viewport.horizontal.end - LANE_TRACK_OFFSET_PX,
     }),
     [viewport.horizontal],
+  )
+
+  // #593 — Graduations horaires : jusqu'à huit par jour, elles ne sont GÉNÉRÉES que pour
+  // les jours de la bande rendue (marge de rendu comprise, même fenêtrage que les
+  // pastilles), jamais sur toute l'étendue. Bornes au jour entier : un défilement dans la
+  // même journée ne les recalcule pas. Les autres unités restent rendues en entier.
+  const hourStartDay = tickUnit === 'hour' ? Math.floor(horizontalBand.start / dayWidth) : 0
+  const hourEndDay = tickUnit === 'hour' ? Math.ceil(horizontalBand.end / dayWidth) : 0
+  const ticks = useMemo(
+    () =>
+      tickUnit === 'hour'
+        ? buildRulerTicksForScale(rangeStart, totalDays, dayWidth, locale, {
+            startDay: hourStartDay,
+            endDay: hourEndDay,
+          })
+        : scaleTicks,
+    [tickUnit, scaleTicks, rangeStart, totalDays, dayWidth, locale, hourStartDay, hourEndDay],
   )
 
   // #81 — Modèle plat de navigation clavier : la « grille » des lanes VISIBLES
@@ -1196,8 +1236,8 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
   )
 
   const weekendSegments = useMemo(
-    () => buildWeekendSegments(rangeStart, totalDays, zoom.level, dayWidth),
-    [rangeStart, totalDays, zoom.level, dayWidth],
+    () => buildWeekendSegments(rangeStart, totalDays, zoomLevelForScale(dayWidth), dayWidth),
+    [rangeStart, totalDays, dayWidth],
   )
 
   const todayLeftPx = useMemo(
@@ -1240,6 +1280,12 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
    * main et le recentrage automatique sur aujourd'hui reste légitime.
    */
   const autoAnchorRef = useRef(0)
+  /**
+   * #593 — Ancre du zoom à la molette : jour sous le curseur (en JOURS, #449) et
+   * abscisse du curseur dans le conteneur. Posée par l'écouteur `wheel`, consommée
+   * par la re-projection : le jour regardé reste sous le curseur, pas au bord gauche.
+   */
+  const cursorAnchorRef = useRef<{ day: number; x: number } | null>(null)
 
   /**
    * Relève l'ancre depuis le DOM. Le garde d'échelle est ESSENTIEL : entre le
@@ -1313,7 +1359,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
 
   /**
    * #449 — RE-PROJECTION de l'ancre quand l'échelle change (zoom avant/arrière,
-   * `SET_LEVEL`). Sans elle, `scrollLeft` restait celui posé à l'échelle
+   * molette). Sans elle, `scrollLeft` restait celui posé à l'échelle
    * précédente — au montage pour la plupart des parcours, l'effet ci-dessus
    * étant gardé sur `offsetDays`, qu'aucune action de zoom ne modifie.
    *
@@ -1334,15 +1380,25 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
     // automatique était encore actif, il doit le rester après re-projection.
     const autoStillOwned = anchorDaysRef.current === autoAnchorRef.current
     // Même repère PISTE que #392 : le jour ancré réaffleure l'en-tête sticky.
+    // #593 — à la molette, c'est le jour sous le CURSEUR qui reste en place.
     // `behavior:'instant'` : un zoom se règle, il ne se parcourt pas. Une
     // animation ici serait rabattue par le clamp du navigateur avant d'aboutir,
     // et deux clics rapprochés se marcheraient dessus.
-    el.scrollTo({ left: Math.max(0, anchorDaysRef.current * dayWidth), behavior: 'instant' })
+    const cursor = cursorAnchorRef.current
+    cursorAnchorRef.current = null
+    const left = cursor
+      ? scrollLeftForCursorDay(cursor.day, cursor.x, dayWidth, LANE_TRACK_OFFSET_PX)
+      : anchorDaysRef.current * dayWidth
+    el.scrollTo({ left: Math.max(0, left), behavior: 'instant' })
     // Relit la valeur réellement retenue (le navigateur rabat toujours aux
     // bornes) : l'ancre reste ainsi fidèle à ce qui est affiché.
     anchorDaysRef.current = el.scrollLeft / dayWidth
     if (autoStillOwned) autoAnchorRef.current = anchorDaysRef.current
-  }, [dayWidth])
+    // #593 — bande de rendu recalée sur la position re-projetée avant la peinture : sans
+    // cela, pastilles et graduations horaires de la première image viendraient de
+    // l'ancien `scrollLeft`.
+    syncNow()
+  }, [dayWidth, syncNow])
 
   const scrollToToday = useCallback(() => {
     const el = scrollRef.current
@@ -1431,7 +1487,8 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
    * (`indexedEvents`, invariante au zoom), pas sur le DOM virtualisé (PIT-S91-005).
    *
    * Le défilement est appliqué par l'effet de mise en page ci-dessous, pas ici : le
-   * rail n'a sa nouvelle largeur qu'APRÈS le rendu du nouveau niveau.
+   * rail n'a sa nouvelle largeur qu'APRÈS le rendu de la nouvelle échelle. #593 : `F`
+   * pose l'échelle continue idéale (`computeFit.pxPerDay`), pas un palier.
    */
   const pendingFitRef = useRef(false)
   const fitToEvents = useCallback(() => {
@@ -1455,7 +1512,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
     const fit = computeFit(extent, el.clientWidth - LANE_TRACK_OFFSET_PX, margins)
     if (!fit) return
     pendingFitRef.current = true
-    dispatch({ type: 'FIT', ...fit })
+    dispatch({ type: 'FIT', pxPerDay: fit.pxPerDay, offsetDays: fit.offsetDays })
   }, [visibleGroups, collapsed, collapsedResources, indexedEvents])
 
   /**
@@ -1548,12 +1605,66 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
     return () => document.removeEventListener('fullscreenchange', syncFullscreen)
   }, [])
 
-  // Zoom Cmd/Ctrl + molette (client-only, no refetch). Respecte reduced-motion
-  // via le CSS scroll-behavior guard ; ici on ne fait que changer le niveau.
-  const onWheel = useCallback((e: React.WheelEvent) => {
-    if (!(e.metaKey || e.ctrlKey)) return
-    e.preventDefault()
-    dispatch(e.deltaY < 0 ? { type: 'ZOOM_IN' } : { type: 'ZOOM_OUT' })
+  // Zoom Cmd/Ctrl + molette (client-only, no refetch). #593 : facteur proportionnel
+  // au mouvement (`wheelZoomFactor`, un cran au plus par événement), ancré sur le
+  // jour sous le curseur. Écouteur natif NON passif : celui de React l'est, et
+  // `preventDefault` y serait ignoré (le navigateur zoomerait la page).
+  // Un pincement au pavé tactile émet plusieurs `wheel` par image : un seul dispatch par
+  // image. Le premier événement part tout de suite ; les suivants de la même image
+  // multiplient leurs facteurs et partent ensemble à l'image suivante, ancrés sur le
+  // curseur de leur premier événement.
+  useEffect(() => {
+    const el = scrollRef.current
+    if (!el) return
+    type CursorAnchor = { day: number; x: number }
+    let frame: number | null = null
+    let pending: { factor: number; anchor: CursorAnchor } | null = null
+    const zoomBy = (factor: number, anchor: CursorAnchor) => {
+      // L'ancre ne se pose que si l'échelle bornée change : à une borne, aucune
+      // re-projection ne la consommerait, et elle ferait sauter le zoom suivant au
+      // clavier ou au bouton.
+      const from = dayWidthRef.current
+      const next = continuousZoomReducer(
+        { pxPerDay: from, offsetDays: 0 },
+        { type: 'ZOOM_BY', factor },
+      )
+      if (next.pxPerDay === from) return
+      cursorAnchorRef.current = anchor
+      dispatch({ type: 'ZOOM_BY', factor })
+    }
+    const onFrame = () => {
+      frame = null
+      if (!pending) return
+      const { factor, anchor } = pending
+      pending = null
+      zoomBy(factor, anchor)
+      frame = requestAnimationFrame(onFrame)
+    }
+    const onWheel = (e: WheelEvent) => {
+      if (!(e.metaKey || e.ctrlKey)) return
+      e.preventDefault()
+      const factor = wheelZoomFactor(e.deltaY, e.deltaMode)
+      if (pending) {
+        pending.factor *= factor
+        return
+      }
+      const x = e.clientX - el.getBoundingClientRect().left
+      const anchor = {
+        day: cursorDayFromScroll(el.scrollLeft, x, dayWidthRef.current, LANE_TRACK_OFFSET_PX),
+        x,
+      }
+      if (frame !== null) {
+        pending = { factor, anchor }
+        return
+      }
+      zoomBy(factor, anchor)
+      frame = requestAnimationFrame(onFrame)
+    }
+    el.addEventListener('wheel', onWheel, { passive: false })
+    return () => {
+      el.removeEventListener('wheel', onWheel)
+      if (frame !== null) cancelAnimationFrame(frame)
+    }
   }, [])
 
   /**
@@ -1638,7 +1749,10 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
     return () => window.removeEventListener('keydown', onKey)
   }, [selected, goToToday, fitToEvents, sidebarPanelOpen, closeSidebarPanel, isOverlayLayerOpen])
 
-  const levelLabel = t(`dashboard.timeline.zoom.${zoom.level}`)
+  // #593 — lecture « 1 px = X h » (deux chiffres significatifs, format de la langue).
+  const levelLabel = t('dashboard.timeline.zoom.scale', {
+    hours: formatHoursPerPx(dayWidth, locale),
+  })
 
   // #81 — Région `aria-live="polite"` (sr-only) : annonce le niveau de zoom à
   // chaque changement + l'event à l'ouverture du drawer. On garde UNE seule
@@ -1646,18 +1760,24 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
   const [liveMessage, setLiveMessage] = useState('')
 
   // Annonce le zoom quand il CHANGE (ignore le rendu initial + les double-invokes
-  // StrictMode : on mémorise le dernier niveau annoncé, on ne parle que sur une
+  // StrictMode : on mémorise la dernière échelle annoncée, on ne parle que sur une
   // transition réelle — évite une annonce parasite « au chargement »).
-  const lastAnnouncedZoom = useRef<string | null>(null)
+  // #593 — une seule annonce par geste : la molette change l'échelle à chaque image, on
+  // attend `ZOOM_ANNOUNCE_DELAY_MS` sans changement. Gardée sur l'ÉCHELLE et non sur le
+  // libellé : un changement de langue à échelle égale ne s'annonce pas.
+  const lastAnnouncedScaleRef = useRef(dayWidth)
+  const zoomMessageRef = useRef('')
+  useLayoutEffect(() => {
+    zoomMessageRef.current = `${t('dashboard.timeline.live.zoom')} ${levelLabel}`
+  }, [levelLabel, t])
   useEffect(() => {
-    if (lastAnnouncedZoom.current === null) {
-      lastAnnouncedZoom.current = zoom.level
-      return
-    }
-    if (lastAnnouncedZoom.current === zoom.level) return
-    lastAnnouncedZoom.current = zoom.level
-    setLiveMessage(`${t('dashboard.timeline.live.zoom')} ${levelLabel}`)
-  }, [zoom.level, levelLabel, t])
+    if (dayWidth === lastAnnouncedScaleRef.current) return
+    const timer = setTimeout(() => {
+      lastAnnouncedScaleRef.current = dayWidth
+      setLiveMessage(zoomMessageRef.current)
+    }, ZOOM_ANNOUNCE_DELAY_MS)
+    return () => clearTimeout(timer)
+  }, [dayWidth])
 
   // Annonce l'event sélectionné (ouverture du drawer). Vidé à la fermeture.
   // #891 — plus d'effet qui appelle `setLiveMessage` (`react-hooks/set-state-in-effect`) :
@@ -1833,7 +1953,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
             className="mt-zoom__btn"
             onClick={() => dispatch({ type: 'ZOOM_OUT' })}
             aria-label={t('dashboard.timeline.zoom.out')}
-            disabled={zoom.level === ZOOM_LEVELS[ZOOM_LEVELS.length - 1]}
+            disabled={dayWidth <= MIN_PX_PER_DAY}
             data-testid="timeline-zoom-out"
           >
             <Minus size={14} strokeWidth={1.5} aria-hidden="true" />
@@ -1846,7 +1966,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
             className="mt-zoom__btn"
             onClick={() => dispatch({ type: 'ZOOM_IN' })}
             aria-label={t('dashboard.timeline.zoom.in')}
-            disabled={zoom.level === ZOOM_LEVELS[0]}
+            disabled={dayWidth >= MAX_PX_PER_DAY}
             data-testid="timeline-zoom-in"
           >
             <Plus size={14} strokeWidth={1.5} aria-hidden="true" />
@@ -1946,7 +2066,6 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
         className="mt-tlv__scroll"
         ref={scrollRef}
         onScroll={onScrollThrottled}
-        onWheel={onWheel}
         data-testid="timeline-scroll"
       >
         <div className="mt-tlv__rail" ref={railRef} style={{ width: `${railWidth}px` }}>

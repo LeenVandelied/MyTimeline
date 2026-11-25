@@ -97,7 +97,8 @@
       "week": "Woche",
       "month": "Monat",
       "quarter": "Quartal",
-      "year": "Jahr"
+      "year": "Jahr",
+      "scale": "1 px = {hours} h"
     },
     "minimap": {
       "label": "Zeitleisten-Übersicht",

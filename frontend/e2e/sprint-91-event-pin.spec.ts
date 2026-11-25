@@ -3,6 +3,13 @@ import { type Locator, type Page, type Route } from '@playwright/test'
 import { ensureAuthenticated } from './support/auth'
 import { PROD } from './support/accounts'
 import { sessionState } from './support/session'
+import {
+  INITIAL_PX_PER_DAY,
+  MAX_PX_PER_DAY,
+  SCALES_FROM_MAX_TO_MIN,
+  ZOOM_STEPS_INITIAL_TO_MAX,
+  scaleReadout,
+} from './support/timeline-zoom'
 
 /**
  * #594 (Sprint 91) — Frise : un événement PONCTUEL est un PIN, pas une barre.
@@ -56,6 +63,12 @@ const LEVELS = [
   { label: 'Trimestre', dayWidth: 5 },
   { label: 'Année', dayWidth: 2.2 },
 ] as const
+/**
+ * #593 — frise DESKTOP à zoom continu : de la borne fine (`MAX_PX_PER_DAY`, 384 px/j, zone
+ * horaire) à la borne trimestre (5 px/j), un cran arrière à la fois. Les frises mobiles
+ * gardent `LEVELS`.
+ */
+const DESKTOP_SCALES = SCALES_FROM_MAX_TO_MIN
 /** Plancher de largeur d'une barre de durée (`DEFAULT_MIN_WIDTH_PX`). */
 const MIN_BAR_WIDTH_PX = 6
 
@@ -160,6 +173,18 @@ interface PinMeasure {
   hits: { markTop: string | null; markBottom: string | null; label: string | null }
 }
 
+/** Attend l'arrêt du défilement de la frise (deux lectures égales à 100 ms d'écart). */
+async function settledScroll(page: Page): Promise<void> {
+  const scroll = page.getByTestId('timeline-scroll')
+  let previous = Number.NaN
+  for (let i = 0; i < 20; i++) {
+    const current = await scroll.evaluate((el) => el.scrollLeft)
+    if (current === previous) return
+    previous = current
+    await page.waitForTimeout(100)
+  }
+}
+
 /** Amène l'événement au centre du viewport, sans animation, puis laisse passer 2 frames. */
 async function centerOn(page: Page, target: Locator): Promise<void> {
   await expect(target).toHaveCount(1)
@@ -214,6 +239,19 @@ async function measurePin(pin: Locator): Promise<PinMeasure> {
         label: hit(l.x + l.w / 2, l.y + l.h / 2),
       },
     }
+  })
+}
+
+/** Graduations de la règle desktop dont la boîte croise la zone visible de la frise. */
+async function visibleRulerTicks(page: Page): Promise<number> {
+  return page.getByTestId('timeline-scroll').evaluate((el) => {
+    const box = el.getBoundingClientRect()
+    return Array.from(el.querySelectorAll('[data-testid="timeline-ruler"] .mt-tlv__tick')).filter(
+      (tick) => {
+        const r = tick.getBoundingClientRect()
+        return r.right > box.left && r.left < box.right
+      },
+    ).length
   })
 }
 
@@ -282,9 +320,11 @@ async function assertPinVersusBar(
       background: getComputedStyle(el).backgroundColor,
     }
   })
+  // #593 — `style.width` est sérialisé au millième : à 384 / 1,5² = 170,666… px/j, il
+  // se relit 170.667. Tolérance de 0,005 px.
   expect(barGeometry.durationPx, `${tag} durée de la barre = max(6, 1 j × px/j)`).toBeCloseTo(
     Math.max(MIN_BAR_WIDTH_PX, ctx.dayWidth),
-    5,
+    2,
   )
   expect(barGeometry.background, `${tag} barre pleine à la couleur de l'événement`).toBe(
     'rgb(29, 78, 216)',
@@ -304,7 +344,7 @@ async function assertPinVersusBar(
 }
 
 test.describe('#594 frise desktop — ponctuel = pin, durée = barre', () => {
-  test('les 5 niveaux de zoom : pin 10 px non étiré, libellé en encre, cible ≥ 44 px', async ({
+  test('de l’heure au trimestre : pin 10 px non étiré, libellé en encre, cible ≥ 44 px', async ({
     page,
   }) => {
     await stubProducts(page)
@@ -316,16 +356,33 @@ test.describe('#594 frise desktop — ponctuel = pin, durée = barre', () => {
     await expect(page.getByTestId('timeline-group-head')).toHaveCount(1)
 
     const level = page.getByTestId('timeline-zoom-level')
-    await expect(level).toHaveText('Mois')
-    await page.getByTestId('timeline-zoom-in').click()
-    await page.getByTestId('timeline-zoom-in').click()
+    await expect(level).toHaveText(scaleReadout(INITIAL_PX_PER_DAY))
+    for (let i = 0; i < ZOOM_STEPS_INITIAL_TO_MAX; i++) {
+      await page.getByTestId('timeline-zoom-in').click()
+    }
+    await expect(level).toHaveText(scaleReadout(MAX_PX_PER_DAY))
 
     const markWidths: number[] = []
-    for (const [i, { label, dayWidth }] of LEVELS.entries()) {
+    for (const [i, dayWidth] of DESKTOP_SCALES.entries()) {
       if (i > 0) await page.getByTestId('timeline-zoom-out').click()
+      const label = scaleReadout(dayWidth)
       await expect(level).toHaveText(label)
+      // #593 — juste après le zoom, la règle porte des graduations DANS la zone visible
+      // (graduations horaires générées pour la seule bande rendue).
+      expect(await visibleRulerTicks(page), `règle visible à ${label}`).toBeGreaterThan(0)
       // Raccourci « T » : ramène la fenêtre de rendu sur aujourd'hui (chemin produit).
       await page.keyboard.press('t')
+      // Puis défilement jusqu'à la date des événements (J+5) : à 384 px/j, elle est à
+      // 1920 px d'aujourd'hui, hors de la bande rendue autour du centre. On attend que
+      // le saut de « T » (centrage, puis effet `offsetDays`) soit posé, sinon il
+      // écraserait ce défilement.
+      await settledScroll(page)
+      await page
+        .getByTestId('timeline-scroll')
+        .evaluate(
+          (el, left) => el.scrollBy({ left, behavior: 'instant' }),
+          EVENT_OFFSET_DAYS * dayWidth,
+        )
       const m = await assertPinVersusBar(page, {
         where: `desktop ${label}`,
         barHeight: 26,
@@ -334,7 +391,7 @@ test.describe('#594 frise desktop — ponctuel = pin, durée = barre', () => {
       })
       markWidths.push(m.mark.w)
     }
-    // Zooms extrêmes : le pin ne s'étire pas (même largeur peinte de Jour à Année).
+    // Zooms extrêmes : le pin ne s'étire pas (même largeur peinte d'un bout à l'autre).
     expect(Math.max(...markWidths) - Math.min(...markWidths)).toBeLessThanOrEqual(0.5)
 
     // Le LIBELLÉ fait partie de la cible : un clic dessus ouvre le détail.

@@ -97,7 +97,8 @@
       "week": "Semana",
       "month": "Mes",
       "quarter": "Trimestre",
-      "year": "Año"
+      "year": "Año",
+      "scale": "1 px = {hours} h"
     },
     "minimap": {
       "label": "Vista general de la cronología",

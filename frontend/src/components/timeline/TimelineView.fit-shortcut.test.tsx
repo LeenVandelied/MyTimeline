@@ -3,7 +3,8 @@ import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { FullCalendarEvent } from '@/types/event'
 import type { Resource } from './lib'
-import { TimelineView } from './TimelineView'
+import { LANE_TRACK_OFFSET_PX, TimelineView } from './TimelineView'
+import { computeRange, DAY_WIDTH_PX } from './zoom'
 
 /**
  * #597 — La touche `F` RECADRE la frise sur les événements AFFICHÉS (maquette) ; le
@@ -13,9 +14,12 @@ import { TimelineView } from './TimelineView'
  * (premier événement − 30 j). Événements aux jours 30 (Cat A, ×2 : 10 et 11/07),
  * 38 (Cat B, 18/07) et 46 (Cat C, 26/07). Viewport de 1000 px → piste utile
  * 1000 − 176 (gouttière) − 40 − 135 (marges #804 `FIT_MARGINS_PX.desktop`) = 649 px.
- *  - tout affiché : 16 j → 40,6 px/j idéal → `week` (34 px/j) ; 544 px centrés
- *    ⇒ avance 40 + 52,5 = 92,5 px ⇒ `scrollLeft` = 30 × 34 − 92,5 = 927,5 ;
- *  - Cat C exclue : 8 j → 81 px/j → `week` ; 272 px ⇒ avance 228,5 ⇒ 1020 − 228,5 = 791,5.
+ * #593 — `F` pose l'échelle CONTINUE idéale : l'étendue remplit la piste utile, l'avance
+ * se réduit à la marge de 40 px.
+ *  - tout affiché : 16 j → 649 / 16 = 40,5625 px/j ⇒ `scrollLeft` = 30 × 40,5625 − 40
+ *    = 1176,875 ;
+ *  - Cat C exclue : 8 j → 81,125 px/j ⇒ 30 × 81,125 − 40 = 2393,75.
+ * L'échelle se lit sur la largeur du rail (étendue en jours × px/jour + gouttière).
  *
  * ⚠ jsdom ne clampe pas `scrollLeft` et ne mesure rien : la position RÉELLE des
  * pastilles dans le viewport est prouvée par `e2e/sprint-105-fit-shortcut.spec.ts`.
@@ -54,8 +58,16 @@ const RESOURCES: Resource[] = [
   { id: 'pc', title: 'Prod C', category: 'Cat C', categoryColor: null },
 ]
 
-const FIT_ALL_PX = 927.5
-const FIT_WITHOUT_C_PX = 791.5
+const FIT_ALL_SCALE = 649 / 16
+const FIT_ALL_PX = 1176.875
+const FIT_WITHOUT_C_SCALE = 649 / 8
+const FIT_WITHOUT_C_PX = 2393.75
+const TOTAL_DAYS = computeRange(EVENTS, new Date(2026, 6, 15)).totalDays
+
+function pxPerDay(): number {
+  const rail = screen.getByTestId('timeline-scroll').firstElementChild as HTMLElement
+  return (parseFloat(rail.style.width) - LANE_TRACK_OFFSET_PX) / TOTAL_DAYS
+}
 
 function setupScreen(events: FullCalendarEvent[] = EVENTS) {
   render(
@@ -70,7 +82,7 @@ function setupScreen(events: FullCalendarEvent[] = EVENTS) {
   const scroll = screen.getByTestId('timeline-scroll')
   // jsdom ne mesure rien : sans largeur, `computeFit` rend null et F serait un no-op.
   Object.defineProperty(scroll, 'clientWidth', { configurable: true, value: 1000 })
-  return { scroll, level: screen.getByTestId('timeline-zoom-level') }
+  return { scroll }
 }
 
 const filterFor = (category: string) =>
@@ -83,11 +95,11 @@ const groupHeadFor = (category: string) =>
     .find((h) => h.getAttribute('data-category') === category)!
 
 describe('#597 touche F = recadrage', () => {
-  it('F recadre (niveau + position) et N’OUVRE PAS le plein écran', async () => {
-    const { scroll, level } = setupScreen()
-    expect(level).toHaveTextContent('dashboard.timeline.zoom.month')
+  it('F recadre (échelle + position) et N’OUVRE PAS le plein écran', async () => {
+    const { scroll } = setupScreen()
+    expect(pxPerDay()).toBeCloseTo(DAY_WIDTH_PX.month, 6)
     fireEvent.keyDown(window, { key: 'f' })
-    await waitFor(() => expect(level).toHaveTextContent('dashboard.timeline.zoom.week'))
+    await waitFor(() => expect(pxPerDay()).toBeCloseTo(FIT_ALL_SCALE, 6))
     expect(scroll.scrollLeft).toBeCloseTo(FIT_ALL_PX, 6)
     fireEvent.keyDown(window, { key: 'F' })
     expect(Element.prototype.requestFullscreen).not.toHaveBeenCalled()
@@ -101,14 +113,14 @@ describe('#597 touche F = recadrage', () => {
   })
 
   it('F deux fois, et F après un défilement manuel : même cadrage ré-appliqué', async () => {
-    const { scroll, level } = setupScreen()
+    const { scroll } = setupScreen()
     fireEvent.keyDown(window, { key: 'f' })
-    await waitFor(() => expect(level).toHaveTextContent('dashboard.timeline.zoom.week'))
+    await waitFor(() => expect(pxPerDay()).toBeCloseTo(FIT_ALL_SCALE, 6))
     expect(scroll.scrollLeft).toBeCloseTo(FIT_ALL_PX, 6)
     // 2e F immédiat : stable.
     fireEvent.keyDown(window, { key: 'f' })
     await waitFor(() => expect(scroll.scrollLeft).toBeCloseTo(FIT_ALL_PX, 6))
-    // Défilement manuel, puis F : même niveau, même `offsetDays` — la frise doit
+    // Défilement manuel, puis F : même échelle, même `offsetDays` — la frise doit
     // pourtant revenir au cadrage (l'effet #392 gardé sur `offsetDays` l'ignorerait).
     scroll.scrollLeft = 0
     fireEvent.scroll(scroll)
@@ -118,26 +130,26 @@ describe('#597 touche F = recadrage', () => {
 
   it('catégorie MASQUÉE : ses événements sont ignorés par le cadrage', async () => {
     const user = userEvent.setup()
-    const { scroll, level } = setupScreen()
+    const { scroll } = setupScreen()
     await user.click(filterFor('Cat C'))
     fireEvent.keyDown(window, { key: 'f' })
-    await waitFor(() => expect(level).toHaveTextContent('dashboard.timeline.zoom.week'))
+    await waitFor(() => expect(pxPerDay()).toBeCloseTo(FIT_WITHOUT_C_SCALE, 6))
     expect(scroll.scrollLeft).toBeCloseTo(FIT_WITHOUT_C_PX, 6)
   })
 
   it('catégorie REPLIÉE : son résumé est affiché, ses événements comptent', async () => {
     const user = userEvent.setup()
-    const { scroll, level } = setupScreen()
+    const { scroll } = setupScreen()
     await user.click(groupHeadFor('Cat C'))
     await waitFor(() => expect(groupHeadFor('Cat C')).toHaveAttribute('aria-expanded', 'false'))
     fireEvent.keyDown(window, { key: 'f' })
-    await waitFor(() => expect(level).toHaveTextContent('dashboard.timeline.zoom.week'))
+    await waitFor(() => expect(pxPerDay()).toBeCloseTo(FIT_ALL_SCALE, 6))
     expect(scroll.scrollLeft).toBeCloseTo(FIT_ALL_PX, 6)
   })
 
   it('PRODUIT replié (catégorie dépliée) : sa lane ne peint rien, ses événements sont ignorés', async () => {
     const user = userEvent.setup()
-    const { scroll, level } = setupScreen()
+    const { scroll } = setupScreen()
     const heads = screen.getAllByTestId('timeline-resource-head')
     await user.click(heads[2]) // Prod C
     await waitFor(() =>
@@ -147,20 +159,20 @@ describe('#597 touche F = recadrage', () => {
       ),
     )
     fireEvent.keyDown(window, { key: 'f' })
-    await waitFor(() => expect(level).toHaveTextContent('dashboard.timeline.zoom.week'))
+    await waitFor(() => expect(pxPerDay()).toBeCloseTo(FIT_WITHOUT_C_SCALE, 6))
     expect(scroll.scrollLeft).toBeCloseTo(FIT_WITHOUT_C_PX, 6)
   })
 
   it('aucun événement affiché (tout masqué) : F ne fait rien', async () => {
     const user = userEvent.setup()
-    const { scroll, level } = setupScreen()
+    const { scroll } = setupScreen()
     for (const category of ['Cat A', 'Cat B', 'Cat C']) await user.click(filterFor(category))
     await waitFor(() => expect(screen.queryAllByTestId('timeline-group-head')).toHaveLength(0))
     scroll.scrollLeft = 123
     fireEvent.keyDown(window, { key: 'f' })
     // Laisse passer un rendu éventuel avant de conclure à l'absence d'effet.
     await new Promise((r) => setTimeout(r, 20))
-    expect(level).toHaveTextContent('dashboard.timeline.zoom.month')
+    expect(pxPerDay()).toBeCloseTo(DAY_WIDTH_PX.month, 6)
     expect(scroll.scrollLeft).toBe(123)
   })
 })
@@ -169,27 +181,28 @@ describe('#597 touche F = recadrage', () => {
  * #804 (suite, Sprint 117) — la marge droite du cadrage suit la réserve RÉELLE du libellé
  * du pin de queue. Titre de 44 caractères sur c1 (jour 46) : réserve 11 + 240 = 251 px
  * (plafond `label-reserve.ts`) ⇒ `trailPx` = 251 + 35 = 286 ; piste utile
- * 1000 − 176 − 40 − 286 = 498 px ; 16 j → 31,1 px/j ⇒ `month` (12) ; 192 px centrés ⇒
- * avance 40 + 153 = 193 px ⇒ `scrollLeft` = 30 × 12 − 193 = 167. Avec le seul plancher
- * (135 px) on restait en `week` à 927,5 et le libellé débordait la piste.
+ * 1000 − 176 − 40 − 286 = 498 px ; 16 j → 31,125 px/j (#593 : échelle continue) ⇒
+ * `scrollLeft` = 30 × 31,125 − 40 = 893,75. Avec le seul plancher (135 px) on restait à
+ * 40,5625 px/j et le libellé débordait la piste.
  */
 describe('#804 (suite) — F : marge droite = réserve réelle du libellé de queue', () => {
   const LONG_TITLE = 'Kfz-Haftpflichtversicherungsbeitragserhöhung'
-  const FIT_LONG_TAIL_PX = 167
+  const FIT_LONG_TAIL_SCALE = 498 / 16
+  const FIT_LONG_TAIL_PX = 893.75
 
-  it('titre long en queue : niveau plus large et avance recalculée', async () => {
+  it('titre long en queue : échelle plus large et avance recalculée', async () => {
     const events = EVENTS.map((e) => (e.id === 'c1' ? { ...e, title: LONG_TITLE } : e))
-    const { scroll, level } = setupScreen(events)
+    const { scroll } = setupScreen(events)
     fireEvent.keyDown(window, { key: 'f' })
-    await waitFor(() => expect(level).toHaveTextContent('dashboard.timeline.zoom.month'))
+    await waitFor(() => expect(pxPerDay()).toBeCloseTo(FIT_LONG_TAIL_SCALE, 6))
     expect(scroll.scrollLeft).toBeCloseTo(FIT_LONG_TAIL_PX, 6)
   })
 
   it('titre long hors queue : sans effet (plancher 135 px)', async () => {
     const events = EVENTS.map((e) => (e.id === 'a1' ? { ...e, title: LONG_TITLE } : e))
-    const { scroll, level } = setupScreen(events)
+    const { scroll } = setupScreen(events)
     fireEvent.keyDown(window, { key: 'f' })
-    await waitFor(() => expect(level).toHaveTextContent('dashboard.timeline.zoom.week'))
+    await waitFor(() => expect(pxPerDay()).toBeCloseTo(FIT_ALL_SCALE, 6))
     expect(scroll.scrollLeft).toBeCloseTo(FIT_ALL_PX, 6)
   })
 })

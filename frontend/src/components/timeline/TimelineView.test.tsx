@@ -6,6 +6,13 @@ import { describe, expect, it, vi, beforeEach } from 'vitest'
 import type { FullCalendarEvent } from '@/types/event'
 import type { Resource } from './lib'
 import { LANE_TRACK_OFFSET_PX, TimelineView } from './TimelineView'
+import {
+  computeRange,
+  DAY_WIDTH_PX,
+  formatHoursPerPx,
+  MAX_PX_PER_DAY,
+  MIN_PX_PER_DAY,
+} from './zoom'
 import { CreateEventProvider } from '@/components/layout/CreateEventContext'
 
 /**
@@ -16,9 +23,13 @@ import { CreateEventProvider } from '@/components/layout/CreateEventContext'
  * hook réseau monté — le composant ne consomme que ses props).
  */
 
+// #593 — les valeurs interpolées sont rendues après la clé : la lecture « 1 px = X h »
+// doit être observable sous le mock.
 vi.mock('next-intl', () => ({
-  useTranslations: (namespace?: string) => (key: string) =>
-    namespace ? `${namespace}.${key}` : key,
+  useTranslations: (namespace?: string) => (key: string, values?: Record<string, unknown>) => {
+    const full = namespace ? `${namespace}.${key}` : key
+    return values ? `${full} ${Object.values(values).join(' ')}` : full
+  },
 }))
 
 // jsdom n'implémente pas l'API Fullscreen ni scroll — stubs neutres.
@@ -1232,5 +1243,74 @@ describe('TimelineView', () => {
       expect(screen.getByTestId('timeline-today-button')).toBeInTheDocument()
       expect(screen.queryByTestId('timeline-new-event')).not.toBeInTheDocument()
     })
+  })
+})
+
+/**
+ * #593 — Zoom CONTINU de la frise desktop. L'échelle se lit sur la largeur du rail
+ * (étendue en jours × px par jour + gouttière) : c'est la taille réellement peinte.
+ */
+describe('#593 TimelineView — zoom continu', () => {
+  const TOTAL_DAYS = computeRange(EVENTS, new Date(2026, 6, 15)).totalDays
+
+  function pxPerDay(): number {
+    const rail = screen.getByTestId('timeline-scroll').firstElementChild as HTMLElement
+    return (parseFloat(rail.style.width) - LANE_TRACK_OFFSET_PX) / TOTAL_DAYS
+  }
+
+  it('ctrl wheel zooms proportionally to deltaY without jumping a level', () => {
+    const start = DAY_WIDTH_PX.month
+    const ratioAfterWheel = (deltaY: number): number => {
+      const view = setup()
+      expect(pxPerDay()).toBeCloseTo(start, 6)
+      fireEvent.wheel(screen.getByTestId('timeline-scroll'), { deltaY, ctrlKey: true })
+      const ratio = pxPerDay() / start
+      view.unmount()
+      return ratio
+    }
+    const small = ratioAfterWheel(-10)
+    const large = ratioAfterWheel(-100)
+    expect(small).toBeGreaterThan(1)
+    expect(large).toBeGreaterThan(small)
+    // Aucun des deux n'atteint le palier suivant (semaine).
+    expect(start * large).toBeLessThan(DAY_WIDTH_PX.week)
+  })
+
+  it('plus and minus keys zoom on the continuum', async () => {
+    const user = userEvent.setup()
+    setup()
+    const readout = screen.getByTestId('timeline-zoom-level')
+    const initialScale = pxPerDay()
+    const initialReadout = readout.textContent
+    expect(initialReadout).not.toContain('dashboard.timeline.zoom.month')
+    expect(initialReadout).toContain(formatHoursPerPx(initialScale, 'fr-FR'))
+
+    await user.keyboard('+')
+    await waitFor(() => expect(pxPerDay()).toBeGreaterThan(initialScale))
+    const zoomed = pxPerDay()
+    expect(zoomed).toBeLessThan(DAY_WIDTH_PX.week)
+    expect(readout.textContent).not.toBe(initialReadout)
+    expect(readout.textContent).toContain(formatHoursPerPx(zoomed, 'fr-FR'))
+
+    await user.keyboard('-')
+    await waitFor(() => expect(pxPerDay()).toBeCloseTo(initialScale, 6))
+    expect(readout.textContent).toBe(initialReadout)
+  })
+
+  it('zoom buttons are disabled at the scale bounds', async () => {
+    const user = userEvent.setup()
+    setup()
+    const zoomIn = screen.getByTestId('timeline-zoom-in') as HTMLButtonElement
+    const zoomOut = screen.getByTestId('timeline-zoom-out') as HTMLButtonElement
+
+    for (let i = 0; i < 60 && !zoomIn.disabled; i++) await user.click(zoomIn)
+    expect(pxPerDay()).toBeCloseTo(MAX_PX_PER_DAY, 6)
+    expect(zoomIn).toBeDisabled()
+    expect(zoomOut).toBeEnabled()
+
+    for (let i = 0; i < 60 && !zoomOut.disabled; i++) await user.click(zoomOut)
+    expect(pxPerDay()).toBeCloseTo(MIN_PX_PER_DAY, 6)
+    expect(zoomOut).toBeDisabled()
+    expect(zoomIn).toBeEnabled()
   })
 })

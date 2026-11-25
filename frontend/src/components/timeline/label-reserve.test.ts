@@ -334,7 +334,8 @@ describe('#804 (suite) — réserve de queue du recadrage F', () => {
     const reserve = trailingLabelReservePx(indexed, ['r1'], extent.endDay)
     const labelEndPx = (margins?: Parameters<typeof computeFit>[2]) => {
       const fit = computeFit(extent, 824, margins)!
-      const dayWidth = { day: 96, week: 34, month: 12, quarter: 5, year: 2.2 }[fit.level]
+      // #593 — position à l'échelle continue retenue par le cadrage.
+      const dayWidth = fit.pxPerDay
       return (extent.endDay - fit.offsetDays) * dayWidth + reserve
     }
     // Contrôle négatif : marges par défaut (plancher 100) ⇒ libellé au-delà de la piste.
