@@ -197,6 +197,7 @@
     "system": "Sistema",
     "productCount": "{count, plural, =0 {ningún producto} one {# producto} other {# productos}}",
     "archivedCount": "{count, plural, one {# archivado} other {# archivados}}",
+    "showArchivedLabel": "Ver los productos archivados de {name}",
     "delete": "Eliminar",
     "edit": "Editar",
     "openEdit": "Editar {name}",
@@ -227,7 +228,13 @@
       "actions": "Acciones"
     },
     "restore": "Desarchivar",
-    "restoreLabel": "Desarchivar {name}"
+    "restoreLabel": "Desarchivar {name}",
+    "filter": {
+      "label": "Categoría:",
+      "unknown": "esta categoría",
+      "empty": "Ningún producto archivado en esta categoría.",
+      "clear": "Quitar el filtro por categoría"
+    }
   },
   "archivedDetail": {
     "banner": "Este producto está archivado. Lo ves en modo de solo lectura.",

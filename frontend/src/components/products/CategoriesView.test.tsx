@@ -245,6 +245,62 @@ describe('CategoriesView', () => {
     expect(screen.queryByTestId('categories-archived-count-c-x')).not.toBeInTheDocument()
   })
 
+  // #719 — le compteur d'archivés devient une action qui nomme la catégorie.
+  it('makes the archived count of a category an action that reports the category', async () => {
+    const user = userEvent.setup()
+    const onShowArchived = vi.fn()
+    mockAll({
+      data: [
+        {
+          id: 'c-two',
+          name: 'Deux',
+          system: false,
+          color: null,
+          productCount: 1,
+          archivedProductCount: 2,
+        },
+        {
+          id: 'c-other',
+          name: 'Autre',
+          system: false,
+          color: null,
+          productCount: 1,
+          archivedProductCount: 1,
+        },
+      ],
+    })
+    render(<CategoriesView onShowArchived={onShowArchived} />)
+
+    await user.click(screen.getByTestId('categories-archived-count-c-two'))
+
+    expect(onShowArchived).toHaveBeenCalledTimes(1)
+    expect(onShowArchived).toHaveBeenCalledWith('c-two')
+  })
+
+  // #719 — pas d'archivé, pas d'accès : ni compteur, ni bouton, ni lien dans la carte.
+  it('does not offer the archived action when the category has no archived product', () => {
+    mockAll({
+      data: [
+        {
+          id: 'c-none',
+          name: 'Aucun',
+          system: false,
+          color: null,
+          productCount: 1,
+          archivedProductCount: 0,
+        },
+      ],
+    })
+    render(<CategoriesView onShowArchived={vi.fn()} />)
+
+    // Zone des compteurs de la carte (le badge des actifs et, s'il existe, celui des archivés) :
+    // aucun lien ni bouton, quel que soit le libellé.
+    const counters = screen.getByTestId('categories-count-c-none').parentElement as HTMLElement
+    expect(screen.queryByTestId('categories-archived-count-c-none')).not.toBeInTheDocument()
+    expect(within(counters).queryAllByRole('link')).toHaveLength(0)
+    expect(within(counters).queryAllByRole('button')).toHaveLength(0)
+  })
+
   it('marque les catégories système et masque leur suppression (ADR-002)', () => {
     render(<CategoriesView />)
     expect(screen.getByTestId('categories-system-c-sys')).toBeInTheDocument()

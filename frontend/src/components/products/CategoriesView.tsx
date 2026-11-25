@@ -52,7 +52,12 @@ import type { Product } from '@/types/product'
  *     Les catégories système ne sont pas supprimables (bouton masqué).
  */
 
-export function CategoriesView() {
+export interface CategoriesViewProps {
+  /** #719 — le compteur d'archivés d'une catégorie ouvre l'onglet Archivés filtré sur elle. */
+  onShowArchived?: (categoryId: string) => void
+}
+
+export function CategoriesView({ onShowArchived }: CategoriesViewProps = {}) {
   const t = useTranslations('products.categories')
 
   const categoriesQuery = useCategories(true)
@@ -343,14 +348,26 @@ export function CategoriesView() {
                       {/* #695 — nœud FRÈRE hors du badge coloré (revue Designer) : les
                           archivés ne sont pas des produits visibles, ils ne partagent
                           donc pas l'emphase du badge. Deux compteurs = conditionnel JSX,
-                          l'ICU d'une seule clé ne peut pas exprimer la combinaison. */}
+                          l'ICU d'une seule clé ne peut pas exprimer la combinaison.
+                          #719 — c'est un bouton natif DANS une carte cliquable : le clic
+                          ne remonte pas à l'ouverture de l'édition. */}
                       {archivedCount > 0 && (
-                        <span
-                          className="text-ink-muted text-2xs"
+                        <button
+                          type="button"
+                          className={cn(
+                            'text-ink-muted hover:text-ink text-2xs underline-offset-2 hover:underline',
+                            TOUCH_TARGET_HITBOX,
+                          )}
+                          // WCAG 2.5.3 : le nom accessible reprend le texte visible.
+                          aria-label={`${t('archivedCount', { count: archivedCount })}, ${t('showArchivedLabel', { name: category.name })}`}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            onShowArchived?.(category.id)
+                          }}
                           data-testid={`categories-archived-count-${category.id}`}
                         >
                           {t('archivedCount', { count: archivedCount })}
-                        </span>
+                        </button>
                       )}
                     </div>
 
