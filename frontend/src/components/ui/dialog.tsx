@@ -15,6 +15,20 @@ const DialogPortal = DialogPrimitive.Portal
 
 const DialogClose = DialogPrimitive.Close
 
+/**
+ * PLAN D'EMPILEMENT (#456 — voir `ADR-008`).
+ *
+ * `DialogOverlay` et `DialogContent` sont au palier `--z-modal` (70), et non au `z-50`
+ * d'origine du modèle. Ce palier est PARTAGÉ avec `.mt-drawer`, `.mt-sheet` et
+ * `.mt-dialog__overlay` : à égalité, l'ordre du DOM tranche, et une confirmation portalisée
+ * dans `body` (ouverte depuis un tiroir rendu en ligne) passe après lui, donc dessus. À
+ * `z-50`, la boîte et son fond passaient SOUS le tiroir. Ne pas revenir à `z-50`.
+ *
+ * Reste sous `--z-popover-over-modal` (75, `Select`/`Popover`), `--z-toast` (78) et
+ * `--z-netbanner` (80) : une liste ou un toast ouvert depuis une fenêtre reste au-dessus.
+ * Mesuré au pixel par `e2e/sprint-456-dialog-modal-layer.spec.ts` et
+ * `e2e/sprint-456-dialog-coverage.spec.ts`.
+ */
 const DialogOverlay = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Overlay>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>
@@ -22,7 +36,7 @@ const DialogOverlay = React.forwardRef<
   <DialogPrimitive.Overlay
     ref={ref}
     className={cn(
-      'data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50 bg-black/80',
+      'data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-[var(--z-modal)] bg-black/80',
       className,
     )}
     {...props}
@@ -44,7 +58,7 @@ const DialogContent = React.forwardRef<
       <DialogPrimitive.Content
         ref={ref}
         className={cn(
-          'bg-background data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] fixed top-[50%] left-[50%] z-50 flex w-full max-w-lg translate-x-[-50%] translate-y-[-50%] flex-col gap-4 border p-6 shadow-lg duration-200 *:shrink-0 sm:rounded-lg',
+          'bg-background data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] fixed top-[50%] left-[50%] z-[var(--z-modal)] flex w-full max-w-lg translate-x-[-50%] translate-y-[-50%] flex-col gap-4 border p-6 shadow-lg duration-200 *:shrink-0 sm:rounded-lg',
           className,
         )}
         {...props}

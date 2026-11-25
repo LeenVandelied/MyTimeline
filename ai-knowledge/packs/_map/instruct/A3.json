@@ -1,15 +1,15 @@
 {
  "id": "A3",
- "question": "ExportJobEntity (1 fichier) appartient-il au pack timeline ou à un pack d'export séparé ?",
- "decision": "fondu dans timeline",
- "rule": "R7 pack sous pack_min_kb=60, liens 2/2 vers UserEntity",
- "confidence": "medium",
+ "question": "PasswordResetToken (14 fichiers) : fondu dans Event par le script, dans user ou pack propre ?",
+ "decision": "event",
+ "rule": "R11 User est un hub, aucun groupe n'y est fondu ; la fusion du script dans Event (1 lien sur 1) est conservée faute de pack propre (14 fichiers)",
+ "confidence": "low",
  "seeds": [
-  "ExportJobEntity"
+  "PasswordResetToken"
  ],
  "evidence": [],
- "falsified_if": "un ticket d'export modifie ExportJob et ses moteurs de rendu sans toucher au compte ni aux événements",
+ "falsified_if": "un ticket de réinitialisation de mot de passe modifie PasswordResetToken sans toucher aux événements, ou son poids dépasse pack_min_kb seul",
  "status": "open",
- "opened": "2026-11-17",
+ "opened": "2026-11-20",
  "touched_by": []
 }

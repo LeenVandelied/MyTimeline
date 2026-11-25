@@ -207,3 +207,29 @@ Chiffres et oracle : JSDoc § POSITION de `ui/toaster.tsx` et `e2e/sprint-95-toa
 **Nouvelle règle pour toute future couche** : l'ordre complet est désormais
 `sticky 10 < cursor 20 < popover 50 < modal 70 < popover-over-modal 75 < toast 78 < netbanner 80`.
 Une surface qui devrait recouvrir un toast doit se placer à 80 ou au-dessus, pas entre 75 et 80.
+
+## Amendement — Sprint sprint-20261123-issue-456 (2026-11-24, #456)
+
+**Ce qui a changé.** `ui/dialog.tsx` (`DialogOverlay` et `DialogContent`) portait encore le
+`z-50` d'origine du modèle. Une confirmation ouverte depuis un tiroir rendu en ligne (par
+exemple `DeleteConfirmDialog` depuis `EventFormDrawer`) passait donc sous ce tiroir : la boîte
+et son fond assombrissant étaient recouverts par lui, à 70 contre 50.
+
+**Valeur retenue : 70 (`--z-modal`)**, sans nouveau palier. Les deux classes consomment
+`z-[var(--z-modal)]`.
+
+- Le palier est partagé avec `.mt-drawer`, `.mt-sheet` et `.mt-dialog__overlay`. À égalité de
+  `z-index`, l'ordre du DOM tranche : la boîte Radix est portalisée en fin de `body`, donc après
+  un tiroir rendu en ligne, et se peint au-dessus de lui.
+- Elle reste sous `--z-popover-over-modal` (75), `--z-toast` (78) et `--z-netbanner` (80) : une
+  liste, un sélecteur de couleur, un toast ou la bannière réseau ouverts depuis une fenêtre
+  restent visibles au-dessus d'elle. L'ordre complet de l'amendement du Sprint 92 est inchangé.
+- Un palier 71 à 74 aurait ajouté une valeur à maintenir sans rien gagner : l'égalité avec les
+  tiroirs et le tri par ordre DOM suffisent à produire le bon empilement.
+
+Mesures au pixel (méthode avant et après ouverture, thèmes clair et sombre) :
+`e2e/sprint-456-dialog-modal-layer.spec.ts` (liste au-dessus de la fenêtre, confirmation de
+suppression de catégorie) et `e2e/sprint-456-dialog-coverage.spec.ts` (`ProductDrawer` sur la
+page, confirmation de suppression d'événement sur le tiroir d'édition). Remettre `z-50` fait
+échouer la seconde : en thème sombre, 21 points sur 60 (toute la colonne du tiroir) restent à
+leur couleur d'origine.

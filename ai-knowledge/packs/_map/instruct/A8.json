@@ -1,0 +1,20 @@
+{
+ "id": "A8",
+ "question": "ThemePreference et rôle utilisateur : user ou socle ?",
+ "decision": "user",
+ "rule": "R9 test sans seed suivant la classe de production la plus probable (préférence portée par le compte, migration V16 user_theme_preference)",
+ "confidence": "medium",
+ "seeds": [
+  "User",
+  "UserEntity"
+ ],
+ "evidence": [
+  "backend:src/test/java/com/matimeline/eventmanager/domain/models/ThemePreferenceTest.java",
+  "backend:src/main/java/com/matimeline/eventmanager/domain/models/Role.java",
+  "backend:src/main/java/com/matimeline/eventmanager/application/dtos/AuthResponse.java"
+ ],
+ "falsified_if": "un ticket d'interface modifie la préférence de thème sans toucher au compte utilisateur",
+ "status": "open",
+ "opened": "2026-11-19",
+ "touched_by": []
+}

@@ -1,67 +1,34 @@
 {
- "checked": 7,
+ "checked": 3,
  "outcomes": {
-  "undecidable": 4,
-  "confirmed": 2,
-  "no_files": 1
+  "refuted": 1,
+  "skipped_not_open": 6,
+  "confirmed": 2
  },
  "details": [
   {
-   "id": "A1",
-   "verdict": "undecidable",
-   "outcome": "undecidable",
-   "verified": 6,
-   "rejected": 0,
-   "rejections": {}
-  },
-  {
-   "id": "A2",
-   "verdict": "confirmed",
-   "outcome": "confirmed",
-   "verified": 6,
-   "rejected": 0,
-   "rejections": {}
-  },
-  {
    "id": "A3",
    "verdict": "refuted",
-   "outcome": "undecidable",
-   "verified": 2,
+   "outcome": "refuted",
+   "verified": 4,
    "rejected": 0,
    "rejections": {}
   },
   {
-   "id": "A4",
+   "id": "A10",
    "verdict": "confirmed",
    "outcome": "confirmed",
-   "verified": 3,
+   "verified": 7,
    "rejected": 0,
    "rejections": {}
   },
   {
-   "id": "A5",
-   "verdict": "undecidable",
-   "outcome": "undecidable",
-   "verified": 1,
+   "id": "A11",
+   "verdict": "confirmed",
+   "outcome": "confirmed",
+   "verified": 7,
    "rejected": 0,
    "rejections": {}
-  },
-  {
-   "id": "A6",
-   "verdict": "undecidable",
-   "outcome": "undecidable",
-   "verified": 0,
-   "rejected": 0,
-   "rejections": {}
-  },
-  {
-   "id": "A7",
-   "verdict": null,
-   "outcome": "no_files",
-   "verified": 0,
-   "rejected": 0,
-   "rejections": {},
-   "evidence_unresolved": []
   }
  ]
 }

@@ -31,6 +31,8 @@ champ `color`.
 3. **Backfill `archived = false`.** Les nouvelles colonnes `archived`
    (`events`, `products`) sont `NOT NULL DEFAULT false`. Les lignes existantes
    sont donc backfillées à `false` (BR-EVE-011 : « actif = non archivé »).
+   Cette règle sert aussi au quota d'événements par palier (#88) : seuls les
+   événements non archivés, sur un produit non archivé, comptent.
 
 4. **`recurrence_unit` texte libre -> enum `RecurrenceUnit{WEEK,MONTH,YEAR}`.**
    Les anciennes valeurs (`weeks`/`months`/`years`, CHECK posé en V4) sont

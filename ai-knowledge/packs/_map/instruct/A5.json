@@ -1,16 +1,21 @@
 {
  "id": "A5",
- "question": "Le motif batch (14 fichiers) justifie-t-il un pack transversal ?",
- "decision": "oui, pack transversal batch",
- "rule": "R5 motif mesuré (14 fichiers à 3 occurrences ou plus)",
- "confidence": "low",
+ "question": "Pages login, register, forgot-password, reset-password : user ou session ?",
+ "decision": "user",
+ "rule": "R3 écrans d'authentification sans entité, suivent le pack qui porte AuthController et PasswordReset",
+ "confidence": "medium",
  "seeds": [
-  "PasswordResetTokenEntity",
-  "ExportJobEntity"
+  "User",
+  "Session"
  ],
- "evidence": [],
- "falsified_if": "après extraction, le pack batch contient moins de faits que son budget minimal et se fond mieux dans le pack timeline",
+ "evidence": [
+  "frontend-app:[locale]/login/page.tsx",
+  "frontend-app:[locale]/register/page.tsx",
+  "frontend-app:[locale]/reset-password/page.tsx",
+  "frontend-app:[locale]/forgot-password/page.tsx"
+ ],
+ "falsified_if": "un ticket de jetons ou de sessions modifie ces pages sans toucher au compte utilisateur",
  "status": "open",
- "opened": "2026-11-17",
+ "opened": "2026-11-19",
  "touched_by": []
 }

@@ -1,0 +1,1980 @@
+{
+ "pack": "lib-socle",
+ "schema": 1,
+ "curated_at": "2026-11-20T12:45:00Z",
+ "curator": "curate/1",
+ "base_sha256": "fa7c3cbaaf35177c67667df6c0dd2d0e977e65d080ade8b5a532ff9f8c379aa8",
+ "pack_sha256_before": "937d9f46269ac1768fb5b3467f240eec8e1f7e4f71a485cf2862e38c159e2837",
+ "pack_sha256_after": "9b9d3d7f824ed9cd1fd4879ac4c9485ffb7482be5a659dcdbd1f71b2a5f487f0",
+ "criteria_sha256": "48e0e20f086c5b11deecfecdc547ba1d6115faee1597a5aaf682f6c699e92423",
+ "models": {
+  "measure": "haiku",
+  "refute": "sonnet"
+ },
+ "base_fingerprint": "3aa1816a25007d9b21673b59a0f0f9eea64f1c5f26358518bcc34e55c033fdf3",
+ "bytes": {
+  "before": 5389,
+  "after": 5389,
+  "by_section": {
+   "activate": {
+    "before": 166,
+    "after": 166
+   },
+   "lexicon": {
+    "before": 78,
+    "after": 78
+   },
+   "rules": {
+    "before": 1365,
+    "after": 1365
+   },
+   "structure": {
+    "before": 82,
+    "after": 82
+   },
+   "surface": {
+    "before": 96,
+    "after": 96
+   },
+   "files": {
+    "before": 526,
+    "after": 526
+   },
+   "relations": {
+    "before": 101,
+    "after": 101
+   },
+   "tests": {
+    "before": 1242,
+    "after": 1242
+   },
+   "questions": {
+    "before": 91,
+    "after": 91
+   },
+   "alerts": {
+    "before": 534,
+    "after": 534
+   },
+   "coverage": {
+    "before": 707,
+    "after": 707
+   }
+  }
+ },
+ "units": [
+  {
+   "id": "lib-socle:rules:1",
+   "section": "rules",
+   "rank": 1,
+   "text": "- Selon la javadoc, on n'écrit pas new Date sur une date civile backend, on passe par les helpers de `frontend:lib/date-iso.ts:62-94`. [#895ff383e6631fc3-1] [#895ff383e6631fc3-2]",
+   "fact_text": "Selon la javadoc, on n'écrit pas new Date sur une date civile backend, on passe par les helpers de date-iso.ts",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "lib-socle/895ff383e6631fc3-1",
+    "lib-socle/895ff383e6631fc3-2"
+   ],
+   "files": [
+    "frontend:lib/date-iso.ts"
+   ],
+   "ranges": [
+    [
+     "frontend:lib/date-iso.ts",
+     62,
+     62,
+     "4487e4f53bd5fed728f5b3f0f759b0aac8cb383dac3cf4506427be87b90afdd3"
+    ],
+    [
+     "frontend:lib/date-iso.ts",
+     94,
+     94,
+     "892b46faaaa1390a0f78464d4112736bb370a3ba0aa8a23047905d16ff4a887c"
+    ]
+   ],
+   "code_sha256": "3191f9a061ac22ff3544709062d4979ff81b1346be1b7b5a377fe44cfd1c477b",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
+      "terms": 0.143,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "restatement": "Le commentaire de `parseLocalDate` interdit aux appelants d'écrire `new Date(event.startDate)`. Le code appelle `parseLocalIsoDate(value)` et, si cela échoue (`??`), construit un `new Date(NaN)` lorsque `value` correspond à `LOCAL_DATE`, sinon `new Date(value)`. Une date locale ISO invalide devient donc une `Date` invalide et non une date interprétée en UTC.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 6,
+     "within_budget": true,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/lib/date-iso.ts",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
+      "terms": 0.571,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "job": "lib-socle:rediscover:frontend_lib_color.ts:1",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [
+     {
+      "id": "lib-socle/895ff383e6631fc3-1",
+      "verdict": "unverifiable"
+     }
+    ],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "La javadoc de date-iso.ts L62 le dit. Les autres new Date de lib portent sur des instants ou des dates construites, pas sur une chaîne civile backend.",
+      "date-iso.ts L62 pose bien la règle. Les autres new Date de lib (ephemeris, next-occurrence, recurrence, legal-pages) portent sur des Date locales ou une constante, pas sur une date civile backend.",
+      "La javadoc de date-iso.ts L62 le dit. Les autres new Date de src/lib portent sur des Date locales, des constantes ou des instants, pas sur une date civile backend."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "scope",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 24,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "new Date\\( dans frontend/src/lib",
+         "found": "Occurrences dans date-iso.ts (helpers), recurrence.ts, next-occurrence.ts, ephemeris.ts, legal-pages.ts. Aucune ne parse une date civile backend brute."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "new Date\\( dans frontend/src/lib hors tests",
+         "found": "Seuls date-iso.ts (les helpers) et des usages sur Date locale ou constante (ephemeris, recurrence, next-occurrence, legal-pages). Pas de contre-exemple sur une date backend."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "new Date\\( dans frontend/src/lib hors tests",
+         "found": "Occurrences dans ephemeris, recurrence, next-occurrence et legal-pages. Elles construisent à partir de Date ou de constantes, aucune ne parse une date civile backend."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "placed": {
+    "pack_line": 31,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "lib-socle:rules:2",
+   "section": "rules",
+   "rank": 2,
+   "text": "- Une date sans heure se sérialise en YYYY-MM-DD local et se lit en format strict, les deux renvoient null si la valeur est invalide. [#2a34364f86c74c56-2] [#d0987d79ff55258e-1]",
+   "fact_text": "Une date sans heure se sérialise en YYYY-MM-DD local et se lit en format strict, les deux renvoient null si la valeur est invalide",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "lib-socle/2a34364f86c74c56-2",
+    "lib-socle/d0987d79ff55258e-1"
+   ],
+   "files": [
+    "frontend:lib/date-iso.ts"
+   ],
+   "ranges": [
+    [
+     "frontend:lib/date-iso.ts",
+     31,
+     36,
+     "d65827b87f33a9182db375b7246ee59c2369db5a05c74afcd98a2500deae6781"
+    ],
+    [
+     "frontend:lib/date-iso.ts",
+     73,
+     73,
+     "415bd315086830a738e5e211bc7c91e80aa92e1d248cb62ff2346a7cbce2c875"
+    ]
+   ],
+   "code_sha256": "564befe8f26b4bf1f3a9d99d03d384b1852806d2a38910e209dab97b8258f371",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
+      "terms": 0.455,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 11
+      }
+     },
+     "restatement": "`toLocalIsoDate` rend `null` si `date.getTime()` est `NaN`, sinon une chaîne `AAAA-MM-JJ` construite avec `getFullYear`, `getMonth() + 1` et `getDate` en heure locale, mois et jour paddés sur deux chiffres. `parseLocalIsoDate(value?: string | null): Date | null` n'est visible que par sa signature, sans corps.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 6,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/lib/date-iso.ts",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.545,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 11
+      }
+     },
+     "job": "lib-socle:rediscover:frontend_lib_color.ts:1",
+     "rank_in_lot": 2,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 33,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "lib-socle:rules:3",
+   "section": "rules",
+   "rank": 3,
+   "text": "- Un horodatage backend naïf reçoit le suffixe Z sauf s'il porte déjà un offset. [#aaf0e11be7d28585-1]",
+   "fact_text": "Un horodatage backend naïf reçoit le suffixe Z sauf s'il porte déjà un offset",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "lib-socle/aaf0e11be7d28585-1"
+   ],
+   "files": [
+    "frontend:lib/date-iso.ts"
+   ],
+   "ranges": [
+    [
+     "frontend:lib/date-iso.ts",
+     128,
+     135,
+     "86a9a44aee2861849022390839692d915d27564af6713bd18e1af392a12205d8"
+    ]
+   ],
+   "code_sha256": "86a9a44aee2861849022390839692d915d27564af6713bd18e1af392a12205d8",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 0.429,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "restatement": "`parseServerDateTime` ajoute le suffixe `Z` à un horodatage backend sans décalage (regex `HAS_OFFSET` : `Z` ou `±hh:mm` / `±hhmm` en fin de chaîne), puis appelle `new Date`. Le résultat peut être une `Date` invalide (`NaN`) que l'appelant doit gérer.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 6,
+     "within_budget": true,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/lib/date-iso.ts",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 0.286,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "job": "lib-socle:rediscover:frontend_lib_color.ts:1",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "parseServerDateTime (L128-135) ajoute Z sauf si HAS_OFFSET correspond.",
+      "parseServerDateTime (L128-135) ajoute Z sauf si HAS_OFFSET correspond. Aucun autre parseur d'horodatage concurrent dans lib.",
+      "parseServerDateTime (L128-135) ajoute Z sauf si HAS_OFFSET correspond. Aucun contre-exemple dans la portée."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "scope",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 24,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "new Date\\( dans frontend/src/lib",
+         "found": "Aucun autre parseur d'horodatage naïf dans lib."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "new Date\\( dans frontend/src/lib",
+         "found": "Un seul endroit traite les horodatages backend naïfs, parseServerDateTime."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "new Date\\( dans frontend/src/lib",
+         "found": "Le seul parse d'horodatage naïf est dans parseServerDateTime."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "placed": {
+    "pack_line": 34,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "lib-socle:rules:4",
+   "section": "rules",
+   "rank": 4,
+   "text": "- Un instant complet sort en ISO UTC, ou null si la Date est invalide. [#f70072c348f08622-1]",
+   "fact_text": "Un instant complet sort en ISO UTC, ou null si la Date est invalide",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "lib-socle/f70072c348f08622-1"
+   ],
+   "files": [
+    "frontend:lib/date-iso.ts"
+   ],
+   "ranges": [
+    [
+     "frontend:lib/date-iso.ts",
+     98,
+     100,
+     "4659a8920a65cab43ab6837d292c53482270b9130daafe2512459433953b5ed5"
+    ]
+   ],
+   "code_sha256": "4659a8920a65cab43ab6837d292c53482270b9130daafe2512459433953b5ed5",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": null,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 6
+      }
+     },
+     "restatement": "`toIsoInstant` rend `null` si la `Date` est invalide (`getTime()` vaut `NaN`), sinon `date.toISOString()`, c'est-à-dire une chaîne UTC terminée par `Z`.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 6,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/lib/date-iso.ts",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 6
+      }
+     },
+     "job": "lib-socle:rediscover:frontend_lib_color.ts:1",
+     "rank_in_lot": 3,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 35,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "lib-socle:rules:5",
+   "section": "rules",
+   "rank": 5,
+   "text": "- Le plancher de contraste renvoie la couleur d'origine non normalisée si un hex est invalide ou déjà conforme, sinon il balaie 256 pas. [#2db98241f4b8dec7-1] [#2db98241f4b8dec7-2] [#2db98241f4b8dec7-3]",
+   "fact_text": "Le plancher de contraste renvoie la couleur d'origine non normalisée si un hex est invalide ou déjà conforme, sinon il balaie 256 pas",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "lib-socle/2db98241f4b8dec7-1",
+    "lib-socle/2db98241f4b8dec7-2",
+    "lib-socle/2db98241f4b8dec7-3"
+   ],
+   "files": [
+    "frontend:lib/color.ts"
+   ],
+   "ranges": [
+    [
+     "frontend:lib/color.ts",
+     222,
+     222,
+     "abbeee701fc6140e0f9ea43daa6801ea3c0a535c78db194e170f8faa0f1b6569"
+    ],
+    [
+     "frontend:lib/color.ts",
+     227,
+     227,
+     "dec02e917e976672ac955edc457c0a4853de7541037112679639fd87cc4e56d2"
+    ],
+    [
+     "frontend:lib/color.ts",
+     229,
+     232,
+     "999b7cb2439bd1e97df8861edbebdd0a8ddfb59121c9bdb0cfc399bc4be40597"
+    ]
+   ],
+   "code_sha256": "a4b17a4c2627cff906b778dcbf6e3926190541694643c76490a322da205e9db9",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": null,
+      "values": 0.0,
+      "terms": 0.111,
+      "n": {
+       "identifiers": 0,
+       "values": 1,
+       "terms": 9
+      }
+     },
+     "restatement": "La fonction `contrastFloor` rend `color` tel quel si l'un des trois hex (`color`, `background`, `ink`) ne passe pas `HEX_RE`, ou si `contrastRatio(color, background)` atteint déjà `target`. Sinon elle mélange `color` vers `ink` par pas `i / STEPS` et rend le premier candidat dont le contraste avec `background` atteint `target`. Le retour final après la boucle n'est pas dans l'extrait.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 6,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/lib/color.ts",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": null,
+      "values": 1.0,
+      "terms": 0.667,
+      "n": {
+       "identifiers": 0,
+       "values": 1,
+       "terms": 9
+      }
+     },
+     "job": "lib-socle:rediscover:frontend_lib_color.ts:1",
+     "rank_in_lot": 4,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 37,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "lib-socle:rules:6",
+   "section": "rules",
+   "rank": 6,
+   "text": "- Une marge de 0.05 s'ajoute à la cible WCAG de 3:1 pour les traits en couleur utilisateur. [#1266f33ac81e3c53-1]",
+   "fact_text": "Une marge de 0.05 s'ajoute à la cible WCAG de 3:1 pour les traits en couleur utilisateur",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "lib-socle/1266f33ac81e3c53-1"
+   ],
+   "files": [
+    "frontend:lib/color.ts"
+   ],
+   "ranges": [
+    [
+     "frontend:lib/color.ts",
+     148,
+     148,
+     "615b79b50d515aced2f4e1cff367aa8926a391bd7d32f3aeb191083748e0f79f"
+    ]
+   ],
+   "code_sha256": "615b79b50d515aced2f4e1cff367aa8926a391bd7d32f3aeb191083748e0f79f",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": 0.5,
+      "terms": 0.0,
+      "n": {
+       "identifiers": 1,
+       "values": 2,
+       "terms": 6
+      }
+     },
+     "restatement": "La constante exportée `CONTRAST_FLOOR_MARGIN` vaut `0.05`. L'extrait ne montre pas comment elle est utilisée.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 3,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/lib/color.ts",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 0.5,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 1,
+       "values": 2,
+       "terms": 6
+      }
+     },
+     "job": "lib-socle:rediscover:frontend_lib_color.ts:1",
+     "rank_in_lot": 1,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 38,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "lib-socle:rules:7",
+   "section": "rules",
+   "rank": 7,
+   "text": "- L'encre de texte retombe sur var(--color-ink) si le hex est invalide, et l'égalité de ratio retient la couleur sombre. [#21cc456704d9af76-1] [#21cc456704d9af76-2]",
+   "fact_text": "L'encre de texte retombe sur var(--color-ink) si le hex est invalide, et l'égalité de ratio retient la couleur sombre",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "lib-socle/21cc456704d9af76-1",
+    "lib-socle/21cc456704d9af76-2"
+   ],
+   "files": [
+    "frontend:lib/color.ts"
+   ],
+   "ranges": [
+    [
+     "frontend:lib/color.ts",
+     61,
+     62,
+     "d103ca2ab3bc4a281313787a87acd750d24dd63d9d8ec942c177f9a26a80c88a"
+    ],
+    [
+     "frontend:lib/color.ts",
+     65,
+     65,
+     "260e3c19664b0c473ade9c150555d1e54f735a3d7c0a0412d506a14922dcb382"
+    ]
+   ],
+   "code_sha256": "b17612b6c85f3ee4a9e56b09e5eb3b9c2cc465deb3c13a391ec4796c0d131edc",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 0.1,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 10
+      }
+     },
+     "restatement": "`contrastInk` rend la chaîne `'var(--color-ink)'` si l'argument est vide, `undefined`, `null` ou ne correspond pas à `HEX_RE`. Sinon il rend `INK_DARK` si `withDark >= withLight`, et `INK_LIGHT` dans le cas contraire. Le calcul de `withDark` et `withLight` (lignes 63-64) n'est pas dans l'extrait.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 6,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/lib/color.ts",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 10
+      }
+     },
+     "job": "lib-socle:rediscover:frontend_lib_color.ts:1",
+     "rank_in_lot": 5,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 39,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "lib-socle:rules:8",
+   "section": "rules",
+   "rank": 8,
+   "text": "- Les clés TanStack Query sont centralisées par domaine dans `frontend:lib/query-keys.ts:19-22`, en tuples as const, avec l'objet de paramètres en dernier. [#ce8c3a1a7449d1bc-1] [#8188c0e1b7257ac6-1] [#aa57a64210636b95-1]",
+   "fact_text": "Les clés TanStack Query sont centralisées par domaine dans query-keys.ts, en tuples as const, avec l'objet de paramètres en dernier",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "lib-socle/ce8c3a1a7449d1bc-1",
+    "lib-socle/8188c0e1b7257ac6-1",
+    "lib-socle/aa57a64210636b95-1"
+   ],
+   "files": [
+    "frontend:lib/query-keys.ts"
+   ],
+   "ranges": [
+    [
+     "frontend:lib/query-keys.ts",
+     19,
+     22,
+     "684e809fb7d00747ac2e6e76419c7d283b8051054daa3a9fc10546729c20b613"
+    ],
+    [
+     "frontend:lib/query-keys.ts",
+     28,
+     28,
+     "fea35d569d3369c166306fc6e0d18ad02b09500ae5ecc5b2be8ef8a6451ed5f2"
+    ],
+    [
+     "frontend:lib/query-keys.ts",
+     49,
+     49,
+     "75330faf231bc99263a88d041e49376cd2f7df56198e4fdbd44e09b2748900f7"
+    ]
+   ],
+   "code_sha256": "32948c2b9230c32fbfb44f48ffb665d15ac07005027f827309d349c518a4ee40",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": null,
+      "terms": 0.333,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 9
+      }
+     },
+     "restatement": "L'objet `queryKeys` est une fabrique de clés TanStack Query : `products.all` vaut `['products']`, `products.detail(id)` vaut `['products', id]`, `products.withEvents(userId)` vaut `['products', { userId, withEvents: true }]`, et `events.recurrencePreview(params)` vaut `['events', 'recurrence-preview', params]`.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 12,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/lib/query-keys.ts",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": null,
+      "terms": 0.778,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 9
+      }
+     },
+     "job": "lib-socle:rediscover:frontend_lib_color.ts:1",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "query-keys.ts centralise les clés en tuples as const par domaine. Là où il y a un objet de paramètres (withEvents, archived, recurrencePreview), il est en dernier.",
+      "query-keys.ts est organisé par domaine, en tuples as const. L'objet de paramètres est en dernier (withEvents, archived, recurrencePreview). Aucun littéral queryKey: [ hors tests dans src.",
+      "query-keys.ts: tuples as const par domaine. Les paramètres objet sont en dernier (withEvents, archived, recurrencePreview). Les clés sans paramètre ou à identifiant simple (auth.me, sessions, export.job) ne contredisent pas la règle."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "scope",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 24,
+      "searches": [
+       [
+        {
+         "tool": "Read",
+         "target": "frontend/src/lib/query-keys.ts",
+         "found": "Tous les tuples sont as const et l'objet de paramètres est en dernier."
+        },
+        {
+         "tool": "Grep",
+         "target": "queryKey: \\[ dans frontend/src",
+         "found": "Littéraux seulement dans des fichiers de test."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "(queryKey|QueryKey)\\s*[:=(]\\s*\\[ dans frontend/src hors tests",
+         "found": "Aucune correspondance, donc pas de clé en littéral."
+        },
+        {
+         "tool": "Read",
+         "target": "frontend/src/lib/query-keys.ts",
+         "found": "Tuples as const, params en dernier position."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "queryKey dans frontend/src/lib",
+         "found": "Occurrences uniquement dans query-keys.ts."
+        },
+        {
+         "tool": "Read",
+         "target": "frontend/src/lib/query-keys.ts",
+         "found": "Toutes les clés sont en as const et les objets de paramètres viennent en dernier."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "placed": {
+    "pack_line": 41,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "lib-socle:tests:1",
+   "section": "tests",
+   "rank": 1,
+   "text": "- Le test d'accès au stockage simule un localStorage inaccessible en espionnant Storage.prototype.getItem pour lever une DOMException [#c429da0225301742-1] `frontend:lib/density.test.ts:60`.",
+   "fact_text": "Le test d'accès au stockage simule un localStorage inaccessible en espionnant Storage.prototype.getItem pour lever une DOMException density.test.ts",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "lib-socle/c429da0225301742-1"
+   ],
+   "files": [
+    "frontend:lib/density.test.ts"
+   ],
+   "ranges": [
+    [
+     "frontend:lib/density.test.ts",
+     60,
+     60,
+     "0ebdf68cc9ef0bce7585a46fec086b34224744472bce78a1455af8195e8621db"
+    ]
+   ],
+   "code_sha256": "0ebdf68cc9ef0bce7585a46fec086b34224744472bce78a1455af8195e8621db",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": null,
+      "terms": 0.333,
+      "n": {
+       "identifiers": 4,
+       "values": 0,
+       "terms": 9
+      }
+     },
+     "restatement": "Le test espionne `Storage.prototype.getItem` avec `vi.spyOn` et remplace son comportement par `mockImplementation`. Le corps du mock n'est pas dans l'extrait, donc l'intention (probablement simuler une lecture de `localStorage` défaillante) est une inférence.",
+     "confidence": "medium",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 7,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/lib/density.test.ts",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.75,
+      "values": null,
+      "terms": 0.556,
+      "n": {
+       "identifiers": 4,
+       "values": 0,
+       "terms": 9
+      }
+     },
+     "job": "lib-socle:rediscover:frontend_lib_color.ts:1",
+     "rank_in_lot": 6,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 69,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "lib-socle:tests:2",
+   "section": "tests",
+   "rank": 2,
+   "text": "- Selon le commentaire du test, le beforeEach pose une valeur résiduelle sur l'attribut de densité pour qu'un résultat attendu ne soit pas confondu avec elle [#da6866c072413b20-1] `frontend:lib/density.test.ts:29-30`.",
+   "fact_text": "Selon le commentaire du test, le beforeEach pose une valeur résiduelle sur l'attribut de densité pour qu'un résultat attendu ne soit pas confondu avec elle density.test.ts",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "lib-socle/da6866c072413b20-1"
+   ],
+   "files": [
+    "frontend:lib/density.test.ts"
+   ],
+   "ranges": [
+    [
+     "frontend:lib/density.test.ts",
+     29,
+     30,
+     "c039ed8996d328a2ed3b1742cec774b85d59a4742d6a9611e63171aebdd04f54"
+    ]
+   ],
+   "code_sha256": "c039ed8996d328a2ed3b1742cec774b85d59a4742d6a9611e63171aebdd04f54",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
+      "terms": 0.9,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 10
+      }
+     },
+     "restatement": "Le test pose sur `document.documentElement` l'attribut `DENSITY_ATTRIBUTE` avec la valeur `'residuel'`, valeur résiduelle choisie pour ne pas pouvoir être confondue avec un résultat attendu (référence PIT-S120-001, selon le commentaire).",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 11,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/lib/density.test.ts",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": null,
+      "terms": 0.6,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 10
+      }
+     },
+     "job": "lib-socle:rediscover:frontend_lib_color.ts:1",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [
+     {
+      "id": "lib-socle/da6866c072413b20-1",
+      "verdict": "confirmed"
+     }
+    ],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Lignes 29-30 de density.test.ts : le commentaire et le setAttribute avec 'residuel' correspondent, et la ligne cite le commentaire.",
+      "Lignes 29-30 : le commentaire dit bien valeur résiduelle impossible à confondre, setAttribute(DENSITY_ATTRIBUTE, 'residuel'). La ligne est attribuée au commentaire.",
+      "Lignes 29-30 de density.test.ts : le commentaire dit bien valeur résiduelle impossible à confondre, posée via setAttribute(DENSITY_ATTRIBUTE, 'residuel'). La ligne s'appuie sur le commentaire."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 70,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "lib-socle:tests:3",
+   "section": "tests",
+   "rank": 3,
+   "text": "- Les tests d'éphéméride construisent les dates par composantes locales pour rester indépendants du fuseau de la machine [#040888a3827fac97-1] `frontend:lib/ephemeris.test.ts:40`.",
+   "fact_text": "Les tests d'éphéméride construisent les dates par composantes locales pour rester indépendants du fuseau de la machine ephemeris.test.ts",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "lib-socle/040888a3827fac97-1"
+   ],
+   "files": [
+    "frontend:lib/ephemeris.test.ts"
+   ],
+   "ranges": [
+    [
+     "frontend:lib/ephemeris.test.ts",
+     40,
+     40,
+     "48ddb54f9765eadbe041efd333a793ffa2651079cf8f4bfe97dd08defa9c4d30"
+    ]
+   ],
+   "code_sha256": "48ddb54f9765eadbe041efd333a793ffa2651079cf8f4bfe97dd08defa9c4d30",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
+      "terms": 0.3,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 10
+      }
+     },
+     "restatement": "Le test construit `new Date(2026, 0, 1)` en heure locale, date commentée comme jeudi 1er janvier 2026, semaine ISO 1. Cette date sert de base aux assertions d'`ephemerisParts`.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 16,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/lib/ephemeris.test.ts",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
+      "terms": 0.6,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 10
+      }
+     },
+     "job": "lib-socle:rediscover:frontend_lib_color.ts:1",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "ephemeris.test.ts L40 : new Date(2026, 0, 1) est construit par composantes locales.",
+      "L.40 : new Date(2026, 0, 1) construit par composantes locales.",
+      "ephemeris.test.ts l.40 : new Date(2026, 0, 1) construit par composantes locales."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 71,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "lib-socle:tests:4",
+   "section": "tests",
+   "rank": 4,
+   "text": "- Les tests fixent que les alias de réglages sont strictement égaux à la constante source de cible tactile [#4cdda9b88709fe89-1] `frontend:lib/touchTarget.test.ts:17-18`.",
+   "fact_text": "Les tests fixent que les alias de réglages sont strictement égaux à la constante source de cible tactile touchTarget.test.ts",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "lib-socle/4cdda9b88709fe89-1"
+   ],
+   "files": [
+    "frontend:lib/touchTarget.test.ts"
+   ],
+   "ranges": [
+    [
+     "frontend:lib/touchTarget.test.ts",
+     17,
+     18,
+     "ae19b259ae67d60ef3166cde8e2b5e8928a2db9ec353e6e382b9952eb5e09850"
+    ]
+   ],
+   "code_sha256": "ae19b259ae67d60ef3166cde8e2b5e8928a2db9ec353e6e382b9952eb5e09850",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 10
+      }
+     },
+     "restatement": "Le test vérifie que `SETTINGS_TOUCH_BUTTON` est égal à `TOUCH_TARGET_BUTTON`, et que `SETTINGS_TOUCH_ICON_BUTTON` est égal à `TOUCH_TARGET_ICON_BUTTON`. Il garantit que les constantes de cible tactile des réglages restent alignées sur les constantes communes.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 9,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/lib/touchTarget.test.ts",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.4,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 10
+      }
+     },
+     "job": "lib-socle:rediscover:frontend_lib_color.ts:1",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "touchTarget.test.ts L17-18 : toBe vérifie l'égalité stricte entre les alias et les constantes sources.",
+      "L.17-18 : toBe (égalité stricte) entre alias SETTINGS_* et constantes TOUCH_TARGET_*.",
+      "touchTarget.test.ts l.17-18 : toBe entre alias SETTINGS_* et constantes TOUCH_TARGET_*, égalité stricte."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 72,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "lib-socle:tests:5",
+   "section": "tests",
+   "rank": 5,
+   "text": "- Un test fixe qu'aucune classe de dimension du bouton tactile n'est non préfixée max-md, hormis relative, en découpant la chaîne sur les espaces [#45194a71080a88ef-1] `frontend:lib/touchTarget.test.ts:22-27`.",
+   "fact_text": "Un test fixe qu'aucune classe de dimension du bouton tactile n'est non préfixée max-md, hormis relative, en découpant la chaîne sur les espaces touchTarget.test.ts",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "lib-socle/45194a71080a88ef-1"
+   ],
+   "files": [
+    "frontend:lib/touchTarget.test.ts"
+   ],
+   "ranges": [
+    [
+     "frontend:lib/touchTarget.test.ts",
+     22,
+     27,
+     "f2a39ca8d3e9f43a962ece2fd7bde9e2f2709b85a993b80d2260a56965817139"
+    ]
+   ],
+   "code_sha256": "f2a39ca8d3e9f43a962ece2fd7bde9e2f2709b85a993b80d2260a56965817139",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
+      "terms": 0.333,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 12
+      }
+     },
+     "restatement": "Le test parcourt les trois constantes TOUCH_TARGET_BUTTON, TOUCH_TARGET_ICON_BUTTON et TOUCH_TARGET_HITBOX, découpe chacune sur les espaces, et attend qu'aucune classe ne soit sans préfixe `max-md:`, à l'exception de `relative` (ancre du pseudo-élément). Le filtre conserve donc les classes qui ne commencent pas par `max-md:` et ne valent pas `relative`, et l'assertion exige une liste vide.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 9,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/lib/touchTarget.test.ts",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
+      "terms": 0.25,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 12
+      }
+     },
+     "job": "lib-socle:rediscover:frontend_lib_color.ts:1",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "touchTarget.test.ts L24-27 : split(' ') puis filtre qui exclut les classes max-md: et relative, avec attente d'un tableau vide. Cela correspond à la ligne.",
+      "L.22-27 : split(' ') puis filtre hors 'max-md:' et 'relative', attendu []. Le test couvre aussi TOUCH_TARGET_HITBOX, ce qui reste compatible avec la formulation.",
+      "touchTarget.test.ts l.22-27 : split(' ') puis filtre excluant max-md: et relative, attendu tableau vide."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 73,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "lib-socle:tests:6",
+   "section": "tests",
+   "rank": 6,
+   "text": "- Les cas répétitifs se déclinent avec it.each (options de densité, tuples locale et valeur attendue), avec des noms de tests en français [#f261d758b4932945-1] [#040888a3827fac97-2] `frontend:lib/density.test.ts:39-43`.",
+   "fact_text": "Les cas répétitifs se déclinent avec it.each (options de densité, tuples locale et valeur attendue), avec des noms de tests en français density.test.ts",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "lib-socle/f261d758b4932945-1",
+    "lib-socle/040888a3827fac97-2"
+   ],
+   "files": [
+    "frontend:lib/density.test.ts",
+    "frontend:lib/ephemeris.test.ts"
+   ],
+   "ranges": [
+    [
+     "frontend:lib/density.test.ts",
+     39,
+     43,
+     "6bf8439af1b1abd45c1d5660df235d809febbf8e5267791c1f298ae8cbeae87c"
+    ],
+    [
+     "frontend:lib/ephemeris.test.ts",
+     42,
+     47,
+     "39658ce34509aa18c9805e020b7038b7eda540d4f6d5549b505a503fcfdfe9b4"
+    ]
+   ],
+   "code_sha256": "9274b8f6527e49441865b825aad9e2509550ef18dac6e4f172f995aad0a61d5d",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": null,
+      "terms": 0.182,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 11
+      }
+     },
+     "restatement": "Pour chaque option de `DENSITY_OPTIONS`, le test écrit l'option dans `localStorage` sous `DENSITY_STORAGE_KEY`, exécute `runInitScript()` puis vérifie que `currentDensity()` vaut cette option. Le même fichier d'extrait contient aussi un tableau `it.each` de `ephemerisParts` (`fr`, `en`, `es`, `de`) qui attend pour le 1er janvier 2026 le jour de semaine, le jour, le mois, l'année et `isoWeek: 1`.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": false,
+     "cost": 19,
+     "within_budget": false,
+     "covered": true,
+     "file": "",
+     "file_ok": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.727,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 11
+      }
+     },
+     "job": "lib-socle:rediscover:frontend_lib_color.ts:1",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "it.each(DENSITY_OPTIONS) (density.test.ts L39) avec un nom en français, et it.each de tuples locale/attendu dans ephemeris.test.ts L42-47. Les noms du second sont '%s', ce qui est un raccourci acceptable.",
+      "it.each(DENSITY_OPTIONS) l.39 avec nom français, et it.each de tuples [locale, attendu] dans ephemeris l.42-47. Le nom '%s' de l'éphéméride n'est pas français, mais l'écart est mineur.",
+      "it.each(DENSITY_OPTIONS) avec nom français (l.39) et it.each de tuples [locale, attendu] dans ephemeris.test.ts (l.42-47) : fidèle."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 74,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "lib-socle:alerts:1",
+   "section": "alerts",
+   "rank": 1,
+   "text": "- Selon le commentaire de `frontend:lib/touchTarget.ts:36-38`, un ancêtre en overflow hidden ou auto passant à moins de 6 px de la boîte rognerait la zone tactile, qui est un pseudo-élément de 44 px centré sur la rangée dense [#af507d03675aeccb-1] [#d79dd29c383eb6eb-1]. Avant d'utiliser cette classe dans un conteneur à défilement ou à rognage, vérifier la distance à la boîte, sinon la cible tactile est tronquée sur mobile (le commentaire est partiel, sa limite exacte n'est pas établie).",
+   "fact_text": "Selon le commentaire de touchTarget.ts, un ancêtre en overflow hidden ou auto passant à moins de 6 px de la boîte rognerait la zone tactile, qui est un pseudo-élément de 44 px centré sur la rangée dense. Avant d'utiliser cette classe dans un conteneur à défilement ou à rognage, vérifier la distance à la boîte, sinon la cible tactile est tronquée sur mobile (le commentaire est partiel, sa limite exacte n'est pas établie)",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "lib-socle/af507d03675aeccb-1",
+    "lib-socle/d79dd29c383eb6eb-1"
+   ],
+   "files": [
+    "frontend:lib/touchTarget.ts"
+   ],
+   "ranges": [
+    [
+     "frontend:lib/touchTarget.ts",
+     36,
+     38,
+     "78a3bc8d6d9b22f9227f8b4be6c9d317c45c8accff4ffc40c953d2e873f10f82"
+    ],
+    [
+     "frontend:lib/touchTarget.ts",
+     40,
+     41,
+     "a9bea0d41d741520e2a5b8f042caf1c288405c3c40aefc50ca7b9784c95fcb0a"
+    ]
+   ],
+   "code_sha256": "1de5b0651ca5758f7b794b074c0623eab82c69694cef8dee96b8f81ac6e59adc",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [
+     {
+      "id": "lib-socle/af507d03675aeccb-1",
+      "verdict": "unverifiable"
+     }
+    ],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Le commentaire de touchTarget.ts L36-38 dit bien cela. Les usages de TOUCH_TARGET_HITBOX ne garantissent pas l'absence d'ancêtre rognant. Seul un test e2e mesure la zone cliquable, selon le commentaire.",
+      "Le commentaire L36-38 de touchTarget.ts dit bien ce que l'alerte rapporte, et L40-41 montre le pseudo-élément de 44 px (h-11 w-11) centré. Aucun garde-fou de code trouvé : l'invariant n'est vérifié que par un test E2E mesuré.",
+      "Le commentaire L36-38 de touchTarget.ts décrit le risque. Seul un test e2e le mesure (sprint-101-touch-targets.spec.ts). Aucun code ne vérifie à l'exécution la distance à l'ancêtre en overflow, donc le risque reste réel."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "supported",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "guards",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 24,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "TOUCH_TARGET_HITBOX dans frontend/src",
+         "found": "Utilisé dans DensityRibbon, EventEditForm, ArchivedProductsView, CategoriesView, ProductDetailView, ProductsListView. Aucune vérification de distance à l'ancêtre en code."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "touch-target|touchTarget dans frontend/src",
+         "found": "Usages dans de nombreux composants, aucun contrôle runtime de l'overflow des ancêtres. Seul le commentaire renvoie à e2e/sprint-101-touch-targets.spec.ts."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "TOUCH_TARGET_HITBOX dans frontend",
+         "found": "11 fichiers: composants, tests e2e et touchTarget.test.ts. Aucun garde-fou d'exécution contre le rognage par un ancêtre en overflow."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "guards",
+   "placed": {
+    "pack_line": 82,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "lib-socle:rules:annex:36d0ced4",
+   "section": "rules",
+   "rank": 1,
+   "text": "- Selon la javadoc, aucune autre liste de couleurs de palette ne doit exister dans src, la palette de 12 entrées étant le miroir des tokens CSS. [#3eadc1c5b7d5068e-1] [#3eadc1c5b7d5068e-2]",
+   "fact_text": "Selon la javadoc, aucune autre liste de couleurs de palette ne doit exister dans src, la palette de 12 entrées étant le miroir des tokens CSS",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "lib-socle/3eadc1c5b7d5068e-1",
+    "lib-socle/3eadc1c5b7d5068e-2"
+   ],
+   "files": [
+    "frontend:lib/event-palette.ts"
+   ],
+   "ranges": [
+    [
+     "frontend:lib/event-palette.ts",
+     1,
+     26,
+     "99fcbc2555da461eee95ab40251f2c1e73878a8173e61336138e07255983bae9"
+    ],
+    [
+     "frontend:lib/event-palette.ts",
+     52,
+     52,
+     "2e05f72c0c0979f491844c7a488290d5cfb1797524f2c5c82760d2ca709bb97b"
+    ]
+   ],
+   "code_sha256": "d5aa0fa6939aa16c85fa5a58c0afd365834250cadb45c7e2572438dd0c0b940a",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 1,
+       "values": 1,
+       "terms": 8
+      }
+     },
+     "restatement": "L'extrait contient le commentaire d'en-tête de `EVENT_PALETTE` (palette de 12 couleurs, miroir JS des tokens `--evt-*` de `colors.css`, verrouillé par un test qui relit le CSS, et pastilles peintes via `var(--evt-*)`) et la seule déclaration `EVENT_PALETTE: readonly EventPaletteEntry[]`. Les couleurs hors palette restent valides, ne sont jamais réécrites et s'affichent comme « Personnalisé » parce que `findPaletteEntry` rend `undefined`.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": null,
+    "comment": [
+     {
+      "id": "lib-socle/3eadc1c5b7d5068e-1",
+      "verdict": "unverifiable"
+     }
+    ],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "words:aucune",
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "lib-socle.details.md",
+     "row": 1
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  },
+  {
+   "id": "lib-socle:rules:annex:5f480602",
+   "section": "rules",
+   "rank": 9,
+   "text": "- Un accesseur de rôle de palette lève une Error si le rôle est inconnu, et la recherche par hex compare en majuscules. [#1c1c91953c0de98b-1] [#76bdef6e2c15cc0a-1]",
+   "fact_text": "Un accesseur de rôle de palette lève une Error si le rôle est inconnu, et la recherche par hex compare en majuscules",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "lib-socle/1c1c91953c0de98b-1",
+    "lib-socle/76bdef6e2c15cc0a-1"
+   ],
+   "files": [
+    "frontend:lib/event-palette.ts"
+   ],
+   "ranges": [
+    [
+     "frontend:lib/event-palette.ts",
+     73,
+     77,
+     "40b7f3f9cb55feb55b52782c8a5fc5ec4d7c09d202a7db9aea95fc77f4309f03"
+    ],
+    [
+     "frontend:lib/event-palette.ts",
+     87,
+     91,
+     "2f9b3a3ea01a24a8dfe205116fc8a8bd3ce082da54877f547fb8c0bee57b29af"
+    ]
+   ],
+   "code_sha256": "866273ee8d2af3ffc0e0ee848628ffe546b513cf05f5badc1c1a797ad1255d26",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 0.778,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 9
+      }
+     },
+     "restatement": "`paletteHex(role)` rend le `hex` de l'entrée de `EVENT_PALETTE` dont le `role` correspond, et lève `Error` avec le message « rôle de palette inconnu » si aucune entrée ne correspond. `findPaletteEntry(color)` rend `undefined` pour une valeur vide, `null` ou `undefined`, sinon compare `color.toUpperCase()` à `entry.hex` par égalité stricte, ce qui suppose des hex en majuscules.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "lib-socle.details.md",
+     "row": 2
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  },
+  {
+   "id": "lib-socle:rules:annex:fa036e5e",
+   "section": "rules",
+   "rank": 11,
+   "text": "- Les cibles tactiles mobiles sont des classes max-md posées par le consommateur, pas dans la primitive Button. [#41f7c040c9ac6456-1]",
+   "fact_text": "Les cibles tactiles mobiles sont des classes max-md posées par le consommateur, pas dans la primitive Button",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "lib-socle/41f7c040c9ac6456-1"
+   ],
+   "files": [
+    "frontend:lib/touchTarget.ts"
+   ],
+   "ranges": [
+    [
+     "frontend:lib/touchTarget.ts",
+     24,
+     24,
+     "359f5b39c4af2f6a859da29d87947e39853258e380572adeb85e0860bdd21a3d"
+    ]
+   ],
+   "code_sha256": "359f5b39c4af2f6a859da29d87947e39853258e380572adeb85e0860bdd21a3d",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 8
+      }
+     },
+     "restatement": "La constante TOUCH_TARGET_BUTTON vaut la chaîne `'max-md:h-11'`, soit une seule classe Tailwind de hauteur 2,75 rem (11 en échelle Tailwind) appliquée uniquement à partir du breakpoint md et en dessous. Le bouton n'est donc agrandi que sur mobile, et l'extrait ne montre rien d'autre sur la cible tactile.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "lib-socle.details.md",
+     "row": 3
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  },
+  {
+   "id": "lib-socle:rules:annex:7e2e69fe",
+   "section": "rules",
+   "rank": 12,
+   "text": "- Les classes se composent avec cn (clsx puis twMerge). [#fd3fcc3a2c57fd6d-1]",
+   "fact_text": "Les classes se composent avec cn (clsx puis twMerge)",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "lib-socle/fd3fcc3a2c57fd6d-1"
+   ],
+   "files": [
+    "frontend:lib/utils.ts"
+   ],
+   "ranges": [
+    [
+     "frontend:lib/utils.ts",
+     4,
+     6,
+     "ab1e1b292569f2c56eb2381bad7699d9b376f0621225b09b150a8b9f532910c2"
+    ]
+   ],
+   "code_sha256": "ab1e1b292569f2c56eb2381bad7699d9b376f0621225b09b150a8b9f532910c2",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.667,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 3
+      }
+     },
+     "restatement": "La fonction cn prend une liste de valeurs ClassValue, les passe à clsx pour les aplatir en une chaîne, puis à twMerge qui fusionne les classes Tailwind en conflit, la dernière valeur l'emportant. L'extrait ne montre pas les types ou les cas limites, seulement cette chaîne d'appels.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "lib-socle.details.md",
+     "row": 4
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  }
+ ],
+ "comment_facts": [
+  {
+   "id": "lib-socle/895ff383e6631fc3-1",
+   "verdict": "unverifiable",
+   "code_says": "parseLocalDate rend parseLocalIsoDate(value) pour une date-seule YYYY-MM-DD, sinon new Date(NaN) si la chaîne matche la forme date-seule, sinon new Date(value). Le module ne contrôle pas les appelants, la règle d'usage n'est écrite que dans le commentaire.",
+   "code_line_start": 0,
+   "code_line_end": 0,
+   "code_evidence": "",
+   "evidence_check": null,
+   "code_file": "",
+   "invalid": false,
+   "cache_digest": "25f3562efd899c556a7c36b75bf670c19f2c3680818479fd35f54946df661d37",
+   "reused": true,
+   "reused_from": "2026-11-20T12:20:00Z",
+   "cited_by": [
+    "lib-socle:rules:1"
+   ],
+   "structure_rows_removed": []
+  },
+  {
+   "id": "lib-socle/da6866c072413b20-1",
+   "verdict": "confirmed",
+   "code_says": "Le beforeEach efface localStorage puis pose sur document.documentElement l'attribut DENSITY_ATTRIBUTE avec la valeur sentinelle 'residuel', valeur distincte de toute densité attendue (DENSITY_OPTIONS).",
+   "code_line_start": 30,
+   "code_line_end": 30,
+   "code_evidence": "document.documentElement.setAttribute(DENSITY_ATTRIBUTE, 'residuel')",
+   "evidence_check": null,
+   "code_file": "frontend:lib/density.test.ts",
+   "invalid": false,
+   "cache_digest": "ba487a4a094937ecf42b96292055cbebe2a8d1d90c1e3e83938cdc786104f477",
+   "reused": true,
+   "reused_from": "2026-11-20T12:20:00Z",
+   "cited_by": [
+    "lib-socle:tests:2"
+   ],
+   "structure_rows_removed": []
+  },
+  {
+   "id": "lib-socle/af507d03675aeccb-1",
+   "verdict": "unverifiable",
+   "code_says": "TOUCH_TARGET_HITBOX est une simple chaîne de classes Tailwind (relative, max-md:before:absolute, max-md:before:h-11, max-md:before:w-11, etc.). Le fichier ne contient aucun code qui détecte ou traite un ancêtre en overflow hidden ou auto.",
+   "code_line_start": 0,
+   "code_line_end": 0,
+   "code_evidence": "",
+   "evidence_check": null,
+   "code_file": "",
+   "invalid": false,
+   "cache_digest": "90c8436c8539cdfdb6962302dda672f603f62dd836bed212f9f91ca12dbb312a",
+   "reused": true,
+   "reused_from": "2026-11-20T12:20:00Z",
+   "cited_by": [
+    "lib-socle:alerts:1"
+   ],
+   "structure_rows_removed": []
+  }
+ ],
+ "facts_validated": [
+  "lib-socle/895ff383e6631fc3-1",
+  "lib-socle/895ff383e6631fc3-2",
+  "lib-socle/aaf0e11be7d28585-1",
+  "lib-socle/ce8c3a1a7449d1bc-1",
+  "lib-socle/8188c0e1b7257ac6-1",
+  "lib-socle/aa57a64210636b95-1",
+  "lib-socle/da6866c072413b20-1",
+  "lib-socle/040888a3827fac97-1",
+  "lib-socle/4cdda9b88709fe89-1",
+  "lib-socle/45194a71080a88ef-1",
+  "lib-socle/f261d758b4932945-1",
+  "lib-socle/040888a3827fac97-2",
+  "lib-socle/af507d03675aeccb-1",
+  "lib-socle/d79dd29c383eb6eb-1"
+ ],
+ "counts": {
+  "units": 19,
+  "admit": 15,
+  "annex": 4,
+  "drop": 0,
+  "hold": 0,
+  "pending": 0,
+  "consigne_before_unsupported": 0,
+  "consigne_after_dropped": 0,
+  "structure_rows_removed": 0,
+  "framework": 0,
+  "guarded_elsewhere": 0,
+  "resolved": 0,
+  "restricted": 0,
+  "counterexample": 0,
+  "promoted": 0,
+  "kept_for": {
+   "rediscovered": 6
+  },
+  "pointers_removed": 0,
+  "restored_alerts": 0,
+  "budget_cut": 0
+ },
+ "answers": [],
+ "budget_cut": [],
+ "structure_rows_removed": [],
+ "notes": [],
+ "base_sha256_after": "fa7c3cbaaf35177c67667df6c0dd2d0e977e65d080ade8b5a532ff9f8c379aa8",
+ "bases_touched": {
+  "lib-socle": {
+   "fingerprint": "3aa1816a25007d9b21673b59a0f0f9eea64f1c5f26358518bcc34e55c033fdf3",
+   "sha256_after": "fa7c3cbaaf35177c67667df6c0dd2d0e977e65d080ade8b5a532ff9f8c379aa8"
+  }
+ },
+ "lint": {
+  "ok": true,
+  "errors": 0,
+  "warnings": 0
+ }
+}

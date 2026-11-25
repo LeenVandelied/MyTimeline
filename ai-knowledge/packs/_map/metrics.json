@@ -1,32 +1,37 @@
 {
  "files": 700,
- "bytes": 4622028,
+ "bytes": 4621905,
  "by_repo": {
-  "mytimeline": 700
+  "backend": 270,
+  "frontend": 389,
+  "frontend-app": 41
  },
  "entities": 7,
  "seeds": 7,
+ "hubs": [
+  "User"
+ ],
  "seeds_by_origin": {
   "entity": 7
  },
  "seeds_from_folders": [],
  "folders_on_entity_seeds": [],
- "groups": 1,
- "groups_with_files": 1,
- "labelled": 390,
+ "groups": 4,
+ "groups_with_files": 4,
+ "labelled": 237,
  "by_how": {
-  "name": 349,
-  "fanin": 18,
-  "imports": 23
+  "name": 179,
+  "fanin": 21,
+  "imports": 37
  },
- "tech": 34,
- "transversal_home": 1,
+ "tech": 423,
+ "transversal_home": 0,
  "ambiguous": 0,
- "unassigned": 275,
- "unassigned_rate": 0.3929,
- "unassigned_bytes_rate": 0.3561,
+ "unassigned": 40,
+ "unassigned_rate": 0.0571,
+ "unassigned_bytes_rate": 0.0384,
  "edges_source": "regex",
- "file_edges": 627,
+ "file_edges": 1684,
  "graphify": {},
  "motifs": [
   "authorization",
@@ -35,5 +40,5 @@
   "state-machine"
  ],
  "notes": [],
- "duration_s": 0.32
+ "duration_s": 0.97
 }

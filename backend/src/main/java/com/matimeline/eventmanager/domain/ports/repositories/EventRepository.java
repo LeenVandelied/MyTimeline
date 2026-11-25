@@ -59,4 +59,10 @@ public interface EventRepository {
    * ({@code events.product_id} NOT NULL). Retourne le nombre de lignes supprimées.
    */
   int deleteAllByUserId(UUID userId);
+
+  /**
+   * #88 : nombre d'événements ACTIFS de {@code userId} (événement non archivé ET produit non
+   * archivé ; un récurrent compte pour un). L'appartenance passe par product_id -> products.user_id.
+   */
+  long countActiveByUserId(UUID userId);
 }

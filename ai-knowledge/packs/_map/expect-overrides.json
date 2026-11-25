@@ -1,0 +1,131 @@
+{
+ "schema": 1,
+ "entries": [
+  {
+   "cause": "tech_uncovered",
+   "subject": "backend:src/main/resources/db/migration/",
+   "phase": 1,
+   "iteration": 1,
+   "at": "2026-11-20T10:30:00Z",
+   "measure": {
+    "dir": "backend:src/main/resources/db/migration/",
+    "files": 16,
+    "owners": {
+     "(orphelin)": 5,
+     "user": 4,
+     "event": 3,
+     "export": 2,
+     "category": 1,
+     "session": 1
+    }
+   },
+   "patch": {
+    "tech_packs": [
+     {
+      "slug": "migrations",
+      "name": "Migrations de base",
+      "path_rules": [
+       "^backend:src/main/resources/db/migration/"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "cause": "tech_uncovered",
+   "subject": "frontend:lib/",
+   "phase": 1,
+   "iteration": 1,
+   "at": "2026-11-20T10:30:00Z",
+   "measure": {
+    "dir": "frontend:lib/",
+    "files": 20,
+    "owners": {
+     "frontend-core": 11,
+     "user": 5,
+     "event": 4
+    }
+   },
+   "patch": {
+    "tech_packs": [
+     {
+      "slug": "lib-socle",
+      "name": "Socle d'interface (frontend)",
+      "path_rules": [
+       "^frontend:lib/"
+      ]
+     }
+    ],
+    "tech_folders": {
+     "frontend": [
+      "lib"
+     ]
+    }
+   }
+  },
+  {
+   "cause": "loader_trial",
+   "subject": "T1",
+   "phase": 1,
+   "iteration": 1,
+   "at": "2026-11-20T10:30:00Z",
+   "measure": {
+    "trial": "T1",
+    "kind": "tech_dir",
+    "expected": null,
+    "selected": [
+     "user",
+     "authorization",
+     "integrations",
+     "batch"
+    ]
+   },
+   "patch": {
+    "tech_packs": [
+     {
+      "slug": "migrations",
+      "name": "Migrations de base",
+      "path_rules": [
+       "^backend:src/main/resources/db/migration/"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "cause": "loader_trial",
+   "subject": "T3",
+   "phase": 1,
+   "iteration": 1,
+   "at": "2026-11-20T10:30:00Z",
+   "measure": {
+    "trial": "T3",
+    "kind": "tech_dir",
+    "expected": null,
+    "selected": [
+     "user",
+     "frontend-core",
+     "authorization",
+     "integrations",
+     "batch"
+    ]
+   },
+   "patch": {
+    "tech_packs": [
+     {
+      "slug": "lib-socle",
+      "name": "Socle d'interface (frontend)",
+      "path_rules": [
+       "^frontend:lib/"
+      ]
+     }
+    ],
+    "tech_folders": {
+     "frontend": [
+      "lib"
+     ]
+    }
+   }
+  }
+ ]
+}

@@ -1,0 +1,4108 @@
+{
+ "pack": "event",
+ "schema": 1,
+ "curated_at": "2026-11-20T12:45:00Z",
+ "curator": "curate/1",
+ "base_sha256": "64a1c35428e4c41f9e0a89ca41876fc80864b54ef21ac150a4ba29591c8db074",
+ "pack_sha256_before": "194ab8df4abec8e7f822fb3e9e9cebcca7fb4bd4406b6fdfcb36f459d2c6a7e5",
+ "pack_sha256_after": "f5fff792c976ba9f86d14ced1d035c57157e679ba9ddefcf4430fb0fa8d7313b",
+ "criteria_sha256": "48e0e20f086c5b11deecfecdc547ba1d6115faee1597a5aaf682f6c699e92423",
+ "models": {
+  "measure": "haiku",
+  "refute": "sonnet"
+ },
+ "base_fingerprint": "c858a56046583b26f73cde116d3fab9357bd758855ea176d7676610b55252d49",
+ "bytes": {
+  "before": 12703,
+  "after": 12703,
+  "by_section": {
+   "activate": {
+    "before": 287,
+    "after": 287
+   },
+   "lexicon": {
+    "before": 975,
+    "after": 975
+   },
+   "rules": {
+    "before": 1633,
+    "after": 1633
+   },
+   "structure": {
+    "before": 1982,
+    "after": 1982
+   },
+   "surface": {
+    "before": 1557,
+    "after": 1557
+   },
+   "files": {
+    "before": 1877,
+    "after": 1877
+   },
+   "relations": {
+    "before": 350,
+    "after": 350
+   },
+   "tests": {
+    "before": 579,
+    "after": 579
+   },
+   "questions": {
+    "before": 824,
+    "after": 824
+   },
+   "alerts": {
+    "before": 1658,
+    "after": 1658
+   },
+   "coverage": {
+    "before": 614,
+    "after": 614
+   }
+  }
+ },
+ "units": [
+  {
+   "id": "event:lexicon:1",
+   "section": "lexicon",
+   "rank": 1,
+   "text": "| Unité de récurrence | Enum à trois valeurs, portée par le champ recurrenceUnit de l'événement du domaine, qui exprime la périodicité d'un événement (pointeur `backend:src/main/java/com/matimeline/eventmanager/domain/models/RecurrenceUnit.java:15-18`). | [#53c142807d114b66-1] [#9f47cf2ed415c352-1] |",
+   "fact_text": "Unité de récurrence : Enum à trois valeurs, portée par le champ recurrenceUnit de l'événement du domaine, qui exprime la périodicité d'un événement (pointeur RecurrenceUnit.java)",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "event/53c142807d114b66-1",
+    "event/9f47cf2ed415c352-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/domain/models/RecurrenceUnit.java",
+    "backend:src/main/java/com/matimeline/eventmanager/domain/models/Event.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/domain/models/RecurrenceUnit.java",
+     15,
+     18,
+     "fff485053593564259f83367234f1961dd11504952c374dcf42f3ded6b2bdc6d"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/domain/models/Event.java",
+     6,
+     17,
+     "fbe9542d32d4942faac9007119da91cdd040ed9cb8827eff553f24d6de09987f"
+    ]
+   ],
+   "code_sha256": "78661aefdb72fc14c4b071788cdfd8e2619e0af8908730908fe7880c3971b5e1",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "RecurrenceUnit L15-18 a WEEK, MONTH, YEAR et Event.recurrenceUnit L13 le porte.",
+      "RecurrenceUnit a WEEK, MONTH, YEAR (L15-18) et Event porte recurrenceUnit (L13).",
+      "RecurrenceUnit a WEEK, MONTH, YEAR (L15-18) et Event porte recurrenceUnit (L13)."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 29,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "event:lexicon:2",
+   "section": "lexicon",
+   "rank": 2,
+   "text": "| Version | Colonne de verrouillage optimiste non nulle de l'entité events, présente aussi dans le modèle de domaine sans annotation JPA. | [#14dc8524b3c647c3-1] [#9f47cf2ed415c352-1] |",
+   "fact_text": "Version : Colonne de verrouillage optimiste non nulle de l'entité events, présente aussi dans le modèle de domaine sans annotation JPA",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "event/14dc8524b3c647c3-1",
+    "event/9f47cf2ed415c352-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/entities/EventEntity.java",
+    "backend:src/main/java/com/matimeline/eventmanager/domain/models/Event.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/entities/EventEntity.java",
+     16,
+     61,
+     "66500a8f5adf09079bb5eab01c62616ace2b4a5c5be72f6971529afa39e08759"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/domain/models/Event.java",
+     6,
+     17,
+     "fbe9542d32d4942faac9007119da91cdd040ed9cb8827eff553f24d6de09987f"
+    ]
+   ],
+   "code_sha256": "38586934fed5395cffee4594dd9db9603bdfbd21cdfd1f1b5aba8f10236a053b",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "EventEntity L33-35 porte @Version avec nullable=false. Event.java L26 a un champ version Integer sans annotation JPA, avec getter et setter.",
+      "EventEntity a @Version et @Column(nullable=false) sur version (L33-35). Event.java déclare un champ version Integer sans annotation JPA (L26).",
+      "EventEntity a @Version et @Column(nullable=false) (L33-35), et Event a un champ version (L26) avec getter/setter sans annotation JPA."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 30,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "event:lexicon:3",
+   "section": "lexicon",
+   "rank": 3,
+   "text": "| Égalité d'entité | Deux EventEntity sont égales seulement si leur id est non nul et identique, et le hash est celui de la classe, donc commun à toutes les instances. | [#8f73b2f51593d54c-1] |",
+   "fact_text": "Égalité d'entité : Deux EventEntity sont égales seulement si leur id est non nul et identique, et le hash est celui de la classe, donc commun à toutes les instances",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "event/8f73b2f51593d54c-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/entities/EventEntity.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/entities/EventEntity.java",
+     187,
+     198,
+     "baad61ef36d2bb6eea087cb15efe6ca7bd164fe451f9a873697e264c59c0bf07"
+    ]
+   ],
+   "code_sha256": "baad61ef36d2bb6eea087cb15efe6ca7bd164fe451f9a873697e264c59c0bf07",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "equals L187-193 exige id non null et égal. hashCode L196-198 renvoie getClass().hashCode().",
+      "equals exige un id non nul et égal (L192) et hashCode renvoie getClass().hashCode() (L197).",
+      "equals exige un id non nul et égal (L192) et hashCode retourne getClass().hashCode() (L197)."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 31,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "event:lexicon:4",
+   "section": "lexicon",
+   "rank": 4,
+   "text": "| Produit de l'événement | Rattachement obligatoire d'un événement à un product via product_id, alors que le domaine ne porte que productId. | [#14dc8524b3c647c3-1] [#9f47cf2ed415c352-1] |",
+   "fact_text": "Produit de l'événement : Rattachement obligatoire d'un événement à un product via product_id, alors que le domaine ne porte que productId",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "event/14dc8524b3c647c3-1",
+    "event/9f47cf2ed415c352-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/entities/EventEntity.java",
+    "backend:src/main/java/com/matimeline/eventmanager/domain/models/Event.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/entities/EventEntity.java",
+     16,
+     61,
+     "66500a8f5adf09079bb5eab01c62616ace2b4a5c5be72f6971529afa39e08759"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/domain/models/Event.java",
+     6,
+     17,
+     "fbe9542d32d4942faac9007119da91cdd040ed9cb8827eff553f24d6de09987f"
+    ]
+   ],
+   "code_sha256": "38586934fed5395cffee4594dd9db9603bdfbd21cdfd1f1b5aba8f10236a053b",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "EventEntity L58-61 a @ManyToOne avec JoinColumn product_id nullable=false. Event.java ne porte que productId (L17).",
+      "EventEntity a @ManyToOne avec JoinColumn product_id nullable=false (L58-61), alors que Event ne porte que productId (L17).",
+      "EventEntity a @ManyToOne @JoinColumn(name=product_id, nullable=false) (L58-61) et Event ne porte que productId (L17)."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 32,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "event:rules:1",
+   "section": "rules",
+   "rank": 1,
+   "text": "- Un PATCH n'applique que les champs non null, puis contrôle l'état fusionné. Un événement récurrent sans recurrenceUnit lève RecurrenceUnitRequiredException (400) [#98cf4b5faf0ea7a3-1] [#e627418030325863-1].",
+   "fact_text": "Un PATCH n'applique que les champs non null, puis contrôle l'état fusionné. Un événement récurrent sans recurrenceUnit lève RecurrenceUnitRequiredException (400)",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "event/98cf4b5faf0ea7a3-1",
+    "event/e627418030325863-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/application/services/EventServiceImpl.java",
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/GlobalExceptionHandler.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/services/EventServiceImpl.java",
+     141,
+     143,
+     "582e6bc87dee8d44d4bc5d6f74dfde9c929200868fe4ea73dc03f20032662d3a"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/GlobalExceptionHandler.java",
+     177,
+     188,
+     "2ee12ccd2e1b03d067e2f90fd92d96eff5a21e8042e26041c64af4490419f77e"
+    ]
+   ],
+   "code_sha256": "b6ab1b193f28563fa852dcc6cc441ff2864ae20e765213df234ee808a40861bf",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.667,
+      "values": 1.0,
+      "terms": 0.444,
+      "n": {
+       "identifiers": 3,
+       "values": 1,
+       "terms": 9
+      }
+     },
+     "restatement": "updateEvent lève RecurrenceUnitRequiredException(id) si l'état fusionné a isRecurring à TRUE et recurrenceUnit à null. GlobalExceptionHandler traduit cette exception en 400 BAD_REQUEST avec le message « recurrenceUnit is required when isRecurring is true ».",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 8,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/application/services/EventServiceImpl.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 0.556,
+      "n": {
+       "identifiers": 3,
+       "values": 1,
+       "terms": 9
+      }
+     },
+     "job": "event:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_EventCreationRequest.java:1",
+     "rank_in_lot": 4,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 37,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "event:rules:2",
+   "section": "rules",
+   "rank": 2,
+   "text": "- Une recurrenceEndDate avant startDate lève RecurrenceEndDateBeforeStartException (422), l'égalité est tolérée [#98cf4b5faf0ea7a3-2] [#a2b9636c20b33081-1].",
+   "fact_text": "Une recurrenceEndDate avant startDate lève RecurrenceEndDateBeforeStartException (422), l'égalité est tolérée",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "event/98cf4b5faf0ea7a3-2",
+    "event/a2b9636c20b33081-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/application/services/EventServiceImpl.java",
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/GlobalExceptionHandler.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/services/EventServiceImpl.java",
+     150,
+     154,
+     "5d3c703a0aecf111dde01bfe240ad98b2d7fa82218224c67928885c1179033c9"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/GlobalExceptionHandler.java",
+     190,
+     200,
+     "c4de85e0f24a43db80f2c713f2e45ce62874ee2ea98742bc3f79fb8802dcd641"
+    ]
+   ],
+   "code_sha256": "d078924be05c399c67ac4df9d27abe34d613c3a06acdbad42d6378095992eedf",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 0.333,
+      "n": {
+       "identifiers": 3,
+       "values": 1,
+       "terms": 3
+      }
+     },
+     "restatement": "updateEvent lève RecurrenceEndDateBeforeStartException si recurrenceEndDate, startDate et l'état fusionné sont non null et que recurrenceEndDate est strictement antérieure à startDate. Le handler renvoie 422 UNPROCESSABLE_ENTITY.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 8,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/application/services/EventServiceImpl.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 1.0,
+      "n": {
+       "identifiers": 3,
+       "values": 1,
+       "terms": 3
+      }
+     },
+     "job": "event:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_EventCreationRequest.java:1",
+     "rank_in_lot": 5,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 38,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "event:rules:3",
+   "section": "rules",
+   "rank": 3,
+   "text": "- Pour un autre type sans endDate explicite, endDate est alignée sur startDate [#469d0ef9c8a70cdc-2].",
+   "fact_text": "Pour un autre type sans endDate explicite, endDate est alignée sur startDate",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "event/469d0ef9c8a70cdc-2"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/application/services/EventServiceImpl.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/services/EventServiceImpl.java",
+     180,
+     182,
+     "b8a57d6f60ed95fc0595d46ec8195b83c5d7281706c71ec5585ee2913663e7b1"
+    ]
+   ],
+   "code_sha256": "b8a57d6f60ed95fc0595d46ec8195b83c5d7281706c71ec5585ee2913663e7b1",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.333,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 3
+      }
+     },
+     "restatement": "Dans la branche else if (types autres que duration), si command.endDate est null, endDate est fixée à startDate. Le bloc ne montre pas la condition initiale ni le cas où endDate est fournie.",
+     "confidence": "medium",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 8,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/application/services/EventServiceImpl.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.667,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 3
+      }
+     },
+     "job": "event:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_EventCreationRequest.java:1",
+     "rank_in_lot": 6,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 39,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "event:rules:4",
+   "section": "rules",
+   "rank": 4,
+   "text": "- Sur conflit de verrou optimiste, le contrôleur recharge l'état serveur et le joint à EventConflictException [#fd4d8848bb37eb45-1].",
+   "fact_text": "Sur conflit de verrou optimiste, le contrôleur recharge l'état serveur et le joint à EventConflictException",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "event/fd4d8848bb37eb45-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/EventController.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/EventController.java",
+     81,
+     93,
+     "e25edd6d4df22971ece5d260bda193111f627d27576d2c3a1e87b7ea592668b6"
+    ]
+   ],
+   "code_sha256": "e25edd6d4df22971ece5d260bda193111f627d27576d2c3a1e87b7ea592668b6",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.375,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 8
+      }
+     },
+     "restatement": "Sur ObjectOptimisticLockingFailureException, EventController.updateEvent recharge l'événement serveur via findEventById et sa version via findVersionById, puis lève EventConflictException avec cet état serveur. Si l'événement a été supprimé entre-temps, il lève EventNotFoundException, donc un 404.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 9,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/EventController.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.375,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 8
+      }
+     },
+     "job": "event:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_EventCreationRequest.java:1",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "EventController L81-93 attrape ObjectOptimisticLockingFailureException, recharge serverEvent et serverVersion, puis lève EventConflictException.",
+      "Le catch ObjectOptimisticLockingFailureException recharge serverEvent et la version puis lève EventConflictException (L90-93).",
+      "EventController.updateEvent L81-93 recharge serverEvent et la version puis lève EventConflictException."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 40,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "event:rules:5",
+   "section": "rules",
+   "rank": 5,
+   "text": "- Un type autre que duration, ou une durée null, donne endDate égale à startDate [#f4f32f85e851330e-2] [#9d8ca0954a7123c8-3].",
+   "fact_text": "Un type autre que duration, ou une durée null, donne endDate égale à startDate",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "event/f4f32f85e851330e-2",
+    "event/9d8ca0954a7123c8-3"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/utils/Utils.java",
+    "backend:src/test/java/com/matimeline/eventmanager/utils/UtilsTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/utils/Utils.java",
+     57,
+     59,
+     "cc09c6b6e8975134b9d715665f9997ea13103c00d2504ec1e7a749b7a22088e9"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/utils/UtilsTest.java",
+     33,
+     36,
+     "776c1661c2f90161702218f017c405627234d4601bc6e7c9373157423dd0a0e4"
+    ]
+   ],
+   "code_sha256": "d2073c1f8008b7ec9fda2d0db0eeed2c15c63a69dd17c8602b52012945f14454",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": null,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 6
+      }
+     },
+     "restatement": "Utils.calculateEndDate renvoie startDate sans modification dès que type n'est pas \"duration\" ou que durationValue est null. Le test associé confirme qu'un type inconnu comme \"whatever\" est traité comme single et renvoie START.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 16,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/utils/Utils.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": null,
+      "terms": 0.667,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 6
+      }
+     },
+     "job": "event:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_EventCreationRequest.java:1",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Utils.calculateEndDate L57-59 renvoie startDate si le type n'est pas duration ou si durationValue est null.",
+      "Utils.calculateEndDate renvoie startDate si le type n'est pas duration ou si durationValue est null (L57-59).",
+      "Utils.calculateEndDate L57-58 retourne startDate si le type n'est pas duration ou si durationValue est null."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 42,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "event:rules:6",
+   "section": "rules",
+   "rank": 6,
+   "text": "- À la création, isRecurring à true exige un recurrenceUnit non vide [#6a6a2db764ed3efc-1].",
+   "fact_text": "À la création, isRecurring à true exige un recurrenceUnit non vide",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "event/6a6a2db764ed3efc-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/application/dtos/EventCreationRequest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/dtos/EventCreationRequest.java",
+     59,
+     64,
+     "8f0a39d0a2ad86e0d9f49649b11d87d5f7af4b9c08d74f93b7d3719e0718264b"
+    ]
+   ],
+   "code_sha256": "8f0a39d0a2ad86e0d9f49649b11d87d5f7af4b9c08d74f93b7d3719e0718264b",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.25,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 4
+      }
+     },
+     "restatement": "EventCreationRequest.isRecurrenceUnitConsistent renvoie true si isRecurring n'est pas TRUE (null compris). Si isRecurring vaut TRUE, la méthode renvoie false lorsque recurrenceUnit est null ou ne contient que des espaces (trim vide).",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 17,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/application/dtos/EventCreationRequest.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 4
+      }
+     },
+     "job": "event:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_EventCreationRequest.java:1",
+     "rank_in_lot": 8,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 44,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "event:rules:7",
+   "section": "rules",
+   "rank": 7,
+   "text": "- Une série sans fin est développée jusqu'à startDate plus MAX_UNBOUNDED_EXPANSION_YEARS ans, une borne explicite est honorée [#592a138d8cdd8079-1].",
+   "fact_text": "Une série sans fin est développée jusqu'à startDate plus MAX_UNBOUNDED_EXPANSION_YEARS ans, une borne explicite est honorée",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "event/592a138d8cdd8079-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/application/services/RecurrenceExpansionServiceImpl.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/services/RecurrenceExpansionServiceImpl.java",
+     48,
+     51,
+     "cd317f2fc4c01fb4821e90a568b82269e0ddb64337b47fdc9550a43406dbd37c"
+    ]
+   ],
+   "code_sha256": "cd317f2fc4c01fb4821e90a568b82269e0ddb64337b47fdc9550a43406dbd37c",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.0,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 6
+      }
+     },
+     "restatement": "Dans expand, unbounded vaut true quand recurrenceEndDate est null. La fin effective est alors startDate plus RecurrenceExpansion.MAX_UNBOUNDED_EXPANSION_YEARS années, sinon elle vaut recurrenceEndDate. La valeur de la constante n'apparaît pas dans l'extrait.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 3,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/application/services/RecurrenceExpansionServiceImpl.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 1.0,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 6
+      }
+     },
+     "job": "event:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_EventCreationRequest.java:1",
+     "rank_in_lot": 2,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 45,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "event:rules:8",
+   "section": "rules",
+   "rank": 8,
+   "text": "- expand lève IllegalArgumentException si startDate ou unit est null, ou si la fin précède le début, et la prévisualisation la traduit en 422 [#1a1f018e6f7eaffc-3] [#260f81d202fbedaa-1].",
+   "fact_text": "expand lève IllegalArgumentException si startDate ou unit est null, ou si la fin précède le début, et la prévisualisation la traduit en 422",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "event/1a1f018e6f7eaffc-3",
+    "event/260f81d202fbedaa-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/application/services/RecurrenceExpansionServiceImpl.java",
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/RecurrencePreviewController.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/services/RecurrenceExpansionServiceImpl.java",
+     33,
+     42,
+     "f085b2d5bdc2c7143b4336c8fb02f1c87cac243b660971c786706983c5b266d9"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/RecurrencePreviewController.java",
+     71,
+     74,
+     "659e0b95596c2939ef732c5501868e0f1876b8a3ba6b184b134b7ee85e64f49e"
+    ]
+   ],
+   "code_sha256": "16da485454df2019aeac44aa7d01e1bf34c46c89028dfd4a0584b12950ce7009",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 0.0,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 2,
+       "values": 1,
+       "terms": 8
+      }
+     },
+     "restatement": "expand lève IllegalArgumentException si startDate est null, si unit est null, ou si recurrenceEndDate est antérieure à startDate. RecurrencePreviewController intercepte toute IllegalArgumentException et relance RecurrenceEndDateBeforeStartException, y compris pour les cas startDate null ou unit null, ce qui peut donner une erreur de date trompeuse.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 5,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/application/services/RecurrenceExpansionServiceImpl.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 0.625,
+      "n": {
+       "identifiers": 2,
+       "values": 1,
+       "terms": 8
+      }
+     },
+     "job": "event:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_EventCreationRequest.java:1",
+     "rank_in_lot": 3,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 46,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "event:rules:9",
+   "section": "rules",
+   "rank": 9,
+   "text": "- RecurrenceExpansionService.expand est appelé par RecurrencePreviewController, qui expose expansion.capped() dans la réponse recurrence-preview [#integrations/fa220ac41b24d700-1] [#260f81d202fbedaa-1] `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/RecurrencePreviewController.java:65-75`.",
+   "fact_text": "RecurrenceExpansionService.expand est appelé par RecurrencePreviewController, qui expose expansion.capped() dans la réponse recurrence-preview RecurrencePreviewController.java",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "integrations/fa220ac41b24d700-1",
+    "event/260f81d202fbedaa-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/RecurrencePreviewController.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/RecurrencePreviewController.java",
+     65,
+     74,
+     "5ea21926906b86afa2ecc8a40c462c0ae38d973e2a4865ca2c31f429c66ddb82"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/RecurrencePreviewController.java",
+     71,
+     74,
+     "659e0b95596c2939ef732c5501868e0f1876b8a3ba6b184b134b7ee85e64f49e"
+    ]
+   ],
+   "code_sha256": "56f24111421c4e4bd29cb7988bd5b052ce1bfc7943499a8a428fb406f6c7b3dc",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.25,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 8
+      }
+     },
+     "restatement": "Dans RecurrencePreviewController.previewRecurrence, l'appel à recurrenceExpansionService.expand(startDate, recurrenceUnit, recurrenceEndDate) est encadré par un catch sur IllegalArgumentException. Toute IllegalArgumentException levée par expand est convertie en RecurrenceEndDateBeforeStartException(recurrenceEndDate, startDate), donc le code traite n'importe quelle erreur d'argument comme une date de fin antérieure à la date de début. L'extrait ne montre pas le contenu de expand, la conversion repose donc sur cette seule hypothèse.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 2,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/RecurrencePreviewController.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.75,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 8
+      }
+     },
+     "job": "event:rediscover:backend_src_main_java_com_matimeline_eventmanager_infrastructure_adapters_controllers_RecurrencePreviewController.java:1",
+     "rank_in_lot": 1
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 48,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "event:surface:1",
+   "section": "surface",
+   "rank": 1,
+   "text": "- Les routes événement sont dans `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/EventController.java:29-30` sous /api/events [#bf198858d7b51045-1], et le client front est `frontend:services/eventService.ts:23-144` [#233f4b0dbeb05d4c-1].",
+   "fact_text": "Les routes événement sont dans EventController.java sous /api/events, et le client front est eventService.ts",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "event/bf198858d7b51045-1",
+    "event/233f4b0dbeb05d4c-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/EventController.java",
+    "frontend:services/eventService.ts"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/EventController.java",
+     29,
+     30,
+     "d9523eee616c31c9d11d735f5b897b14a993ff7be2f471c8d66369f4804bece8"
+    ],
+    [
+     "frontend:services/eventService.ts",
+     23,
+     36,
+     "616784ee4dedd3700871eb890b9b2757985fcee311861dbf64379547a9034c9b"
+    ]
+   ],
+   "code_sha256": "3af8d7870507722b7063e98fe8039ec95f6fc0441beeec19b09394aecc8ecc48",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": null,
+      "terms": 0.6,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 5
+      }
+     },
+     "restatement": "L'extrait montre la déclaration de EventController annotée @RestController et @RequestMapping(\"/api/events\"), donc la route de base des endpoints événements. Le bloc frontend previewRecurrence envoie un POST sur /events/recurrence-preview, parse la réponse avec recurrencePreviewResponseSchema et journalise puis relance l'erreur en cas d'échec.",
+     "confidence": "medium",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 2,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/EventController.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 1.0,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 5
+      }
+     },
+     "job": "event:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_EventCreationRequest.java:1",
+     "rank_in_lot": 1,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 72,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "event:surface:2",
+   "section": "surface",
+   "rank": 2,
+   "text": "- Un produit sans utilisateur ou appartenant à un autre caller lève AccessDeniedException, ce qui donne un 403 au JSON forbidden, et la suppression n'est alors pas exécutée [#integrations/31be9b56a73503a4-2] [#cd37dea64799f734-1].",
+   "fact_text": "Un produit sans utilisateur ou appartenant à un autre caller lève AccessDeniedException, ce qui donne un 403 au JSON forbidden, et la suppression n'est alors pas exécutée",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "integrations/31be9b56a73503a4-2",
+    "event/cd37dea64799f734-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/EventController.java",
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/EventControllerOwnershipTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/EventController.java",
+     165,
+     168,
+     "efed15c2373bab44b0ad5bbcb4651befa66db19ef6536959c32faadf1360a77a"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/EventControllerOwnershipTest.java",
+     115,
+     126,
+     "1488263b6d567b99ceb20bcc495d29ba11023aaf773dbe0dc3265f9474e17a02"
+    ]
+   ],
+   "code_sha256": "4be83581d47c847ba20d34bc03e3315f561056220a620173a32b00ec441c8156",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 0.444,
+      "n": {
+       "identifiers": 2,
+       "values": 1,
+       "terms": 9
+      }
+     },
+     "restatement": "checkEventOwnership lève AccessDeniedException(\"forbidden\") si le produit n'a pas d'utilisateur ou si son utilisateur n'a pas l'identifiant de l'appelant. Le test attend un 403 en JSON avec error égal à forbidden, et vérifie que deleteById n'est jamais appelé.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 9,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/EventController.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": 1.0,
+      "terms": 0.778,
+      "n": {
+       "identifiers": 2,
+       "values": 1,
+       "terms": 9
+      }
+     },
+     "job": "event:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_EventCreationRequest.java:1",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "checkEventOwnership L165-168 lève AccessDeniedException si l'utilisateur du produit est null ou différent du caller. Le test vérifie 403, JSON forbidden et deleteById jamais appelé.",
+      "checkEventOwnership lève AccessDeniedException si l'utilisateur est nul ou différent (L165-168) et le test vérifie 403, JSON forbidden et deleteById jamais appelé.",
+      "checkEventOwnership L165-168 lève AccessDeniedException; le test vérifie 403, JSON forbidden et deleteById jamais appelé."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 73,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "event:surface:3",
+   "section": "surface",
+   "rank": 3,
+   "text": "- La suppression est un DELETE en une instruction sans clause de version et répond 200 sans corps, alors que le PATCH fait un contrôle optimiste de version [#b2c8a12ba0d6c2cb-1] [#19d5aee4350efd9d-1] [#c82b76bcb3e888be-1].",
+   "fact_text": "La suppression est un DELETE en une instruction sans clause de version et répond 200 sans corps, alors que le PATCH fait un contrôle optimiste de version",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "event/b2c8a12ba0d6c2cb-1",
+    "event/19d5aee4350efd9d-1",
+    "event/c82b76bcb3e888be-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/EventRepositoryJpaImpl.java",
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/EventController.java",
+    "backend:src/main/java/com/matimeline/eventmanager/application/services/EventServiceImpl.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/EventRepositoryJpaImpl.java",
+     156,
+     162,
+     "7f2c96565dc7ef5137cb9967cd50e27354de81f8ea8779c62b7db28ae600a525"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/EventController.java",
+     103,
+     104,
+     "efb84781e8a711b862a429a7798b118d31f5654155964d7b567f7d67442bdc85"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/services/EventServiceImpl.java",
+     83,
+     202,
+     "ae312507f8482e8eac09875564044839f72a0ea899e0713b69457c0f6aa85e68"
+    ]
+   ],
+   "code_sha256": "66b1853224e2fb114f4428b46731cdaf24834cc7363d9da5501b3c76b82ca4da",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": 0.0,
+      "terms": 0.125,
+      "n": {
+       "identifiers": 2,
+       "values": 1,
+       "terms": 8
+      }
+     },
+     "restatement": "deleteByIdReturningRowCount exécute un DELETE JPQL en masse sur EventEntity filtré par id et renvoie le nombre de lignes supprimées. En revanche, EventController.deleteEvent appelle eventService.deleteById(id) sans utiliser ce compte et renvoie seulement ResponseEntity.ok() sans corps.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 4,
+     "within_budget": true,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/EventRepositoryJpaImpl.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 0.0,
+      "terms": 1.0,
+      "n": {
+       "identifiers": 2,
+       "values": 1,
+       "terms": 8
+      }
+     },
+     "job": "event:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_EventCreationRequest.java:1",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "deleteEvent L103-104 appelle deleteById puis renvoie ok().build() sans corps. Le DELETE JPQL est sans version (L159). Le PATCH passe par checkOptimisticVersion (L87).",
+      "Le DELETE JPQL n'a pas de clause de version (L159), le contrôleur répond ok().build() (L104), et updateEvent appelle checkOptimisticVersion (L87).",
+      "Le DELETE JPQL (L159) n'a pas de clause de version, le contrôleur répond ok().build() (L104), et updateEvent appelle checkOptimisticVersion."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 74,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "event:surface:4",
+   "section": "surface",
+   "rank": 4,
+   "text": "- Un id absent à la suppression lève EventNotFoundException quand aucune ligne n'est touchée, et le gestionnaire global la traduit en 404 au message fixe, comme les autres not found [#bec625ceb1fa0d16-1] [#272f8d8d7d9c6abc-1].",
+   "fact_text": "Un id absent à la suppression lève EventNotFoundException quand aucune ligne n'est touchée, et le gestionnaire global la traduit en 404 au message fixe, comme les autres not found",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "event/bec625ceb1fa0d16-1",
+    "event/272f8d8d7d9c6abc-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/application/services/EventServiceImpl.java",
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/GlobalExceptionHandler.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/services/EventServiceImpl.java",
+     245,
+     247,
+     "03a3db4cf885390577d6f09fbd44eaccecbe1a37a178d707559cf0336249679e"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/GlobalExceptionHandler.java",
+     41,
+     53,
+     "b5d4883cad502e2777606facedc8be5f943e207003e483b6cceb774a7e7cb5cc"
+    ]
+   ],
+   "code_sha256": "5e8eede2a67c7ba4db1e71fcee708950caf89b6b8ce8a8091b77d51fd8eb5ebf",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 0.364,
+      "n": {
+       "identifiers": 1,
+       "values": 1,
+       "terms": 11
+      }
+     },
+     "restatement": "deleteById lève EventNotFoundException si deleteByIdReturningRowCount renvoie 0. GlobalExceptionHandler.handleNotFound répond 404 NOT_FOUND avec le message fixe « Resource not found », partagé avec d'autres exceptions de type NotFound.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 18,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/application/services/EventServiceImpl.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 0.364,
+      "n": {
+       "identifiers": 1,
+       "values": 1,
+       "terms": 11
+      }
+     },
+     "job": "event:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_EventCreationRequest.java:1",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "deleteById lève EventNotFoundException quand 0 ligne est touchée (L245-246). handleNotFound renvoie 404 avec le message fixe 'Resource not found' pour les 6 exceptions not found.",
+      "EventServiceImpl L245-247 lève EventNotFoundException sur 0 ligne. GlobalExceptionHandler L41-53 la mappe en 404 avec le message fixe 'Resource not found', comme les autres not found. Aucun contre-exemple trouvé.",
+      "EventServiceImpl.deleteById L245-247 lève EventNotFoundException quand le nombre de lignes est 0, et GlobalExceptionHandler.handleNotFound L41-53 renvoie 404 avec le message fixe \"Resource not found\" pour tous les not found listés."
+     ],
+     "evidence": [
+      "",
+      "",
+      "if (eventRepository.deleteByIdReturningRowCount(id) == 0) {"
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "scope",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "EventNotFoundException dans backend/src/main",
+         "found": "Levée en L85, L230 et L246 de EventServiceImpl, et dans EventController L91. Mappée dans GlobalExceptionHandler."
+        },
+        {
+         "tool": "Glob",
+         "target": "*NotFound*.java dans backend/src/main",
+         "found": "6 classes (Avatar, Category, Event, Product, Session, User), toutes listées dans handleNotFound."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "EventNotFoundException dans backend/src/main",
+         "found": "Lancée en L85, L230, L246 du service et dans EventController L91. Un seul handler la traite, qui renvoie 404."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "EventNotFoundException dans backend/src/main",
+         "found": "levée dans EventServiceImpl L85, 230, 246 et EventController L91, mappée par un seul handler dans GlobalExceptionHandler"
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "words:aucune",
+   "placed": {
+    "pack_line": 75,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "event:surface:5",
+   "section": "surface",
+   "rank": 5,
+   "text": "- POST /api/events/recurrence-preview est dans un contrôleur séparé de EventController, et le front valide sa réponse par schéma [#2b0d742a9f9403eb-1] [#233f4b0dbeb05d4c-1].",
+   "fact_text": "POST /api/events/recurrence-preview est dans un contrôleur séparé de EventController, et le front valide sa réponse par schéma",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "event/2b0d742a9f9403eb-1",
+    "event/233f4b0dbeb05d4c-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/RecurrencePreviewController.java",
+    "frontend:services/eventService.ts"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/RecurrencePreviewController.java",
+     56,
+     58,
+     "680cec8e65a1da904a3aa62881448bc0abd5b3726e45478d11385b091921dca8"
+    ],
+    [
+     "frontend:services/eventService.ts",
+     23,
+     36,
+     "616784ee4dedd3700871eb890b9b2757985fcee311861dbf64379547a9034c9b"
+    ]
+   ],
+   "code_sha256": "6dc70419cddc23d849d446c4d82626d36c75541f18590cd18f6f8b9fe181e7f2",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": null,
+      "terms": 0.667,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 9
+      }
+     },
+     "restatement": "Le contrôleur expose POST /recurrence-preview (RecurrencePreviewController.previewRecurrence) avec un @Valid @RequestBody RecurrencePreviewRequest et renvoie un ResponseEntity<RecurrencePreviewResponse>. Côté frontend, previewRecurrence poste sur /events/recurrence-preview, valide la réponse avec recurrencePreviewResponseSchema.parse (Zod) avant de la rendre, et journalise puis relance l'erreur en cas d'échec.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 12,
+     "within_budget": false,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/types/event.ts",
+     "file_ok": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.889,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 9
+      }
+     },
+     "job": "event:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_EventCreationRequest.java:1",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "RecurrencePreviewController est une classe distincte avec @PostMapping recurrence-preview, et le front parse la réponse avec recurrencePreviewResponseSchema (eventService.ts L31).",
+      "RecurrencePreviewController est distinct d'EventController et le front applique recurrencePreviewResponseSchema.parse (L31).",
+      "Le @PostMapping recurrence-preview est dans RecurrencePreviewController et le front fait recurrencePreviewResponseSchema.parse (L31)."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 76,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "event:surface:6",
+   "section": "surface",
+   "rank": 6,
+   "text": "- Côté front, createEvent ne valide pas la réponse du serveur, alors que updateEventColor envoie un PATCH avec la seule couleur et échoue si la réponse est vide [#5a914d0f71ef712d-1] [#a176e19a8b475347-1].",
+   "fact_text": "Côté front, createEvent ne valide pas la réponse du serveur, alors que updateEventColor envoie un PATCH avec la seule couleur et échoue si la réponse est vide",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "event/5a914d0f71ef712d-1",
+    "event/a176e19a8b475347-1"
+   ],
+   "files": [
+    "frontend:services/eventService.ts"
+   ],
+   "ranges": [
+    [
+     "frontend:services/eventService.ts",
+     51,
+     59,
+     "5baba9b765fe9fb8022e18273fd71f596405bb22625defc6c050754a63b7fe44"
+    ],
+    [
+     "frontend:services/eventService.ts",
+     71,
+     83,
+     "a09c193719f1a7cfcdf7e3a9d6b3cf08b89bc3debb9ca2f849c6fedeafdad8c6"
+    ]
+   ],
+   "code_sha256": "28e31c618fa21ed4d8e5d2f2855d0c9689887966a3d266d726472dd65677569c",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.111,
+      "n": {
+       "identifiers": 3,
+       "values": 0,
+       "terms": 9
+      }
+     },
+     "restatement": "createEvent envoie POST /events et renvoie response.data sans validation. updateEventColor envoie PATCH /events/{id} avec { color } et lève une erreur 'Failed to update event colors' si response.data est falsy. Les deux fonctions journalisent via console.error puis relancent l'erreur.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 6,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:\\Users\\ldelaforcade\\Documents\\Personnel\\My Timeline\\MyTimeline\\frontend\\src\\services\\eventService.ts",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.667,
+      "values": null,
+      "terms": 0.667,
+      "n": {
+       "identifiers": 3,
+       "values": 0,
+       "terms": 9
+      }
+     },
+     "job": "event:rediscover:backend_src_test_java_com_matimeline_eventmanager_application_services_EventServiceImplTest.java:2",
+     "rank_in_lot": 2,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 77,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "event:surface:7",
+   "section": "surface",
+   "rank": 7,
+   "text": "- Le front liste les événements d'un produit par /users/{userId}/products/{productId}/events, une route hors du préfixe /api/events [#e1636c6acf0f6a7a-1].",
+   "fact_text": "Le front liste les événements d'un produit par /users/{userId}/products/{productId}/events, une route hors du préfixe /api/events",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "event/e1636c6acf0f6a7a-1"
+   ],
+   "files": [
+    "frontend:services/eventService.ts"
+   ],
+   "ranges": [
+    [
+     "frontend:services/eventService.ts",
+     61,
+     69,
+     "a27bd6c229fc8b1f8549c0d6210268fcf1778ee6b4a8c8d020dc37dbec4919c9"
+    ]
+   ],
+   "code_sha256": "a27bd6c229fc8b1f8549c0d6210268fcf1778ee6b4a8c8d020dc37dbec4919c9",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.333,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 9
+      }
+     },
+     "restatement": "La fonction `getEventsByProductId(userId, productId)` appelle en GET `/users/${userId}/products/${productId}/events` via `apiClient` et renvoie `response.data` typé `Event[]`. En cas d'erreur, elle journalise via `console.error` le message issu de `safeErrorMessage(error)` puis relance l'erreur (`throw error`), donc l'appelant doit gérer le rejet. Aucune validation de la forme de `response.data` n'est faite.",
+     "confidence": "high",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 1,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:\\Users\\ldelaforcade\\Documents\\Personnel\\My Timeline\\MyTimeline\\frontend\\src\\services\\eventService.ts",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.556,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 9
+      }
+     },
+     "job": "event:rediscover:backend_src_test_java_com_matimeline_eventmanager_application_services_EventServiceImplTest.java:2",
+     "rank_in_lot": 1,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 78,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "event:tests:1",
+   "section": "tests",
+   "rank": 1,
+   "text": "- Les tests fixent qu'un PATCH n'applique que les champs fournis et laisse le reste intact, dont productId, titre et endDate [#08a1a691c6416d10-1] [#78cddbd17e183338-1] [#89813e6014818567-1] [#50713e907064d823-1].",
+   "fact_text": "Les tests fixent qu'un PATCH n'applique que les champs fournis et laisse le reste intact, dont productId, titre et endDate",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "event/08a1a691c6416d10-1",
+    "event/78cddbd17e183338-1",
+    "event/89813e6014818567-1",
+    "event/50713e907064d823-1"
+   ],
+   "files": [
+    "backend:src/test/java/com/matimeline/eventmanager/application/services/EventServiceImplTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/application/services/EventServiceImplTest.java",
+     105,
+     118,
+     "c2511e8664e342e11cb3700c017dec2a46d782add5141efe9d68b5ee137d49f7"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/application/services/EventServiceImplTest.java",
+     120,
+     132,
+     "d06bc53a3234d9172195c9e13e2b40ee4469e67b7280eb8e5035bd4c097aa02a"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/application/services/EventServiceImplTest.java",
+     162,
+     173,
+     "58983419059fbf06a65b724fc0bd02b56baf3d62b1765fae89b8a6425f240b14"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/application/services/EventServiceImplTest.java",
+     289,
+     306,
+     "4a4807ec3a3f17e4a3a526175d54a048897baa9018987600be68cea424b397f6"
+    ]
+   ],
+   "code_sha256": "b2a8aabd05d9d0676a81792cd1985498f537657476c863c3ceec595d995c0970",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.222,
+      "n": {
+       "identifiers": 3,
+       "values": 0,
+       "terms": 9
+      }
+     },
+     "restatement": "Le test updateEvent_appliesOnlyProvidedFields_partialPatch vérifie qu'un PATCH ne renseignant que title change seul le titre, type, durationValue et durationUnit restant inchangés. Les autres blocs de ce lot vérifient que updateEvent conserve productId, qu'un PATCH de color seul ne modifie ni title ni endDate.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 15,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/test/java/com/matimeline/eventmanager/application/services/EventServiceImplTest.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.333,
+      "values": null,
+      "terms": 0.444,
+      "n": {
+       "identifiers": 3,
+       "values": 0,
+       "terms": 9
+      }
+     },
+     "job": "event:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_EventCreationRequest.java:1",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Les tests L105-173 et L289-306 fixent qu'un PATCH partiel laisse intacts type, durées, titre, productId et endDate.",
+      "Les tests title-only et color-only vérifient que type, durée, titre, endDate et productId restent inchangés.",
+      "Les tests de PATCH partiel vérifient que titre, type, durées, productId et endDate restent intacts quand ils ne sont pas fournis."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 111,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "event:tests:2",
+   "section": "tests",
+   "rank": 2,
+   "text": "- Les tests fixent qu'une endDate explicite sur un single est persistée telle quelle, et qu'une endDate égale à startDate est tolérée [#749db667a0d97e9e-1] [#0bacc6b111c7d53a-1].",
+   "fact_text": "Les tests fixent qu'une endDate explicite sur un single est persistée telle quelle, et qu'une endDate égale à startDate est tolérée",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "event/749db667a0d97e9e-1",
+    "event/0bacc6b111c7d53a-1"
+   ],
+   "files": [
+    "backend:src/test/java/com/matimeline/eventmanager/application/services/EventServiceImplTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/application/services/EventServiceImplTest.java",
+     308,
+     329,
+     "65987e50ac361e3ac2e796d519ec0a625111683658b8c0ddfa2da6eb3a5963e8"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/application/services/EventServiceImplTest.java",
+     401,
+     418,
+     "ddfe59eadd2bd92874fd4360f168010e5319cb0ee848cebae50f92cac3b4fbcb"
+    ]
+   ],
+   "code_sha256": "fb5f2eb43bf6534bc185b7ec47715289015276bd44bf610de2772568004e1e0b",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.429,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "restatement": "Pour un event de type single, updateEvent persiste telle quelle une endDate explicite fournie au PATCH (2026-03-20 avec startDate 2026-03-10). Une endDate égale à startDate est acceptée, car la comparaison est stricte (isBefore).",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 7,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:\\Users\\ldelaforcade\\Documents\\Personnel\\My Timeline\\MyTimeline\\.claude\\worktrees\\plugin-installation-steps-56f588\\backend\\src\\test\\java\\com\\matimeline\\eventmanager\\application\\services\\EventServiceImplTest.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 1.0,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "job": "event:rediscover:backend_src_test_java_com_matimeline_eventmanager_application_services_EventServiceImplTest.java:2",
+     "rank_in_lot": 3,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 112,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "event:tests:3",
+   "section": "tests",
+   "rank": 3,
+   "text": "- Un test de contrat DTO reste une classe JUnit sans contexte Spring avec un ObjectMapper instancié directement [#backend-core/f8c15a124e9472b2-2].",
+   "fact_text": "Un test de contrat DTO reste une classe JUnit sans contexte Spring avec un ObjectMapper instancié directement",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "backend-core/f8c15a124e9472b2-2"
+   ],
+   "files": [
+    "backend:src/test/java/com/matimeline/eventmanager/application/dtos/EventCreationRequestContractTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/application/dtos/EventCreationRequestContractTest.java",
+     16,
+     18,
+     "38e8b3a8b7a64dfbf9fd933ff2c6e6002b9219f460418ffcfe1cdc7ff5b25749"
+    ]
+   ],
+   "code_sha256": "38e8b3a8b7a64dfbf9fd933ff2c6e6002b9219f460418ffcfe1cdc7ff5b25749",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.333,
+      "values": null,
+      "terms": 0.286,
+      "n": {
+       "identifiers": 3,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "restatement": "L'extrait ne montre que la déclaration de la classe EventCreationRequestContractTest et son champ ObjectMapper instancié. Aucune règle ni assertion n'est visible.",
+     "confidence": "low",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 14,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/test/java/com/matimeline/eventmanager/application/dtos/EventCreationRequestContractTest.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.667,
+      "values": null,
+      "terms": 0.571,
+      "n": {
+       "identifiers": 3,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "job": "event:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_EventCreationRequest.java:1",
+     "rank_in_lot": 7,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 113,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "event:questions:1",
+   "section": "questions",
+   "rank": 1,
+   "text": "- Les violations d'intégrité autres que l'unicité de catégorie finissent-elles toutes en 500 générique ? Selon le commentaire, le handler global DataIntegrityViolationException a été supprimé [#7f719a0e8a07aa0d-1], aucun fait de code ne le confirme.",
+   "fact_text": "Les violations d'intégrité autres que l'unicité de catégorie finissent-elles toutes en 500 générique ? Selon le commentaire, le handler global DataIntegrityViolationException a été supprimé, aucun fait de code ne le confirme",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "event/7f719a0e8a07aa0d-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/GlobalExceptionHandler.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/GlobalExceptionHandler.java",
+     147,
+     152,
+     "b8d3d27b97bc05d5a3af8e3786e92fb79d229d9618d912503d7caed32399edca"
+    ]
+   ],
+   "code_sha256": "b8d3d27b97bc05d5a3af8e3786e92fb79d229d9618d912503d7caed32399edca",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [
+     {
+      "id": "event/7f719a0e8a07aa0d-1",
+      "verdict": "confirmed"
+     }
+    ],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Le commentaire l.147-152 de GlobalExceptionHandler dit que les autres violations remontent en 500 générique. Aucun handler global DataIntegrityViolationException n'existe ; seuls CategoryServiceImpl (l.51, 81) et AuthController (l.234) l'attrapent localement. Un autre handler générique n'a pas été lu en entier, donc 500 non confirmé.",
+      "Seul un commentaire (GlobalExceptionHandler l.147-152) affirme le 500 generique. Aucun handler lu ne le prouve pour toutes les autres violations. La grep montre en plus des catch locaux (AuthController:234) et un handler pour ck_events_type, donc la reponse n'est pas uniforme.",
+      "GlobalExceptionHandler l.147-152 le dit en commentaire seulement, et aucun handler générique n'existe. Mais AuthController l.234 attrape localement DataIntegrityViolationException et Utils en parle, donc pas tranché pour tous les cas."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "open",
+     "searched": true,
+     "search": {
+      "check": "answer",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "DataIntegrityViolationException (backend/src/main)",
+         "found": "Pas de handler global ; try/catch locaux dans CategoryServiceImpl et AuthController ; commentaires seuls dans GlobalExceptionHandler. Le statut réel dépend d'un éventuel handler Exception générique no"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "DataIntegrityViolationException (backend/src)",
+         "found": "Handler global retire, catch locaux dans CategoryServiceImpl:51,81 et AuthController:234, aucun handler generique Exception lu."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "DataIntegrityViolationException (backend/src)",
+         "found": "Catch local dans CategoryServiceImpl et AuthController l.234 ; handler global retiré."
+        },
+        {
+         "tool": "Grep",
+         "target": "@ExceptionHandler dans GlobalExceptionHandler",
+         "found": "Aucun handler Exception/DataIntegrityViolation global, mais le code ne confirme pas le 500 de bout en bout."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "answer",
+   "placed": {
+    "pack_line": 117,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "event:questions:2",
+   "section": "questions",
+   "rank": 2,
+   "text": "- La relation EventEntity.product sans FetchType explicite est-elle voulue, alors que CategoryEntity.owner déclare LAZY [#backend-core/018b247f5c65754e-1] ?",
+   "fact_text": "La relation EventEntity.product sans FetchType explicite est-elle voulue, alors que CategoryEntity.owner déclare LAZY ?",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "backend-core/018b247f5c65754e-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/entities/EventEntity.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/entities/EventEntity.java",
+     58,
+     61,
+     "b1d6be61610d557c727ced70f502ba1870231764ee4fecd1fbae1a959c489ba3"
+    ]
+   ],
+   "code_sha256": "b1d6be61610d557c727ced70f502ba1870231764ee4fecd1fbae1a959c489ba3",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "EventEntity.product (l.58) est @ManyToOne sans fetch (EAGER par défaut), CategoryEntity.owner est LAZY (l.28), ProductEntity a deux @ManyToOne sans fetch. Le code ne dit pas si c'est voulu.",
+      "Le code montre EventEntity.product avec @ManyToOne sans fetch (EAGER par defaut) et CategoryEntity.owner en LAZY (l.28). L'intention reste inconnue, le code ne tranche pas.",
+      "EventEntity l.58 @ManyToOne sans fetch (EAGER par défaut) contre CategoryEntity l.28 LAZY ; aucun commentaire ni code ne montre l'intention."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "open",
+     "searched": true,
+     "search": {
+      "check": "answer",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "@ManyToOne|FetchType dans infrastructure/entities",
+         "found": "Seule CategoryEntity déclare LAZY ; EventEntity et ProductEntity utilisent le défaut, sans commentaire d'intention."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "FetchType|@ManyToOne dans infrastructure/entities",
+         "found": "EventEntity:58 et ProductEntity:38,42 sans fetch, CategoryEntity:28 LAZY."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "@ManyToOne|@OneToMany dans entities",
+         "found": "CategoryEntity LAZY ; EventEntity et ProductEntity sans fetch explicite."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "answer",
+   "placed": {
+    "pack_line": 118,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "event:questions:3",
+   "section": "questions",
+   "rank": 3,
+   "text": "- Les pluriels legacy de RecurrenceUnit sont-ils encore nécessaires ? La javadoc les garde jusqu'au réalignement Zod S10/S11 [#8f187701c95e76b2-1], le code les accepte toujours [#248944a8cbcae2ab-1].",
+   "fact_text": "Les pluriels legacy de RecurrenceUnit sont-ils encore nécessaires ? La javadoc les garde jusqu'au réalignement Zod S10/S11, le code les accepte toujours",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "event/8f187701c95e76b2-1",
+    "event/248944a8cbcae2ab-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/domain/models/RecurrenceUnit.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/domain/models/RecurrenceUnit.java",
+     20,
+     27,
+     "25fdedbc30b600f4593e116f04fb74d0751c3fbb1f6d378e020448eff8d7e609"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/domain/models/RecurrenceUnit.java",
+     30,
+     50,
+     "b807b173dc07d1730baa9a43010704ebf508f5cf9bd22c0c45aced874dfd65ee"
+    ]
+   ],
+   "code_sha256": "b7414a983979764bd16b86a776aa7625feb4baf724b4ff268f47d6d994e7c1b1",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [
+     {
+      "id": "event/8f187701c95e76b2-1",
+      "verdict": "confirmed"
+     }
+    ],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "RecurrenceUnit.fromString accepte WEEKS/MONTHS/YEARS (L38-47) et est appelé par EventServiceImpl et ProductServiceImpl sur les chaînes des DTO. Je n'ai pas lu ce que le frontend envoie réellement (clés UI 'weeks' dans EventEditForm), donc le code ne tranche pas.",
+      "RecurrenceUnit.fromString accepte WEEKS, MONTHS et YEARS (L38-47). Le code n'indique pas si le frontend les envoie encore. Seuls EventCreateCommand et la javadoc les mentionnent, donc la question reste ouverte.",
+      "RecurrenceUnit.fromString L38-47 accepte toujours WEEKS, MONTHS, YEARS. Le code ne dit pas si un client les envoie encore, et la recherche frontend n'a pas tranché sur les unités de récurrence."
+     ],
+     "evidence": [
+      "",
+      "",
+      "case \"WEEKS\":"
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "open",
+     "searched": true,
+     "search": {
+      "check": "answer",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "RecurrenceUnit|DAYS|WEEKS dans backend/src/main",
+         "found": "fromString appelé en EventServiceImpl L69 et L112, et en ProductServiceImpl L84, avec des String de DTO."
+        },
+        {
+         "tool": "Grep",
+         "target": "weeks/months/years dans frontend/src",
+         "found": "EventEditForm utilise 'weeks' comme clé UI et mappe WEEK vers 'weeks'. Le payload envoyé n'est pas établi."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "DAYS|WEEKS|MONTHS|YEARS|legacy dans domain/models",
+         "found": "Pluriels acceptés dans RecurrenceUnit L40-46, mention legacy dans EventCreateCommand L18. Rien sur l'usage côté frontend."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "weeks|months|years dans frontend/src",
+         "found": "unités minuscules plurielles pour la durée (previewTimeline.ts), aucune preuve claire pour recurrenceUnit"
+        },
+        {
+         "tool": "Grep",
+         "target": "DAYS|WEEKS|MONTHS|YEARS dans backend domain",
+         "found": "pluriels acceptés seulement dans RecurrenceUnit.fromString"
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "answer",
+   "placed": {
+    "pack_line": 119,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "event:questions:4",
+   "section": "questions",
+   "rank": 4,
+   "text": "- Pourquoi seul updateEvent côté frontend traite une réponse sans corps comme un échec, contrairement à createEvent et setEventArchived [#3ce22bef0fa348e3-1] ?",
+   "fact_text": "Pourquoi seul updateEvent côté frontend traite une réponse sans corps comme un échec, contrairement à createEvent et setEventArchived ?",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "event/3ce22bef0fa348e3-1"
+   ],
+   "files": [
+    "frontend:services/eventService.ts"
+   ],
+   "ranges": [
+    [
+     "frontend:services/eventService.ts",
+     97,
+     99,
+     "403f0eaa7cc9edde190c86dbafc40a8ba768f8f6e6596c68c60789a6d63d8dc3"
+    ]
+   ],
+   "code_sha256": "403f0eaa7cc9edde190c86dbafc40a8ba768f8f6e6596c68c60789a6d63d8dc3",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 1,
+     "refute_unproven": 0,
+     "reasons": [
+      "La question est exacte : updateEvent (L97-99) lève si response.data est vide, alors que createEvent et setEventArchived ne le font pas. Le code ne dit pas pourquoi. Le PATCH backend renvoie un EventResponse (EventController L71-80), donc le contrôle est inoffensif mais sans justification lue. updateEventColor a aussi ce contrôle (L76), donc le « seul » est approximatif.",
+      "La prémisse « seul updateEvent » est fausse : updateEventColor (L76-78) lève aussi une erreur sur `!response.data`, donc updateEvent n'est pas le seul. Le code ne dit par ailleurs pas pourquoi (le backend PATCH renvoie ResponseEntity<EventResponse>).",
+      "Le code montre le fait (updateEvent L97-99 lève si !response.data, createEvent et setEventArchived non), mais aucun code ni commentaire n'explique le pourquoi : le backend renvoie toujours un corps (EventController.updateEvent, ResponseEntity.ok(EventResponse...)), donc le test semble un reliquat. updateEventColor a le même test, ce qui nuance le « seul ». Question restée ouverte."
+     ],
+     "evidence": [
+      "",
+      "if (!response.data) {\n      throw new Error('Failed to update event colors')",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "open",
+     "searched": true,
+     "search": {
+      "check": "answer",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 6,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "@PatchMapping dans EventController",
+         "found": "Le PATCH /{id} renvoie ResponseEntity.ok(EventResponse.fromDomain(updatedEvent)), donc un corps est présent. Aucune raison de l'asymétrie n'apparaît."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "@PatchMapping dans Event*Controller*.java (backend)",
+         "found": "EventController.updateEvent renvoie ResponseEntity<EventResponse> ; rien n'explique le contrôle côté front."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "@PatchMapping dans Event*Controller*.java (backend)",
+         "found": "EventController.updateEvent renvoie ResponseEntity.ok(EventResponse.fromDomain(updatedEvent)), corps toujours présent en succès ; aucune justification de l'intention du test côté front."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "answer",
+   "placed": {
+    "pack_line": 120,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "event:alerts:1",
+   "section": "alerts",
+   "rank": 1,
+   "text": "- Le commentaire de CallerResolver.currentUser dit que la méthode ne lève jamais d'exception, mais elle délègue à userService sans garde locale [#0bc1c107d4295cab-1]. Un appelant qui compte sur ce contrat peut recevoir une exception, donc il faut la gérer ou ajouter la garde dans `backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/CallerResolver.java:69-74`.",
+   "fact_text": "Le commentaire de CallerResolver.currentUser dit que la méthode ne lève jamais d'exception, mais elle délègue à userService sans garde locale. Un appelant qui compte sur ce contrat peut recevoir une exception, donc il faut la gérer ou ajouter la garde dans CallerResolver.java",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "event/0bc1c107d4295cab-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/CallerResolver.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/CallerResolver.java",
+     69,
+     74,
+     "f11deb2ed40e3ea4c198ff8b805505c243b896ba0fa345344f547e8154f81140"
+    ]
+   ],
+   "code_sha256": "f11deb2ed40e3ea4c198ff8b805505c243b896ba0fa345344f547e8154f81140",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "CallerResolver.currentUser (l.59-75) court-circuite null, non authentifié, anonyme et username vide, mais délègue à userService.findDomainUserByUsername sans try/catch (l.74). Une exception de ce service (base indisponible par exemple) se propage, donc le contrat du commentaire 'ne lève JAMAIS' n'est pas garanti par le code. Les contrôleurs appelants testent seulement l'Optional.",
+      "CallerResolver.currentUser (l.59-75) garde l'authentification et le username, puis delegue a userService.findDomainUserByUsername sans try/catch. Le contrat 'ne leve JAMAIS' (l.39, 57) n'est donc pas garanti localement. Les contrôleurs appelants ne protegent que le cas Optional.empty.",
+      "CallerResolver.currentUser l.74 délègue à userService.findDomainUserByUsername sans try/catch, malgré le Javadoc 'ne lève JAMAIS'. Les contrôleurs appelants testent l'Optional, rien ne protège d'une exception du service."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "guards",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Read",
+         "target": "CallerResolver.java l.25-77",
+         "found": "Gardes locales sur l'authentification, aucun try/catch autour de l'appel userService."
+        },
+        {
+         "tool": "Grep",
+         "target": "currentUser (backend/src/main)",
+         "found": "Appelants dans les contrôleurs (Category, Event, Export, Product, User) qui traitent l'Optional vide en 401, sans protection contre une exception."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "currentUser (backend/src/main)",
+         "found": "Appelé par de nombreux contrôleurs (Event, Category, User, Session, Product, Export) sur le schema Optional empty -> 401."
+        },
+        {
+         "tool": "Read",
+         "target": "CallerResolver.java L25-77",
+         "found": "Gardes sur auth null, anonyme, username vide, aucune garde autour de l'appel userService."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "currentUser\\(",
+         "found": "Appelé par EventController, CategoryController, UserController, SessionController, qui testent l'Optional."
+        },
+        {
+         "tool": "Read",
+         "target": "CallerResolver.java 25-76",
+         "found": "Gardes locales sur authentification, aucune sur l'appel au service."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "guards",
+   "placed": {
+    "pack_line": 124,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "event:alerts:2",
+   "section": "alerts",
+   "rank": 2,
+   "text": "- Selon le commentaire du port, deleteByIdReturningRowCount supprime sans contrôle du verrou optimiste, perte assumée et renvoyée à un test d'intégration . Le port ne prend qu'un id et rend un nombre de lignes , donc une suppression ne détecte pas un PATCH concurrent ⇒ Ne pas compter sur la version pour protéger la suppression [#8634b19eb71898e8-2] [#92ea5b8b1d75d1d3-1]",
+   "fact_text": "Selon le commentaire du port, deleteByIdReturningRowCount supprime sans contrôle du verrou optimiste, perte assumée et renvoyée à un test d'intégration. Le port ne prend qu'un id et rend un nombre de lignes, donc une suppression ne détecte pas un PATCH concurrent",
+   "consigne": "Ne pas compter sur la version pour protéger la suppression",
+   "consigne_dropped": false,
+   "cites": [
+    "event/8634b19eb71898e8-2",
+    "event/92ea5b8b1d75d1d3-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/domain/ports/repositories/EventRepository.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/domain/ports/repositories/EventRepository.java",
+     37,
+     39,
+     "b5786ee9ae55f8d4f822518abf791f62f690c94cb9f9e1d12f225a6f7d7499ac"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/domain/ports/repositories/EventRepository.java",
+     41,
+     41,
+     "44a9775560e7231967bef0a9a2bb211026869d97d785528343bb2261f445c442"
+    ]
+   ],
+   "code_sha256": "a9ac701985e032962197859676ef5b8f59f2dbd96b928359930d5b7b722cf1ec",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": {
+     "fact_supported": false,
+     "consigne_supported": true,
+     "reason": "Le constat sur la perte assumée du verrou optimiste est porté par le commentaire cité, mais l'affirmation « une suppression ne détecte pas un PATCH concurrent » est une déduction de la signature (id seul, retour int) que aucun fait ne formule explicitement. La consigne découle du fait que la suppression perd le verrou optimiste.",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "deduce": null,
+    "rediscover": null,
+    "comment": [
+     {
+      "id": "event/8634b19eb71898e8-2",
+      "verdict": "confirmed"
+     }
+    ],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "EventRepositoryJpaImpl.deleteByIdReturningRowCount (l.159) émet DELETE ... WHERE e.id = :id sans version, et le port (EventRepository l.41) ne prend qu'un UUID. Le constat est fidèle, la perte est une décision documentée l.132-155.",
+      "EventRepositoryJpaImpl.deleteByIdReturningRowCount (l.157-162) emet 'DELETE FROM EventEntity e WHERE e.id = :id' sans version, et le commentaire l'assume. La ligne est fidele.",
+      "EventRepositoryJpaImpl.deleteByIdReturningRowCount (l.157-161) émet 'DELETE FROM EventEntity e WHERE e.id = :id' sans version, conforme à la ligne."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "supported",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "guards",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "deleteByIdReturningRowCount (backend/src)",
+         "found": "Port, impl JPA, EventServiceImpl l.245 (== 0 test) et tests."
+        },
+        {
+         "tool": "Read",
+         "target": "EventRepositoryJpaImpl.java l.125-175",
+         "found": "Bulk DELETE WHERE id seul, décision assumée 'la suppression gagne toujours', pas de version."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "deleteByIdReturningRowCount",
+         "found": "Port, EventServiceImpl:245 (test rowcount == 0), JpaImpl:157, tests."
+        },
+        {
+         "tool": "Read",
+         "target": "EventRepositoryJpaImpl.java L130-175",
+         "found": "Bulk DELETE WHERE id seul, decision assumee: la suppression gagne toujours, DELETE ne transporte aucune version."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "deleteByIdReturningRowCount",
+         "found": "Port, EventServiceImpl l.245 (teste seulement ==0), impl JPA et tests ; aucun contrôle de version."
+        },
+        {
+         "tool": "Read",
+         "target": "EventRepositoryJpaImpl.java 130-175",
+         "found": "Décision assumée, DELETE WHERE id seul, sans version."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "guards",
+   "placed": {
+    "pack_line": 125,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "event:alerts:3",
+   "section": "alerts",
+   "rank": 3,
+   "text": "- Le champ color n'a aucun contrôle de format hex dans le DTO de création , et le commentaire dit que la répercussion côté frontend reste à faire . Le serveur accepte donc toute chaîne [#backend-core/af3d8994f27f9508-1] [#c79d155872b82780-1]",
+   "fact_text": "Le champ color n'a aucun contrôle de format hex dans le DTO de création, et le commentaire dit que la répercussion côté frontend reste à faire. Le serveur accepte donc toute chaîne",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "backend-core/af3d8994f27f9508-1",
+    "event/c79d155872b82780-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/application/dtos/EventCreationRequest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/dtos/EventCreationRequest.java",
+     44,
+     44,
+     "a489a3d30e27ea482e65ce4a600a65318e048cc4e5738f4aff1e5356bd4e26da"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/dtos/EventCreationRequest.java",
+     41,
+     42,
+     "5d80ab33ada0fcfee8f0d7eb014a487eead7b9ed61d8db6147ef460729a2e5d4"
+    ]
+   ],
+   "code_sha256": "92a6ae339f1b394e25aeafda209c757d408d835dc88e3a1000ccc3e4db4ad510",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [
+     {
+      "id": "event/c79d155872b82780-1",
+      "verdict": "confirmed"
+     }
+    ],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "EventCreationRequest.color (L44) n'a pas de contrainte et la javadoc L41-42 dit que le refine Zod reste à répercuter. Aucune validation de couleur ailleurs dans backend/src/main (colonnes varchar(255)).",
+      "EventCreationRequest.java L41-42 dit explicitement l'absence de contrainte hex. Aucun autre contrôle trouvé pour la couleur d'event (Pattern hex seulement dans ProductCreationRequest et ProductUpdateRequest).",
+      "EventCreationRequest.color (L44) n'a aucune annotation de format, et le commentaire L41-42 dit que le refine Zod reste à répercuter. Aucun contrôle hex sur l'événement ailleurs dans le backend (seuls ProductCreationRequest et ProductUpdateRequest ont un @Pattern hex)."
+     ],
+     "evidence": [
+      "",
+      "",
+      "private String color;"
+     ],
+     "consigne_verdict": "supported",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "guards",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "color (insensible à la casse) dans backend/src/main",
+         "found": "Aucune validation de format. Les services et mappers recopient la valeur, les migrations déclarent varchar(255)."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "hex|[0-9a-f|color.*Pattern dans backend/src/main/java",
+         "found": "Pattern #RRGGBB seulement dans ProductCreationRequest et ProductUpdateRequest, rien pour les events."
+        },
+        {
+         "tool": "Grep",
+         "target": "color dans backend/src/main",
+         "found": "Colonne varchar(255) sans contrainte en migration, aucun validateur d'event trouvé."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "[cC]olor.*(matches|Pattern|regex|#[0-9A-F]|\\^#)|@Pattern dans backend/src/main/java",
+         "found": "@Pattern hex seulement dans ProductCreationRequest et ProductUpdateRequest, rien pour Event ni CategoryRequest"
+        },
+        {
+         "tool": "Grep",
+         "target": "[cC]olor dans backend/src/main (java, sql)",
+         "found": "colonnes varchar(255) nullable, pas de contrainte de format"
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "guards",
+   "placed": {
+    "pack_line": 126,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "event:alerts:4",
+   "section": "alerts",
+   "rank": 4,
+   "text": "- Le setter de Event s'appelle setProduct alors qu'il reçoit et stocke productId, comme le getter et le champ [#7da0b405589ec288-1]. Chercher setProductId ne trouve rien et setProduct ne prend pas une entité produit, donc l'appeler avec un UUID de produit (`backend:src/main/java/com/matimeline/eventmanager/domain/models/Event.java:79`).",
+   "fact_text": "Le setter de Event s'appelle setProduct alors qu'il reçoit et stocke productId, comme le getter et le champ. Chercher setProductId ne trouve rien et setProduct ne prend pas une entité produit, donc l'appeler avec un UUID de produit (Event.java)",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "event/7da0b405589ec288-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/domain/models/Event.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/domain/models/Event.java",
+     79,
+     79,
+     "1015dae050877da0dcbf3c8512842397624f03db953ceb5af610117a3ae0b5de"
+    ]
+   ],
+   "code_sha256": "1015dae050877da0dcbf3c8512842397624f03db953ceb5af610117a3ae0b5de",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Event.setProduct(UUID productId) (L79) stocke bien productId. Le seul appelant main de Event.setProduct est EventServiceImpl L199 avec originalProductId. Aucune méthode setProductId n'existe sur Event, et les autres setProduct prennent un ProductEntity.",
+      "Event.java L79 est bien setProduct(UUID productId) qui affecte this.productId. Il n'existe pas de setProductId dans Event. Les appelants (EventServiceImpl L199) passent un UUID, aucun garde-fou n'élimine le piège de nommage.",
+      "Event.setProduct(UUID productId) L79 stocke bien productId. Grep: setProductId n'existe que sur EventCreationRequest, et EventServiceImpl L199 appelle event.setProduct(originalProductId) avec un UUID. Le piège de nommage est réel."
+     ],
+     "evidence": [
+      "",
+      "",
+      "public void setProduct(UUID productId) { this.productId = productId; }"
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "guards",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "setProduct( ou setProductId( dans backend/src",
+         "found": "Event.setProduct(UUID) appelé en EventServiceImpl L199. EventEntity.setProduct prend un ProductEntity. setProductId n'existe que sur EventCreationRequest."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "setProduct\\(|setProductId\\( dans backend/src",
+         "found": "Event.setProduct(UUID) appelé par EventServiceImpl L199. EventEntity.setProduct prend un ProductEntity. setProductId n'existe que dans EventCreationRequest."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "setProduct\\(|setProductId\\( dans backend/src",
+         "found": "Event.setProduct(UUID) appelé avec un UUID dans EventServiceImpl L199, EventEntity.setProduct prend une ProductEntity, setProductId n'existe que sur le DTO"
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "guards",
+   "placed": {
+    "pack_line": 127,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "event:alerts:5",
+   "section": "alerts",
+   "rank": 5,
+   "text": "- Les tests de rejet du CHECK sur durationUnit n'affirment qu'une Exception générique [#27b42a4cf6d2382f-1]. Ils passent pour n'importe quel échec, donc ils ne protègent pas la contrainte ck_events_duration_unit_required. Asserter la cause exacte en les modifiant.",
+   "fact_text": "Les tests de rejet du CHECK sur durationUnit n'affirment qu'une Exception générique. Ils passent pour n'importe quel échec, donc ils ne protègent pas la contrainte ck_events_duration_unit_required. Asserter la cause exacte en les modifiant",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "event/27b42a4cf6d2382f-1"
+   ],
+   "files": [
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/EventConditionalCheckConstraintIntegrationTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/EventConditionalCheckConstraintIntegrationTest.java",
+     95,
+     97,
+     "cdc5c6ac0d816cd20618ecd61a576a19fca0eff4d586ed885c15f889c0a8d1dd"
+    ]
+   ],
+   "code_sha256": "cdc5c6ac0d816cd20618ecd61a576a19fca0eff4d586ed885c15f889c0a8d1dd",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "EventConditionalCheckConstraintIntegrationTest l.95-97 asserte seulement isInstanceOf(Exception.class), donc passe pour n'importe quel échec de l'insertion. Le constat est fidèle.",
+      "Le test durationTypeWithoutDurationUnit_rejectedByCheckConstraint (l.95-97) n'asserte que isInstanceOf(Exception.class). Il passe pour n'importe quel echec.",
+      "Le test l.95-97 n'asserte que isInstanceOf(Exception.class), comme décrit."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "supported",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "guards",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "ck_events_duration_unit_required (backend/src)",
+         "found": "Contrainte créée en V11 l.71, test à la ligne 89 et suivantes, nom de contrainte non asserté dans l'extrait."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "ck_events_duration_unit_required",
+         "found": "Defini en V11, cite dans le test mais seul un isInstanceOf(Exception.class) l'affirme."
+        },
+        {
+         "tool": "Read",
+         "target": "EventConditionalCheckConstraintIntegrationTest.java L85-115",
+         "found": "Meme assertion generique pour les tests de rejet duration et recurrence."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "ck_events_duration_unit_required",
+         "found": "Défini dans V11 ; le test ne cite la contrainte qu'en commentaire."
+        },
+        {
+         "tool": "Read",
+         "target": "EventConditionalCheckConstraintIntegrationTest.java 60-120",
+         "found": "Assertion générique Exception.class, sans cause ni nom de contrainte."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "guards",
+   "placed": {
+    "pack_line": 128,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "event:rules:annex:5370d8a2",
+   "section": "rules",
+   "rank": 3,
+   "text": "- Pour le type duration, endDate est recalculée depuis startDate et la durée, ce qui écrase une endDate explicite du payload [#469d0ef9c8a70cdc-3] [#f73dd48a5b56fad3-1].",
+   "fact_text": "Pour le type duration, endDate est recalculée depuis startDate et la durée, ce qui écrase une endDate explicite du payload",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "event/469d0ef9c8a70cdc-3",
+    "event/f73dd48a5b56fad3-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/application/services/EventServiceImpl.java",
+    "backend:src/test/java/com/matimeline/eventmanager/application/services/EventServiceImplTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/services/EventServiceImpl.java",
+     174,
+     179,
+     "e8d6c9378d0ea2adecc244e581df9e7c8580f880686cc67eb7dd4ab38a122c68"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/application/services/EventServiceImplTest.java",
+     331,
+     355,
+     "48f42508655067aa089148915c204274ee1725c33d52a101ca31bf0e49007304"
+    ]
+   ],
+   "code_sha256": "0cd3bbb18755ada9b194d564b3b7e3c26b097eaf9461287ba431133c3bfe4b50",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.571,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "restatement": "Pour type \"duration\", updateEvent recalcule endDate avec Utils.calculateEndDate à partir de durationValue, durationUnit et startDate, ce qui écrase toute endDate fournie. Le test déplace startDate au 2026-02-01 avec une durée de 5 jours et obtient endDate égale à newStart plus 5 jours, même si la requête envoie 2099-12-31.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "event.details.md",
+     "row": 1
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  },
+  {
+   "id": "event:rules:annex:989d6f88",
+   "section": "rules",
+   "rank": 5,
+   "text": "- Après cette dérivation, une endDate avant startDate lève EndDateBeforeStartException (422) [#98cf4b5faf0ea7a3-3] [#edd127029e1e54f1-1].",
+   "fact_text": "Après cette dérivation, une endDate avant startDate lève EndDateBeforeStartException (422)",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "event/98cf4b5faf0ea7a3-3",
+    "event/edd127029e1e54f1-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/application/services/EventServiceImpl.java",
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/GlobalExceptionHandler.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/services/EventServiceImpl.java",
+     193,
+     196,
+     "8c3e8c40fadecd49a47f54a8064bcc1944ff6cdc456590f5145f2ff684ae7d0b"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/GlobalExceptionHandler.java",
+     244,
+     256,
+     "6b49bf04bfa0e8b6fc25e23be25c71eba88cfd61650b267c816a805475efae31"
+    ]
+   ],
+   "code_sha256": "7d954ed348b25b345282a4e8542df6a74d4f3c39efa898b60cdecd66577dd34c",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 3,
+       "values": 1,
+       "terms": 2
+      }
+     },
+     "restatement": "updateEvent lève EndDateBeforeStartException si endDate et startDate sont non null et que endDate est strictement antérieure à startDate. GlobalExceptionHandler renvoie 422 UNPROCESSABLE_ENTITY.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "event.details.md",
+     "row": 2
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  },
+  {
+   "id": "event:rules:annex:3088ecfb",
+   "section": "rules",
+   "rank": 6,
+   "text": "- Le contrôle de version ne joue que si les versions client et serveur sont non null et différentes, et lève EventConflictException [#f429173d1849e6cf-1] [#25210f74daaeb07e-1].",
+   "fact_text": "Le contrôle de version ne joue que si les versions client et serveur sont non null et différentes, et lève EventConflictException",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "event/f429173d1849e6cf-1",
+    "event/25210f74daaeb07e-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/application/services/EventServiceImpl.java",
+    "backend:src/test/java/com/matimeline/eventmanager/application/services/EventServiceImplTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/services/EventServiceImpl.java",
+     217,
+     223,
+     "f1866eedb2790dbc076dfafb078b728699dc55e8764b89f5649df5ef93b75c1f"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/application/services/EventServiceImplTest.java",
+     178,
+     196,
+     "0e8001442cf1bd30a2d679959a245ab71fcfb58205243014cbe8075ee14703be"
+    ]
+   ],
+   "code_sha256": "4816676ac273b52f38fb59a34797716598859995041af370b15853716b83cc4b",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.75,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 8
+      }
+     },
+     "restatement": "checkOptimisticVersion lève EventConflictException(event, version serveur) si command.version et event.version sont non null et différents. Le test montre un client à la version 3 face à un serveur à la version 4 : le 409 transporte la version et l'entité serveur, et aucun save n'est appelé.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "event.details.md",
+     "row": 3
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  },
+  {
+   "id": "event:rules:annex:66a8d2de",
+   "section": "rules",
+   "rank": 9,
+   "text": "- Les unités days, weeks, months et years sont les seules admises, une unité null ou inconnue lève InvalidDurationUnitException (422) [#f4f32f85e851330e-3] [#fad4672e22cf0d46-1] [#46a69cbe989ff7c9-1].",
+   "fact_text": "Les unités days, weeks, months et years sont les seules admises, une unité null ou inconnue lève InvalidDurationUnitException (422)",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "event/f4f32f85e851330e-3",
+    "event/fad4672e22cf0d46-1",
+    "event/46a69cbe989ff7c9-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/utils/Utils.java",
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/GlobalExceptionHandler.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/utils/Utils.java",
+     63,
+     71,
+     "51059a3564292bb818d5397854fca88ca6e37abfbdf5f7a7f5896a98a7b3a21e"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/utils/Utils.java",
+     60,
+     62,
+     "cd9484fab836f89d1c6e115f52f72d91e82bb166f6e983229dfcc7144e2c29b0"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/GlobalExceptionHandler.java",
+     165,
+     175,
+     "9d7971dd55b8e01668299159d9bb7e7aa84b9d906cf29b3d85fb7659a668e471"
+    ]
+   ],
+   "code_sha256": "547b1a5ee30fe33eb2fa03b984bd9781dce78b91097c7a39383ecd6fabe613a0",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 0.9,
+      "n": {
+       "identifiers": 1,
+       "values": 1,
+       "terms": 10
+      }
+     },
+     "restatement": "Pour type duration, calculateEndDate lève InvalidDurationUnitException(null) si durationUnit est null, puis ajoute durationValue à startDate selon l'unité days, weeks, months ou years. Le handler GlobalExceptionHandler.handleInvalidDurationUnit convertit cette exception en 422 UNPROCESSABLE_ENTITY. Le cas d'une unité inconnue n'est pas visible dans l'extrait, car le default du switch n'y figure pas.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "event.details.md",
+     "row": 4
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  },
+  {
+   "id": "event:rules:annex:bb58987f",
+   "section": "rules",
+   "rank": 12,
+   "text": "- Au plafond MAX_OCCURRENCES, capped n'est vrai que si l'occurrence suivante reste dans la fenêtre [#592a138d8cdd8079-2].",
+   "fact_text": "Au plafond MAX_OCCURRENCES, capped n'est vrai que si l'occurrence suivante reste dans la fenêtre",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "event/592a138d8cdd8079-2"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/application/services/RecurrenceExpansionServiceImpl.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/services/RecurrenceExpansionServiceImpl.java",
+     59,
+     63,
+     "dddcd18864c02866d9fc3aa8d8a5a5f9144f8950be20648b557e33ea7bff291f"
+    ]
+   ],
+   "code_sha256": "dddcd18864c02866d9fc3aa8d8a5a5f9144f8950be20648b557e33ea7bff291f",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.571,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "restatement": "Quand le nombre d'occurrences atteint RecurrenceExpansion.MAX_OCCURRENCES, expand fixe capped à true seulement si la prochaine occurrence (advance) n'est pas après effectiveEnd, c'est-à-dire s'il reste des occurrences dans la fenêtre, puis sort de la boucle.",
+     "confidence": "medium",
+     "files_read_missing": true
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "event.details.md",
+     "row": 5
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  },
+  {
+   "id": "event:surface:annex:e71191d3",
+   "section": "surface",
+   "rank": 2,
+   "text": "- La modification et la suppression passent par checkEventOwnership, qui répond 401 sans utilisateur résolu et 404 si l'événement ou son produit manque [#f682242ac63c57d5-2] [#27e1056000133833-1] [#b47e4a8d8516d040-1].",
+   "fact_text": "La modification et la suppression passent par checkEventOwnership, qui répond 401 sans utilisateur résolu et 404 si l'événement ou son produit manque",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "event/f682242ac63c57d5-2",
+    "event/27e1056000133833-1",
+    "event/b47e4a8d8516d040-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/EventController.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/EventController.java",
+     148,
+     163,
+     "5b19e7dfbec4d8f8f3ff5f993564fd1211cf01db642b8e8d75f9b18e54a84bca"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/EventController.java",
+     74,
+     77,
+     "4672e0b1e81609e92feb872cf4bffd00bcfce358bd1072438cbb25ac248e6769"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/EventController.java",
+     97,
+     105,
+     "03048a2c40572960953d53c6880cfedf12c9cb4a1845b1e572318b38b9242e4b"
+    ]
+   ],
+   "code_sha256": "bba2d47d24f2f73abdf510d9eb75f262cfb25fa580ed48a17e1175a832c79f2c",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 0.556,
+      "n": {
+       "identifiers": 1,
+       "values": 2,
+       "terms": 9
+      }
+     },
+     "restatement": "checkEventOwnership renvoie 401 UNAUTHORIZED si aucun utilisateur courant n'est résolu, puis 404 NOT_FOUND si l'événement est absent, puis 404 si le produit associé est absent. updateEvent et deleteEvent appellent cette méthode avant toute modification.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "event.details.md",
+     "row": 6
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  },
+  {
+   "id": "event:surface:annex:52757571",
+   "section": "surface",
+   "rank": 9,
+   "text": "- La suppression de tous les événements d'un utilisateur se fait en SQL natif via ses produits, archivés inclus [#ceb0c8ee122ce658-1].",
+   "fact_text": "La suppression de tous les événements d'un utilisateur se fait en SQL natif via ses produits, archivés inclus",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "event/ceb0c8ee122ce658-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/EventRepositoryJpaImpl.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/EventRepositoryJpaImpl.java",
+     100,
+     113,
+     "9a5f3456e5fd7dd088b5188555a4acc52e897543c1b242f96c8f52a710beafb7"
+    ]
+   ],
+   "code_sha256": "9a5f3456e5fd7dd088b5188555a4acc52e897543c1b242f96c8f52a710beafb7",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.714,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "restatement": "deleteAllByUserId supprime en SQL natif (DELETE FROM events) les événements dont product_id appartient à un produit de l'utilisateur, en incluant les produits archivés. Le commentaire précise que le natif est volontaire, car un sous-select JPQL serait filtré par @SQLRestriction(\"archived = false\").",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "words:tous",
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "event.details.md",
+     "row": 7
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  },
+  {
+   "id": "event:tests:annex:d81d9b12",
+   "section": "tests",
+   "rank": 2,
+   "text": "- Les tests fixent le recalcul de endDate quand durationValue ou durationUnit change, et son alignement sur startDate quand le type passe à single [#fc0a78cd931fbfbd-1] [#e027186fb6b37698-1] [#6e414c0dbd38e764-1] [#95b4f1d5e7f88265-1].",
+   "fact_text": "Les tests fixent le recalcul de endDate quand durationValue ou durationUnit change, et son alignement sur startDate quand le type passe à single",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "event/fc0a78cd931fbfbd-1",
+    "event/e027186fb6b37698-1",
+    "event/6e414c0dbd38e764-1",
+    "event/95b4f1d5e7f88265-1"
+   ],
+   "files": [
+    "backend:src/test/java/com/matimeline/eventmanager/application/services/EventServiceImplTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/application/services/EventServiceImplTest.java",
+     229,
+     246,
+     "bc48bc6560d711d8ba0bc778669a8bc69f6e85da0e1351e10109b947c90fb1df"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/application/services/EventServiceImplTest.java",
+     248,
+     264,
+     "5fcf0961b641d3d96bf1371cd6a1af36432b5ee103f9645e1f0c7488b2fc5024"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/application/services/EventServiceImplTest.java",
+     266,
+     287,
+     "260832a1c064b81545c4ba0cb71f62ff06100c2575068dd615387ef0059f6ed7"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/application/services/EventServiceImplTest.java",
+     357,
+     376,
+     "e68eb6421193fed97e6f2ad7569848b95557aa94f3a43c8762f20ee91843968f"
+    ]
+   ],
+   "code_sha256": "07df9d337d3fea49fd4c7a287b677820250b5352ca956e1d157f52d4badfbf48",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.625,
+      "n": {
+       "identifiers": 4,
+       "values": 0,
+       "terms": 8
+      }
+     },
+     "restatement": "Ces tests vérifient que updateEvent recalcule endDate à partir de la startDate persistée quand durationValue (5 à 10 jours) ou durationUnit (days à weeks) change. Ils vérifient aussi que passer type à single, ou déplacer startDate sans endDate, ramène endDate sur startDate.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "event.details.md",
+     "row": 8
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  },
+  {
+   "id": "event:tests:annex:96c154aa",
+   "section": "tests",
+   "rank": 4,
+   "text": "- Les tests fixent que sans version client le contrôle de conflit est sauté, et qu'une version cliente périmée lève EventConflictException avec la version serveur [#77dd8c981ff18eea-1] [#e0a72ccdd3f0ae4c-1].",
+   "fact_text": "Les tests fixent que sans version client le contrôle de conflit est sauté, et qu'une version cliente périmée lève EventConflictException avec la version serveur",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "event/77dd8c981ff18eea-1",
+    "event/e0a72ccdd3f0ae4c-1"
+   ],
+   "files": [
+    "backend:src/test/java/com/matimeline/eventmanager/application/services/EventServiceImplTest.java",
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/EventOptimisticLockConflictIntegrationTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/application/services/EventServiceImplTest.java",
+     215,
+     227,
+     "00c2b3bd1f868aea8772fd44bbab5b30c736cd91f713d08b8f8d3d08c2f274aa"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/EventOptimisticLockConflictIntegrationTest.java",
+     133,
+     169,
+     "47f5c4c686583a13e5838d16e7c14d6e5d44175d43e5ca3e8c711b83ae7705e3"
+    ]
+   ],
+   "code_sha256": "e9bf8ddf4884bd5a9e77070b0a1dc3eeee821f8de66a783398f4215b057cb2d9",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.727,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 11
+      }
+     },
+     "restatement": "Le test updateEvent_nullClientVersion_skipsConflictCheck montre qu'un PATCH sans version cliente ignore le contrôle de conflit et appelle save une seule fois. L'extrait d'intégration montre qu'une version cliente périmée (0 alors que la base est à 1) lève EventConflictException avec serverVersion 1 et ne remplace pas le titre gagnant.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "event.details.md",
+     "row": 9
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  },
+  {
+   "id": "event:tests:annex:1d7be71e",
+   "section": "tests",
+   "rank": 5,
+   "text": "- Les tests fixent le corps 409 enrichi (serverVersion, serverEvent) pour la PATCH, un corps plat pour EventConflictException et un message neutre pour le verrou optimiste générique [#9b56260c09ef229d-1] [#16ee48e46cda5ff7-1] [#8599bc89456d4f1f-1].",
+   "fact_text": "Les tests fixent le corps 409 enrichi (serverVersion, serverEvent) pour la PATCH, un corps plat pour EventConflictException et un message neutre pour le verrou optimiste générique",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "event/9b56260c09ef229d-1",
+    "event/16ee48e46cda5ff7-1",
+    "event/8599bc89456d4f1f-1"
+   ],
+   "files": [
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/GlobalExceptionHandlerOptimisticLockTest.java",
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/GlobalExceptionHandlerContractTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/GlobalExceptionHandlerOptimisticLockTest.java",
+     68,
+     114,
+     "04ac598fb7afc344480b2c3f3f43b34dfe9e732d25927209b1976415d47cc407"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/GlobalExceptionHandlerContractTest.java",
+     95,
+     111,
+     "0a3f11a812a1b1e03603a6c2c0e79d4b353d326cbf7009e326b8444efb331f13"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/GlobalExceptionHandlerContractTest.java",
+     74,
+     87,
+     "5f27b63bedd07def73f6356a9a7a1789c9ea6878114754b92e4932eba697d53c"
+    ]
+   ],
+   "code_sha256": "a312171e48959686e4f8feb82964843069821cbdb9cac84ee98f78e33aab6f4e",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 0.75,
+      "values": 1.0,
+      "terms": 0.6,
+      "n": {
+       "identifiers": 4,
+       "values": 1,
+       "terms": 10
+      }
+     },
+     "restatement": "Un conflit de version sur PATCH renvoie 409 avec un corps enrichi contenant serverVersion (7), serverEvent (id, title, productId, archived, version) et un error neutre, sans timestamp ni status. GlobalExceptionHandler.handleEventConflict garde ce corps plat, et handleOptimisticLock générique renvoie status 409, error \"conflict\" et un message neutre.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "event.details.md",
+     "row": 10
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  },
+  {
+   "id": "event:tests:annex:a4ba2a56",
+   "section": "tests",
+   "rank": 6,
+   "text": "- Les tests fixent qu'une suppression n'émet qu'une instruction JDBC, moins que l'ancienne séquence, et qu'elle l'emporte sur une édition concurrente [#72e11a491e40bd6f-1] [#f28781db6004e034-1] [#c3bb287829b2fbd5-1].",
+   "fact_text": "Les tests fixent qu'une suppression n'émet qu'une instruction JDBC, moins que l'ancienne séquence, et qu'elle l'emporte sur une édition concurrente",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "event/72e11a491e40bd6f-1",
+    "event/f28781db6004e034-1",
+    "event/c3bb287829b2fbd5-1"
+   ],
+   "files": [
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/EventDeleteStatisticsIntegrationTest.java",
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/EventOptimisticLockConflictIntegrationTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/EventDeleteStatisticsIntegrationTest.java",
+     178,
+     205,
+     "3bb0a9b04e9a02b67320bd303422ec66585060ac7c221a3d10a27b75ed3dca07"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/EventDeleteStatisticsIntegrationTest.java",
+     149,
+     163,
+     "8d0930da95f441606649f20f48aba8aed7c373b43df13d41a66f008c3090e2f4"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/EventOptimisticLockConflictIntegrationTest.java",
+     195,
+     217,
+     "34c6503a91caf330500da32e1357858ce425c2b14c1b06b5467b3eca21b348b1"
+    ]
+   ],
+   "code_sha256": "aae6793371208731b3104ee22bbcb14e5988f95b57df7a31231c066b993cbeda",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.6,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 10
+      }
+     },
+     "restatement": "deleteById sur un id inconnu lève EventNotFoundException avec une seule instruction JDBC. La séquence ownership plus suppression coûte moins de requêtes que l'ancienne séquence existsById puis deleteById. Une édition concurrente committée suivie d'une suppression aboutit à la suppression sans conflit, et la ligne n'existe plus.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "event.details.md",
+     "row": 11
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  },
+  {
+   "id": "event:tests:annex:a9f81f6b",
+   "section": "tests",
+   "rank": 7,
+   "text": "- Les tests fixent le plafond d'expansion à MAX_OCCURRENCES avec capped seulement au-delà, une fin explicite honorée et le repli mensuel du 31 janvier au 28 février [#78b2267d7e5ad664-1] [#86b26135cf68086b-1] [#9929933438d8d655-1] [#4df6cb5afcfd21bf-1].",
+   "fact_text": "Les tests fixent le plafond d'expansion à MAX_OCCURRENCES avec capped seulement au-delà, une fin explicite honorée et le repli mensuel du 31 janvier au 28 février",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "event/78b2267d7e5ad664-1",
+    "event/86b26135cf68086b-1",
+    "event/9929933438d8d655-1",
+    "event/4df6cb5afcfd21bf-1"
+   ],
+   "files": [
+    "backend:src/test/java/com/matimeline/eventmanager/application/services/RecurrenceExpansionServiceImplTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/application/services/RecurrenceExpansionServiceImplTest.java",
+     118,
+     126,
+     "204ae2d1d4b135ea6d2cec72b39e39fd36d22d2bd5a87d37ffd9ad3a3e008ba6"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/application/services/RecurrenceExpansionServiceImplTest.java",
+     128,
+     136,
+     "c76b7bbb813969a5d8ed58a9a4d6e5e493d059af46e1032514b94e0a330da15f"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/application/services/RecurrenceExpansionServiceImplTest.java",
+     108,
+     116,
+     "5113022c7ef9a9699e4be5d31639cf4584dda1b68eb604edf1a5dab95e32d388"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/application/services/RecurrenceExpansionServiceImplTest.java",
+     45,
+     54,
+     "f56b1efcc09dfe523b749e2f97e353f26af679e959c78693c9bb72c4a784edf1"
+    ]
+   ],
+   "code_sha256": "ac09160f1e7eca0a8b7f6284d7577ab38c4bda2d5cef6f157b54bed7c4d85bf6",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 0.583,
+      "n": {
+       "identifiers": 1,
+       "values": 2,
+       "terms": 12
+      }
+     },
+     "restatement": "RecurrenceExpansionService produit exactement MAX_OCCURRENCES sans capped si la série atteint le plafond juste, et tronque à MAX_OCCURRENCES avec capped à true si la borne le dépasse. Une endDate explicite au-delà de l'horizon annuel est respectée (9 occurrences annuelles dans le test), et une récurrence mensuelle depuis le 31 janvier passe au 28 février puis au 28 mars.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "event.details.md",
+     "row": 12
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  },
+  {
+   "id": "event:tests:annex:7f8c561e",
+   "section": "tests",
+   "rank": 8,
+   "text": "- Un PATCH d'un non-propriétaire renvoie 403 sans appeler updateEvent, et un récurrent sans recurrenceUnit renvoie 400 sans appeler createEvent [#f0c1d069bda91d63-1] [#2daf3657683e5425-1].",
+   "fact_text": "Un PATCH d'un non-propriétaire renvoie 403 sans appeler updateEvent, et un récurrent sans recurrenceUnit renvoie 400 sans appeler createEvent",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "event/f0c1d069bda91d63-1",
+    "event/2daf3657683e5425-1"
+   ],
+   "files": [
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/EventControllerOwnershipTest.java",
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/EventControllerValidationTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/EventControllerOwnershipTest.java",
+     133,
+     147,
+     "092ecc6a16838a9d731cbc533ca370439cefe3e3ae963e0b01dc1a13246527e9"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/EventControllerValidationTest.java",
+     72,
+     74,
+     "6f5e6ade1f21e080adec31f8588a9db360ba7a5da5f66b3b28c83d4c8d57bd73"
+    ]
+   ],
+   "code_sha256": "8769efe4906470071434d8f232e466b3842ac51ce418c8695383ca098cd894a6",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 0.75,
+      "n": {
+       "identifiers": 4,
+       "values": 2,
+       "terms": 4
+      }
+     },
+     "restatement": "Un PATCH d'un utilisateur qui n'est pas propriétaire renvoie 403 avec un corps JSON contenant error à forbidden, et updateEvent n'est jamais appelé. Un événement récurrent sans recurrenceUnit renvoie 400 et createEvent n'est pas appelé.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "event.details.md",
+     "row": 13
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  }
+ ],
+ "comment_facts": [
+  {
+   "id": "event/7f719a0e8a07aa0d-1",
+   "verdict": "confirmed",
+   "code_says": "Le fichier GlobalExceptionHandler ne contient aucun @ExceptionHandler pour DataIntegrityViolationException : seuls les handlers spécifiques (NotFound, CategoryNameConflict, CategoryInUse, EventConflict, ObjectOptimisticLockingFailure, etc.) sont déclarés, et le bloc de commentaire à la place documente la suppression. Aucun handler générique ne couvre donc ces violations ici.",
+   "code_line_start": 38,
+   "code_line_end": 39,
+   "code_evidence": "public class GlobalExceptionHandler {",
+   "evidence_check": null,
+   "code_file": "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/GlobalExceptionHandler.java",
+   "invalid": false,
+   "cache_digest": "b3c5cf396af7c42c2c43f50def58786bb29d93f6fc9069d4e9a1966e4d60fcf2",
+   "reused": true,
+   "reused_from": "2026-11-20T12:20:00Z",
+   "cited_by": [
+    "event:questions:1"
+   ],
+   "structure_rows_removed": []
+  },
+  {
+   "id": "event/8f187701c95e76b2-1",
+   "verdict": "confirmed",
+   "code_says": "RecurrenceUnit.fromString accepte les formes singulières et pluriel legacy (WEEK/WEEKS, MONTH/MONTHS, YEAR/YEARS) après trim et toUpperCase, renvoie null pour null ou vide, et lève IllegalArgumentException sinon.",
+   "code_line_start": 38,
+   "code_line_end": 49,
+   "code_evidence": "case \"WEEKS\":\n                return WEEK;",
+   "evidence_check": null,
+   "code_file": "backend:src/main/java/com/matimeline/eventmanager/domain/models/RecurrenceUnit.java",
+   "invalid": false,
+   "cache_digest": "c1dc282a528c2f4a28cfa8c3c2954aa50c5e74cde109a13665f81cd2e943c5bd",
+   "reused": true,
+   "reused_from": "2026-11-20T12:20:00Z",
+   "cited_by": [
+    "event:questions:3"
+   ],
+   "structure_rows_removed": []
+  },
+  {
+   "id": "event/8634b19eb71898e8-2",
+   "verdict": "confirmed",
+   "code_says": "L'implémentation deleteByIdReturningRowCount exécute un DELETE JPQL sur le seul identifiant (WHERE e.id = :id), sans condition sur la colonne @Version, et renvoie executeUpdate(). Le verrou optimiste n'est donc pas vérifié à la suppression.",
+   "code_line_start": 157,
+   "code_line_end": 161,
+   "code_evidence": "DELETE FROM EventEntity e WHERE e.id = :id",
+   "evidence_check": null,
+   "code_file": "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/EventRepositoryJpaImpl.java",
+   "invalid": false,
+   "cache_digest": "2a80070b681b573ed5a3c08e248a975e62131c4c4eebb3d0fcbfe621a31f0452",
+   "reused": true,
+   "reused_from": "2026-11-20T12:20:00Z",
+   "cited_by": [
+    "event:alerts:2"
+   ],
+   "structure_rows_removed": []
+  },
+  {
+   "id": "event/c79d155872b82780-1",
+   "verdict": "confirmed",
+   "code_says": "Le champ color de EventCreationRequest est un simple String sans annotation de validation (seulement getter/setter). Aucun contrôle de format n'est appliqué sur la couleur, ce qui est conforme à l'énoncé.",
+   "code_line_start": 44,
+   "code_line_end": 44,
+   "code_evidence": "private String color;",
+   "evidence_check": null,
+   "code_file": "backend:src/main/java/com/matimeline/eventmanager/application/dtos/EventCreationRequest.java",
+   "invalid": false,
+   "cache_digest": "dc9795f736108e3d2d405b512be46432e4f44a66ab2d9d639b8e2b964ec188cf",
+   "reused": true,
+   "reused_from": "2026-11-20T12:20:00Z",
+   "cited_by": [
+    "event:alerts:3"
+   ],
+   "structure_rows_removed": []
+  }
+ ],
+ "facts_validated": [
+  "event/53c142807d114b66-1",
+  "event/9f47cf2ed415c352-1",
+  "event/14dc8524b3c647c3-1",
+  "event/8f73b2f51593d54c-1",
+  "event/fd4d8848bb37eb45-1",
+  "event/f4f32f85e851330e-2",
+  "event/9d8ca0954a7123c8-3",
+  "integrations/31be9b56a73503a4-2",
+  "event/cd37dea64799f734-1",
+  "event/b2c8a12ba0d6c2cb-1",
+  "event/19d5aee4350efd9d-1",
+  "event/c82b76bcb3e888be-1",
+  "event/bec625ceb1fa0d16-1",
+  "event/272f8d8d7d9c6abc-1",
+  "event/2b0d742a9f9403eb-1",
+  "event/233f4b0dbeb05d4c-1",
+  "event/08a1a691c6416d10-1",
+  "event/78cddbd17e183338-1",
+  "event/89813e6014818567-1",
+  "event/50713e907064d823-1",
+  "event/7f719a0e8a07aa0d-1",
+  "backend-core/018b247f5c65754e-1",
+  "event/8f187701c95e76b2-1",
+  "event/248944a8cbcae2ab-1",
+  "event/3ce22bef0fa348e3-1",
+  "event/0bc1c107d4295cab-1",
+  "event/8634b19eb71898e8-2",
+  "event/92ea5b8b1d75d1d3-1",
+  "backend-core/af3d8994f27f9508-1",
+  "event/c79d155872b82780-1",
+  "event/7da0b405589ec288-1",
+  "event/27b42a4cf6d2382f-1"
+ ],
+ "counts": {
+  "units": 45,
+  "admit": 32,
+  "annex": 13,
+  "drop": 0,
+  "hold": 0,
+  "pending": 0,
+  "consigne_before_unsupported": 0,
+  "consigne_after_dropped": 0,
+  "structure_rows_removed": 0,
+  "framework": 0,
+  "guarded_elsewhere": 0,
+  "resolved": 0,
+  "restricted": 0,
+  "counterexample": 0,
+  "promoted": 0,
+  "kept_for": {
+   "rediscovered": 12
+  },
+  "pointers_removed": 0,
+  "restored_alerts": 0,
+  "budget_cut": 0
+ },
+ "answers": [],
+ "budget_cut": [],
+ "structure_rows_removed": [],
+ "notes": [],
+ "base_sha256_after": "64a1c35428e4c41f9e0a89ca41876fc80864b54ef21ac150a4ba29591c8db074",
+ "bases_touched": {
+  "backend-core": {
+   "fingerprint": "25f44a89e54e4b2fde8775ca41e34886c048c60adccc1939aea23b5565fc353a",
+   "sha256_after": "39bfcc06120267da616569dbbc5fb4625c3a364c7ee046233a677a2ac05aa654"
+  },
+  "event": {
+   "fingerprint": "c858a56046583b26f73cde116d3fab9357bd758855ea176d7676610b55252d49",
+   "sha256_after": "64a1c35428e4c41f9e0a89ca41876fc80864b54ef21ac150a4ba29591c8db074"
+  },
+  "integrations": {
+   "fingerprint": "f7984eacb1b983b17187ea75176f49511bb0644b8c83f802588dac68e31c8537",
+   "sha256_after": "88ad6cc38a54980e577165c9e049a2633584d262d9613dedc80680c6e9b3b7a2"
+  }
+ },
+ "lint": {
+  "ok": true,
+  "errors": 0,
+  "warnings": 1
+ }
+}

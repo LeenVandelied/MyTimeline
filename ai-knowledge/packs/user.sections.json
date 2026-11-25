@@ -1,0 +1,382 @@
+{
+ "pack": "user",
+ "schema": 1,
+ "kind": "domain",
+ "lang": "fr",
+ "generated_at": "2026-11-20T11:40:00Z",
+ "base_sha256": "0e0d6f8dfda97a3864d5e4f7902790139a32b177162bdafd1ef8294c76ab0746",
+ "pack_bytes": 14979,
+ "pack_budget_bytes": 29375,
+ "details": [
+  {
+   "file": "user.details.md",
+   "bytes": 120072
+  }
+ ],
+ "sections": [
+  {
+   "id": "activate",
+   "order": 1,
+   "title": "Quand activer",
+   "heading": "## 1. Quand activer {#activate}",
+   "line_start": 17,
+   "line_end": 24,
+   "bytes": 380,
+   "budget_bytes": 1500,
+   "cut_lines": 0,
+   "writer": "script",
+   "kinds": [],
+   "facts_available": 0,
+   "facts_cited": [],
+   "lots": 0,
+   "merged": false,
+   "review": null,
+   "never_truncate": false
+  },
+  {
+   "id": "lexicon",
+   "order": 2,
+   "title": "Lexique",
+   "heading": "## 2. Lexique {#lexicon}",
+   "line_start": 25,
+   "line_end": 32,
+   "bytes": 638,
+   "budget_bytes": 2500,
+   "cut_lines": 0,
+   "writer": "agent",
+   "kinds": [
+    "entity",
+    "i18n_key"
+   ],
+   "facts_available": 8,
+   "facts_cited": [
+    "0fc2506546087885-1",
+    "2ed092cfa6c08b1d-1",
+    "3d8dced783bb55e1-1",
+    "a7e439b586fee252-2",
+    "4a8f78da327086e4-1"
+   ],
+   "lots": 1,
+   "merged": false,
+   "review": {
+    "lines": 5,
+    "kept": 5,
+    "rejected": 0,
+    "unreviewed": 2
+   },
+   "never_truncate": false
+  },
+  {
+   "id": "rules",
+   "order": 3,
+   "title": "Règles",
+   "heading": "## 3. Règles {#rules}",
+   "line_start": 33,
+   "line_end": 50,
+   "bytes": 1856,
+   "budget_bytes": 4025,
+   "cut_lines": 0,
+   "writer": "agent",
+   "kinds": [
+    "business_rule",
+    "validation",
+    "state_transition",
+    "batch_job"
+   ],
+   "facts_available": 115,
+   "facts_cited": [
+    "75b1482fae455a05-1",
+    "06585e8b4c5db0af-1",
+    "ab8e31d3e5b08ee4-1",
+    "badc1ab0e710d816-1",
+    "72fdae6a021c1eda-2",
+    "72fdae6a021c1eda-3",
+    "e2385a30ad2b3acd-1",
+    "bd040f4c8fa54886-2",
+    "bd040f4c8fa54886-3",
+    "3b36126a4b26b1fd-1",
+    "8d2a9c9d767afb41-1",
+    "batch/99a2df300c170ed7-1",
+    "integrations/a48db1e25ff46d3d-1",
+    "4db21754de87e441-1",
+    "4db21754de87e441-2",
+    "bf3a08573de2927d-1",
+    "305052602b3573de-1",
+    "f4e96f1b78ded9c0-1",
+    "0ec9a144d275a5ac-1",
+    "39dc412702d5d599-1"
+   ],
+   "lots": 1,
+   "merged": false,
+   "review": {
+    "lines": 22,
+    "kept": 21,
+    "rejected": 1,
+    "unreviewed": 4
+   },
+   "never_truncate": false
+  },
+  {
+   "id": "structure",
+   "order": 4,
+   "title": "Structure",
+   "heading": "## 4. Structure {#structure}",
+   "line_start": 51,
+   "line_end": 82,
+   "bytes": 3686,
+   "budget_bytes": 3850,
+   "cut_lines": 0,
+   "writer": "script",
+   "kinds": [
+    "state_transition",
+    "endpoint",
+    "ui_screen",
+    "entity",
+    "store_action"
+   ],
+   "facts_available": 35,
+   "facts_cited": [
+    "b8df8b0ebcd1dac4-1",
+    "13fb544c823637c3-1",
+    "f94eac9e6a1acea9-1",
+    "authorization/0f5088adcf6210ee-1",
+    "e1bc96480b3ef4c3-1",
+    "aabb86633e0d2592-1",
+    "authorization/1b96ea31a014d92e-1",
+    "c62478f0f1a3cf17-1",
+    "fc21364fe89b1478-1",
+    "561d6d907e4908a6-1",
+    "df6782a5426a1e6d-1",
+    "92a86ab153137728-1",
+    "cf93548fee291e68-1",
+    "dc686d3191cfb9b2-1"
+   ],
+   "lots": 0,
+   "merged": false,
+   "review": null,
+   "never_truncate": false
+  },
+  {
+   "id": "surface",
+   "order": 5,
+   "title": "Endpoints et écrans",
+   "heading": "## 5. Endpoints et écrans {#surface}",
+   "line_start": 83,
+   "line_end": 92,
+   "bytes": 1936,
+   "budget_bytes": 4000,
+   "cut_lines": 0,
+   "writer": "agent",
+   "kinds": [
+    "endpoint",
+    "ui_screen",
+    "store_action",
+    "role_check",
+    "external_call",
+    "persistence_query",
+    "service_method"
+   ],
+   "facts_available": 68,
+   "facts_cited": [
+    "b8df8b0ebcd1dac4-1",
+    "dc686d3191cfb9b2-1",
+    "ddebc1e226af208f-1",
+    "569886aa8c83bc9b-1",
+    "4b311aa3577f75bf-1",
+    "b173896ffc2c5373-1",
+    "0ea7f9c25b3e9a7e-1",
+    "fd23a1f381383690-1",
+    "925ef7191fae0dbc-1",
+    "integrations/11d4aa8f36e6fb68-1",
+    "e1bc96480b3ef4c3-1",
+    "aabb86633e0d2592-1",
+    "f3a65d295cff5005-1",
+    "a72b0b794db7ff69-2",
+    "6d59e8e49740b992-1",
+    "f89dbbadc558a9d9-1",
+    "e843517efb5a96ab-1",
+    "9cb59a02980f65cc-1",
+    "3394e708bc740d15-1"
+   ],
+   "lots": 1,
+   "merged": false,
+   "review": {
+    "lines": 11,
+    "kept": 8,
+    "rejected": 3,
+    "unreviewed": 0
+   },
+   "never_truncate": false
+  },
+  {
+   "id": "files",
+   "order": 6,
+   "title": "Fichiers critiques",
+   "heading": "## 6. Fichiers critiques {#files}",
+   "line_start": 93,
+   "line_end": 109,
+   "bytes": 1884,
+   "budget_bytes": 2000,
+   "cut_lines": 0,
+   "writer": "script",
+   "kinds": [],
+   "facts_available": 0,
+   "facts_cited": [],
+   "lots": 0,
+   "merged": false,
+   "review": null,
+   "never_truncate": false
+  },
+  {
+   "id": "relations",
+   "order": 7,
+   "title": "Relations avec d'autres packs",
+   "heading": "## 7. Relations avec d'autres packs {#relations}",
+   "line_start": 110,
+   "line_end": 121,
+   "bytes": 375,
+   "budget_bytes": 1500,
+   "cut_lines": 0,
+   "writer": "script",
+   "kinds": [],
+   "facts_available": 0,
+   "facts_cited": [],
+   "lots": 0,
+   "merged": false,
+   "review": null,
+   "never_truncate": false
+  },
+  {
+   "id": "tests",
+   "order": 8,
+   "title": "Tests attendus",
+   "heading": "## 8. Tests attendus {#tests}",
+   "line_start": 122,
+   "line_end": 127,
+   "bytes": 464,
+   "budget_bytes": 2000,
+   "cut_lines": 0,
+   "writer": "agent",
+   "kinds": [
+    "test_case"
+   ],
+   "facts_available": 186,
+   "facts_cited": [
+    "58f796c8fce18cc5-1",
+    "58f796c8fce18cc5-6",
+    "1e05bff51f17c048-3",
+    "1e05bff51f17c048-4",
+    "c086a9fa1e02dbe4-1",
+    "ddc2012d69f3cea7-1"
+   ],
+   "lots": 1,
+   "merged": false,
+   "review": {
+    "lines": 11,
+    "kept": 8,
+    "rejected": 3,
+    "unreviewed": 0
+   },
+   "never_truncate": false
+  },
+  {
+   "id": "questions",
+   "order": 9,
+   "title": "Questions ouvertes",
+   "heading": "## 9. Questions ouvertes {#questions}",
+   "line_start": 128,
+   "line_end": 132,
+   "bytes": 859,
+   "budget_bytes": 1500,
+   "cut_lines": 0,
+   "writer": "agent",
+   "kinds": [
+    "suspicious"
+   ],
+   "facts_available": 51,
+   "facts_cited": [
+    "integrations/949ac578b33a4870-1",
+    "integrations/12e77eb7b9e6d0c0-2",
+    "61c574942f6d4fe2-1",
+    "backend-core/d835ba7c048e8354-1"
+   ],
+   "lots": 1,
+   "merged": false,
+   "review": {
+    "lines": 2,
+    "kept": 2,
+    "rejected": 0,
+    "unreviewed": 0
+   },
+   "never_truncate": false
+  },
+  {
+   "id": "alerts",
+   "order": 10,
+   "title": "Alertes",
+   "heading": "## 10. Alertes {#alerts}",
+   "line_start": 133,
+   "line_end": 140,
+   "bytes": 1899,
+   "budget_bytes": 4000,
+   "cut_lines": 0,
+   "writer": "agent",
+   "kinds": [
+    "suspicious"
+   ],
+   "facts_available": 51,
+   "facts_cited": [
+    "b13f9b62a1d0f815-1",
+    "95c9f387250b23ad-1",
+    "c9ac9920eadf46a4-1",
+    "backend-core/5a9de540919d7828-1",
+    "80b68d0409b633b8-1",
+    "batch/9c0729d39059d8b1-2",
+    "backend-core/d4207acb24ab9af6-1",
+    "548656e76cebceaa-1",
+    "76dc0be40ec09810-1"
+   ],
+   "lots": 1,
+   "merged": false,
+   "review": {
+    "lines": 7,
+    "kept": 5,
+    "rejected": 2,
+    "unreviewed": 0
+   },
+   "never_truncate": true
+  },
+  {
+   "id": "coverage",
+   "order": 11,
+   "title": "Couverture",
+   "heading": "## 11. Couverture {#coverage}",
+   "line_start": 141,
+   "line_end": 147,
+   "bytes": 619,
+   "budget_bytes": 1500,
+   "cut_lines": 0,
+   "writer": "script",
+   "kinds": [],
+   "facts_available": 0,
+   "facts_cited": [],
+   "lots": 0,
+   "merged": false,
+   "review": null,
+   "never_truncate": false
+  }
+ ],
+ "dedup": {
+  "base": 538,
+  "taken_in": 222,
+  "out_of_scope": 0,
+  "pool_before": 760,
+  "pool_after": 657,
+  "related_pairs": 103
+ },
+ "lint": {
+  "ok": true,
+  "errors": 0,
+  "warnings": 0
+ }
+}

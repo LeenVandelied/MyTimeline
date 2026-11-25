@@ -1,16 +1,20 @@
 {
  "id": "A6",
- "question": "Les foyers state-machine sans seed (Role, ThemePreferenceTest, ExportJobTest) relèvent-ils du transversal ou du domaine ?",
- "decision": "revendiqués par le transversal state-machine via path_rules, sans retirer leur propriétaire",
- "rule": "R10 recouvrement par path_rules, pas de transfert",
+ "question": "Radical dashboard et pages settings : quel pack ?",
+ "decision": "état courant",
+ "rule": "R3 dashboard désigne plusieurs packs possibles (event, product), radical omis des alias, fichiers laissés non rattachés",
  "confidence": "low",
  "seeds": [
-  "ExportJobEntity",
-  "UserEntity"
+  "Event",
+  "Product",
+  "User"
  ],
- "evidence": [],
- "falsified_if": "un ticket sur le rôle ou la préférence de thème ne concerne jamais les états d'export ni de session",
+ "evidence": [
+  "frontend-app:[locale]/(app)/dashboard/page.tsx",
+  "frontend-app:[locale]/(app)/settings/page.tsx"
+ ],
+ "falsified_if": "un ticket montre que le dashboard n'agrège que les événements ou que les produits",
  "status": "open",
- "opened": "2026-11-17",
+ "opened": "2026-11-19",
  "touched_by": []
 }
