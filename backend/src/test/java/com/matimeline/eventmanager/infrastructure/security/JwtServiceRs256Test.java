@@ -52,6 +52,43 @@ class JwtServiceRs256Test {
         return service;
     }
 
+    /** Service avec clé courante ET clé précédente (forme publique SPKI Base64, #489). */
+    private JwtService serviceWithPreviousKey(String material, String previousPublicKey) {
+        JwtService service = new JwtService();
+        ReflectionTestUtils.setField(service, "privateKeyMaterial", material);
+        ReflectionTestUtils.setField(service, "previousPublicKeyMaterial", previousPublicKey);
+        service.initKeyMaterial();
+        return service;
+    }
+
+    private static KeyPair newKeyPair() throws Exception {
+        KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
+        generator.initialize(2048);
+        return generator.generateKeyPair();
+    }
+
+    private static String spki(KeyPair pair) {
+        return Base64.getEncoder().encodeToString(pair.getPublic().getEncoded());
+    }
+
+    private static org.springframework.security.core.userdetails.UserDetails alice() {
+        return org.springframework.security.core.userdetails.User.withUsername("alice")
+                .password("irrelevant")
+                .authorities("ROLE_USER")
+                .build();
+    }
+
+    /** Jeton valide de alice (jti, iat, exp), signé par la clé fournie : seule la clé varie entre cas. */
+    private static String tokenSignedBy(java.security.PrivateKey signingKey) {
+        return Jwts.builder()
+                .subject("alice")
+                .id(java.util.UUID.randomUUID().toString())
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + 60_000))
+                .signWith(signingKey, Jwts.SIG.RS256)
+                .compact();
+    }
+
     /** En-tête JOSE décodé (1er segment du JWT) — permet d'assertir l'algo RÉELLEMENT émis. */
     private String decodedHeader(String token) {
         String header = token.split("\\.")[0];
@@ -172,6 +209,77 @@ class JwtServiceRs256Test {
         assertThatThrownBy(() -> service.extractUsername(unsecured))
                 .as("un JWT `alg: none` ne doit jamais être accepté")
                 .isInstanceOf(io.jsonwebtoken.JwtException.class);
+    }
+
+    // ------------------------------------------- rotation : clé précédente (#489)
+
+    @Test
+    void getPublicJwks_withPreviousKey_publishesTwoDistinctKeys() throws Exception {
+        KeyPair previous = newKeyPair();
+        JwtService service = serviceWithPreviousKey(privateKeyBase64, spki(previous));
+
+        var keys = service.getPublicJwks().keys();
+
+        assertThat(keys).hasSize(2);
+        assertThat(keys).extracting(com.matimeline.eventmanager.application.dtos.JwkResponse::kid)
+                .doesNotContainNull()
+                .doesNotHaveDuplicates();
+    }
+
+    @Test
+    void generateToken_withPreviousKey_isSignedWithCurrentKeyOnly() throws Exception {
+        KeyPair previous = newKeyPair();
+        JwtService service = serviceWithPreviousKey(privateKeyBase64, spki(previous));
+
+        // Surcharge Authentication : elle porte le jti (la surcharge String n'en met pas).
+        var user = new com.matimeline.eventmanager.domain.models.User(
+                java.util.UUID.randomUUID(), "Alice", "alice", "hash", "ROLE_USER", "alice@example.test");
+        var details = new CustomUserDetails(user,
+                java.util.List.of(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_USER")));
+        String token = service.generateToken(new org.springframework.security.authentication
+                .UsernamePasswordAuthenticationToken(details, null, details.getAuthorities()));
+
+        // Ordre : « pas la précédente » d'abord, pour que chaque moitié puisse échouer seule.
+        assertThatThrownBy(() -> Jwts.parser().verifyWith(previous.getPublic()).build()
+                .parseSignedClaims(token))
+                .as("le nouveau jeton ne se vérifie pas avec la clé précédente")
+                .isInstanceOf(SignatureException.class);
+        assertThat(Jwts.parser().verifyWith(keyPair.getPublic()).build()
+                .parseSignedClaims(token).getPayload().getSubject())
+                .as("le nouveau jeton se vérifie avec la clé courante")
+                .isEqualTo("alice");
+    }
+
+    @Test
+    void validateToken_acceptsUnexpiredTokenSignedByPreviousKey() throws Exception {
+        KeyPair previous = newKeyPair();
+        JwtService service = serviceWithPreviousKey(privateKeyBase64, spki(previous));
+        String oldToken = tokenSignedBy(previous.getPrivate());
+
+        assertThat(service.validateToken(oldToken, alice()))
+                .as("un jeton non expiré signé par la clé précédente reste accepté")
+                .isTrue();
+    }
+
+    @Test
+    void validateToken_rejectsTokenSignedByUnknownKey_evenWithPreviousKeyConfigured() throws Exception {
+        JwtService service = serviceWithPreviousKey(privateKeyBase64, spki(newKeyPair()));
+        // Mêmes claims que T5 : seule la clé de signature change.
+        String foreign = tokenSignedBy(newKeyPair().getPrivate());
+
+        assertThat(service.validateToken(foreign, alice()))
+                .as("une clé ni courante ni précédente est refusée")
+                .isFalse();
+    }
+
+    @Test
+    void initKeyMaterial_failsFast_onMalformedPreviousKey_withoutLeakingTheValue() {
+        String bogus = "ancienne-cle-invalide-#!";
+
+        assertThatThrownBy(() -> serviceWithPreviousKey(privateKeyBase64, bogus))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("jwt.previous-public-key")
+                .hasMessageNotContaining(bogus);
     }
 
     // ------------------------------------------------------- garde-fou de boot

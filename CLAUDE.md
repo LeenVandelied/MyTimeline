@@ -4,7 +4,7 @@
 
 ## État du projet
 
-- Migrations : Flyway est la source de vérité. `backend/src/main/resources/db/migration/` contient V1 à V16 (dernière : `V16__user_theme_preference.sql`), avec `ddl-auto=validate` en dev comme en prod. Tout changement de schéma exige une migration V{N} et un mapping d'entité exact, sinon `SchemaManagementException` au démarrage. Prochaine migration : V17.
+- Migrations : Flyway est la source de vérité. `backend/src/main/resources/db/migration/` contient V1 à V17 (dernière : `V17__user_tier.sql`), avec `ddl-auto=validate` en dev comme en prod. Tout changement de schéma exige une migration V{N} et un mapping d'entité exact, sinon `SchemaManagementException` au démarrage. Prochaine migration : V18.
 
 ## Stack
 

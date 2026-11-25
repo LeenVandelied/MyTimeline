@@ -4,6 +4,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -21,7 +22,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import com.matimeline.eventmanager.domain.exceptions.EventNotFoundException;
+import com.matimeline.eventmanager.domain.exceptions.EventQuotaExceededException;
 import com.matimeline.eventmanager.domain.models.Event;
+import com.matimeline.eventmanager.domain.models.EventCreateCommand;
 import com.matimeline.eventmanager.domain.models.EventUpdateCommand;
 import com.matimeline.eventmanager.domain.models.Product;
 import com.matimeline.eventmanager.domain.models.User;
@@ -85,5 +88,34 @@ class GlobalExceptionHandlerErrorCodeTest {
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.error").value("not_found"))
                 .andExpect(jsonPath("$.message").value("Resource not found"));
+    }
+
+    /**
+     * #88 (R8) : le quota dépassé répond 402 (Payment Required, pas un refus de droits) avec
+     * le code stable event_quota_exceeded et un message lisible.
+     */
+    @Test
+    void quotaExceeded_returnsStructuredErrorBody() throws Exception {
+        UUID productId = UUID.randomUUID();
+        UUID callerId = UUID.randomUUID();
+
+        User caller = new User(callerId, "owner", "owner-username", "x", "USER", "owner@example.test");
+        Product product = new Product(productId, "p", null, caller, List.of());
+
+        when(callerResolver.currentUser()).thenReturn(Optional.of(caller));
+        when(productService.findDomainProductById(productId)).thenReturn(Optional.of(product));
+        when(eventService.createEvent(any(EventCreateCommand.class)))
+                .thenThrow(new EventQuotaExceededException(callerId));
+
+        mockMvc.perform(post("/api/events")
+                        .cookie(new Cookie("jwt", "valid-token"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"n\",\"type\":\"single\",\"durationValue\":1,"
+                                + "\"durationUnit\":\"days\",\"isRecurring\":false,"
+                                + "\"productId\":\"" + productId + "\"}"))
+                .andExpect(status().isPaymentRequired())
+                .andExpect(jsonPath("$.status").value(402))
+                .andExpect(jsonPath("$.error").value("event_quota_exceeded"))
+                .andExpect(jsonPath("$.message").isNotEmpty());
     }
 }
