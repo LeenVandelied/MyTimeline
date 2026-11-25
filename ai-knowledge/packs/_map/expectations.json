@@ -1,7 +1,7 @@
 {
  "schema": 1,
- "generated_at": "2026-11-20T09:54:39Z",
- "inventory_sha256": "a94765e2466afbd1b90d595d246e4c932ac7b152808921124fdda47e88bbc6fb",
+ "generated_at": "2026-11-24T16:19:26Z",
+ "inventory_sha256": "fd70e55428f27b8018dcf18cb6d43143fe83e5c1503b8f1995e0abaca68440ef",
  "config_sha256": "5e16073068469174682b00dd568aa32080cd6ec6fcb25a4e4381839919302723",
  "thresholds": {
   "min_seeds": 3,
@@ -17,14 +17,14 @@
   {
    "name": "backend",
    "language": "java",
-   "files": 270,
+   "files": 297,
    "multi_folder": false,
    "folders": [
     "src"
    ],
    "by_language": {
-    "java": 254,
-    "neutral": 16
+    "java": 280,
+    "neutral": 17
    },
    "foreign": null
   },
@@ -74,7 +74,7 @@
    "layer": "backend",
    "repo": "backend",
    "folder": null,
-   "files": 270,
+   "files": 297,
    "language": "java",
    "max_orphan_share": 0.1
   },
@@ -124,8 +124,8 @@
    "kind": "migrations",
    "repo": "backend",
    "dir": "backend:src/main/resources/db/migration/",
-   "files": 16,
-   "probe": "backend:src/main/resources/db/migration/V16__user_theme_preference.sql",
+   "files": 17,
+   "probe": "backend:src/main/resources/db/migration/V17__user_tier.sql",
    "slug": "migrations"
   },
   {
@@ -152,9 +152,9 @@
    "id": "T1",
    "kind": "tech_dir",
    "dir": "backend:src/main/resources/db/migration/",
-   "text": "Revoir la migration V16__user_theme_preference.sql.",
+   "text": "Revoir la migration V17__user_tier.sql.",
    "files": [
-    "backend:src/main/resources/db/migration/V16__user_theme_preference.sql"
+    "backend:src/main/resources/db/migration/V17__user_tier.sql"
    ]
   },
   {

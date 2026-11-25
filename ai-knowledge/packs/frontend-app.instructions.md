@@ -11,7 +11,7 @@ facts_cited: 33
 sections: frontend-app.sections.json
 details: [frontend-app.details.md]
 lang: fr
-curated_at: 2026-11-20T12:45:00Z
+curated_at: 2026-11-25T15:00:00
 curation: frontend-app.curation.json
 ---
 ## 1. Quand activer {#activate}
