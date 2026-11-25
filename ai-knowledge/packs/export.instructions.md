@@ -2,16 +2,16 @@
 pack: export
 kind: domain
 name: Export de données
-generated_at: 2026-11-20T11:40:00Z
+generated_at: 2026-11-25T15:00:00
 generator: synth/1
-base_sha256: 3f95ff03743873b6cdec8c90715aa7bfc02ec49770158e50b58cdeccf70a1fb1
-facts_in_base: 184
-facts_in_pool: 213
-facts_cited: 54
+base_sha256: 5d1d00ef5dbefbbddbe61c55e95d9d19f3c724e245993c60a95f5cfa39990fba
+facts_in_base: 222
+facts_in_pool: 257
+facts_cited: 49
 sections: export.sections.json
 details: [export.details.md]
 lang: fr
-curated_at: 2026-11-20T12:45:00Z
+curated_at: 2026-11-25T15:00:00
 curation: export.curation.json
 ---
 ## 1. Quand activer {#activate}
@@ -41,7 +41,6 @@ Ce pack s'active quand la demande ou le code touche l'un de ces éléments.
 - L'URL de téléchargement vaut null sauf si le job est COMPLETED avec une expiration. [#a01408ee42f6a4d7-1]
 ### Stockage et rendu
 - La référence stockée est un UUID plus une extension de 1 à 5 caractères a-z0-9, et toute référence contenant un séparateur de chemin ou '..' est rejetée à la lecture et à la suppression [#773091294adeea81-1] [#1d69cc7d64ef1ede-1] [#790e58e7428b8de3-1]
-- Le CSV préfixe d'une apostrophe tout champ commençant par un caractère de formule. [#83fd00ed9710ea05-2]
 ### Vérifié dans le code
 - Seule ExportJob.markCompleted renseigne expiresAt, donc ExportJobRepository.findExpired (expiresAt non nul et inférieur à now) ne remonte jamais un job PENDING ou RUNNING [#99122a29b71383fb-1] [#backend-core/66742a1c0e93eafc-1] `backend:src/main/java/com/matimeline/eventmanager/domain/models/export/ExportJob.java:52-57`.
 
@@ -51,6 +50,7 @@ Ce pack s'active quand la demande ou le code touche l'un de ces éléments.
 | Symbole | Énoncé | Lignes | Fait |
 |---|---|---|---|
 | AsyncExportRunner.run | Le worker reprend le job par son identifiant, l'abandonne si introuvable, puis le fait passer à l'état RUNNING via markRunning avant sauvegarde. (partiel) | L61-68 | [#batch/92871d4006ddb92f-1] |
+| AsyncExportRunner.run | Passe le job de PENDING à RUNNING via markRunning, si le job est trouvé par son id, pour le worker asynchrone. (partiel) | L62-68 | [#5686ec4dee42298d-3] |
 | AsyncExportRunner.run | Après assemblage, rendu et stockage réussis, le job passe à COMPLETED via markCompleted avec la référence de stockage et une expiration à now plus 24 heures. (partiel) | L75-79 | [#batch/92871d4006ddb92f-2] |
 | AsyncExportRunner.run | Toute RuntimeException de la génération passe le job en FAILED avec le code fixe GENERATION_ERROR, sans message ni stack. (partiel) | L80-84 | [#batch/92871d4006ddb92f-3] |
 #### backend:src/main/java/com/matimeline/eventmanager/domain/models/export/ExportJob.java
@@ -84,17 +84,17 @@ Fichiers du pool au poids le plus élevé (11 sur 35), le poids étant la somme 
 
 | Fichier | Faits | Sortes dominantes |
 |---|---|---|
-| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ExportController.java` | 14 | endpoint 7, role_check 4, business_rule 1 |
-| `backend:src/main/java/com/matimeline/eventmanager/application/services/AvatarServiceImpl.java` | 14 | business_rule 4, validation 4, service_method 3 |
+| `backend:src/main/java/com/matimeline/eventmanager/application/services/AvatarServiceImpl.java` | 19 | business_rule 5, convention 3, service_method 3 |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ExportController.java` | 18 | endpoint 7, role_check 5, other 3 |
+| `backend:src/main/java/com/matimeline/eventmanager/application/services/AsyncExportRunner.java` | 13 | convention 7, state_transition 4, business_rule 2 |
 | `backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/ExportTokenService.java` | 19 | other 5, convention 4, business_rule 3 |
-| `backend:src/main/java/com/matimeline/eventmanager/application/services/AsyncExportRunner.java` | 9 | convention 3, state_transition 3, business_rule 2 |
+| `backend:src/main/java/com/matimeline/eventmanager/application/services/ExportServiceImpl.java` | 15 | convention 3, business_rule 2, other 2 |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/MarkdownExportRenderer.java` | 12 | business_rule 5, other 3, suspicious 2 |
 | `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapter.java` | 10 | convention 4, validation 3, business_rule 1 |
 | `backend:src/main/java/com/matimeline/eventmanager/domain/models/export/ExportJob.java` | 10 | convention 4, state_transition 3, business_rule 1 |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/CsvExportRenderer.java` | 10 | convention 5, business_rule 2, other 1 |
+| `backend:src/test/java/com/matimeline/eventmanager/application/services/AvatarServiceImplTest.java` | 17 | test_case 13, suspicious 2, business_rule 1 |
 | `backend:src/main/java/com/matimeline/eventmanager/application/services/ExportPurgeScheduler.java` | 8 | business_rule 2, convention 2, batch_job 1 |
-| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/CsvExportRenderer.java` | 7 | business_rule 3, convention 3, suspicious 1 |
-| `backend:src/test/java/com/matimeline/eventmanager/application/services/AvatarServiceImplTest.java` | 16 | test_case 13, suspicious 2, business_rule 1 |
-| `backend:src/main/java/com/matimeline/eventmanager/application/services/ExportServiceImpl.java` | 10 | service_method 4, convention 2, validation 2 |
-| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ExportJobRepositoryJpaImpl.java` | 7 | convention 3, batch_job 1, persistence_query 1 |
 
 ## 7. Relations avec d'autres packs {#relations}
 
@@ -102,15 +102,14 @@ Packs liés par des faits repris, des faits équivalents écartés à la dédupl
 
 | Pack | Faits repris | Faits équivalents | Catalogue |
 |---|---|---|---|
-| integrations | 24 | 14 |  |
-| batch | 11 | 4 |  |
+| integrations | 22 | 16 |  |
+| backend-core | 21 | 14 |  |
+| batch | 10 | 5 |  |
 | authorization | 4 | 5 |  |
-| backend-core | 7 | 1 |  |
 
 ## 8. Tests attendus {#tests}
 
 - Les tests fixent que purgeExpired supprime le fichier et la ligne d'un job COMPLETED expiré, laisse intact un job non expiré, et ne lève pas d'exception quand le fichier est déjà absent [#b1133c4f22973caa-1] [#db8c6b4bd7c1bc1e-1] [#09fc7d2e43ffd52d-1].
-- Les tests fixent que les avatars JPEG, PNG et WebP sont reconnus par magic bytes et stockés avec l'extension correspondante [#9c04cddd4bfe931b-1] [#737c3305c41c4b4a-1] [#e0264cc270531712-1].
 - Les tests fixent que getAvatar lève AvatarNotFoundException sans référence d'avatar ou quand le fichier référencé est introuvable [#8142833c9904614b-1] [#4da7d9df67898b83-1].
 
 ## 9. Questions ouvertes {#questions}
@@ -120,7 +119,6 @@ Aucun fait de la base ne relève de cette section.
 ## 10. Alertes {#alerts}
 
 - La purge `backend:src/main/java/com/matimeline/eventmanager/application/services/ExportPurgeScheduler.java:61-75` est une seule transaction qui capture chaque RuntimeException par job, sans sous-transaction, donc les jobs partagent le même sort transactionnel. Ne supposez pas qu'un échec est isolé par job, et ajoutez une transaction par job si l'isolation est voulue. [#450d17525574aab3-3]
-- Le message d'erreur de taille d'avatar annonce 5 Mo en dur, alors que la limite réelle vient de la propriété app.storage.avatar-max-bytes. Si la propriété change, le message devient faux, donc dérivez-le de la valeur configurée. [#53c5a2e3b939148a-1]
 - Le Markdown insère le nom de catégorie saisi par l'utilisateur sans échappement, contrairement au CSV qui neutralise les formules. Un nom contenant des caractères spéciaux modifie le rendu, donc échappez-le avant d'ajouter d'autres champs libres. [#integrations/75dbb39e88e401fb-1]
 - La neutralisation CSV s'applique à toutes les valeurs, y compris les nombres négatifs convertis en texte comme durationValue, qui reçoivent une apostrophe en tête. Un consommateur qui relit le CSV obtient du texte au lieu d'un nombre, donc traitez les champs numériques à part si le format doit rester numérique. [#83fd00ed9710ea05-1]
 - hashCode de ExportJobEntity renvoie la même valeur pour toutes les instances, alors que equals compare l'id. Les collections à base de hash dégénèrent, donc évitez d'y stocker beaucoup d'entités. [#752a3fa184eda39d-1]
@@ -129,7 +127,7 @@ Aucun fait de la base ne relève de cette section.
 ## 11. Couverture {#coverage}
 
 - Fichiers du pack : 35 ; avec au moins un fait en base : 35 ; sans fait après remise en file : 0.
-- Faits en base : 184, repris d'autres packs : +70, hors périmètre : -0, doublons écartés à la déduplication : -41, soit 213 dans le pool.
-- Faits du pool venus d'un autre pack : 46 (par pack : section Relations).
-- Destination des 213 faits du pool : Lexique 5 ; Règles 46 ; Endpoints et écrans 36 ; Tests attendus 24 ; Alertes / Questions ouvertes 13 ; annexe seule 58 ; écartés (sorte `other` ou inconnue) 31.
-- Base : sha256 3f95ff037438…, générée le 2026-11-20.
+- Faits en base : 222, repris d'autres packs : +97, hors périmètre : -0, doublons écartés à la déduplication : -62, soit 257 dans le pool.
+- Faits du pool venus d'un autre pack : 57 (par pack : section Relations).
+- Destination des 257 faits du pool : Lexique 7 ; Règles 52 ; Endpoints et écrans 39 ; Tests attendus 26 ; Alertes / Questions ouvertes 20 ; annexe seule 77 ; écartés (sorte `other` ou inconnue) 36.
+- Base : sha256 5d1d00ef5dbe…, générée le 2026-11-24.

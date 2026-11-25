@@ -3,14 +3,14 @@
  "schema": 1,
  "kind": "technical",
  "lang": "fr",
- "generated_at": "2026-11-20T11:40:00Z",
- "base_sha256": "93654c09e064b3def871d8c6328ab29aaa56afbb681e61cbad9097ce488f0e06",
- "pack_bytes": 8165,
- "pack_budget_bytes": 30955,
+ "generated_at": "2026-11-25T15:00:00",
+ "base_sha256": "28f319258ab29f86376493e7e720f97dfaca1186d90c289b1309d44b9b8034e3",
+ "pack_bytes": 8094,
+ "pack_budget_bytes": 31200,
  "details": [
   {
    "file": "frontend-core.details.md",
-   "bytes": 61931
+   "bytes": 65620
   }
  ],
  "sections": [
@@ -31,7 +31,8 @@
    "lots": 0,
    "merged": false,
    "review": null,
-   "never_truncate": false
+   "never_truncate": false,
+   "copied": false
   },
   {
    "id": "lexicon",
@@ -57,7 +58,8 @@
     "rejected": 0,
     "unreviewed": 0
    },
-   "never_truncate": false
+   "never_truncate": false,
+   "copied": true
   },
   {
    "id": "rules",
@@ -65,9 +67,9 @@
    "title": "Conventions",
    "heading": "## 3. Conventions {#rules}",
    "line_start": 27,
-   "line_end": 41,
-   "bytes": 1375,
-   "budget_bytes": 7455,
+   "line_end": 42,
+   "bytes": 1556,
+   "budget_bytes": 7700,
    "cut_lines": 0,
    "writer": "agent",
    "kinds": [
@@ -76,7 +78,7 @@
     "business_rule",
     "validation"
    ],
-   "facts_available": 213,
+   "facts_available": 220,
    "facts_cited": [
     "87ba3444819c3487-1",
     "9bc256ea7132e8fc-1",
@@ -92,25 +94,34 @@
     "1cebc3ebe7539af4-1",
     "0135de84623de5bb-1",
     "f61c95693fc0d41d-1",
-    "33808da4d7c94712-1"
+    "33808da4d7c94712-1",
+    "9c9c50a8a68a9eb0-1"
    ],
-   "lots": 1,
+   "lots": 0,
    "merged": false,
    "review": {
-    "lines": 40,
-    "kept": 37,
+    "lines": 43,
+    "kept": 40,
     "rejected": 3,
     "unreviewed": 7
    },
-   "never_truncate": false
+   "never_truncate": false,
+   "copied": false,
+   "mode": "lines",
+   "lines_kept": 12,
+   "lines_replaced": 0,
+   "lines_added": 3,
+   "lines_removed": 0,
+   "patch_failed": false,
+   "rejected_patch": []
   },
   {
    "id": "structure",
    "order": 4,
    "title": "Structure",
    "heading": "## 4. Structure {#structure}",
-   "line_start": 42,
-   "line_end": 45,
+   "line_start": 43,
+   "line_end": 46,
    "bytes": 82,
    "budget_bytes": 2000,
    "cut_lines": 0,
@@ -127,15 +138,16 @@
    "lots": 0,
    "merged": false,
    "review": null,
-   "never_truncate": false
+   "never_truncate": false,
+   "copied": false
   },
   {
    "id": "surface",
    "order": 5,
    "title": "Points d'entrée du socle",
    "heading": "## 5. Points d'entrée du socle {#surface}",
-   "line_start": 46,
-   "line_end": 49,
+   "line_start": 47,
+   "line_end": 50,
    "bytes": 96,
    "budget_bytes": 4000,
    "cut_lines": 0,
@@ -161,15 +173,16 @@
     "rejected": 0,
     "unreviewed": 0
    },
-   "never_truncate": false
+   "never_truncate": false,
+   "copied": true
   },
   {
    "id": "files",
    "order": 6,
    "title": "Fichiers critiques",
    "heading": "## 6. Fichiers critiques {#files}",
-   "line_start": 50,
-   "line_end": 68,
+   "line_start": 51,
+   "line_end": 69,
    "bytes": 1161,
    "budget_bytes": 2000,
    "cut_lines": 0,
@@ -180,15 +193,16 @@
    "lots": 0,
    "merged": false,
    "review": null,
-   "never_truncate": false
+   "never_truncate": false,
+   "copied": false
   },
   {
    "id": "relations",
    "order": 7,
    "title": "Relations avec d'autres packs",
    "heading": "## 7. Relations avec d'autres packs {#relations}",
-   "line_start": 69,
-   "line_end": 81,
+   "line_start": 70,
+   "line_end": 82,
    "bytes": 419,
    "budget_bytes": 1500,
    "cut_lines": 0,
@@ -199,56 +213,58 @@
    "lots": 0,
    "merged": false,
    "review": null,
-   "never_truncate": false
+   "never_truncate": false,
+   "copied": false
   },
   {
    "id": "tests",
    "order": 8,
    "title": "Tests attendus",
    "heading": "## 8. Tests attendus {#tests}",
-   "line_start": 82,
-   "line_end": 91,
-   "bytes": 1362,
+   "line_start": 83,
+   "line_end": 90,
+   "bytes": 1112,
    "budget_bytes": 2000,
    "cut_lines": 0,
    "writer": "agent",
    "kinds": [
     "test_case"
    ],
-   "facts_available": 65,
+   "facts_available": 70,
    "facts_cited": [
-    "b624ef68e7fdbbc6-1",
-    "563f4f6eed8cff91-1",
-    "82d4c005d5ae0fe0-1",
+    "4b7f79446e4b86e1-1",
+    "e9538199f8ee2b0a-1",
+    "bc8390329b6494b1-1",
+    "0d1c19772e7e890d-1",
+    "2f220e471b229ba0-1",
+    "0dda85ff5207150e-2",
     "2567fe15abe72281-1",
     "8fe6e917cfd6a7e1-1",
-    "67b6193be51eb5f8-2",
-    "31e4140d2a82fdf7-1",
-    "bc8390329b6494b1-1",
-    "e9538199f8ee2b0a-1",
+    "8dd03e17489c8b12-1",
+    "3567e8ecf8cbb6a3-1",
+    "9ca3ebac108c3813-1",
+    "627a77b7049c5912-1",
     "0b961296c4139571-1",
-    "873e0ac8508f2a1c-1",
-    "2bced97a8b32cc87-1",
-    "77f33530045e343d-1",
-    "f3ce40abe29ecdc4-1"
+    "873e0ac8508f2a1c-1"
    ],
    "lots": 1,
    "merged": false,
    "review": {
-    "lines": 12,
-    "kept": 11,
-    "rejected": 1,
+    "lines": 8,
+    "kept": 6,
+    "rejected": 2,
     "unreviewed": 0
    },
-   "never_truncate": false
+   "never_truncate": false,
+   "copied": false
   },
   {
    "id": "questions",
    "order": 9,
    "title": "Questions ouvertes",
    "heading": "## 9. Questions ouvertes {#questions}",
-   "line_start": 92,
-   "line_end": 95,
+   "line_start": 91,
+   "line_end": 94,
    "bytes": 289,
    "budget_bytes": 1500,
    "cut_lines": 0,
@@ -256,11 +272,11 @@
    "kinds": [
     "suspicious"
    ],
-   "facts_available": 21,
+   "facts_available": 26,
    "facts_cited": [
     "075c383c8509607d-2"
    ],
-   "lots": 1,
+   "lots": 0,
    "merged": false,
    "review": {
     "lines": 1,
@@ -268,15 +284,23 @@
     "rejected": 0,
     "unreviewed": 0
    },
-   "never_truncate": false
+   "never_truncate": false,
+   "copied": false,
+   "mode": "lines",
+   "lines_kept": 1,
+   "lines_replaced": 0,
+   "lines_added": 0,
+   "lines_removed": 0,
+   "patch_failed": false,
+   "rejected_patch": []
   },
   {
    "id": "alerts",
    "order": 10,
    "title": "Alertes",
    "heading": "## 10. Alertes {#alerts}",
-   "line_start": 96,
-   "line_end": 103,
+   "line_start": 95,
+   "line_end": 102,
    "bytes": 2015,
    "budget_bytes": 4000,
    "cut_lines": 0,
@@ -284,7 +308,7 @@
    "kinds": [
     "suspicious"
    ],
-   "facts_available": 21,
+   "facts_available": 26,
    "facts_cited": [
     "9444328f3c65b8bc-1",
     "b7b7c6d036cba012-1",
@@ -297,7 +321,7 @@
     "8c19b67eb94f04f8-1",
     "a8a8ff297908ea82-1"
    ],
-   "lots": 1,
+   "lots": 0,
    "merged": false,
    "review": {
     "lines": 5,
@@ -305,15 +329,23 @@
     "rejected": 0,
     "unreviewed": 0
    },
-   "never_truncate": true
+   "never_truncate": true,
+   "copied": false,
+   "mode": "lines",
+   "lines_kept": 5,
+   "lines_replaced": 0,
+   "lines_added": 0,
+   "lines_removed": 0,
+   "patch_failed": false,
+   "rejected_patch": []
   },
   {
    "id": "coverage",
    "order": 11,
    "title": "Couverture",
    "heading": "## 11. Couverture {#coverage}",
-   "line_start": 104,
-   "line_end": 111,
+   "line_start": 103,
+   "line_end": 110,
    "bytes": 716,
    "budget_bytes": 1500,
    "cut_lines": 0,
@@ -324,20 +356,37 @@
    "lots": 0,
    "merged": false,
    "review": null,
-   "never_truncate": false
+   "never_truncate": false,
+   "copied": false
   }
  ],
  "dedup": {
-  "base": 312,
+  "base": 330,
   "taken_in": 0,
   "out_of_scope": 0,
-  "pool_before": 312,
-  "pool_after": 310,
+  "pool_before": 330,
+  "pool_after": 328,
   "related_pairs": 20
  },
  "lint": {
   "ok": true,
   "errors": 0,
   "warnings": 0
+ },
+ "refresh": {
+  "mode": "only-changed",
+  "at": "2026-11-25T15:00:00",
+  "rewritten": [
+   "tests"
+  ],
+  "patched": [
+   "rules",
+   "questions",
+   "alerts"
+  ],
+  "copied": [
+   "lexicon",
+   "surface"
+  ]
  }
 }

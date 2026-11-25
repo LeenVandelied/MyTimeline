@@ -146,10 +146,12 @@
    "kind": "technical",
    "layers": [
     "backend/infrastructure",
-    "backend/(root)",
-    "backend/support",
     "backend/architecture",
-    "backend/build"
+    "backend/(root)",
+    "backend/com",
+    "backend/build",
+    "backend/support",
+    "backend/application"
    ],
    "paths": [
     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/config/"

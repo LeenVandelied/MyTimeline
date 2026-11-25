@@ -1,20 +1,20 @@
 {
  "pack": "authorization",
  "schema": 1,
- "curated_at": "2026-11-20T12:45:00Z",
+ "curated_at": "2026-11-25T17:05:00",
  "curator": "curate/1",
- "base_sha256": "558f380e8d937eba3299ad362fd2f2e29fdc08afe131212ec58f9efbd707edbf",
- "pack_sha256_before": "2b43f7dcb44f867962f18556e39eb9711ce2d803ffb1821f6d55a048c0d85a06",
- "pack_sha256_after": "5a3e2e56ef2c41dac482052aaa4fe2e14b9d11c1e745d102fe436e3ff8054f91",
- "criteria_sha256": "48e0e20f086c5b11deecfecdc547ba1d6115faee1597a5aaf682f6c699e92423",
+ "base_sha256": "83952796cbdcf46f65dbaa52cb542a8895aa99ef5c476877c41a6e91d5194fe0",
+ "pack_sha256_before": "067102dc501801dc3d63803b748894d0c9fd762b5ec0446b462fa6c6a9aec95f",
+ "pack_sha256_after": "50e4a2d883a9ef4e96f045a7005a3ac46ddab6346dd48111f3887fd9312a6ef5",
+ "criteria_sha256": "ab7790cd5eeee6662e4839ed473485849ec7230c69cee20910a09fbe76ae6957",
  "models": {
   "measure": "haiku",
   "refute": "sonnet"
  },
- "base_fingerprint": "38d303cccd937afe6bb3ae3b80b7df474f34555be0c6573eed360e6d836105c3",
+ "base_fingerprint": "758c86eafc4d24d304c490dae80dc0e6ca46e95d819339d6812f475af2fa5588",
  "bytes": {
-  "before": 8486,
-  "after": 8486,
+  "before": 8976,
+  "after": 8204,
   "by_section": {
    "activate": {
     "before": 346,
@@ -25,56 +25,54 @@
     "after": 78
    },
    "rules": {
-    "before": 1394,
-    "after": 1394
+    "before": 1389,
+    "after": 1687
    },
    "structure": {
-    "before": 1095,
-    "after": 1095
+    "before": 1547,
+    "after": 1547
    },
    "surface": {
-    "before": 762,
-    "after": 762
+    "before": 831,
+    "after": 831
    },
    "files": {
-    "before": 1891,
-    "after": 1891
+    "before": 1914,
+    "after": 1914
    },
    "relations": {
-    "before": 454,
-    "after": 454
+    "before": 465,
+    "after": 465
    },
    "tests": {
-    "before": 823,
-    "after": 823
+    "before": 83,
+    "after": 83
    },
    "questions": {
-    "before": 91,
+    "before": 782,
     "after": 91
    },
    "alerts": {
-    "before": 467,
-    "after": 467
+    "before": 457,
+    "after": 78
    },
    "coverage": {
-    "before": 666,
-    "after": 666
+    "before": 667,
+    "after": 667
    }
   }
  },
  "units": [
   {
-   "id": "authorization:rules:1",
+   "id": "authorization:rules:p1",
    "section": "rules",
-   "rank": 1,
-   "text": "- Selon la javadoc, seule la clé privée RSA est configurée et la clé publique en est dérivée. Un modulus sous 2048 bits ou sans paramètres CRT est refusé au chargement. [#9f60a5905f689a63-1] [#105846cf9aaec1b8-1] [#48e6f6949702d043-1]",
-   "fact_text": "Selon la javadoc, seule la clé privée RSA est configurée et la clé publique en est dérivée. Un modulus sous 2048 bits ou sans paramètres CRT est refusé au chargement",
+   "rank": 0,
+   "text": "- Une clé RSA de moins de 2048 bits (RsaKeyMaterial.MIN_MODULUS_BITS) fait échouer le démarrage de JwtService avec une IllegalStateException [#105846cf9aaec1b8-1] `backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/RsaKeyMaterial.java:184-190`.",
+   "fact_text": "Une clé RSA de moins de 2048 bits (RsaKeyMaterial.MIN_MODULUS_BITS) fait échouer le démarrage de JwtService avec une IllegalStateException RsaKeyMaterial.java",
    "consigne": null,
    "consigne_dropped": false,
    "cites": [
-    "authorization/9f60a5905f689a63-1",
-    "authorization/105846cf9aaec1b8-1",
-    "authorization/48e6f6949702d043-1"
+    "authorization/105846cf9aaec1b8-1"
    ],
    "files": [
     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/RsaKeyMaterial.java"
@@ -82,131 +80,117 @@
    "ranges": [
     [
      "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/RsaKeyMaterial.java",
-     23,
-     25,
-     "af402b2f03f064e9e87f0da8fdaa69d859457ee092a917b69f0612819f1c331a"
-    ],
-    [
-     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/RsaKeyMaterial.java",
-     165,
-     171,
-     "295bcc121c5c98b55cd8f0ecd798ac143702ef15a152e212e5f87754c8d28536"
-    ],
-    [
-     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/RsaKeyMaterial.java",
-     67,
-     73,
-     "4974bf581e9b118c4ad3d9755ab0f64f81210bd65333a4e7f6e42f81b268ef21"
+     184,
+     190,
+     "2717ff9ae1284408fa5630dbd0b0e8941f7c3088a10322406cf2412651e0b35a"
     ]
    ],
-   "code_sha256": "0635759af5786453cf8f1dede254862be0620ab0fa0c24e9b54b5ad519fd1b1f",
+   "code_sha256": "2717ff9ae1284408fa5630dbd0b0e8941f7c3088a10322406cf2412651e0b35a",
    "verdict": "admit",
-   "reason": "admitted",
+   "reason": "promoted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "promoted_from": "authorization:questions:2",
+   "guard_range": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/RsaKeyMaterial.java",
+    184,
+    190
+   ],
+   "placed": {
+    "pack_line": 40,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "authorization:rules:1",
+   "section": "rules",
+   "rank": 1,
+   "text": "- Pendant une rotation, la clé précédente ne sert qu'à vérifier, et seulement si le jeton n'a pas de kid désignant la clé courante. [#d3efb86687b6fde7-1] [#23ecabbb7b430cab-1]",
+   "fact_text": "Pendant une rotation, la clé précédente ne sert qu'à vérifier, et seulement si le jeton n'a pas de kid désignant la clé courante",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "authorization/d3efb86687b6fde7-1",
+    "authorization/23ecabbb7b430cab-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtService.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtService.java",
+     52,
+     53,
+     "ffa656f26f88004eed11d3d3b9a111798bc789b5743fc09f4d45d6fffeae143f"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtService.java",
+     301,
+     321,
+     "ced5f9c91e9bce3770ff3cb7101467be0a1a4155b1ea0948082b726adf7cda80"
+    ]
+   ],
+   "code_sha256": "6a06461a7a6050f4c18b730c3bf4929f0a1739d5aca8049d4144f1309483b8bb",
+   "verdict": "admit",
+   "reason": "rediscovered",
    "final": true,
    "measures": {
     "fidelity": null,
     "deduce": {
      "covered": false,
      "overlap": {
-      "identifiers": 1.0,
-      "values": 0.0,
-      "terms": 0.6,
+      "identifiers": null,
+      "values": null,
+      "terms": 0.286,
       "n": {
-       "identifiers": 2,
-       "values": 1,
-       "terms": 10
+       "identifiers": 0,
+       "values": 0,
+       "terms": 7
       }
      },
-     "restatement": "RsaKeyMaterial n'attend qu'une seule variable, JWT_PRIVATE_KEY, contenant la clé privée. La clé publique en est dérivée via le modulus et l'exposant public de RSAPrivateCrtKey. assertLongEnough refuse un modulus inférieur à MIN_MODULUS_BITS avec GeneralSecurityException, et fromPkcs8 refuse une clé RSA sans paramètres CRT.",
+     "restatement": "La clé précédente est lue depuis la propriété jwt.previous-public-key (vide par défaut). parseWithCandidateKeys tente d'abord la clé courante, et en cas de SignatureException tente la clé précédente, sauf si le kid désigne la clé courante. Si la clé précédente a validé le token, assertBoundedPreviousKeyToken est appliqué.",
      "confidence": "high",
      "files_read_missing": true,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-25T15:00:00"
     },
     "rediscover": {
      "found": true,
-     "cost": 9,
-     "within_budget": false,
-     "covered": false,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/RsaKeyMaterial.java",
+     "cost": 5,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtService.java",
      "file_ok": true,
      "overlap": {
-      "identifiers": 0.5,
-      "values": 1.0,
-      "terms": 0.7,
+      "identifiers": null,
+      "values": null,
+      "terms": 0.571,
       "n": {
-       "identifiers": 2,
-       "values": 1,
-       "terms": 10
+       "identifiers": 0,
+       "values": 0,
+       "terms": 7
       }
      },
-     "job": "authorization:rediscover:backend_src_main_java_com_matimeline_eventmanager_infrastructure_adapters_controllers_AuthController.java:1",
+     "job": "authorization:rediscover:backend_src_main_java_com_matimeline_eventmanager_infrastructure_security_CustomUserDetailsService.java:1",
+     "rank_in_lot": 3,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-25T15:00:00"
     },
-    "comment": [
-     {
-      "id": "authorization/9f60a5905f689a63-1",
-      "verdict": "confirmed"
-     }
-    ],
-    "refute": {
-     "votes": 3,
-     "refuted": 0,
-     "refute_unproven": 0,
-     "reasons": [
-      "RsaKeyMaterial.fromPkcs8 refuse une clé non RSAPrivateCrtKey (L67-72) et assertLongEnough refuse un modulus sous MIN_MODULUS_BITS (L165-171). La clé publique est dérivée via RSAPublicKeySpec(crt.getModulus(), crt.getPublicExponent()) (L76).",
-      "RsaKeyMaterial.fromPkcs8 rejette les clés non CRT (l.67-72) et assertLongEnough (l.165-171) rejette moins de MIN_MODULUS_BITS. La clé publique est dérivée de la clé privée CRT. Aucun contre-exemple trouvé pour cette règle.",
-      "RsaKeyMaterial dérive la clé publique de RSAPrivateCrtKey (L76), refuse les clés non CRT (L67-71) et les modulus sous MIN_MODULUS_BITS (assertLongEnough, appelée L73). Aucun contre-exemple trouvé."
-     ],
-     "evidence": [
-      "",
-      "",
-      ""
-     ],
-     "consigne_verdict": "n/a",
-     "question_verdict": "n/a",
-     "searched": true,
-     "search": {
-      "check": "scope",
-      "outcome": null,
-      "votes": 3,
-      "supporters": 0,
-      "budget": 30,
-      "searches": [
-       [
-        {
-         "tool": "Grep",
-         "target": "getModulus|getPublicExponent|getPrivate dans infrastructure",
-         "found": "RsaKeyMaterial L76 dérive la publique depuis la CRT ; aucun autre chemin de chargement"
-        }
-       ],
-       [
-        {
-         "tool": "Grep",
-         "target": "JWT_PRIVATE_KEY|jwt.private-key dans backend/src/main",
-         "found": "une seule variable, clé unique côté JwtService, pas de clé publique configurée"
-        }
-       ],
-       [
-        {
-         "tool": "Grep",
-         "target": "getModulus|getPublicExponent|RSAPublicKey dans backend/src/main/java",
-         "found": "Dérivation via RSAPublicKeySpec(crt.getModulus(), crt.getPublicExponent()) L76 ; seule clé configurée JWT_PRIVATE_KEY."
-        }
-       ]
-      ],
-      "untraced": 0,
-      "over_budget": 0,
-      "unproven": 0
-     },
-     "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
-    }
+    "comment": [],
+    "refute": null
    },
    "contrary": null,
    "check": "scope",
    "general": "pattern_pack",
+   "kept_for": "rediscovered",
    "placed": {
     "pack_line": 31,
     "annex_table": null
@@ -217,32 +201,32 @@
    "id": "authorization:rules:2",
    "section": "rules",
    "rank": 2,
-   "text": "- parseClaims refuse un jeton dont alg n'est pas RS256 et un jeton vide. [#591cd24092b70532-2] [#006c110809de4e75-1]",
-   "fact_text": "parseClaims refuse un jeton dont alg n'est pas RS256 et un jeton vide",
+   "text": "- JwtFilter lit le cookie jwt puis, à défaut, l'en-tête Bearer, et ne s'applique pas aux chemins /api/auth. [#fef399d03b004ac4-3] [#e18907b3ce64ed01-1]",
+   "fact_text": "JwtFilter lit le cookie jwt puis, à défaut, l'en-tête Bearer, et ne s'applique pas aux chemins /api/auth",
    "consigne": null,
    "consigne_dropped": false,
    "cites": [
-    "authorization/591cd24092b70532-2",
-    "authorization/006c110809de4e75-1"
+    "authorization/fef399d03b004ac4-3",
+    "authorization/e18907b3ce64ed01-1"
    ],
    "files": [
-    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtService.java"
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtFilter.java"
    ],
    "ranges": [
     [
-     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtService.java",
-     230,
-     233,
-     "6550df47182907cd0fa293f0cfc9f35d029a0b633b548239202b29c67fcbe038"
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtFilter.java",
+     55,
+     60,
+     "727c14c0df442e6eaf1a80eaafbf81fc94618618ccc2e09f9451dafa8dd09cd3"
     ],
     [
-     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtService.java",
-     220,
-     223,
-     "65589368b4e602749734467e176208dcc25fe3cbeb7f41129ce1c600c30c651c"
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtFilter.java",
+     105,
+     108,
+     "077233cec5cf6816aedd0aa1e03d8e07dbf2d435d9ac171765a170a7c5280512"
     ]
    ],
-   "code_sha256": "9f7d6cd90776712bb15667b237fd5ef4bc85c8fc7cab1192181e1bada34e97e1",
+   "code_sha256": "8c5a56441fb096e35088769102f2070a9f6be3f944c61b6e83cc000f25600e66",
    "verdict": "admit",
    "reason": "rediscovered",
    "final": true,
@@ -251,130 +235,42 @@
     "deduce": {
      "covered": false,
      "overlap": {
-      "identifiers": 1.0,
+      "identifiers": 0.0,
       "values": null,
-      "terms": 0.0,
+      "terms": 0.429,
       "n": {
-       "identifiers": 2,
+       "identifiers": 1,
        "values": 0,
-       "terms": 3
+       "terms": 7
       }
      },
-     "restatement": "JwtService.parseClaims rejette tout token null ou blanc avec MalformedJwtException. Il rejette aussi tout algorithme de signature différent de RS256 avec UnsupportedJwtException.",
+     "restatement": "Dans doFilterInternal, si aucun token n'a été trouvé, le filtre lit l'en-tête Authorization et, s'il commence par « Bearer », retire ses 7 premiers caractères pour obtenir le token. shouldNotFilter exclut toutes les requêtes dont le servletPath commence par /api/auth.",
      "confidence": "high",
      "files_read_missing": true,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-25T15:00:00"
     },
     "rediscover": {
      "found": true,
-     "cost": 3,
+     "cost": 6,
      "within_budget": true,
      "covered": true,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtService.java",
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtFilter.java",
      "file_ok": true,
      "overlap": {
       "identifiers": 1.0,
       "values": null,
-      "terms": 0.667,
-      "n": {
-       "identifiers": 2,
-       "values": 0,
-       "terms": 3
-      }
-     },
-     "job": "authorization:rediscover:backend_src_main_java_com_matimeline_eventmanager_infrastructure_adapters_controllers_AuthController.java:1",
-     "rank_in_lot": 1,
-     "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
-    },
-    "comment": [],
-    "refute": null
-   },
-   "contrary": null,
-   "check": "scope",
-   "general": "pattern_pack",
-   "kept_for": "rediscovered",
-   "placed": {
-    "pack_line": 32,
-    "annex_table": null
-   },
-   "uses": 0
-  },
-  {
-   "id": "authorization:rules:3",
-   "section": "rules",
-   "rank": 3,
-   "text": "- Les tokens d'export utilisent le secret dédié app.export.token-secret, validé au démarrage sans divulguer sa valeur. [#cfd450177e31b9df-1] [#8848356f2c8c0732-1]",
-   "fact_text": "Les tokens d'export utilisent le secret dédié app.export.token-secret, validé au démarrage sans divulguer sa valeur",
-   "consigne": null,
-   "consigne_dropped": false,
-   "cites": [
-    "authorization/cfd450177e31b9df-1",
-    "authorization/8848356f2c8c0732-1"
-   ],
-   "files": [
-    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/ExportTokenService.java"
-   ],
-   "ranges": [
-    [
-     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/ExportTokenService.java",
-     50,
-     50,
-     "0fa17f7832b1391d0bfea7963235ebcec4dac7023a04511945a7c04ab21edabb"
-    ],
-    [
-     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/ExportTokenService.java",
-     65,
-     83,
-     "a5436c36120034eab5d9f6eaebd2c52509768814545f73d1e3f352ee5982a6e7"
-    ]
-   ],
-   "code_sha256": "fe69393242bbff2a0ce06e020c677cf85dca42c830856aacf10edb8450d3dd38",
-   "verdict": "admit",
-   "reason": "rediscovered",
-   "final": true,
-   "measures": {
-    "fidelity": null,
-    "deduce": {
-     "covered": false,
-     "overlap": {
-      "identifiers": 1.0,
-      "values": null,
-      "terms": 0.222,
+      "terms": 0.714,
       "n": {
        "identifiers": 1,
        "values": 0,
-       "terms": 9
+       "terms": 7
       }
      },
-     "restatement": "La propriété app.export.token-secret est injectée depuis la variable EXPORT_TOKEN_SECRET. Au démarrage, validateSecret appelle getSigningKey et, en cas de RuntimeException, lève IllegalStateException sans inclure le message de l'exception, seulement le nom de sa classe, pour ne pas journaliser le secret. Une clé invalide fait donc échouer le boot.",
-     "confidence": "high",
-     "files_read_missing": true,
+     "job": "authorization:rediscover:backend_src_main_java_com_matimeline_eventmanager_infrastructure_security_CustomUserDetailsService.java:1",
+     "rank_in_lot": 4,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
-    },
-    "rediscover": {
-     "found": true,
-     "cost": 5,
-     "within_budget": true,
-     "covered": true,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/ExportTokenService.java",
-     "file_ok": true,
-     "overlap": {
-      "identifiers": 1.0,
-      "values": null,
-      "terms": 0.778,
-      "n": {
-       "identifiers": 1,
-       "values": 0,
-       "terms": 9
-      }
-     },
-     "job": "authorization:rediscover:backend_src_main_java_com_matimeline_eventmanager_infrastructure_adapters_controllers_AuthController.java:1",
-     "rank_in_lot": 3,
-     "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-25T15:00:00"
     },
     "comment": [],
     "refute": null
@@ -390,88 +286,60 @@
    "uses": 0
   },
   {
-   "id": "authorization:rules:4",
+   "id": "authorization:rules:3",
    "section": "rules",
-   "rank": 4,
-   "text": "- verify refuse un token d'export dont typ diffère, et toute erreur renvoie un résultat vide. [#ca82dcefc6247794-1] [#ca82dcefc6247794-2]",
-   "fact_text": "verify refuse un token d'export dont typ diffère, et toute erreur renvoie un résultat vide",
+   "rank": 3,
+   "text": "- Dans la chaîne de filtres de sécurité, une requête non authentifiée reçoit 401 et un accès refusé 403 avec un corps JSON d'erreur, mais les contrôleurs peuvent renvoyer 401 ou 403 sans corps [#ad28b56cd87034dc-3] [#ad28b56cd87034dc-7]",
+   "fact_text": "Dans la chaîne de filtres de sécurité, une requête non authentifiée reçoit 401 et un accès refusé 403 avec un corps JSON d'erreur, mais les contrôleurs peuvent renvoyer 401 ou 403 sans corps",
    "consigne": null,
    "consigne_dropped": false,
    "cites": [
-    "authorization/ca82dcefc6247794-1",
-    "authorization/ca82dcefc6247794-2"
+    "authorization/ad28b56cd87034dc-3",
+    "authorization/ad28b56cd87034dc-7"
    ],
    "files": [
-    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/ExportTokenService.java"
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/SecurityConfig.java"
    ],
    "ranges": [
     [
-     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/ExportTokenService.java",
-     120,
-     122,
-     "969aea1830a19c60b44546e698f4704be249331368323ca229680aa477039fb9"
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/SecurityConfig.java",
+     192,
+     192,
+     "2871323d61eeecc123fbcbffbe4597242ab841d71fa2fa780a9abf24941f3fe5"
     ],
     [
-     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/ExportTokenService.java",
-     126,
-     134,
-     "b1aac33d47d8b98c617ea462e21c0df966d1c5e09124d19e79a30e43e34faba9"
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/SecurityConfig.java",
+     194,
+     194,
+     "430c22f7856d279f978213328bb714f5b478c59b8d29e760558aee8f9e5fa5f2"
     ]
    ],
-   "code_sha256": "ecbccfc0a234d23258d9c24b79928f86f95cb61604b538e92439e9996c4c8581",
+   "code_sha256": "b344cd54631cfee3f64e31236961be4ada03ad89e871e2d6ef735c28c268d17e",
    "verdict": "admit",
    "reason": "admitted",
    "final": true,
    "measures": {
     "fidelity": null,
-    "deduce": {
-     "covered": false,
-     "overlap": {
-      "identifiers": null,
-      "values": null,
-      "terms": 0.444,
-      "n": {
-       "identifiers": 0,
-       "values": 0,
-       "terms": 9
-      }
+    "deduce": null,
+    "rediscover": null,
+    "comment": [
+     {
+      "id": "authorization/ad28b56cd87034dc-3",
+      "verdict": "confirmed"
      },
-     "restatement": "ExportTokenService.verify renvoie Optional.empty() si le claim type ne vaut pas TOKEN_TYPE. Le bloc catch renvoie aussi Optional.empty() pour toute RuntimeException, ce qui couvre une signature invalide, un token expiré ou des claims absents, sans lever d'erreur.",
-     "confidence": "high",
-     "files_read_missing": true,
-     "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
-    },
-    "rediscover": {
-     "found": true,
-     "cost": 5,
-     "within_budget": true,
-     "covered": false,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/ExportTokenService.java",
-     "file_ok": true,
-     "overlap": {
-      "identifiers": null,
-      "values": null,
-      "terms": 0.333,
-      "n": {
-       "identifiers": 0,
-       "values": 0,
-       "terms": 9
-      }
-     },
-     "job": "authorization:rediscover:backend_src_main_java_com_matimeline_eventmanager_infrastructure_adapters_controllers_AuthController.java:1",
-     "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
-    },
-    "comment": [],
+     {
+      "id": "authorization/ad28b56cd87034dc-7",
+      "verdict": "confirmed"
+     }
+    ],
     "refute": {
      "votes": 3,
      "refuted": 0,
      "refute_unproven": 0,
      "reasons": [
-      "ExportTokenService.verify L120-122 renvoie Optional.empty si typ diffère, et le catch RuntimeException (L126-134) renvoie empty. Aucun contre-exemple dans verify.",
-      "ExportTokenService.verify (l.120-122) renvoie Optional.empty si typ diffère, et le catch RuntimeException (l.126-134) renvoie vide. Seuls les Error ne sont pas attrapés, ce qui ne réfute pas la ligne.",
-      "ExportTokenService.verify (L120-134) refuse un typ différent et le catch RuntimeException renvoie Optional.empty ; aucun contre-exemple lu dans la portée (seules les Error échappent, sans portée pratique)."
+      "SecurityConfig L192/L194 écrivent un corps JSON via writeJsonError pour 401/403, et plusieurs contrôleurs renvoient ResponseEntity.status(HttpStatus.UNAUTHORIZED/FORBIDDEN).build() sans corps (CategoryController L51, L113), ce qui confirme la ligne.",
+      "SecurityConfig L192/L194 écrit bien un JSON d'erreur pour 401/403, et la ligne admet déjà que des contrôleurs renvoient sans corps (CategoryController renvoie ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()), donc pas de contre-exemple.",
+      "SecurityConfig L192/L194 écrit bien un JSON d'erreur pour 401/403, et CategoryController renvoie ResponseEntity.status(HttpStatus.UNAUTHORIZED).build() sans corps, donc la ligne tient."
      ],
      "evidence": [
       "",
@@ -486,41 +354,39 @@
       "outcome": null,
       "votes": 3,
       "supporters": 0,
-      "budget": 30,
+      "budget": 24,
       "searches": [
        [
         {
-         "tool": "Read",
-         "target": "ExportTokenService.java",
-         "found": "verify : typ vérifié, catch RuntimeException renvoie empty"
+         "tool": "Grep",
+         "target": "ResponseEntity.status(UNAUTHORIZED|FORBIDDEN).build() dans infrastructure",
+         "found": "Nombreux 401/403 sans corps dans CategoryController, EventController, ExportController ; AuthController en renvoie avec corps."
         }
        ],
        [
         {
-         "tool": "Read",
-         "target": "ExportTokenService.java",
-         "found": "verify entièrement lu, typ et catch RuntimeException confirmés"
+         "tool": "Grep",
+         "target": "ResponseEntity.status(UNAUTHORIZED|FORBIDDEN).build() dans controllers",
+         "found": "CategoryController, EventController, ExportController renvoient 401/403/404 sans corps, ce que la ligne dit déjà."
         }
        ],
        [
         {
-         "tool": "Read",
-         "target": "ExportTokenService.java",
-         "found": "typ vérifié L120, catch RuntimeException L126 renvoie empty, token null/blanc renvoie empty."
+         "tool": "Grep",
+         "target": "status(40[13]) | HttpStatus.UNAUTHORIZED|FORBIDDEN dans infrastructure",
+         "found": "CategoryController, EventController, ExportController renvoient 401/403 avec .build() sans corps."
         }
        ]
       ],
       "untraced": 0,
       "over_budget": 0,
       "unproven": 0
-     },
-     "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     }
     }
    },
    "contrary": null,
    "check": "scope",
-   "general": "words:toute",
+   "general": "pattern_pack",
    "placed": {
     "pack_line": 34,
     "annex_table": null
@@ -528,414 +394,60 @@
    "uses": 0
   },
   {
-   "id": "authorization:rules:5",
+   "id": "authorization:rules:4",
    "section": "rules",
-   "rank": 5,
-   "text": "- Le contexte n'est renseigné que si signature, expiration et jti non révoqué sont valides, sinon la requête continue en anonyme. [#7592b341eaabca2a-1] [#20661afcf565be41-1]",
-   "fact_text": "Le contexte n'est renseigné que si signature, expiration et jti non révoqué sont valides, sinon la requête continue en anonyme",
+   "rank": 4,
+   "text": "- Selon les commentaires de SecurityConfig, le limiteur par IP passe avant jwtFilter et le limiteur par utilisateur juste avant AuthorizationFilter, donc après l'authentification. [#ad28b56cd87034dc-4] [#ad28b56cd87034dc-5]",
+   "fact_text": "Selon les commentaires de SecurityConfig, le limiteur par IP passe avant jwtFilter et le limiteur par utilisateur juste avant AuthorizationFilter, donc après l'authentification",
    "consigne": null,
    "consigne_dropped": false,
    "cites": [
-    "authorization/7592b341eaabca2a-1",
-    "authorization/20661afcf565be41-1"
+    "authorization/ad28b56cd87034dc-4",
+    "authorization/ad28b56cd87034dc-5"
    ],
    "files": [
-    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtFilter.java"
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/SecurityConfig.java"
    ],
    "ranges": [
     [
-     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtFilter.java",
-     80,
-     81,
-     "36311846e5375d201d95e8db5dd85fde0c93a862e3f4e4bc6c58dac94fcd3313"
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/SecurityConfig.java",
+     199,
+     199,
+     "f80d75b31ed64b600023639832121be617e4c03bbe99d6adb30e45e22b3faeaf"
     ],
     [
-     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtFilter.java",
-     92,
-     100,
-     "9781a7cbb9f7cd70a34091a045af45f11bb66297ff5ac6064d3a9e7ce8776a1b"
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/SecurityConfig.java",
+     207,
+     207,
+     "01e2b6bff59193b634955fa506fbeec91bde17eeec98111d92c015f0dcf31557"
     ]
    ],
-   "code_sha256": "027164f63c7459fef31b70a003b09607eedc5d3d24319dc11670f10ebd163608",
-   "verdict": "admit",
-   "reason": "rediscovered",
-   "final": true,
-   "measures": {
-    "fidelity": null,
-    "deduce": {
-     "covered": false,
-     "overlap": {
-      "identifiers": null,
-      "values": null,
-      "terms": 0.0,
-      "n": {
-       "identifiers": 0,
-       "values": 0,
-       "terms": 9
-      }
-     },
-     "restatement": "JwtFilter n'authentifie l'utilisateur que si jwtService.validateToken(token, userDetails) et sessionService.isSessionActive(jti) sont tous deux vrais. Une JwtException est journalisée en debug comme cas nominal, et toute autre exception est journalisée en error.",
-     "confidence": "high",
-     "files_read_missing": true,
-     "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
-    },
-    "rediscover": {
-     "found": true,
-     "cost": 4,
-     "within_budget": true,
-     "covered": true,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtFilter.java",
-     "file_ok": true,
-     "overlap": {
-      "identifiers": null,
-      "values": null,
-      "terms": 0.778,
-      "n": {
-       "identifiers": 0,
-       "values": 0,
-       "terms": 9
-      }
-     },
-     "job": "authorization:rediscover:backend_src_main_java_com_matimeline_eventmanager_infrastructure_adapters_controllers_AuthController.java:1",
-     "rank_in_lot": 2,
-     "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
-    },
-    "comment": [],
-    "refute": null
-   },
-   "contrary": null,
-   "check": "scope",
-   "general": "pattern_pack",
-   "kept_for": "rediscovered",
-   "placed": {
-    "pack_line": 36,
-    "annex_table": null
-   },
-   "uses": 0
-  },
-  {
-   "id": "authorization:rules:6",
-   "section": "rules",
-   "rank": 6,
-   "text": "- JwtFilter ignore /api/auth, et /api/auth/me lit le cookie sans SecurityContext. [#e18907b3ce64ed01-1] [#36aa78900fe7b738-1]",
-   "fact_text": "JwtFilter ignore /api/auth, et /api/auth/me lit le cookie sans SecurityContext",
-   "consigne": null,
-   "consigne_dropped": false,
-   "cites": [
-    "authorization/e18907b3ce64ed01-1",
-    "authorization/36aa78900fe7b738-1"
-   ],
-   "files": [
-    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtFilter.java",
-    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java"
-   ],
-   "ranges": [
-    [
-     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtFilter.java",
-     105,
-     108,
-     "568398331c14505540921f9c2224c434b8eaf551617bd98852406d584a01ffbc"
-    ],
-    [
-     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java",
-     146,
-     146,
-     "fd6278bac32f6223610285367bcb50216cbad716faf4775ef9f941a9d807f069"
-    ]
-   ],
-   "code_sha256": "eeeb61eae3b4007add3c73841f6d0b806e07f6aa89c2ad2d4c3e39ffe381dfb6",
+   "code_sha256": "ade4b7f3bd99926f9da45a2ea26b5bf8035b6522a8430d68fecab83c10f96835",
    "verdict": "admit",
    "reason": "admitted",
    "final": true,
    "measures": {
     "fidelity": null,
-    "deduce": {
-     "covered": false,
-     "overlap": {
-      "identifiers": 0.5,
-      "values": null,
-      "terms": 0.333,
-      "n": {
-       "identifiers": 2,
-       "values": 0,
-       "terms": 3
-      }
+    "deduce": null,
+    "rediscover": null,
+    "comment": [
+     {
+      "id": "authorization/ad28b56cd87034dc-4",
+      "verdict": "confirmed"
      },
-     "restatement": "JwtFilter.shouldNotFilter exclut du filtrage toute requête dont le servletPath commence par /api/auth.",
-     "confidence": "high",
-     "files_read_missing": true,
-     "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
-    },
-    "rediscover": {
-     "found": true,
-     "cost": 10,
-     "within_budget": false,
-     "covered": false,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtFilter.java",
-     "file_ok": true,
-     "overlap": {
-      "identifiers": 0.5,
-      "values": null,
-      "terms": 1.0,
-      "n": {
-       "identifiers": 2,
-       "values": 0,
-       "terms": 3
-      }
-     },
-     "job": "authorization:rediscover:backend_src_main_java_com_matimeline_eventmanager_infrastructure_adapters_controllers_AuthController.java:1",
-     "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
-    },
-    "comment": [],
+     {
+      "id": "authorization/ad28b56cd87034dc-5",
+      "verdict": "confirmed"
+     }
+    ],
     "refute": {
      "votes": 3,
      "refuted": 0,
      "refute_unproven": 0,
      "reasons": [
-      "JwtFilter.shouldNotFilter ignore /api/auth (L107). AuthController.getUserDetails L146 lit @CookieValue jwt et valide manuellement via jwtService, sans SecurityContext.",
-      "JwtFilter.shouldNotFilter (l.106-108) ignore /api/auth, et AuthController.getUserDetails (l.146) lit @CookieValue jwt sans SecurityContext, validant lui-même le token et la révocation (l.168-182).",
-      "JwtFilter.shouldNotFilter (L106-107) ignore /api/auth ; AuthController.getUserDetails (L146) lit @CookieValue jwt et revalide lui-même via jwtService et sessionService, sans SecurityContext."
-     ],
-     "evidence": [
-      "",
-      "",
-      ""
-     ],
-     "consigne_verdict": "n/a",
-     "question_verdict": "n/a",
-     "searched": true,
-     "search": {
-      "check": "scope",
-      "outcome": null,
-      "votes": 3,
-      "supporters": 0,
-      "budget": 30,
-      "searches": [
-       [
-        {
-         "tool": "Read",
-         "target": "AuthController.java L135-184",
-         "found": "/me lit le cookie jwt, valide à la main, commentaire confirme le bypass de JwtFilter"
-        }
-       ],
-       [
-        {
-         "tool": "Grep",
-         "target": "shouldNotFilter|getServletPath",
-         "found": "un seul filtre, JwtFilter, avec ce préfixe"
-        },
-        {
-         "tool": "Read",
-         "target": "AuthController.java 135-185",
-         "found": "/me lit le cookie, valide via jwtService, sans SecurityContext"
-        }
-       ],
-       [
-        {
-         "tool": "Read",
-         "target": "AuthController.java L135-185",
-         "found": "/me lit le cookie, valide token et jti sans SecurityContext, commentaire confirmant le bypass du JwtFilter."
-        }
-       ]
-      ],
-      "untraced": 0,
-      "over_budget": 0,
-      "unproven": 0
-     },
-     "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
-    }
-   },
-   "contrary": null,
-   "check": "scope",
-   "general": "pattern_pack",
-   "placed": {
-    "pack_line": 37,
-    "annex_table": null
-   },
-   "uses": 0
-  },
-  {
-   "id": "authorization:rules:7",
-   "section": "rules",
-   "rank": 7,
-   "text": "- Le cookie dure deux jours, et pose et suppression partagent les mêmes attributs. [#44a12a49a4222fe7-1] [#03a820aa895fbd68-1] [#3cadf6fc90bdd39e-1]",
-   "fact_text": "Le cookie dure deux jours, et pose et suppression partagent les mêmes attributs",
-   "consigne": null,
-   "consigne_dropped": false,
-   "cites": [
-    "authorization/44a12a49a4222fe7-1",
-    "authorization/03a820aa895fbd68-1",
-    "authorization/3cadf6fc90bdd39e-1"
-   ],
-   "files": [
-    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java"
-   ],
-   "ranges": [
-    [
-     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java",
-     78,
-     78,
-     "2bf7186e1ee4a938e90c5609edc0b814c0428d4ef338567c6bcf255b49f14eaf"
-    ],
-    [
-     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java",
-     98,
-     109,
-     "c9271db96898bb2b14927d2a478d9f6cf658a0f1ee58ed2dc198726b80cddb79"
-    ],
-    [
-     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java",
-     260,
-     260,
-     "42af711db5db4334f923520790eacd84a57b2830914775b0bd99ce12da1c7b80"
-    ]
-   ],
-   "code_sha256": "e642c00aaade29a3dd136b9d350d276dd0cbbb7f01e9feaa857b4b28524b181f",
-   "verdict": "admit",
-   "reason": "rediscovered",
-   "final": true,
-   "measures": {
-    "fidelity": null,
-    "deduce": {
-     "covered": false,
-     "overlap": {
-      "identifiers": null,
-      "values": null,
-      "terms": 0.25,
-      "n": {
-       "identifiers": 0,
-       "values": 0,
-       "terms": 8
-      }
-     },
-     "restatement": "Le cookie JWT a une durée de vie fixée par la constante COOKIE_MAX_AGE, égale à 60 × 60 × 24 × 2 secondes, soit 172 800 secondes (2 jours). Les cookies sont construits par buildJwtCookie.",
-     "confidence": "high",
-     "files_read_missing": true,
-     "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
-    },
-    "rediscover": {
-     "found": true,
-     "cost": 10,
-     "within_budget": true,
-     "covered": true,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java",
-     "file_ok": true,
-     "overlap": {
-      "identifiers": null,
-      "values": null,
-      "terms": 0.625,
-      "n": {
-       "identifiers": 0,
-       "values": 0,
-       "terms": 8
-      }
-     },
-     "job": "authorization:rediscover:backend_src_main_java_com_matimeline_eventmanager_infrastructure_adapters_controllers_AuthController.java:1",
-     "rank_in_lot": 5,
-     "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
-    },
-    "comment": [],
-    "refute": null
-   },
-   "contrary": null,
-   "check": "scope",
-   "general": "pattern_pack",
-   "kept_for": "rediscovered",
-   "placed": {
-    "pack_line": 38,
-    "annex_table": null
-   },
-   "uses": 0
-  },
-  {
-   "id": "authorization:rules:8",
-   "section": "rules",
-   "rank": 8,
-   "text": "- Seules les routes de la table LIMITS sont comptées, PUT /api/me/preferences plafonné à 30 par minute. [#8c0ce53d79d11153-2] [#1d61137988d01278-1]",
-   "fact_text": "Seules les routes de la table LIMITS sont comptées, PUT /api/me/preferences plafonné à 30 par minute",
-   "consigne": null,
-   "consigne_dropped": false,
-   "cites": [
-    "authorization/8c0ce53d79d11153-2",
-    "authorization/1d61137988d01278-1"
-   ],
-   "files": [
-    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/UserRateLimitingFilter.java"
-   ],
-   "ranges": [
-    [
-     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/UserRateLimitingFilter.java",
-     129,
-     129,
-     "c8be5945e382849d4c1875302eedaf07072bdab4a8dbc6af10e154cc600e0a01"
-    ],
-    [
-     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/UserRateLimitingFilter.java",
-     91,
-     91,
-     "c3c3214b8281e7fd1a5586cfe890a928f24509ea664c64a7ff2c0ed3e0977dfe"
-    ]
-   ],
-   "code_sha256": "274b5df2079ff0640c415a7c9db7af80419e879fede53d8e2b58fa53e7ca3629",
-   "verdict": "admit",
-   "reason": "admitted",
-   "final": true,
-   "measures": {
-    "fidelity": null,
-    "deduce": {
-     "covered": false,
-     "overlap": {
-      "identifiers": 0.5,
-      "values": 1.0,
-      "terms": 0.333,
-      "n": {
-       "identifiers": 2,
-       "values": 1,
-       "terms": 6
-      }
-     },
-     "restatement": "La ligne 129 de UserRateLimitingFilter.doFilterInternal lit une limite entière, boxée en Integer, dans la map LIMITS selon la clé methodAndPath, donc elle peut valoir null si la route n'y figure pas. La constante DEFAULT_PREFERENCES_PER_MINUTE vaut 30, ce qui est le plafond par minute utilisé par les tests, mais l'extrait ne montre pas comment elle entre dans LIMITS.",
-     "confidence": "medium",
-     "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
-    },
-    "rediscover": {
-     "found": true,
-     "cost": 8,
-     "within_budget": false,
-     "covered": false,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/RateLimitingFilter.java",
-     "file_ok": false,
-     "overlap": {
-      "identifiers": 0.5,
-      "values": 1.0,
-      "terms": 0.833,
-      "n": {
-       "identifiers": 2,
-       "values": 1,
-       "terms": 6
-      }
-     },
-     "job": "authorization:rediscover:backend_src_main_java_com_matimeline_eventmanager_infrastructure_adapters_controllers_AuthController.java:1",
-     "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
-    },
-    "comment": [],
-    "refute": {
-     "votes": 3,
-     "refuted": 0,
-     "refute_unproven": 0,
-     "reasons": [
-      "UserRateLimitingFilter.doFilterInternal (l.129-131) ne compte que les clés présentes dans LIMITS (une seule entrée, PUT /api/me/preferences à 30 via DEFAULT_PREFERENCES_PER_MINUTE); aucun contre-exemple dans la portée, RateLimitingFilter a sa propre table DEFAULT_LIMITS distincte.",
-      "UserRateLimitingFilter.doFilterInternal L129-133 laisse passer toute requête dont LIMITS.get(methodAndPath) est null, et LIMITS (L94-95) ne contient que PUT /api/me/preferences à DEFAULT_PREFERENCES_PER_MINUTE = 30 ; RateLimitingFilter a sa propre table DEFAULT_LIMITS, ce qui ne contredit pas la ligne.",
-      "UserRateLimitingFilter.doFilterInternal (L129-133) ne compte que les clés de LIMITS, qui ne contient que PUT /api/me/preferences à 30/min (L91, L94-95) ; les autres filtres (RateLimitingFilter, DEFAULT_LIMITS) sont un mécanisme distinct par IP."
+      "SecurityConfig L199 place rateLimitingFilter avant UsernamePasswordAuthenticationFilter, ajouté avant jwtFilter (L200), et L207 place userRateLimitingFilter avant AuthorizationFilter, conformément à la ligne.",
+      "L199-200 et L207 : rateLimitingFilter est ajouté avant jwtFilter sur la même ancre UsernamePasswordAuthenticationFilter, et userRateLimitingFilter est ancré avant AuthorizationFilter, donc après jwtFilter. Conforme aux commentaires.",
+      "SecurityConfig L199-200 enregistre rateLimitingFilter puis jwtFilter avant UsernamePasswordAuthenticationFilter (ordre d'ajout conservé), et L207 place userRateLimitingFilter avant AuthorizationFilter, après l'authentification ; la ligne est fidèle aux commentaires et au code."
      ],
      "evidence": [
       "",
@@ -955,22 +467,22 @@
        [
         {
          "tool": "Grep",
-         "target": "LIMITS|UserRateLimitingFilter dans backend/src/main/java",
-         "found": "LIMITS n'est utilisé que dans UserRateLimitingFilter (une seule entrée); RateLimitingFilter a une table séparée DEFAULT_LIMITS."
+         "target": "addFilter(Before|After|At)|FilterRegistrationBean dans backend/src/main/java",
+         "found": "Seuls SecurityConfig L199, L200 et L207 enregistrent des filtres, dans l'ordre décrit. Aucun contre-exemple."
         }
        ],
        [
         {
-         "tool": "Grep",
-         "target": "LIMITS|newMinuteBucket|tryConsume dans backend/src/main/java",
-         "found": "LIMITS n'est utilisée que dans UserRateLimitingFilter (L94, L129) ; RateLimitingFilter utilise une table distincte DEFAULT_LIMITS, donc pas de contre-exemple pour ce filtre."
+         "tool": "Read",
+         "target": "SecurityConfig.java L196-207",
+         "found": "Ordre d'ajout des filtres confirmé, aucun contre-exemple dans la chaîne."
         }
        ],
        [
         {
-         "tool": "Grep",
-         "target": "LIMITS|newMinuteBucket dans backend/src/main/java",
-         "found": "LIMITS n'existe que dans UserRateLimitingFilter (une seule entrée) ; RateLimitingFilter a sa propre table DEFAULT_LIMITS par IP, hors périmètre de la ligne."
+         "tool": "Read",
+         "target": "SecurityConfig.java L196-207",
+         "found": "addFilterBefore(rateLimitingFilter, UsernamePasswordAuthenticationFilter) puis jwtFilter au même point, puis userRateLimitingFilter avant AuthorizationFilter ; aucun contre-exemple."
         }
        ]
       ],
@@ -979,14 +491,204 @@
       "unproven": 0
      },
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-25T15:00:00"
     }
    },
    "contrary": null,
    "check": "scope",
    "general": "pattern_pack",
    "placed": {
-    "pack_line": 40,
+    "pack_line": 36,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "authorization:rules:5",
+   "section": "rules",
+   "rank": 5,
+   "text": "- Le limiteur par utilisateur ne compte que les routes de la table LIMITS, laisse passer les anonymes, répond 401 sans identifiant de compte et 429 avec Retry-After quand le bucket est vide. [#8c0ce53d79d11153-2] [#7ec7fee86ff9e720-1] [#7a92a5b41b351244-1] [#7a92a5b41b351244-2]",
+   "fact_text": "Le limiteur par utilisateur ne compte que les routes de la table LIMITS, laisse passer les anonymes, répond 401 sans identifiant de compte et 429 avec Retry-After quand le bucket est vide",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "authorization/8c0ce53d79d11153-2",
+    "authorization/7ec7fee86ff9e720-1",
+    "authorization/7a92a5b41b351244-1",
+    "authorization/7a92a5b41b351244-2"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/UserRateLimitingFilter.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/UserRateLimitingFilter.java",
+     129,
+     129,
+     "6c079a1a2fb26b761d37e5f4296d2fcacfee910f8284781faa785144403b0043"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/UserRateLimitingFilter.java",
+     134,
+     139,
+     "cc4b8d2beae775fca629051c4e21564e4c4fb3ce9112ad05caf723d2a55a5c0a"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/UserRateLimitingFilter.java",
+     140,
+     145,
+     "e91b63b4aa46cb40d444425da01121a5305904dab975c3fea6f35289bb602e30"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/UserRateLimitingFilter.java",
+     150,
+     155,
+     "eb61ef104aa5582ec4ab30d0138aa1e2b9384cea0ca0bb070e18953489d9a81c"
+    ]
+   ],
+   "code_sha256": "55d6ac26f58fe25b7dad71586c117acbb115c0fb65496f73ab1887d4bcd3c1a9",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": 1.0,
+      "terms": 0.643,
+      "n": {
+       "identifiers": 1,
+       "values": 2,
+       "terms": 14
+      }
+     },
+     "restatement": "UserRateLimitingFilter laisse passer sans comptage les requêtes anonymes, qui seront refusées en aval en 401. Un utilisateur authentifié sans identifiant de compte reçoit un 401 « unauthorized » (fail-closed). Si le bucket ne peut pas consommer un jeton, la réponse est un 429 avec Retry-After via RateLimitingFilter.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-25T15:00:00"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 7,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/UserRateLimitingFilter.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 0.786,
+      "n": {
+       "identifiers": 1,
+       "values": 2,
+       "terms": 14
+      }
+     },
+     "job": "authorization:rediscover:backend_src_main_java_com_matimeline_eventmanager_infrastructure_security_CustomUserDetailsService.java:1",
+     "rank_in_lot": 5,
+     "reused": true,
+     "reused_from": "2026-11-25T15:00:00"
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 37,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "authorization:rules:6",
+   "section": "rules",
+   "rank": 6,
+   "text": "- PUT /api/me/preferences est plafonné à 30 par minute et par utilisateur, et le filtre se coupe avec app.rate-limit.enabled (true par défaut). [#1d61137988d01278-1] [#4c6f499e43b70a14-1]",
+   "fact_text": "PUT /api/me/preferences est plafonné à 30 par minute et par utilisateur, et le filtre se coupe avec app.rate-limit.enabled (true par défaut)",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "authorization/1d61137988d01278-1",
+    "authorization/4c6f499e43b70a14-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/UserRateLimitingFilter.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/UserRateLimitingFilter.java",
+     91,
+     91,
+     "10121928f098d403e1b5d9fd10991412540e90700a720879d3ff02b9766efce8"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/UserRateLimitingFilter.java",
+     116,
+     116,
+     "b08617554553fcd5b10a7fbc080f3b74c866bedf6dfadc9d07210c74d74fcd30"
+    ]
+   ],
+   "code_sha256": "4e19410ce7b91df6c56a3e8c38f75401ae83305465e374b17d5bb92e5d4fd056",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": 1.0,
+      "terms": 0.6,
+      "n": {
+       "identifiers": 2,
+       "values": 1,
+       "terms": 10
+      }
+     },
+     "restatement": "La constante DEFAULT_PREFERENCES_PER_MINUTE vaut 30, soit la limite par minute par défaut pour les préférences. Le constructeur reçoit le booléen rateLimitEnabled lu depuis app.rate-limit.enabled, avec la valeur par défaut true. Le snippet ne montre pas où la limite est appliquée.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-25T15:00:00"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 7,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/UserRateLimitingFilter.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 0.8,
+      "n": {
+       "identifiers": 2,
+       "values": 1,
+       "terms": 10
+      }
+     },
+     "job": "authorization:rediscover:backend_src_main_java_com_matimeline_eventmanager_infrastructure_security_CustomUserDetailsService.java:1",
+     "rank_in_lot": 6,
+     "reused": true,
+     "reused_from": "2026-11-25T15:00:00"
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 38,
     "annex_table": null
    },
    "uses": 0
@@ -995,8 +697,8 @@
    "id": "authorization:surface:1",
    "section": "surface",
    "rank": 1,
-   "text": "- Toute nouvelle route sous /api/auth/** est publique d'office, voir `backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/SecurityConfig.java:173` [#98b2cdbd7d200daa-1].",
-   "fact_text": "Toute nouvelle route sous /api/auth/** est publique d'office, voir SecurityConfig.java",
+   "text": "- Toutes les routes sous /api/auth/** sont ouvertes sans authentification, donc tout nouvel endpoint ajouté sous ce préfixe est public d'office. [#98b2cdbd7d200daa-1]",
+   "fact_text": "Toutes les routes sous /api/auth/** sont ouvertes sans authentification, donc tout nouvel endpoint ajouté sous ce préfixe est public d'office",
    "consigne": null,
    "consigne_dropped": false,
    "cites": [
@@ -1008,12 +710,12 @@
    "ranges": [
     [
      "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/SecurityConfig.java",
-     173,
-     173,
-     "54f1212f51a23a63a062d9029e8b6c49004855ea436ebdf9eb4d97d435d3eae5"
+     178,
+     178,
+     "88d2b505fa60907369084b803a8f826bf23304cf536ce92e96870b4a59be1398"
     ]
    ],
-   "code_sha256": "54f1212f51a23a63a062d9029e8b6c49004855ea436ebdf9eb4d97d435d3eae5",
+   "code_sha256": "88d2b505fa60907369084b803a8f826bf23304cf536ce92e96870b4a59be1398",
    "verdict": "admit",
    "reason": "rediscovered",
    "final": true,
@@ -1022,52 +724,52 @@
     "deduce": {
      "covered": false,
      "overlap": {
-      "identifiers": 1.0,
+      "identifiers": null,
       "values": null,
-      "terms": 0.2,
+      "terms": 0.3,
       "n": {
-       "identifiers": 1,
+       "identifiers": 0,
        "values": 0,
-       "terms": 5
+       "terms": 10
       }
      },
-     "restatement": "Le préfixe /api/auth/** est déclaré permitAll dans SecurityConfig, donc accessible sans authentification.",
+     "restatement": "Dans SecurityConfig, la règle /api/auth/** est en permitAll, donc toutes les routes d'authentification sont accessibles sans être authentifié.",
      "confidence": "high",
      "files_read_missing": true,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-25T15:00:00"
     },
     "rediscover": {
      "found": true,
-     "cost": 7,
+     "cost": 4,
      "within_budget": true,
      "covered": true,
      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/SecurityConfig.java",
      "file_ok": true,
      "overlap": {
-      "identifiers": 1.0,
+      "identifiers": null,
       "values": null,
-      "terms": 0.8,
+      "terms": 0.7,
       "n": {
-       "identifiers": 1,
+       "identifiers": 0,
        "values": 0,
-       "terms": 5
+       "terms": 10
       }
      },
-     "job": "authorization:rediscover:backend_src_main_java_com_matimeline_eventmanager_infrastructure_adapters_controllers_AuthController.java:1",
-     "rank_in_lot": 4,
+     "job": "authorization:rediscover:backend_src_main_java_com_matimeline_eventmanager_infrastructure_security_CustomUserDetailsService.java:1",
+     "rank_in_lot": 1,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-25T15:00:00"
     },
     "comment": [],
     "refute": null
    },
    "contrary": null,
    "check": "scope",
-   "general": "words:toute",
+   "general": "words:tout,toutes",
    "kept_for": "rediscovered",
    "placed": {
-    "pack_line": 58,
+    "pack_line": 63,
     "annex_table": null
    },
    "uses": 0
@@ -1076,8 +778,8 @@
    "id": "authorization:surface:2",
    "section": "surface",
    "rank": 2,
-   "text": "- Le JWKS public est ouvert à tous, `backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/SecurityConfig.java:172`, et selon la règle ne doit exposer que le modulus et l'exposant public [#6bf025d08b434efd-1].",
-   "fact_text": "Le JWKS public est ouvert à tous, SecurityConfig.java, et selon la règle ne doit exposer que le modulus et l'exposant public",
+   "text": "- L'endpoint JWKS, dont le chemin vient de la constante du contrôleur JWKS, est ouvert sans authentification (ligne 177 de la même classe). [#6bf025d08b434efd-1]",
+   "fact_text": "L'endpoint JWKS, dont le chemin vient de la constante du contrôleur JWKS, est ouvert sans authentification (ligne 177 de la même classe)",
    "consigne": null,
    "consigne_dropped": false,
    "cites": [
@@ -1089,12 +791,12 @@
    "ranges": [
     [
      "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/SecurityConfig.java",
-     172,
-     172,
-     "0c417218e7676be490f89afacfe18fa9f50dad37b650f6f00f61bf045d4977d2"
+     177,
+     177,
+     "8def13660d671ca0dfda3bc5e4b6b712f689c87d8634385e7fe83195fdc12925"
     ]
    ],
-   "code_sha256": "0c417218e7676be490f89afacfe18fa9f50dad37b650f6f00f61bf045d4977d2",
+   "code_sha256": "8def13660d671ca0dfda3bc5e4b6b712f689c87d8634385e7fe83195fdc12925",
    "verdict": "admit",
    "reason": "admitted",
    "final": true,
@@ -1104,116 +806,62 @@
      "covered": false,
      "overlap": {
       "identifiers": 1.0,
-      "values": null,
-      "terms": 0.0,
+      "values": 0.0,
+      "terms": 0.111,
       "n": {
-       "identifiers": 2,
-       "values": 0,
-       "terms": 6
+       "identifiers": 1,
+       "values": 1,
+       "terms": 9
       }
      },
-     "restatement": "Le chemin JWKS (JwksController.JWKS_PATH) est déclaré permitAll dans SecurityConfig, donc la clé publique est exposée sans authentification.",
+     "restatement": "Dans SecurityConfig, le chemin JwksController.JWKS_PATH est en permitAll, donc la publication des clés JWKS est accessible publiquement.",
      "confidence": "high",
      "files_read_missing": true,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-25T15:00:00"
     },
     "rediscover": {
      "found": true,
-     "cost": 7,
+     "cost": 8,
      "within_budget": false,
      "covered": false,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/SecurityConfig.java",
-     "file_ok": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/JwksController.java",
+     "file_ok": false,
      "overlap": {
-      "identifiers": 0.5,
-      "values": null,
-      "terms": 0.667,
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 0.333,
       "n": {
-       "identifiers": 2,
-       "values": 0,
-       "terms": 6
+       "identifiers": 1,
+       "values": 1,
+       "terms": 9
       }
      },
-     "job": "authorization:rediscover:backend_src_main_java_com_matimeline_eventmanager_infrastructure_adapters_controllers_AuthController.java:1",
+     "job": "authorization:rediscover:backend_src_main_java_com_matimeline_eventmanager_infrastructure_security_CustomUserDetailsService.java:1",
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-25T15:00:00"
     },
     "comment": [],
     "refute": {
-     "votes": 3,
+     "votes": 1,
      "refuted": 0,
      "refute_unproven": 0,
      "reasons": [
-      "SecurityConfig L172 permitAll sur JWKS_PATH. JwksController renvoie jwtService.getPublicJwks(), et RsaKeyMaterial n'expose que modulus et exposant public (L118, L123).",
-      "SecurityConfig.java l.172 met JWKS_PATH en permitAll. JwksController sert jwtService.getPublicJwks(), et JwkResponse ne porte que n, e et des métadonnées (kty, use, alg, kid), sans secret.",
-      "SecurityConfig L172 met JwksController.JWKS_PATH en permitAll ; JwksController.jwks renvoie jwtService.getPublicJwks() et RsaKeyMaterial n'expose que getModulus et getPublicExponent (L118, L123). Aucun contre-exemple."
+      "L177 de SecurityConfig.securityFilterChain : requestMatchers(JwksController.JWKS_PATH).permitAll(), ce qui correspond au constat."
      ],
      "evidence": [
-      "",
-      "",
       ""
      ],
      "consigne_verdict": "n/a",
      "question_verdict": "n/a",
-     "searched": true,
-     "search": {
-      "check": "scope",
-      "outcome": null,
-      "votes": 3,
-      "supporters": 0,
-      "budget": 30,
-      "searches": [
-       [
-        {
-         "tool": "Grep",
-         "target": "JWKS_PATH|getModulus|getPublicExponent",
-         "found": "permitAll sur JWKS_PATH, encodage n et e depuis la clé publique seulement"
-        },
-        {
-         "tool": "Read",
-         "target": "JwksController.java",
-         "found": "endpoint GET public renvoyant getPublicJwks"
-        }
-       ],
-       [
-        {
-         "tool": "Grep",
-         "target": "JWKS_PATH",
-         "found": "SecurityConfig l.172 permitAll et JwksController l.40"
-        },
-        {
-         "tool": "Read",
-         "target": "JwkResponse.java",
-         "found": "record kty, use, alg, kid, n, e, aucune partie privée"
-        }
-       ],
-       [
-        {
-         "tool": "Grep",
-         "target": "JWKS_PATH|getModulus|getPublicExponent dans backend/src/main/java",
-         "found": "permitAll sur JWKS_PATH, contrôleur GET unique, encodage base64url du modulus et de l'exposant public seulement."
-        },
-        {
-         "tool": "Read",
-         "target": "JwksController.java L55-67",
-         "found": "Un seul endpoint GET qui renvoie getPublicJwks() avec Cache-Control public."
-        }
-       ]
-      ],
-      "untraced": 0,
-      "over_budget": 0,
-      "unproven": 0
-     },
+     "escalated": false,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-25T15:00:00"
     }
    },
    "contrary": null,
-   "check": "scope",
-   "general": "words:tous",
    "placed": {
-    "pack_line": 59,
+    "pack_line": 64,
     "annex_table": null
    },
    "uses": 0
@@ -1222,8 +870,94 @@
    "id": "authorization:surface:3",
    "section": "surface",
    "rank": 3,
-   "text": "- L'identité est chargée par nom d'utilisateur via le port UserRepository, voir `backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/CustomUserDetailsService.java:23-25` [#57e7bd46761b02fc-1].",
-   "fact_text": "L'identité est chargée par nom d'utilisateur via le port UserRepository, voir CustomUserDetailsService.java",
+   "text": "- Les routes /actuator/health et /error sont ouvertes sans authentification (lignes 166 et 171). [#10ab0800c4c3ca76-1] [#10ab0800c4c3ca76-2]",
+   "fact_text": "Les routes /actuator/health et /error sont ouvertes sans authentification (lignes 166 et 171)",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "authorization/10ab0800c4c3ca76-1",
+    "authorization/10ab0800c4c3ca76-2"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/SecurityConfig.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/SecurityConfig.java",
+     166,
+     166,
+     "3558e63096f340beb737b845554d0004e1bbf07decc155b1fd23bb49052d7c93"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/SecurityConfig.java",
+     171,
+     171,
+     "cd7b38c71ed942c872bb4f9703bb76c382304e2e8f2f401fa3116d4a04f7222d"
+    ]
+   ],
+   "code_sha256": "e1f404fde789c16af80b32901daebf737dcb4c2d0d923569b5d2efd5b4c73e9a",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": null,
+      "values": 0.0,
+      "terms": 0.571,
+      "n": {
+       "identifiers": 0,
+       "values": 2,
+       "terms": 7
+      }
+     },
+     "restatement": "Dans SecurityConfig, /actuator/health et /error sont en permitAll, donc accessibles sans authentification. Le snippet ne montre pas le reste des actuators.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-25T15:00:00"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 4,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/SecurityConfig.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": null,
+      "values": 1.0,
+      "terms": 0.714,
+      "n": {
+       "identifiers": 0,
+       "values": 2,
+       "terms": 7
+      }
+     },
+     "job": "authorization:rediscover:backend_src_main_java_com_matimeline_eventmanager_infrastructure_security_CustomUserDetailsService.java:1",
+     "rank_in_lot": 2,
+     "reused": true,
+     "reused_from": "2026-11-25T15:00:00"
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 65,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "authorization:surface:4",
+   "section": "surface",
+   "rank": 4,
+   "text": "- Le chargement de l'utilisateur pour l'authentification passe par le port du dépôt utilisateur, par nom d'utilisateur, dans `backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/CustomUserDetailsService.java:23-25`. [#57e7bd46761b02fc-1]",
+   "fact_text": "Le chargement de l'utilisateur pour l'authentification passe par le port du dépôt utilisateur, par nom d'utilisateur, dans CustomUserDetailsService.java",
    "consigne": null,
    "consigne_dropped": false,
    "cites": [
@@ -1237,10 +971,10 @@
      "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/CustomUserDetailsService.java",
      23,
      25,
-     "3035b774ebb5a26e030440807099e39f075392fe92faffce9437a71ecda57a35"
+     "aa7f6ff448da1157827a707fffcfd821bd5a7a8b13123e8e167f77da5845ada9"
     ]
    ],
-   "code_sha256": "3035b774ebb5a26e030440807099e39f075392fe92faffce9437a71ecda57a35",
+   "code_sha256": "aa7f6ff448da1157827a707fffcfd821bd5a7a8b13123e8e167f77da5845ada9",
    "verdict": "admit",
    "reason": "rediscovered",
    "final": true,
@@ -1249,24 +983,24 @@
     "deduce": {
      "covered": false,
      "overlap": {
-      "identifiers": 0.5,
+      "identifiers": 0.0,
       "values": null,
-      "terms": 0.25,
+      "terms": 0.167,
       "n": {
-       "identifiers": 2,
+       "identifiers": 1,
        "values": 0,
-       "terms": 4
+       "terms": 6
       }
      },
-     "restatement": "CustomUserDetailsService.loadUserByUsername cherche l'utilisateur par findDomainUserByUsername et lève UsernameNotFoundException avec le message « User not found » si l'utilisateur est absent.",
+     "restatement": "loadUserByUsername cherche l'utilisateur de domaine par nom via findDomainUserByUsername et lève UsernameNotFoundException avec le message « User not found » si rien n'est trouvé. Le snippet ne montre pas la construction du UserDetails retourné.",
      "confidence": "high",
      "files_read_missing": true,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-25T15:00:00"
     },
     "rediscover": {
      "found": true,
-     "cost": 11,
+     "cost": 9,
      "within_budget": true,
      "covered": true,
      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/CustomUserDetailsService.java",
@@ -1274,17 +1008,17 @@
      "overlap": {
       "identifiers": 1.0,
       "values": null,
-      "terms": 1.0,
+      "terms": 0.833,
       "n": {
-       "identifiers": 2,
+       "identifiers": 1,
        "values": 0,
-       "terms": 4
+       "terms": 6
       }
      },
-     "job": "authorization:rediscover:backend_src_main_java_com_matimeline_eventmanager_infrastructure_adapters_controllers_AuthController.java:1",
-     "rank_in_lot": 6,
+     "job": "authorization:rediscover:backend_src_main_java_com_matimeline_eventmanager_infrastructure_security_CustomUserDetailsService.java:1",
+     "rank_in_lot": 7,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-25T15:00:00"
     },
     "comment": [],
     "refute": null
@@ -1292,17 +1026,911 @@
    "contrary": null,
    "kept_for": "rediscovered",
    "placed": {
-    "pack_line": 61,
+    "pack_line": 67,
     "annex_table": null
    },
    "uses": 0
   },
   {
-   "id": "authorization:tests:1",
+   "id": "authorization:questions:1",
+   "section": "questions",
+   "rank": 1,
+   "text": "- La clé publique publiée dans AUTH_JWT_PUBLIC_KEY doit-elle être exactement le SPKI dérivé de la clé privée configurée ? Selon le commentaire du test, oui, mais aucun fait de code du lot ne le confirme (`backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/JwtServiceRs256Test.java:129-132`) [#0768b8a597f77149-1].",
+   "fact_text": "La clé publique publiée dans AUTH_JWT_PUBLIC_KEY doit-elle être exactement le SPKI dérivé de la clé privée configurée ? Selon le commentaire du test, oui, mais aucun fait de code du lot ne le confirme (JwtServiceRs256Test.java)",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "authorization/0768b8a597f77149-1"
+   ],
+   "files": [
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/JwtServiceRs256Test.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/JwtServiceRs256Test.java",
+     129,
+     132,
+     "6712bb16d3e317011358def1479113d4beac089ccb1dec20789285f3430dd6b3"
+    ]
+   ],
+   "code_sha256": "6712bb16d3e317011358def1479113d4beac089ccb1dec20789285f3430dd6b3",
+   "verdict": "drop",
+   "reason": "resolved",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [
+     {
+      "id": "authorization/0768b8a597f77149-1",
+      "verdict": "confirmed"
+     }
+    ],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "JwtService.getPublicKeySpkiBase64 renvoie RsaKeyMaterial.toSpkiBase64(verificationKey), et le Javadoc de getPublicJwks dit que la clé courante est dérivée du matériel qui signe. Aucune clé publique n'est configurée côté backend.",
+      "JwtService dérive verificationKey de la paire issue de la clé privée et getPublicKeySpkiBase64 l'encode en SPKI, mais AUTH_JWT_PUBLIC_KEY n'existe plus (#358, publication via JWKS). La question telle que posée reste donc ambiguë et le code ne la tranche pas telle quelle.",
+      "Le code dérive la clé publique de la clé privée (RsaKeyMaterial.fromPkcs8, toSpkiBase64), mais rien ne force ce que l'on publie dans AUTH_JWT_PUBLIC_KEY ni ne montre le rejet côté middleware."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "open",
+     "searched": true,
+     "search": {
+      "check": "answer",
+      "outcome": "resolved",
+      "votes": 3,
+      "supporters": 1,
+      "budget": 24,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "RS256|SPKI dans backend/src/main",
+         "found": "application.properties L31 et JwtService L164-176 indiquent que la clé publique est dérivée au boot de la clé privée."
+        },
+        {
+         "tool": "Read",
+         "target": "JwtService.java L98-177",
+         "found": "getPublicKeySpkiBase64 et getPublicJwks dérivent la clé publique de verificationKey."
+        }
+       ],
+       [
+        {
+         "tool": "Read",
+         "target": "JwtService.java L85-175",
+         "found": "Commentaire L96 : AUTH_JWT_PUBLIC_KEY n'existe plus ; verificationKey = keyPair.getPublic() (L81), SPKI Base64 via getPublicKeySpkiBase64."
+        },
+        {
+         "tool": "Grep",
+         "target": "verificationKey =|signingKey =",
+         "found": "Les deux clés viennent de la même paire keyPair (L80-81)."
+        }
+       ],
+       [
+        {
+         "tool": "Read",
+         "target": "RsaKeyMaterial.java L60-198",
+         "found": "fromPkcs8 dérive la clé publique, toSpkiBase64 encode en SPKI Base64 ; pas de contrôle de la valeur publiée."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0,
+      "evidence": [
+       {
+        "file": "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtService.java",
+        "line_start": 164,
+        "line_end": 166,
+        "evidence": "return RsaKeyMaterial.toSpkiBase64(verificationKey);",
+        "evidence_check": "exact"
+       }
+      ],
+      "rule_proposal": {
+       "text": "La clé publique de vérification RS256 est toujours dérivée de JWT_PRIVATE_KEY via JwtService.getPublicKeySpkiBase64, jamais configurée séparément.",
+       "file": "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtService.java",
+       "line_start": 164,
+       "line_end": 166,
+       "evidence": "return RsaKeyMaterial.toSpkiBase64(verificationKey);"
+      }
+     }
+    }
+   },
+   "contrary": null,
+   "check": "answer",
+   "answer": [
+    {
+     "file": "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtService.java",
+     "line_start": 164,
+     "line_end": 166,
+     "evidence": "return RsaKeyMaterial.toSpkiBase64(verificationKey);",
+     "evidence_check": "exact"
+    }
+   ],
+   "rule_proposal": {
+    "text": "La clé publique de vérification RS256 est toujours dérivée de JWT_PRIVATE_KEY via JwtService.getPublicKeySpkiBase64, jamais configurée séparément.",
+    "file": "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtService.java",
+    "line_start": 164,
+    "line_end": 166,
+    "evidence": "return RsaKeyMaterial.toSpkiBase64(verificationKey);"
+   },
+   "placed": {
+    "pack_line": null,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "authorization:questions:2",
+   "section": "questions",
+   "rank": 2,
+   "text": "- Le seuil minimal de 2048 bits pour la clé RSA vient-il d'une règle de code ou seulement du test ? Le commentaire cite la RFC 7518 et le test attend une IllegalStateException au démarrage pour 1024 bits, mais aucun fait de code ne porte la règle dans ce lot (`backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/JwtServiceRs256Test.java:301-310`) [#64bec9020ef6d204-2].",
+   "fact_text": "Le seuil minimal de 2048 bits pour la clé RSA vient-il d'une règle de code ou seulement du test ? Le commentaire cite la RFC 7518 et le test attend une IllegalStateException au démarrage pour 1024 bits, mais aucun fait de code ne porte la règle dans ce lot (JwtServiceRs256Test.java)",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "authorization/64bec9020ef6d204-2"
+   ],
+   "files": [
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/JwtServiceRs256Test.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/JwtServiceRs256Test.java",
+     301,
+     310,
+     "02d249dbc41e5a988a094aa1b492d75406b516dd8618fbc25d03e944b0943cfb"
+    ]
+   ],
+   "code_sha256": "02d249dbc41e5a988a094aa1b492d75406b516dd8618fbc25d03e944b0943cfb",
+   "verdict": "drop",
+   "reason": "resolved",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [
+     {
+      "id": "authorization/64bec9020ef6d204-2",
+      "verdict": "confirmed"
+     }
+    ],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "RsaKeyMaterial.MIN_MODULUS_BITS vaut 2048 et assertLongEnough lève une exception si bitLength < 2048, ce que JwtService.configuredKeyPair convertit en IllegalStateException au boot.",
+      "Le code de production porte la règle : RsaKeyMaterial.MIN_MODULUS_BITS = 2048 et un contrôle de bitLength qui lève une exception (L185-188), appelé via configuredKeyPair qui enveloppe en IllegalStateException. La ligne est donc répondue par le code.",
+      "Le code porte la règle : RsaKeyMaterial.MIN_MODULUS_BITS = 2048 et assertLongEnough lève une exception pour un modulus plus court."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "resolved",
+     "searched": true,
+     "search": {
+      "check": "answer",
+      "outcome": "resolved",
+      "votes": 3,
+      "supporters": 2,
+      "budget": 24,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "2048|bitLength|IllegalStateException dans backend/src/main",
+         "found": "RsaKeyMaterial L50 et L185, JwtService L110-116."
+        },
+        {
+         "tool": "Read",
+         "target": "RsaKeyMaterial.java L175-195",
+         "found": "assertLongEnough rejette les modulus de moins de MIN_MODULUS_BITS."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "MIN_MODULUS_BITS|bitLength dans infrastructure/security",
+         "found": "RsaKeyMaterial L50 = 2048, contrôle bitLength L185-188 ; JwtService L106-119 enveloppe l'erreur en IllegalStateException."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "2048|bitLength dans backend/src",
+         "found": "RsaKeyMaterial L50 MIN_MODULUS_BITS = 2048 et L185-188 assertLongEnough ; ProfileSafetyGuard L171 mentionne aussi 2048."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0,
+      "contradicted": 2,
+      "evidence": [
+       {
+        "file": "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/RsaKeyMaterial.java",
+        "line_start": 184,
+        "line_end": 190,
+        "evidence": "int bits = key.getModulus().bitLength();",
+        "evidence_check": "exact"
+       }
+      ],
+      "promote": {
+       "text": "Une clé RSA de moins de 2048 bits (RsaKeyMaterial.MIN_MODULUS_BITS) fait échouer le démarrage de JwtService avec une IllegalStateException.",
+       "file": "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/RsaKeyMaterial.java",
+       "line_start": 184,
+       "line_end": 190,
+       "evidence": "int bits = key.getModulus().bitLength();",
+       "cites": [
+        "authorization/105846cf9aaec1b8-1"
+       ]
+      }
+     }
+    }
+   },
+   "contrary": null,
+   "check": "answer",
+   "answer": [
+    {
+     "file": "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/RsaKeyMaterial.java",
+     "line_start": 184,
+     "line_end": 190,
+     "evidence": "int bits = key.getModulus().bitLength();",
+     "evidence_check": "exact"
+    }
+   ],
+   "promote": {
+    "text": "Une clé RSA de moins de 2048 bits (RsaKeyMaterial.MIN_MODULUS_BITS) fait échouer le démarrage de JwtService avec une IllegalStateException.",
+    "file": "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/RsaKeyMaterial.java",
+    "line_start": 184,
+    "line_end": 190,
+    "evidence": "int bits = key.getModulus().bitLength();",
+    "cites": [
+     "authorization/105846cf9aaec1b8-1"
+    ]
+   },
+   "placed": {
+    "pack_line": null,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "authorization:alerts:1",
+   "section": "alerts",
+   "rank": 1,
+   "text": "- Un test qui charge les vrais fichiers application*.properties hérite du profil par défaut dev et des variables d'environnement du poste, comme celle des origines CORS. Pour qui écrit un test de ce type, le résultat dépend alors de la machine, donc il faut fixer les profils par la propriété spring.profiles.active et isoler systemEnvironment, comme le fait CorsAllowedOriginsConfigIntegrationTest [#r601dbc33de3ff963-1].",
+   "fact_text": "Un test qui charge les vrais fichiers application*.properties hérite du profil par défaut dev et des variables d'environnement du poste, comme celle des origines CORS. Pour qui écrit un test de ce type, le résultat dépend alors de la machine, donc il faut fixer les profils par la propriété spring.profiles.active et isoler systemEnvironment, comme le fait CorsAllowedOriginsConfigIntegrationTest",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "authorization/r601dbc33de3ff963-1"
+   ],
+   "files": [
+    "backend:src/main/resources/application.properties"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/resources/application.properties",
+     10,
+     10,
+     "017f3609c46155617c9f1fce9d5fbad33e52427fa6561cbb466070c79021dfaf"
+    ]
+   ],
+   "code_sha256": "017f3609c46155617c9f1fce9d5fbad33e52427fa6561cbb466070c79021dfaf",
+   "verdict": "drop",
+   "reason": "guarded_elsewhere",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Le test CorsAllowedOriginsConfigIntegrationTest applique bien la pratique (spring.profiles.active=dev, source systemEnvironment remplacée), mais cela ne protège pas les autres tests qui chargent les vrais fichiers application*.properties.",
+      "Le fichier de test cité fixe spring.profiles.active=dev et simule systemEnvironment, ce qui confirme la règle sans la contredire. Ce n'est pas un garde-fou qui supprime le risque pour d'autres tests.",
+      "Le test CorsAllowedOriginsConfigIntegrationTest fixe spring.profiles.active=dev et remplace systemEnvironment, ce qui est le garde-fou décrit."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "guards",
+      "outcome": "guarded",
+      "votes": 3,
+      "supporters": 1,
+      "budget": 24,
+      "searches": [
+       [
+        {
+         "tool": "Glob",
+         "target": "**/CorsAllowedOriginsConfigIntegrationTest.java",
+         "found": "Fichier trouvé dans src/test/.../infrastructure/security."
+        },
+        {
+         "tool": "Read",
+         "target": "CorsAllowedOriginsConfigIntegrationTest.java",
+         "found": "L61-67 remplacent systemEnvironment et fixent spring.profiles.active=dev."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "spring.profiles.active|systemEnvironment dans CorsAllowedOriginsConfigIntegrationTest",
+         "found": ".withPropertyValues(\"spring.profiles.active=dev\") L67 et remplacement de systemEnvironment documenté L29/L51 : c'est le modèle à suivre, pas une garantie générale."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "spring.profiles.active|systemEnvironment dans backend/src/test",
+         "found": "CorsAllowedOriginsConfigIntegrationTest L29 et L67 isole systemEnvironment et fixe le profil ; autres tests fixent aussi le profil."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0,
+      "evidence": [
+       {
+        "file": "backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/CorsAllowedOriginsConfigIntegrationTest.java",
+        "line_start": 67,
+        "line_end": 67,
+        "evidence": ".withPropertyValues(\"spring.profiles.active=dev\")",
+        "evidence_check": "exact"
+       }
+      ],
+      "rule_proposal": {
+       "text": "Un test qui charge les vrais application*.properties fixe spring.profiles.active et remplace la source systemEnvironment, comme CorsAllowedOriginsConfigIntegrationTest.",
+       "file": "backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/CorsAllowedOriginsConfigIntegrationTest.java",
+       "line_start": 67,
+       "line_end": 67,
+       "evidence": ".withPropertyValues(\"spring.profiles.active=dev\")"
+      }
+     }
+    }
+   },
+   "contrary": null,
+   "check": "guards",
+   "guard": [
+    {
+     "file": "backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/CorsAllowedOriginsConfigIntegrationTest.java",
+     "line_start": 67,
+     "line_end": 67,
+     "evidence": ".withPropertyValues(\"spring.profiles.active=dev\")",
+     "evidence_check": "exact"
+    }
+   ],
+   "rule_proposal": {
+    "text": "Un test qui charge les vrais application*.properties fixe spring.profiles.active et remplace la source systemEnvironment, comme CorsAllowedOriginsConfigIntegrationTest.",
+    "file": "backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/CorsAllowedOriginsConfigIntegrationTest.java",
+    "line_start": 67,
+    "line_end": 67,
+    "evidence": ".withPropertyValues(\"spring.profiles.active=dev\")"
+   },
+   "placed": {
+    "pack_line": null,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "authorization:rules:annex:469ed3ba",
+   "section": "rules",
+   "rank": 2,
+   "text": "- Un jeton vérifié par la clé précédente doit avoir jti, iat et exp, avec une durée inférieure ou égale à TOKEN_VALIDITY_MS. [#01f8eb0ca04f50da-1]",
+   "fact_text": "Un jeton vérifié par la clé précédente doit avoir jti, iat et exp, avec une durée inférieure ou égale à TOKEN_VALIDITY_MS",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "authorization/01f8eb0ca04f50da-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtService.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtService.java",
+     329,
+     346,
+     "b5892f8ece0b218d5f4f101bde06b87e1bd0809224121ec42b1e330263bc717f"
+    ]
+   ],
+   "code_sha256": "b5892f8ece0b218d5f4f101bde06b87e1bd0809224121ec42b1e330263bc717f",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 6
+      }
+     },
+     "restatement": "assertBoundedPreviousKeyToken rejette, avec une MissingClaimException, un jeton signé par la clé précédente sans jti, sans iat ou sans exp. Il rejette aussi, avec une IncorrectClaimException, un jeton dont la durée exp moins iat dépasse TOKEN_VALIDITY_MS.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "authorization.details.md",
+     "row": 5
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-25T15:00:00"
+  },
+  {
+   "id": "authorization:rules:annex:1b277ad0",
+   "section": "rules",
+   "rank": 4,
+   "text": "- Le contexte passe à authentifié seulement si validateToken réussit et si le jti n'est pas révoqué, sinon la requête continue en anonyme. [#7592b341eaabca2a-1] [#899c7ea5383e6ca6-2]",
+   "fact_text": "Le contexte passe à authentifié seulement si validateToken réussit et si le jti n'est pas révoqué, sinon la requête continue en anonyme",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "authorization/7592b341eaabca2a-1",
+    "authorization/899c7ea5383e6ca6-2"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtFilter.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtFilter.java",
+     80,
+     81,
+     "e390356013135009f974f607c6cd911dd8540074155d1c0e449e1c5f04e88ea1"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtFilter.java",
+     80,
+     90,
+     "ad3a2a6f490f4b7b3bc188077052129c4bdedd48e9bf85e1d135e5b5d6a1d32d"
+    ]
+   ],
+   "code_sha256": "7a94d2594fc74943b5d15f4d9b1a295d05784bb61092607a4b0dc51af787b990",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 8
+      }
+     },
+     "restatement": "Le contexte de sécurité n'est renseigné que si validateToken réussit ET si sessionService.isSessionActive(jti) est vrai. Sinon, le filtre n'écrit qu'un log debug « Invalid or revoked JWT token » sans renvoyer d'erreur HTTP, la requête restant anonyme.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "authorization.details.md",
+     "row": 6
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-25T15:00:00"
+  },
+  {
+   "id": "authorization:rules:annex:8fba564c",
+   "section": "rules",
+   "rank": 6,
+   "text": "- Le cookie jwt est HttpOnly, SameSite Lax, vit deux jours, et son Secure et son Domain viennent de app.cookie.*. [#03a820aa895fbd68-1] [#44a12a49a4222fe7-1] [#576b8e44a57e017a-1]",
+   "fact_text": "Le cookie jwt est HttpOnly, SameSite Lax, vit deux jours, et son Secure et son Domain viennent de app.cookie.*",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "authorization/03a820aa895fbd68-1",
+    "authorization/44a12a49a4222fe7-1",
+    "authorization/576b8e44a57e017a-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java",
+     98,
+     109,
+     "13d2a0c6d0180e786e690cb45f934521ba82f1fc3580c9f880bf3348ab4f0f01"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java",
+     78,
+     78,
+     "286182615633ac6ff82b522e82f1d0a3911549d333d5cf53b6fcaca440499e01"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java",
+     83,
+     87,
+     "f6d205b74e06b6718445f1919833964637f93a9e2e862d53b6d2f6a29cc6f7fe"
+    ]
+   ],
+   "code_sha256": "a462f51a3b94ad74835d664469f710896c81856b96b57d84c91fa215a13e112b",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.667,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 6
+      }
+     },
+     "restatement": "La méthode buildJwtCookie pose le cookie jwt en HttpOnly, avec Secure lu depuis cookieSecure, le Path COOKIE_PATH et le SameSite COOKIE_SAME_SITE. Le Domain n'est positionné que si cookieDomain n'est ni null ni vide. La durée maxAge est passée en paramètre, et la constante COOKIE_MAX_AGE vaut 2 jours (60 × 60 × 24 × 2 secondes).",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "authorization.details.md",
+     "row": 7
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-25T15:00:00"
+  },
+  {
+   "id": "authorization:rules:annex:467d876a",
+   "section": "rules",
+   "rank": 7,
+   "text": "- Le login ne renvoie jamais le jeton dans le corps de la réponse. [#9807c0fff40d65d4-2]",
+   "fact_text": "Le login ne renvoie jamais le jeton dans le corps de la réponse",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "authorization/9807c0fff40d65d4-2"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java",
+     127,
+     131,
+     "4436f0481ecb6ef55a1358a449ef67f5e1ae742c64dfc7368705948d84678eaf"
+    ]
+   ],
+   "code_sha256": "4436f0481ecb6ef55a1358a449ef67f5e1ae742c64dfc7368705948d84678eaf",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 0.6,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 5
+      }
+     },
+     "restatement": "Lors du login, le JWT est posé uniquement dans le cookie via buildJwtCookie avec COOKIE_MAX_AGE, et le corps de réponse ne contient que le message « Authentification réussie ». Le commentaire indique que le token brut ne doit jamais être renvoyé dans le body, pour rester protégé par HttpOnly.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "words:jamais",
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "authorization.details.md",
+     "row": 8
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-25T15:00:00"
+  },
+  {
+   "id": "authorization:rules:annex:d0009cbd",
+   "section": "rules",
+   "rank": 8,
+   "text": "- Le logout révoque le jti puis expire le cookie, et ignore les JwtException pour que le logout réussisse. [#3cadf6fc90bdd39e-1] [#6f4fd7175cc688af-2]",
+   "fact_text": "Le logout révoque le jti puis expire le cookie, et ignore les JwtException pour que le logout réussisse",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "authorization/3cadf6fc90bdd39e-1",
+    "authorization/6f4fd7175cc688af-2"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java",
+     250,
+     262,
+     "ff407219b0b1ec4d987d3593699ac0d3f94ac2b767ab19211f84183f09e021e3"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java",
+     398,
+     411,
+     "e77922eeeaaf87fe07e3550e54d75d0a3c78b0e6a63beb9b6716dcffdc2b498d"
+    ]
+   ],
+   "code_sha256": "05bc7e93b787c465af3346ec6d561695d017975ee68097b2667657032dd5a814",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 6
+      }
+     },
+     "restatement": "Le logout appelle revokeSessionSilently qui révoque en base le jti du token courant, puis pose un cookie jwt vide avec maxAge 0 et les mêmes attributs que la pose. Un token null ou vide ne fait rien, et une JwtException est avalée sans erreur, donc le logout réussit toujours côté cookie.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "authorization.details.md",
+     "row": 9
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-25T15:00:00"
+  },
+  {
+   "id": "authorization:tests:annex:e53c1b5c",
    "section": "tests",
    "rank": 1,
-   "text": "- Les tests fixent l'isolation dans les deux sens entre jetons d'authentification et jetons de download. [#5822862f5a0bc9b4-1] [#fb56934486522018-1]",
-   "fact_text": "Les tests fixent l'isolation dans les deux sens entre jetons d'authentification et jetons de download",
+   "text": "- Les tests fixent en rotation qu'un kid de la clé précédente signé par elle passe, qu'un kid courant ou inconnu signé par la précédente est refusé. [#f69c6644001c56ca-1] [#1997b7fee73c7031-1] [#768160f3bbc9b294-1]",
+   "fact_text": "Les tests fixent en rotation qu'un kid de la clé précédente signé par elle passe, qu'un kid courant ou inconnu signé par la précédente est refusé",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "authorization/f69c6644001c56ca-1",
+    "authorization/1997b7fee73c7031-1",
+    "authorization/768160f3bbc9b294-1"
+   ],
+   "files": [
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/JwtServiceKeyRotationTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/JwtServiceKeyRotationTest.java",
+     126,
+     131,
+     "02ac05bda4178fe8f8114e57bb8f075d767588fb7247462eb7f708d9850ebda6"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/JwtServiceKeyRotationTest.java",
+     134,
+     141,
+     "4f12bf1f5848045f8c96da73f819d3af6704ee120ea9eb8f097217af0420ecd4"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/JwtServiceKeyRotationTest.java",
+     143,
+     150,
+     "39333e0c08506705c59bd134432c4ce8c6b00de4630c19f3bab2c03389c5ca3f"
+    ]
+   ],
+   "code_sha256": "5396e1d53761eac73074ef3f60e3d32ad98168e5b695b5ede6725ca88ab96e43",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 0.778,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 9
+      }
+     },
+     "restatement": "Le test de rotation accepte un jeton dont le kid désigne la clé précédente et qui est signé par elle. Il refuse un jeton dont le kid désigne la clé courante alors qu'il est signé par la précédente (SignatureException), et un jeton au kid inconnu même signé par la clé précédente.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "authorization.details.md",
+     "row": 8
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-25T15:00:00"
+  },
+  {
+   "id": "authorization:tests:annex:d11e18a5",
+   "section": "tests",
+   "rank": 2,
+   "text": "- Les tests fixent que le jwt est en cookie HttpOnly hors du body, Secure=false en dev, Secure=true en prod, avec des attributs identiques après login, refresh et logout. [#3c5a78a8da443252-1] [#80aae410574f341d-2] [#8c46899cb4ce82da-1] [#f58b26a1c675bc5a-1]",
+   "fact_text": "Les tests fixent que le jwt est en cookie HttpOnly hors du body, Secure=false en dev, Secure=true en prod, avec des attributs identiques après login, refresh et logout",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "authorization/3c5a78a8da443252-1",
+    "authorization/80aae410574f341d-2",
+    "authorization/8c46899cb4ce82da-1",
+    "authorization/f58b26a1c675bc5a-1"
+   ],
+   "files": [
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthControllerSecurityTest.java",
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthControllerDevProfileCookieTest.java",
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthControllerProdProfileCookieTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthControllerSecurityTest.java",
+     96,
+     117,
+     "8a13b853eb99d8f7206648f9537331e55395764e8a77bf1851826403a1e4f621"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthControllerDevProfileCookieTest.java",
+     126,
+     145,
+     "b6ac484625985c2b69a65664033e9dbe517602039f2b21f801dea0f1646cbd44"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthControllerProdProfileCookieTest.java",
+     130,
+     148,
+     "ec7bccb6dce0c17b0865aa8352626face511fd0190f9b7ad66ee7f25fe16f8fd"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthControllerSecurityTest.java",
+     386,
+     432,
+     "dfe5a20274398a9e7cd6818c8794428e44c5b4fc72ad7d571150f763257a7ffb"
+    ]
+   ],
+   "code_sha256": "e38effa0ece34cb1bbca192a71e681c8f26f84a6d75471ef8a103bc3a4cad291",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.769,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 13
+      }
+     },
+     "restatement": "Le test de login vérifie que le corps de réponse ne contient pas le JWT brut et que le cookie jwt est HttpOnly. Les tests des profils dev et prod vérifient secure à false avec domain localhost, puis secure à true. Le test de cohérence vérifie que Secure, Domain et HttpOnly sont identiques entre login, refresh et logout, avec Path / et maxAge 0 au logout.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "authorization.details.md",
+     "row": 9
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-25T15:00:00"
+  },
+  {
+   "id": "authorization:tests:annex:83967a20",
+   "section": "tests",
+   "rank": 3,
+   "text": "- Les tests fixent que les jetons d'export et d'authentification sont refusés l'un par l'autre. [#5822862f5a0bc9b4-1] [#fb56934486522018-1]",
+   "fact_text": "Les tests fixent que les jetons d'export et d'authentification sont refusés l'un par l'autre",
    "consigne": null,
    "consigne_dropped": false,
    "cites": [
@@ -1326,36 +1954,14 @@
      "b878a327c7200993ae13bac9744088f4e469032dbd41b754ca4a009a998b1b12"
     ]
    ],
-   "code_sha256": "1da7c3bb49bbc93a4a6b0b5fd152d58c02c8b4011277199b0109aad0792c7689",
-   "verdict": "admit",
-   "reason": "rediscovered",
+   "code_sha256": "324486b369216cc214b7b53eaf039bdd94b734130ebf2db0dda62ffdfd8c6863",
+   "verdict": "annex",
+   "reason": "deducible",
    "final": true,
    "measures": {
     "fidelity": null,
     "deduce": {
-     "covered": false,
-     "overlap": {
-      "identifiers": null,
-      "values": null,
-      "terms": 0.25,
-      "n": {
-       "identifiers": 0,
-       "values": 0,
-       "terms": 8
-      }
-     },
-     "restatement": "Le test verify_rejectsAnAuthenticationToken attend que ExportTokenService.verify renvoie vide pour un token d'authentification émis par JwtService, donc un token d'authentification ne vaut jamais capacité de téléchargement. Le test authenticationService_rejectsADownloadToken attend qu'un token de téléchargement signé soit rejeté par JwtService.extractUsername avec une JwtException.",
-     "confidence": "high",
-     "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
-    },
-    "rediscover": {
-     "found": true,
-     "cost": 14,
-     "within_budget": true,
      "covered": true,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/ExportTokenServiceTest.java",
-     "file_ok": true,
      "overlap": {
       "identifiers": null,
       "values": null,
@@ -1363,49 +1969,47 @@
       "n": {
        "identifiers": 0,
        "values": 0,
-       "terms": 8
+       "terms": 6
       }
      },
-     "job": "authorization:rediscover:backend_src_main_java_com_matimeline_eventmanager_infrastructure_adapters_controllers_AuthController.java:1",
-     "rank_in_lot": 9,
-     "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "restatement": "Le test verify_rejectsAnAuthenticationToken vérifie que ExportTokenService.verify renvoie vide pour un jeton d'authentification. Le test authenticationService_rejectsADownloadToken vérifie que extractUsername lève JwtException pour un jeton de téléchargement. Les deux tests empêchent qu'un jeton serve dans l'autre sens.",
+     "confidence": "high",
+     "files_read_missing": true
     },
+    "rediscover": null,
     "comment": [],
     "refute": null
    },
    "contrary": null,
-   "kept_for": "rediscovered",
    "placed": {
-    "pack_line": 97,
-    "annex_table": null
+    "pack_line": null,
+    "annex_table": {
+     "part": "authorization.details.md",
+     "row": 10
+    }
    },
-   "uses": 0
+   "uses": 0,
+   "carried_from": "2026-11-25T15:00:00"
   },
   {
-   "id": "authorization:tests:2",
+   "id": "authorization:tests:annex:34c9a2f7",
    "section": "tests",
-   "rank": 2,
-   "text": "- Les tests fixent que le plafond de requêtes est par utilisateur et non par IP, et que le 429 porte un Retry-After arrondi au supérieur, sans en-tête X-RateLimit-*. [#7766521a36087fc7-1] [#a6ccf2b05e781477-1] [#4eedfeba9390561d-1]",
-   "fact_text": "Les tests fixent que le plafond de requêtes est par utilisateur et non par IP, et que le 429 porte un Retry-After arrondi au supérieur, sans en-tête X-RateLimit-*",
+   "rank": 4,
+   "text": "- Les tests fixent que le filtre par utilisateur renvoie 429 avec Retry-After arrondi au supérieur et sans X-RateLimit-*, que le plafond est par utilisateur et non par IP, et qu'un principal étranger reçoit 401. [#a6ccf2b05e781477-1] [#4eedfeba9390561d-1] [#7766521a36087fc7-1] [#525f7db1c48296a2-1]",
+   "fact_text": "Les tests fixent que le filtre par utilisateur renvoie 429 avec Retry-After arrondi au supérieur et sans X-RateLimit-*, que le plafond est par utilisateur et non par IP, et qu'un principal étranger reçoit 401",
    "consigne": null,
    "consigne_dropped": false,
    "cites": [
-    "authorization/7766521a36087fc7-1",
     "authorization/a6ccf2b05e781477-1",
-    "authorization/4eedfeba9390561d-1"
+    "authorization/4eedfeba9390561d-1",
+    "authorization/7766521a36087fc7-1",
+    "authorization/525f7db1c48296a2-1"
    ],
    "files": [
-    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/PreferencesUserRateLimitIntegrationTest.java",
-    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/UserRateLimitingFilterTest.java"
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/UserRateLimitingFilterTest.java",
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/PreferencesUserRateLimitIntegrationTest.java"
    ],
    "ranges": [
-    [
-     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/PreferencesUserRateLimitIntegrationTest.java",
-     155,
-     166,
-     "c814b4a3156160de7d29b663420512a1fe6f9c5ffa115b502abac3ec4bb50d29"
-    ],
     [
      "backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/UserRateLimitingFilterTest.java",
      142,
@@ -1417,455 +2021,21 @@
      163,
      174,
      "a2e3e3f8e29258f4559b991be1b70a1bbdf0c5671a0de280d3f8a4b27a01038f"
-    ]
-   ],
-   "code_sha256": "d99d9d8b5478d38c211a389a02d9b18fe0c434d184f6f772ec5340a1f06f85be",
-   "verdict": "admit",
-   "reason": "rediscovered",
-   "final": true,
-   "measures": {
-    "fidelity": null,
-    "deduce": {
-     "covered": false,
-     "overlap": {
-      "identifiers": 0.0,
-      "values": 1.0,
-      "terms": 0.545,
-      "n": {
-       "identifiers": 1,
-       "values": 1,
-       "terms": 11
-      }
-     },
-     "restatement": "Le test ceilingIsPerUser_notPerIp vérifie que le plafond de requêtes est par utilisateur et non par IP : un second utilisateur depuis la même IP reçoit 200, et le premier utilisateur reçoit 429 depuis une autre IP. Le bloc UserRateLimitingFilterTest joint montre aussi le calcul du Retry-After via la méthode retryAfterOf.",
-     "confidence": "high",
-     "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
-    },
-    "rediscover": {
-     "found": true,
-     "cost": 13,
-     "within_budget": true,
-     "covered": true,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/PreferencesUserRateLimitIntegrationTest.java",
-     "file_ok": true,
-     "overlap": {
-      "identifiers": 1.0,
-      "values": 1.0,
-      "terms": 0.636,
-      "n": {
-       "identifiers": 1,
-       "values": 1,
-       "terms": 11
-      }
-     },
-     "job": "authorization:rediscover:backend_src_main_java_com_matimeline_eventmanager_infrastructure_adapters_controllers_AuthController.java:1",
-     "rank_in_lot": 8,
-     "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
-    },
-    "comment": [],
-    "refute": null
-   },
-   "contrary": null,
-   "kept_for": "rediscovered",
-   "placed": {
-    "pack_line": 98,
-    "annex_table": null
-   },
-   "uses": 0
-  },
-  {
-   "id": "authorization:tests:3",
-   "section": "tests",
-   "rank": 3,
-   "text": "- Un test de filtre de plafond fige l'horloge pour vérifier le Retry-After, et un principal étranger ou sans identifiant sur une route plafonnée reçoit 401. [#a6ccf2b05e781477-1] [#525f7db1c48296a2-1] [#bbe0cb4c74f874f7-1]",
-   "fact_text": "Un test de filtre de plafond fige l'horloge pour vérifier le Retry-After, et un principal étranger ou sans identifiant sur une route plafonnée reçoit 401",
-   "consigne": null,
-   "consigne_dropped": false,
-   "cites": [
-    "authorization/a6ccf2b05e781477-1",
-    "authorization/525f7db1c48296a2-1",
-    "authorization/bbe0cb4c74f874f7-1"
-   ],
-   "files": [
-    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/UserRateLimitingFilterTest.java"
-   ],
-   "ranges": [
+    ],
     [
-     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/UserRateLimitingFilterTest.java",
-     142,
-     161,
-     "c71744b07580dc33a42612d42150aa0b8e0e0b0c3a778b8e9dc568b13b290b7d"
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/PreferencesUserRateLimitIntegrationTest.java",
+     155,
+     166,
+     "c814b4a3156160de7d29b663420512a1fe6f9c5ffa115b502abac3ec4bb50d29"
     ],
     [
      "backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/UserRateLimitingFilterTest.java",
      86,
      94,
      "15127034ed237a3176a9b64662ece866b984f6e8a23ecc48c2ddb513f562a5a8"
-    ],
-    [
-     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/UserRateLimitingFilterTest.java",
-     97,
-     104,
-     "925f2be5b0961515752869ef866b34580314aa205eb94684449dcb82e306e2fb"
     ]
    ],
-   "code_sha256": "def7b6567f19adb789c7b64e93d4c9b0abc356c2a5054b49cc74a7f70f67938b",
-   "verdict": "admit",
-   "reason": "rediscovered",
-   "final": true,
-   "measures": {
-    "fidelity": null,
-    "deduce": {
-     "covered": false,
-     "overlap": {
-      "identifiers": null,
-      "values": 1.0,
-      "terms": 0.429,
-      "n": {
-       "identifiers": 0,
-       "values": 1,
-       "terms": 14
-      }
-     },
-     "restatement": "Le test overTheCeiling_429_carriesRetryAfter_roundedUp_andDecreasing attend un 429 avec Retry-After de 60 quand le seau est neuf et le temps figé, puis 15 après 45,2 s, 1 après 14,7 s de plus, et le quota revient après 100 ms. Les deux tests suivants attendent un 401 avec le corps unauthorized quand le principal est étranger ou quand le CustomUserDetails n'a pas d'id, et que la chaîne n'est pas atteinte.",
-     "confidence": "high",
-     "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
-    },
-    "rediscover": {
-     "found": true,
-     "cost": 12,
-     "within_budget": true,
-     "covered": true,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/UserRateLimitingFilterTest.java",
-     "file_ok": true,
-     "overlap": {
-      "identifiers": null,
-      "values": 1.0,
-      "terms": 0.714,
-      "n": {
-       "identifiers": 0,
-       "values": 1,
-       "terms": 14
-      }
-     },
-     "job": "authorization:rediscover:backend_src_main_java_com_matimeline_eventmanager_infrastructure_adapters_controllers_AuthController.java:1",
-     "rank_in_lot": 7,
-     "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
-    },
-    "comment": [],
-    "refute": null
-   },
-   "contrary": null,
-   "kept_for": "rediscovered",
-   "placed": {
-    "pack_line": 99,
-    "annex_table": null
-   },
-   "uses": 0
-  },
-  {
-   "id": "authorization:tests:4",
-   "section": "tests",
-   "rank": 4,
-   "text": "- Les tests fixent que logout, /api/me et le suivi des jobs d'export restent hors du rate limit sur 30 requêtes. [#5c6d5fea73721965-1] [#cba057cd17a08d89-1] [#fb57d9c20f4b8757-1]",
-   "fact_text": "Les tests fixent que logout, /api/me et le suivi des jobs d'export restent hors du rate limit sur 30 requêtes",
-   "consigne": null,
-   "consigne_dropped": false,
-   "cites": [
-    "authorization/5c6d5fea73721965-1",
-    "authorization/cba057cd17a08d89-1",
-    "authorization/fb57d9c20f4b8757-1"
-   ],
-   "files": [
-    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/RateLimitingAndHeadersIntegrationTest.java"
-   ],
-   "ranges": [
-    [
-     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/RateLimitingAndHeadersIntegrationTest.java",
-     182,
-     190,
-     "78636c73dc691f246f1aa1efb32704d76c4f0177b9029b588d30f8f344b2315f"
-    ],
-    [
-     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/RateLimitingAndHeadersIntegrationTest.java",
-     438,
-     446,
-     "44ee88b95e850f592df7d909f1d2ec5511d540f0d1aa21d80cae989ebf9f0f3c"
-    ],
-    [
-     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/RateLimitingAndHeadersIntegrationTest.java",
-     296,
-     305,
-     "be4c1b518b7c6d1430680bfe1fd01b0e0cffc7374e063f8ad03c70c53ebe13e7"
-    ]
-   ],
-   "code_sha256": "e13342e94a261b2b5dd44cca7a35465da1e4060f05fa3e325806b039687466f3",
-   "verdict": "admit",
-   "reason": "admitted",
-   "final": true,
-   "measures": {
-    "fidelity": null,
-    "deduce": {
-     "covered": false,
-     "overlap": {
-      "identifiers": null,
-      "values": 1.0,
-      "terms": 0.4,
-      "n": {
-       "identifiers": 0,
-       "values": 1,
-       "terms": 10
-      }
-     },
-     "restatement": "Ces tests de RateLimitingAndHeadersIntegrationTest vérifient que POST /api/auth/logout, GET /api/me et GET de polling /api/export/job/{id} ne renvoient jamais 429 sur 30 requêtes successives depuis la même IP. Ces routes sont donc exemptées du limiteur.",
-     "confidence": "high",
-     "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
-    },
-    "rediscover": {
-     "found": true,
-     "cost": 18,
-     "within_budget": false,
-     "covered": false,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/test/java/com/matimeline/eventmanager/infrastructure/security/RateLimitingAndHeadersIntegrationTest.java",
-     "file_ok": true,
-     "overlap": {
-      "identifiers": null,
-      "values": 1.0,
-      "terms": 0.4,
-      "n": {
-       "identifiers": 0,
-       "values": 1,
-       "terms": 10
-      }
-     },
-     "job": "authorization:rediscover:backend_src_main_java_com_matimeline_eventmanager_infrastructure_adapters_controllers_AuthController.java:1",
-     "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
-    },
-    "comment": [],
-    "refute": {
-     "votes": 3,
-     "refuted": 0,
-     "refute_unproven": 0,
-     "reasons": [
-      "Les trois tests (logout_isNotRateLimited L182-190, getMe_isNotRateLimited L438-446, exportJobPolling_isNotRateLimited L296-305) bouclent 30 fois et assertNotEquals(429, sc), ce qui correspond au constat.",
-      "Les trois tests (logout_isNotRateLimited L182-190, getMe_isNotRateLimited L438-446, exportJobPolling_isNotRateLimited L296-305) bouclent 30 requêtes et font assertNotEquals(429, sc), ce qui correspond au constat.",
-      "Les trois tests (logout_isNotRateLimited L182-190, getMe_isNotRateLimited L438-446, exportJobPolling_isNotRateLimited L296-305) bouclent sur 30 requêtes et vérifient assertNotEquals(429, sc), ce qui correspond au constat."
-     ],
-     "evidence": [
-      "",
-      "",
-      ""
-     ],
-     "consigne_verdict": "n/a",
-     "question_verdict": "n/a",
-     "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
-    }
-   },
-   "contrary": null,
-   "placed": {
-    "pack_line": 100,
-    "annex_table": null
-   },
-   "uses": 0
-  },
-  {
-   "id": "authorization:alerts:1",
-   "section": "alerts",
-   "rank": 1,
-   "text": "- Le test du cookie en profil dev monte MockMvc en standaloneSetup, donc la chaîne de filtres de SecurityConfig n'est pas appliquée et il ne prouve rien sur l'autorisation. Ne t'appuie pas sur lui pour valider un changement de règle d'accès, utilise un test d'intégration complet. `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthControllerDevProfileCookieTest.java:134` [#519761a96abfc2f1-1]",
-   "fact_text": "Le test du cookie en profil dev monte MockMvc en standaloneSetup, donc la chaîne de filtres de SecurityConfig n'est pas appliquée et il ne prouve rien sur l'autorisation. Ne t'appuie pas sur lui pour valider un changement de règle d'accès, utilise un test d'intégration complet. AuthControllerDevProfileCookieTest.java",
-   "consigne": null,
-   "consigne_dropped": false,
-   "cites": [
-    "authorization/519761a96abfc2f1-1"
-   ],
-   "files": [
-    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthControllerDevProfileCookieTest.java"
-   ],
-   "ranges": [
-    [
-     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthControllerDevProfileCookieTest.java",
-     134,
-     134,
-     "187fa9b5ec4deac6b0db767d74e27a64ac3fc500470f3c9d559528695fde1309"
-    ]
-   ],
-   "code_sha256": "187fa9b5ec4deac6b0db767d74e27a64ac3fc500470f3c9d559528695fde1309",
-   "verdict": "admit",
-   "reason": "admitted",
-   "final": true,
-   "measures": {
-    "fidelity": null,
-    "deduce": null,
-    "rediscover": null,
-    "comment": [],
-    "refute": {
-     "votes": 3,
-     "refuted": 0,
-     "refute_unproven": 0,
-     "reasons": [
-      "Le test utilise bien MockMvcBuilders.standaloneSetup(authController) (l.134) avec un contexte minimal de mocks, donc sans SecurityConfig; aucun garde-fou ne contredit l'alerte.",
-      "AuthControllerDevProfileCookieTest L134 utilise bien MockMvcBuilders.standaloneSetup(authController) sur un contexte MinimalConfig sans SecurityConfig, donc l'alerte est exacte.",
-      "Le test construit MockMvcBuilders.standaloneSetup(authController) (L134) sans SecurityConfig ni filtres ; l'alerte est exacte et aucun garde-fou ne garantit l'autorisation dans ce test."
-     ],
-     "evidence": [
-      "MockMvc mockMvc = MockMvcBuilders.standaloneSetup(authController).build();",
-      "",
-      ""
-     ],
-     "consigne_verdict": "n/a",
-     "question_verdict": "n/a",
-     "searched": true,
-     "search": {
-      "check": "guards",
-      "outcome": null,
-      "votes": 3,
-      "supporters": 0,
-      "budget": 12,
-      "searches": [
-       [
-        {
-         "tool": "Grep",
-         "target": "@SpringBootTest|standaloneSetup dans tests des contrôleurs",
-         "found": "Des tests d'intégration complets existent ailleurs (p. ex. ThemePreferenceIntegrationTest), mais ils ne changent pas le fait que ce test ne prouve rien sur l'autorisation."
-        }
-       ],
-       [
-        {
-         "tool": "Grep",
-         "target": "springSecurity()|@SpringBootTest dans backend/src/test",
-         "found": "Des tests d'intégration complets existent (ThemePreferenceIntegrationTest, PreferencesUserRateLimitIntegrationTest, etc.), mais ils ne garantissent pas l'invariant du test de cookie : ce sont des alte"
-        }
-       ],
-       [
-        {
-         "tool": "Grep",
-         "target": "SpringBootTest|AutoConfigureMockMvc dans AuthControllerDevProfileCookieTest.java",
-         "found": "Seule occurrence : un commentaire (L44) disant que le test évite un @SpringBootTest complet ; contexte minimal @SpringJUnitWebConfig."
-        }
-       ]
-      ],
-      "untraced": 0,
-      "over_budget": 0,
-      "unproven": 0
-     },
-     "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
-    }
-   },
-   "contrary": null,
-   "check": "guards",
-   "placed": {
-    "pack_line": 108,
-    "annex_table": null
-   },
-   "uses": 0
-  },
-  {
-   "id": "authorization:rules:annex:07ad8edb",
-   "section": "rules",
-   "rank": 2,
-   "text": "- Une propriété jwt.private-key vide fait générer une paire éphémère au démarrage. [#9c8678588ef7b906-1] [#2acb131f0ebd7c9c-1]",
-   "fact_text": "Une propriété jwt.private-key vide fait générer une paire éphémère au démarrage",
-   "consigne": null,
-   "consigne_dropped": false,
-   "cites": [
-    "authorization/9c8678588ef7b906-1",
-    "authorization/2acb131f0ebd7c9c-1"
-   ],
-   "files": [
-    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtService.java"
-   ],
-   "ranges": [
-    [
-     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtService.java",
-     39,
-     40,
-     "06bc90f0ba5343d1fc402f3ea1fc4c2232e7b194bfe050c578637d4cd066bd95"
-    ],
-    [
-     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtService.java",
-     59,
-     64,
-     "78ec8a6f9ebd1c00f04bbe958f11d2b33d358d50da3ee9291e89e7001e2536b6"
-    ]
-   ],
-   "code_sha256": "097004d4ed351e19dc00b6e904bdc8921a6379630c42ecbd1e618951ad893669",
-   "verdict": "annex",
-   "reason": "deducible",
-   "final": true,
-   "measures": {
-    "fidelity": null,
-    "deduce": {
-     "covered": true,
-     "overlap": {
-      "identifiers": null,
-      "values": null,
-      "terms": 0.857,
-      "n": {
-       "identifiers": 0,
-       "values": 0,
-       "terms": 7
-      }
-     },
-     "restatement": "La propriété jwt.private-key a pour valeur par défaut une chaîne vide. Si privateKeyMaterial est vide ou blanc, initKeyMaterial génère une paire de clés éphémère, sinon il utilise configuredKeyPair. Sans configuration, les clés changent à chaque démarrage, ce qui invalide les tokens existants (conséquence déduite du code, non visible dans l'extrait).",
-     "confidence": "medium",
-     "files_read_missing": true
-    },
-    "rediscover": null,
-    "comment": [],
-    "refute": null
-   },
-   "contrary": null,
-   "check": "scope",
-   "general": "pattern_pack",
-   "placed": {
-    "pack_line": null,
-    "annex_table": {
-     "part": "authorization.details.md",
-     "row": 1
-    }
-   },
-   "uses": 0,
-   "carried_from": "2026-11-20T12:20:00Z"
-  },
-  {
-   "id": "authorization:rules:annex:831fe192",
-   "section": "rules",
-   "rank": 6,
-   "text": "- JwtFilter lit le cookie jwt, puis l'en-tête Bearer si aucun cookie. [#fef399d03b004ac4-1] [#fef399d03b004ac4-3]",
-   "fact_text": "JwtFilter lit le cookie jwt, puis l'en-tête Bearer si aucun cookie",
-   "consigne": null,
-   "consigne_dropped": false,
-   "cites": [
-    "authorization/fef399d03b004ac4-1",
-    "authorization/fef399d03b004ac4-3"
-   ],
-   "files": [
-    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtFilter.java"
-   ],
-   "ranges": [
-    [
-     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtFilter.java",
-     46,
-     47,
-     "c210fff37dc508525396057c74f743af88e0cbc6e1f935e9cde2d9b607a11b35"
-    ],
-    [
-     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtFilter.java",
-     55,
-     60,
-     "a055e54bd73c64d9a0d0a47263f808651008e511886680fe004fd4125eaa1730"
-    ]
-   ],
-   "code_sha256": "f51a0e0cd580da0bb66883eedf05bbf6d44648b4e28d32892148e99773253b1f",
+   "code_sha256": "069a260c87bf5a6fad0612d9bf11e50cdad800a433c0a915da769fb75ee9867d",
    "verdict": "annex",
    "reason": "deducible",
    "final": true,
@@ -1875,353 +2045,15 @@
      "covered": true,
      "overlap": {
       "identifiers": 1.0,
-      "values": null,
-      "terms": 1.0,
+      "values": 1.0,
+      "terms": 0.692,
       "n": {
        "identifiers": 1,
-       "values": 0,
-       "terms": 3
-      }
-     },
-     "restatement": "JwtFilter cherche d'abord le token dans les cookies de la requête. Si aucun token n'est trouvé, il lit l'en-tête Authorization et prend la valeur après le préfixe « Bearer » (7 caractères retirés).",
-     "confidence": "high",
-     "files_read_missing": true
-    },
-    "rediscover": null,
-    "comment": [],
-    "refute": null
-   },
-   "contrary": null,
-   "check": "scope",
-   "general": "words:aucun",
-   "placed": {
-    "pack_line": null,
-    "annex_table": {
-     "part": "authorization.details.md",
-     "row": 2
-    }
-   },
-   "uses": 0,
-   "carried_from": "2026-11-20T12:20:00Z"
-  },
-  {
-   "id": "authorization:rules:annex:7ee2f572",
-   "section": "rules",
-   "rank": 10,
-   "text": "- Le login ne renvoie qu'un message, le JWT passe par le cookie seul. [#9807c0fff40d65d4-2]",
-   "fact_text": "Le login ne renvoie qu'un message, le JWT passe par le cookie seul",
-   "consigne": null,
-   "consigne_dropped": false,
-   "cites": [
-    "authorization/9807c0fff40d65d4-2"
-   ],
-   "files": [
-    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java"
-   ],
-   "ranges": [
-    [
-     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java",
-     128,
-     131,
-     "54dc0fa761cae51b344a08d722f566e50b1605595f4700374787b692e866b93d"
-    ]
-   ],
-   "code_sha256": "54dc0fa761cae51b344a08d722f566e50b1605595f4700374787b692e866b93d",
-   "verdict": "annex",
-   "reason": "deducible",
-   "final": true,
-   "measures": {
-    "fidelity": null,
-    "deduce": {
-     "covered": true,
-     "overlap": {
-      "identifiers": 1.0,
-      "values": null,
-      "terms": 0.8,
-      "n": {
-       "identifiers": 1,
-       "values": 0,
-       "terms": 5
-      }
-     },
-     "restatement": "La méthode login ne renvoie que le message « Authentification réussie » dans le corps de la réponse, sans le token brut. Le JWT ne transite que par le cookie HttpOnly, ce qui limite son exposition à un script XSS.",
-     "confidence": "high",
-     "files_read_missing": true
-    },
-    "rediscover": null,
-    "comment": [],
-    "refute": null
-   },
-   "contrary": null,
-   "check": "scope",
-   "general": "pattern_pack",
-   "placed": {
-    "pack_line": null,
-    "annex_table": {
-     "part": "authorization.details.md",
-     "row": 3
-    }
-   },
-   "uses": 0,
-   "carried_from": "2026-11-20T12:20:00Z"
-  },
-  {
-   "id": "authorization:rules:annex:21d6bad0",
-   "section": "rules",
-   "rank": 11,
-   "text": "- La session est STATELESS et le CSRF désactivé. [#ad28b56cd87034dc-2] [#ad28b56cd87034dc-1]",
-   "fact_text": "La session est STATELESS et le CSRF désactivé",
-   "consigne": null,
-   "consigne_dropped": false,
-   "cites": [
-    "authorization/ad28b56cd87034dc-2",
-    "authorization/ad28b56cd87034dc-1"
-   ],
-   "files": [
-    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/SecurityConfig.java"
-   ],
-   "ranges": [
-    [
-     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/SecurityConfig.java",
-     156,
-     156,
-     "4e20390770c1f1c42864d9a4fc7aa7244c73f2900e276865437ac8381bc34474"
-    ],
-    [
-     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/SecurityConfig.java",
-     109,
-     109,
-     "0d6c49b8d4927c22e79da3c9075c7b3a7ba411534f41100b7d8831f495e353d4"
-    ]
-   ],
-   "code_sha256": "81cd227fe475516b6274a9f2808042b604754e4e183559c0a241188926d6d42c",
-   "verdict": "annex",
-   "reason": "deducible",
-   "final": true,
-   "measures": {
-    "fidelity": null,
-    "deduce": {
-     "covered": true,
-     "overlap": {
-      "identifiers": 1.0,
-      "values": null,
-      "terms": 1.0,
-      "n": {
-       "identifiers": 2,
-       "values": 0,
-       "terms": 2
-      }
-     },
-     "restatement": "SecurityConfig configure une politique de session STATELESS, donc aucune session serveur n'est créée, et désactive la protection CSRF via csrf.disable(). L'authentification repose donc sur le JWT et non sur une session.",
-     "confidence": "high",
-     "files_read_missing": true
-    },
-    "rediscover": null,
-    "comment": [],
-    "refute": null
-   },
-   "contrary": null,
-   "check": "scope",
-   "general": "pattern_pack",
-   "placed": {
-    "pack_line": null,
-    "annex_table": {
-     "part": "authorization.details.md",
-     "row": 4
-    }
-   },
-   "uses": 0,
-   "carried_from": "2026-11-20T12:20:00Z"
-  },
-  {
-   "id": "authorization:rules:annex:8de9534e",
-   "section": "rules",
-   "rank": 13,
-   "text": "- Un anonyme passe sans comptage, un authentifié sans identifiant reçoit 401, un bucket vide donne 429 avec Retry-After. [#7ec7fee86ff9e720-1] [#7a92a5b41b351244-1] [#7a92a5b41b351244-2]",
-   "fact_text": "Un anonyme passe sans comptage, un authentifié sans identifiant reçoit 401, un bucket vide donne 429 avec Retry-After",
-   "consigne": null,
-   "consigne_dropped": false,
-   "cites": [
-    "authorization/7ec7fee86ff9e720-1",
-    "authorization/7a92a5b41b351244-1",
-    "authorization/7a92a5b41b351244-2"
-   ],
-   "files": [
-    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/UserRateLimitingFilter.java"
-   ],
-   "ranges": [
-    [
-     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/UserRateLimitingFilter.java",
-     134,
-     139,
-     "d0a079599558fca2c10d9ee160b37431e3f6d02f23e45284d15b39fb344a3bb4"
-    ],
-    [
-     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/UserRateLimitingFilter.java",
-     140,
-     145,
-     "1d75a5ff96f269e4ad838bab7cf66b170f2d76741f6da7f68826a53385dbbdc2"
-    ],
-    [
-     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/UserRateLimitingFilter.java",
-     150,
-     155,
-     "d2e0eab63132db1cc66a4846afe1ff0c285df4152f53d61772ece83c8cc5c2f5"
-    ]
-   ],
-   "code_sha256": "b81c3ec7c7a168892e9a6d725137a44167d2dcf14468f6aed838cff725d79886",
-   "verdict": "annex",
-   "reason": "deducible",
-   "final": true,
-   "measures": {
-    "fidelity": null,
-    "deduce": {
-     "covered": true,
-     "overlap": {
-      "identifiers": null,
-      "values": 1.0,
-      "terms": 0.636,
-      "n": {
-       "identifiers": 0,
        "values": 2,
-       "terms": 11
+       "terms": 13
       }
      },
-     "restatement": "Dans doFilterInternal, une requête anonyme (isAnonymous) est transmise à la chaîne sans comptage, et l'AuthorizationFilter en aval répondra 401. Un utilisateur authentifié sans id de compte (accountIdKey null) reçoit un 401 avec le corps unauthorized, en fail-closed. Sinon, bucket.tryConsumeAndReturnRemaining(1) consomme un jeton, et si la consommation échoue, la requête reçoit un 429 via RateLimitingFilter.writeTooManyRequests avec un Retry-After calculé par retryAfterSeconds.",
-     "confidence": "high"
-    },
-    "rediscover": null,
-    "comment": [],
-    "refute": null
-   },
-   "contrary": null,
-   "check": "scope",
-   "general": "pattern_pack",
-   "placed": {
-    "pack_line": null,
-    "annex_table": {
-     "part": "authorization.details.md",
-     "row": 5
-    }
-   },
-   "uses": 0,
-   "carried_from": "2026-11-20T12:20:00Z"
-  },
-  {
-   "id": "authorization:rules:annex:e5466d3c",
-   "section": "rules",
-   "rank": 14,
-   "text": "- Le filtre se désactive par app.rate-limit.enabled (true par défaut). [#4c6f499e43b70a14-1]",
-   "fact_text": "Le filtre se désactive par app.rate-limit.enabled (true par défaut)",
-   "consigne": null,
-   "consigne_dropped": false,
-   "cites": [
-    "authorization/4c6f499e43b70a14-1"
-   ],
-   "files": [
-    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/UserRateLimitingFilter.java"
-   ],
-   "ranges": [
-    [
-     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/UserRateLimitingFilter.java",
-     116,
-     116,
-     "ad50239789d17c955ae44c02307e558660c72e6c2bf4d1e7f9638f04b877335b"
-    ]
-   ],
-   "code_sha256": "ad50239789d17c955ae44c02307e558660c72e6c2bf4d1e7f9638f04b877335b",
-   "verdict": "annex",
-   "reason": "deducible",
-   "final": true,
-   "measures": {
-    "fidelity": null,
-    "deduce": {
-     "covered": true,
-     "overlap": {
-      "identifiers": 1.0,
-      "values": null,
-      "terms": 0.833,
-      "n": {
-       "identifiers": 1,
-       "values": 0,
-       "terms": 6
-      }
-     },
-     "restatement": "Le constructeur de UserRateLimitingFilter reçoit un booléen rateLimitEnabled injecté par @Value avec la propriété app.rate-limit.enabled, dont la valeur par défaut est true. Le code de cet extrait ne montre pas ce que fait le filtre quand le booléen vaut false.",
-     "confidence": "high"
-    },
-    "rediscover": null,
-    "comment": [],
-    "refute": null
-   },
-   "contrary": null,
-   "check": "scope",
-   "general": "pattern_pack",
-   "placed": {
-    "pack_line": null,
-    "annex_table": {
-     "part": "authorization.details.md",
-     "row": 6
-    }
-   },
-   "uses": 0,
-   "carried_from": "2026-11-20T12:20:00Z"
-  },
-  {
-   "id": "authorization:surface:annex:23bd0f97",
-   "section": "surface",
-   "rank": 1,
-   "text": "- Trois zones sont ouvertes sans authentification dans `backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/SecurityConfig.java:161`, la santé de l'application [#10ab0800c4c3ca76-1], le JWKS [#6bf025d08b434efd-1] et toutes les routes /api/auth/** [#98b2cdbd7d200daa-1].",
-   "fact_text": "Trois zones sont ouvertes sans authentification dans SecurityConfig.java, la santé de l'application, le JWKS et toutes les routes /api/auth/**",
-   "consigne": null,
-   "consigne_dropped": false,
-   "cites": [
-    "authorization/10ab0800c4c3ca76-1",
-    "authorization/6bf025d08b434efd-1",
-    "authorization/98b2cdbd7d200daa-1"
-   ],
-   "files": [
-    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/SecurityConfig.java"
-   ],
-   "ranges": [
-    [
-     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/SecurityConfig.java",
-     161,
-     161,
-     "ac5811e0959391ab15e47e1fa239e7ab1b2f874ab9c925611510d3d30cc736f7"
-    ],
-    [
-     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/SecurityConfig.java",
-     172,
-     172,
-     "0c417218e7676be490f89afacfe18fa9f50dad37b650f6f00f61bf045d4977d2"
-    ],
-    [
-     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/SecurityConfig.java",
-     173,
-     173,
-     "54f1212f51a23a63a062d9029e8b6c49004855ea436ebdf9eb4d97d435d3eae5"
-    ]
-   ],
-   "code_sha256": "ada46d4194e6eb0f5747e0255f258d8c0b58347c0e454f61ae23819aae369e5e",
-   "verdict": "annex",
-   "reason": "deducible",
-   "final": true,
-   "measures": {
-    "fidelity": null,
-    "deduce": {
-     "covered": true,
-     "overlap": {
-      "identifiers": 1.0,
-      "values": null,
-      "terms": 0.5,
-      "n": {
-       "identifiers": 2,
-       "values": 0,
-       "terms": 8
-      }
-     },
-     "restatement": "Trois familles de routes sont accessibles sans authentification dans SecurityConfig : /actuator/health, le chemin JWKS (JwksController.JWKS_PATH) et tout le préfixe /api/auth/**.",
+     "restatement": "Le test overTheCeiling vérifie que 30 requêtes PUT passent, puis que la suivante reçoit un 429 avec Retry-After arrondi vers le haut et décroissant (60, puis 15, puis 1). Il contrôle qu'après l'écoulement du délai le quota revient. retryAfterOf vérifie le corps too_many_requests et l'absence d'en-têtes X-RateLimit. Le test d'intégration vérifie que le plafond est par utilisateur et non par IP, et un principal étranger sur une route limitée reçoit 401 sans atteindre la chaîne.",
      "confidence": "high",
      "files_read_missing": true
     },
@@ -2230,259 +2062,197 @@
     "refute": null
    },
    "contrary": null,
-   "check": "scope",
-   "general": "words:toutes",
    "placed": {
     "pack_line": null,
     "annex_table": {
      "part": "authorization.details.md",
-     "row": 7
+     "row": 11
     }
    },
    "uses": 0,
-   "carried_from": "2026-11-20T12:20:00Z"
-  },
-  {
-   "id": "authorization:tests:annex:b9ea24b3",
-   "section": "tests",
-   "rank": 1,
-   "text": "- Les tests fixent que JwtService n'accepte que RS256 et lève une JwtException pour un HS256 forgé avec la clé publique, un alg none, une autre clé ou une chaîne vide. [#24de4698d7f1bcdb-1] [#5621feee827ec7d0-1] [#d961c38d7c34e172-1] [#6fddf12db3acfa6d-1]",
-   "fact_text": "Les tests fixent que JwtService n'accepte que RS256 et lève une JwtException pour un HS256 forgé avec la clé publique, un alg none, une autre clé ou une chaîne vide",
-   "consigne": null,
-   "consigne_dropped": false,
-   "cites": [
-    "authorization/24de4698d7f1bcdb-1",
-    "authorization/5621feee827ec7d0-1",
-    "authorization/d961c38d7c34e172-1",
-    "authorization/6fddf12db3acfa6d-1"
-   ],
-   "files": [
-    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/JwtServiceRs256Test.java"
-   ],
-   "ranges": [
-    [
-     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/JwtServiceRs256Test.java",
-     129,
-     147,
-     "49f918b1abc1abf0b921a2cdba7f7aa88379eac28627eb213903de7ebc53c0f9"
-    ],
-    [
-     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/JwtServiceRs256Test.java",
-     149,
-     175,
-     "7b2395fb9b2d36f56d06dbe3fe9b1dff89f401a183a89b4fa83c5a8bc1fdbe7b"
-    ],
-    [
-     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/JwtServiceRs256Test.java",
-     113,
-     127,
-     "c35cd02b5a88ad135c7b572be1ed469d359e9f166c773059c3cc904d7e23cd88"
-    ],
-    [
-     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/JwtServiceRs256Test.java",
-     215,
-     222,
-     "8c1d720450d3ed7ebbfe901aeb8e8c0163a40f89c200283fcd894e36a1ad8eac"
-    ]
-   ],
-   "code_sha256": "a3aa459faa56cc6d6f782d0f13b2c41e7f6753b8a5e3e43bce539ee4344828a0",
-   "verdict": "annex",
-   "reason": "deducible",
-   "final": true,
-   "measures": {
-    "fidelity": null,
-    "deduce": {
-     "covered": true,
-     "overlap": {
-      "identifiers": 0.75,
-      "values": null,
-      "terms": 0.556,
-      "n": {
-       "identifiers": 4,
-       "values": 0,
-       "terms": 9
-      }
-     },
-     "restatement": "Les tests de JwtServiceRs256Test exigent le rejet de trois jetons falsifiés : un HS256 signé avec la clé publique RSA (confusion d'algorithme), un jeton alg none à signature vide, et un RS256 signé par une autre clé qui lève SignatureException. Un jeton vide lève une JwtException et non une IllegalArgumentException.",
-     "confidence": "high"
-    },
-    "rediscover": null,
-    "comment": [],
-    "refute": null
-   },
-   "contrary": null,
-   "placed": {
-    "pack_line": null,
-    "annex_table": {
-     "part": "authorization.details.md",
-     "row": 8
-    }
-   },
-   "uses": 0,
-   "carried_from": "2026-11-20T12:20:00Z"
-  },
-  {
-   "id": "authorization:tests:annex:87bed6bb",
-   "section": "tests",
-   "rank": 3,
-   "text": "- Les tests fixent que le cookie jwt est HttpOnly, Secure à false en dev et à true en prod, avec les mêmes attributs après login, refresh et logout (maxAge 0 au logout). [#3c5a78a8da443252-1] [#80aae410574f341d-2] [#8c46899cb4ce82da-1] [#f58b26a1c675bc5a-1] [#f58b26a1c675bc5a-2]",
-   "fact_text": "Les tests fixent que le cookie jwt est HttpOnly, Secure à false en dev et à true en prod, avec les mêmes attributs après login, refresh et logout (maxAge 0 au logout)",
-   "consigne": null,
-   "consigne_dropped": false,
-   "cites": [
-    "authorization/3c5a78a8da443252-1",
-    "authorization/80aae410574f341d-2",
-    "authorization/8c46899cb4ce82da-1",
-    "authorization/f58b26a1c675bc5a-1",
-    "authorization/f58b26a1c675bc5a-2"
-   ],
-   "files": [
-    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthControllerSecurityTest.java",
-    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthControllerDevProfileCookieTest.java",
-    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthControllerProdProfileCookieTest.java"
-   ],
-   "ranges": [
-    [
-     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthControllerSecurityTest.java",
-     97,
-     117,
-     "2d59532cc8f6c9e7633a4843983efdddea386fd6a80f5766e2d945663ba051d5"
-    ],
-    [
-     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthControllerDevProfileCookieTest.java",
-     142,
-     142,
-     "3eb7d41a9993deead4aa34a78d427567ccefd18b6625be60dc2aa1bbea247cf6"
-    ],
-    [
-     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthControllerProdProfileCookieTest.java",
-     130,
-     147,
-     "9474a2059ce3faf4a0da2779c3ca78987acf5a94d40a7554eeab104ebd28a974"
-    ],
-    [
-     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthControllerSecurityTest.java",
-     386,
-     425,
-     "d018b7cd30688ffc63e903134bc5f183930ea91727b4b55b73f3f65897e6bd83"
-    ],
-    [
-     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthControllerSecurityTest.java",
-     431,
-     431,
-     "c0431dc14f32590ed3243622f37214ae6577e55a9931fec37fb0b79af6f17444"
-    ]
-   ],
-   "code_sha256": "187251cab8fdd1e1c88e24212fcb2eabae8f6ad97329be2f01a916c20084e0d3",
-   "verdict": "annex",
-   "reason": "deducible",
-   "final": true,
-   "measures": {
-    "fidelity": null,
-    "deduce": {
-     "covered": true,
-     "overlap": {
-      "identifiers": 1.0,
-      "values": 1.0,
-      "terms": 0.818,
-      "n": {
-       "identifiers": 2,
-       "values": 1,
-       "terms": 11
-      }
-     },
-     "restatement": "Le test login_doesNotReturnJwtInBody_andSetsHttpOnlyCookie attend un 200 sur POST /api/auth/login, un corps qui ne contient pas le JWT brut, un message Authentification réussie, et un cookie jwt HttpOnly portant le token. Les autres blocs de l'unité vérifient que le cookie jwt a Secure à false sous le profil dev et à true sous le profil prod, et que Secure, Domain (mytimeline.example) et maxAge à 0 au logout restent cohérents entre login, refresh et logout.",
-     "confidence": "high"
-    },
-    "rediscover": null,
-    "comment": [],
-    "refute": null
-   },
-   "contrary": null,
-   "placed": {
-    "pack_line": null,
-    "annex_table": {
-     "part": "authorization.details.md",
-     "row": 9
-    }
-   },
-   "uses": 0,
-   "carried_from": "2026-11-20T12:20:00Z"
+   "carried_from": "2026-11-25T15:00:00"
   }
  ],
  "comment_facts": [
   {
-   "id": "authorization/9f60a5905f689a63-1",
+   "id": "authorization/ad28b56cd87034dc-3",
    "verdict": "confirmed",
-   "code_says": "La méthode fromPkcs8 prend un seul matériel, une clé privée PKCS#8 en Base64, la décode, puis dérive la clé publique via RSAPublicKeySpec à partir du modulus et de l'exposant public de RSAPrivateCrtKey. Aucune clé publique n'est lue en entrée.",
-   "code_line_start": 62,
-   "code_line_end": 77,
-   "code_evidence": "new RSAPublicKeySpec(crt.getModulus(), crt.getPublicExponent()));",
+   "code_says": "L'authenticationEntryPoint appelle writeJsonError avec HttpServletResponse.SC_UNAUTHORIZED (401) et la chaîne \"unauthorized\".",
+   "code_line_start": 191,
+   "code_line_end": 192,
+   "code_evidence": "writeJsonError(response, HttpServletResponse.SC_UNAUTHORIZED, \"unauthorized\")",
    "evidence_check": null,
-   "code_file": "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/RsaKeyMaterial.java",
+   "code_file": "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/SecurityConfig.java",
    "invalid": false,
-   "cache_digest": "4a3ceccd58b4ebdf18110d92e4edd74fea6d9b871c9049fd94be9bb77a73d919",
+   "cache_digest": "6f15ee57da157a25588ede93fb3f143eba7814d66162b596b7553cb3815d606f",
    "reused": true,
-   "reused_from": "2026-11-20T12:20:00Z",
+   "reused_from": "2026-11-25T15:00:00",
    "cited_by": [
-    "authorization:rules:1"
+    "authorization:rules:3"
+   ],
+   "structure_rows_removed": []
+  },
+  {
+   "id": "authorization/ad28b56cd87034dc-7",
+   "verdict": "confirmed",
+   "code_says": "L'accessDeniedHandler appelle writeJsonError avec HttpServletResponse.SC_FORBIDDEN (403) et la chaîne \"forbidden\".",
+   "code_line_start": 193,
+   "code_line_end": 194,
+   "code_evidence": "writeJsonError(response, HttpServletResponse.SC_FORBIDDEN, \"forbidden\")",
+   "evidence_check": null,
+   "code_file": "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/SecurityConfig.java",
+   "invalid": false,
+   "cache_digest": "f5bd70858c8b69ef8eca26264297309937794e754cfc0685c7bae0285985fdd4",
+   "reused": true,
+   "reused_from": "2026-11-25T15:00:00",
+   "cited_by": [
+    "authorization:rules:3"
+   ],
+   "structure_rows_removed": []
+  },
+  {
+   "id": "authorization/ad28b56cd87034dc-4",
+   "verdict": "confirmed",
+   "code_says": "rateLimitingFilter est enregistré via addFilterBefore avec UsernamePasswordAuthenticationFilter.class, et jwtFilter est enregistré juste après, avec la même ancre.",
+   "code_line_start": 199,
+   "code_line_end": 200,
+   "code_evidence": ".addFilterBefore(rateLimitingFilter, UsernamePasswordAuthenticationFilter.class)",
+   "evidence_check": null,
+   "code_file": "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/SecurityConfig.java",
+   "invalid": false,
+   "cache_digest": "d3bb3f209b47f690ff5bf90cd824c34cf714badd18b424a27894add0d2e86652",
+   "reused": true,
+   "reused_from": "2026-11-25T15:00:00",
+   "cited_by": [
+    "authorization:rules:4"
+   ],
+   "structure_rows_removed": []
+  },
+  {
+   "id": "authorization/ad28b56cd87034dc-5",
+   "verdict": "confirmed",
+   "code_says": "userRateLimitingFilter est enregistré via addFilterBefore avec AuthorizationFilter.class, donc après jwtFilter (ancré sur UsernamePasswordAuthenticationFilter) et avant l'autorisation.",
+   "code_line_start": 207,
+   "code_line_end": 207,
+   "code_evidence": ".addFilterBefore(userRateLimitingFilter, AuthorizationFilter.class)",
+   "evidence_check": null,
+   "code_file": "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/SecurityConfig.java",
+   "invalid": false,
+   "cache_digest": "0b79699650d95b029bb6c90f7f1fb95b52d7fe09d2ee392bbf8b1e7b9553c6fa",
+   "reused": true,
+   "reused_from": "2026-11-25T15:00:00",
+   "cited_by": [
+    "authorization:rules:4"
+   ],
+   "structure_rows_removed": []
+  },
+  {
+   "id": "authorization/0768b8a597f77149-1",
+   "verdict": "confirmed",
+   "code_says": "Le test appelle serviceWithKey(privateKeyBase64).getPublicKeySpkiBase64() et asserte que le résultat est égal à Base64 du SPKI de keyPair.getPublic(), soit la clé publique dérivée de la clé privée configurée. La méthode getPublicKeySpkiBase64 elle-même n'est pas dans ce fichier.",
+   "code_line_start": 131,
+   "code_line_end": 132,
+   "code_evidence": ".isEqualTo(Base64.getEncoder().encodeToString(keyPair.getPublic().getEncoded()));",
+   "evidence_check": null,
+   "code_file": "backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/JwtServiceRs256Test.java",
+   "invalid": false,
+   "cache_digest": "772b74314ec9d16cee372b8b355165eed373a98394667e32a1dc9a1b491acb7b",
+   "cited_by": [
+    "authorization:questions:1"
+   ],
+   "structure_rows_removed": []
+  },
+  {
+   "id": "authorization/64bec9020ef6d204-2",
+   "verdict": "confirmed",
+   "code_says": "Le test génère une clé RSA de 1024 bits, appelle serviceWithKey sur cette clé et asserte une IllegalStateException dont le message contient \"2048\".",
+   "code_line_start": 301,
+   "code_line_end": 310,
+   "code_evidence": ".hasMessageContaining(\"2048\");",
+   "evidence_check": null,
+   "code_file": "backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/JwtServiceRs256Test.java",
+   "invalid": false,
+   "cache_digest": "b4caebc8d71c24b5421a3fe6b6a525680c40faa9269996c46fbb005bc1ddb0ac",
+   "cited_by": [
+    "authorization:questions:2"
    ],
    "structure_rows_removed": []
   }
  ],
  "facts_validated": [
-  "authorization/9f60a5905f689a63-1",
-  "authorization/105846cf9aaec1b8-1",
-  "authorization/48e6f6949702d043-1",
-  "authorization/ca82dcefc6247794-1",
-  "authorization/ca82dcefc6247794-2",
-  "authorization/e18907b3ce64ed01-1",
-  "authorization/36aa78900fe7b738-1",
-  "authorization/8c0ce53d79d11153-2",
-  "authorization/1d61137988d01278-1",
+  "authorization/ad28b56cd87034dc-3",
+  "authorization/ad28b56cd87034dc-7",
+  "authorization/ad28b56cd87034dc-4",
+  "authorization/ad28b56cd87034dc-5",
   "authorization/6bf025d08b434efd-1",
-  "authorization/5c6d5fea73721965-1",
-  "authorization/cba057cd17a08d89-1",
-  "authorization/fb57d9c20f4b8757-1",
-  "authorization/519761a96abfc2f1-1"
+  "authorization/105846cf9aaec1b8-1"
  ],
  "counts": {
-  "units": 25,
-  "admit": 16,
+  "units": 23,
+  "admit": 11,
   "annex": 9,
-  "drop": 0,
+  "drop": 3,
   "hold": 0,
   "pending": 0,
   "consigne_before_unsupported": 0,
   "consigne_after_dropped": 0,
   "structure_rows_removed": 0,
   "framework": 0,
-  "guarded_elsewhere": 0,
-  "resolved": 0,
+  "guarded_elsewhere": 1,
+  "resolved": 2,
   "restricted": 0,
   "counterexample": 0,
-  "promoted": 0,
+  "promoted": 1,
   "kept_for": {
-   "rediscovered": 9
+   "rediscovered": 7
   },
   "pointers_removed": 0,
   "restored_alerts": 0,
   "budget_cut": 0
  },
- "answers": [],
+ "answers": [
+  {
+   "unit": "authorization:questions:1",
+   "question": "La clé publique publiée dans AUTH_JWT_PUBLIC_KEY doit-elle être exactement le SPKI dérivé de la clé privée configurée ? Selon le commentaire du test, oui, mais aucun fait de code du lot ne le confirme (JwtServiceRs256Test.java)",
+   "answer": [
+    {
+     "file": "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtService.java",
+     "line_start": 164,
+     "line_end": 166,
+     "evidence": "return RsaKeyMaterial.toSpkiBase64(verificationKey);",
+     "evidence_check": "exact"
+    }
+   ]
+  },
+  {
+   "unit": "authorization:questions:2",
+   "question": "Le seuil minimal de 2048 bits pour la clé RSA vient-il d'une règle de code ou seulement du test ? Le commentaire cite la RFC 7518 et le test attend une IllegalStateException au démarrage pour 1024 bits, mais aucun fait de code ne porte la règle dans ce lot (JwtServiceRs256Test.java)",
+   "answer": [
+    {
+     "file": "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/RsaKeyMaterial.java",
+     "line_start": 184,
+     "line_end": 190,
+     "evidence": "int bits = key.getModulus().bitLength();",
+     "evidence_check": "exact"
+    }
+   ]
+  }
+ ],
  "budget_cut": [],
  "structure_rows_removed": [],
- "notes": [],
- "base_sha256_after": "558f380e8d937eba3299ad362fd2f2e29fdc08afe131212ec58f9efbd707edbf",
+ "notes": [
+  "règle promue depuis authorization:questions:2 : - Une clé RSA de moins de 2048 bits (RsaKeyMaterial.MIN_MODULUS_BITS) fait échouer le démarrage de JwtService avec une IllegalStateException [#105846cf9aaec1b8-1] `backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/RsaKeyMaterial.java:184-190`."
+ ],
+ "base_sha256_after": "83952796cbdcf46f65dbaa52cb542a8895aa99ef5c476877c41a6e91d5194fe0",
  "bases_touched": {
   "authorization": {
-   "fingerprint": "38d303cccd937afe6bb3ae3b80b7df474f34555be0c6573eed360e6d836105c3",
-   "sha256_after": "558f380e8d937eba3299ad362fd2f2e29fdc08afe131212ec58f9efbd707edbf"
+   "fingerprint": "758c86eafc4d24d304c490dae80dc0e6ca46e95d819339d6812f475af2fa5588",
+   "sha256_after": "83952796cbdcf46f65dbaa52cb542a8895aa99ef5c476877c41a6e91d5194fe0"
   }
  },
  "lint": {
-  "ok": true,
-  "errors": 0,
-  "warnings": 1
+  "ok": false,
+  "errors": 1,
+  "warnings": 0
  }
 }
