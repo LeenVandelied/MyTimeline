@@ -152,6 +152,7 @@
   "backend:src/main/java/com/matimeline/eventmanager/domain/exceptions/CategoryReassignTargetInvalidException.java": "Category",
   "backend:src/main/java/com/matimeline/eventmanager/domain/exceptions/EventConflictException.java": "Event",
   "backend:src/main/java/com/matimeline/eventmanager/domain/exceptions/EventNotFoundException.java": "Event",
+  "backend:src/main/java/com/matimeline/eventmanager/domain/exceptions/EventQuotaExceededException.java": "Event",
   "backend:src/main/java/com/matimeline/eventmanager/domain/exceptions/InvalidEventTypeException.java": "Event",
   "backend:src/main/java/com/matimeline/eventmanager/domain/exceptions/InvalidPasswordResetTokenException.java": "PasswordResetToken",
   "backend:src/main/java/com/matimeline/eventmanager/domain/exceptions/ProductNotFoundException.java": "Product",
@@ -167,12 +168,14 @@
   "backend:src/main/java/com/matimeline/eventmanager/domain/models/EventUpdateCommand.java": "Event",
   "backend:src/main/java/com/matimeline/eventmanager/domain/models/PasswordResetToken.java": "PasswordResetToken",
   "backend:src/main/java/com/matimeline/eventmanager/domain/models/Product.java": "Product",
+  "backend:src/main/java/com/matimeline/eventmanager/domain/models/ProductCreateCommand.java": "Product",
+  "backend:src/main/java/com/matimeline/eventmanager/domain/models/ProductUpdateCommand.java": "Product",
   "backend:src/main/java/com/matimeline/eventmanager/domain/models/RecurrenceExpansion.java": "Event",
   "backend:src/main/java/com/matimeline/eventmanager/domain/models/RecurrenceUnit.java": "Event",
-  "backend:src/main/java/com/matimeline/eventmanager/domain/models/Role.java": "User",
   "backend:src/main/java/com/matimeline/eventmanager/domain/models/Session.java": "Session",
   "backend:src/main/java/com/matimeline/eventmanager/domain/models/ThemePreference.java": "User",
   "backend:src/main/java/com/matimeline/eventmanager/domain/models/User.java": "User",
+  "backend:src/main/java/com/matimeline/eventmanager/domain/models/UserTier.java": "User",
   "backend:src/main/java/com/matimeline/eventmanager/domain/models/export/ExportJob.java": "ExportJob",
   "backend:src/main/java/com/matimeline/eventmanager/domain/models/export/ExportJobStatus.java": "ExportJob",
   "backend:src/main/java/com/matimeline/eventmanager/domain/models/export/UserDataExport.java": "User",
@@ -197,6 +200,7 @@
   "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/RecurrencePreviewController.java": "Event",
   "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/SessionController.java": "Session",
   "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/UserController.java": "User",
+  "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/mappers/EventCommandMapper.java": "Event",
   "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/PasswordResetEmailTemplate.java": "User",
   "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/CategoryRepositoryJpaImpl.java": "Category",
   "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/EventRepositoryJpaImpl.java": "Event",
@@ -224,6 +228,7 @@
   "backend:src/main/resources/db/migration/V14__idx_export_jobs_expires_at.sql": "ExportJob",
   "backend:src/main/resources/db/migration/V15__password_reset_tokens_version.sql": "PasswordResetToken",
   "backend:src/main/resources/db/migration/V16__user_theme_preference.sql": "User",
+  "backend:src/main/resources/db/migration/V17__user_tier.sql": "User",
   "backend:src/main/resources/db/migration/V4__reconcile_events_constraints.sql": "Event",
   "backend:src/main/resources/db/migration/V6__create_password_reset_tokens.sql": "PasswordResetToken",
   "backend:src/main/resources/db/migration/V8__category_ownership.sql": "Category",
@@ -233,11 +238,13 @@
   "backend:src/test/java/com/matimeline/eventmanager/application/services/EventServiceImplTest.java": "Event",
   "backend:src/test/java/com/matimeline/eventmanager/application/services/PasswordResetServiceImplTest.java": "User",
   "backend:src/test/java/com/matimeline/eventmanager/application/services/PasswordResetTokenPurgeSchedulerIntegrationTest.java": "PasswordResetToken",
+  "backend:src/test/java/com/matimeline/eventmanager/application/services/ProductServiceImplQuotaBatchTest.java": "Product",
   "backend:src/test/java/com/matimeline/eventmanager/application/services/ProductServiceImplTest.java": "Product",
   "backend:src/test/java/com/matimeline/eventmanager/application/services/RecurrenceExpansionServiceImplTest.java": "Event",
   "backend:src/test/java/com/matimeline/eventmanager/application/services/SessionServiceImplTest.java": "Session",
   "backend:src/test/java/com/matimeline/eventmanager/application/services/UserServiceImplTest.java": "User",
   "backend:src/test/java/com/matimeline/eventmanager/application/validation/PasswordPolicyTest.java": "User",
+  "backend:src/test/java/com/matimeline/eventmanager/domain/models/ProductCommandsTest.java": "Product",
   "backend:src/test/java/com/matimeline/eventmanager/domain/models/ThemePreferenceTest.java": "User",
   "backend:src/test/java/com/matimeline/eventmanager/domain/models/export/ExportJobTest.java": "ExportJob",
   "backend:src/test/java/com/matimeline/eventmanager/domain/models/export/UserDataExportTest.java": "User",
@@ -250,9 +257,15 @@
   "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryControllerTest.java": "Category",
   "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/EventControllerOwnershipTest.java": "Event",
   "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/EventControllerValidationTest.java": "Event",
+  "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/EventQuotaDefaultsIntegrationTest.java": "Event",
+  "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/EventQuotaExceededIntegrationTest.java": "Event",
   "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ForgotPasswordAsyncTest.java": "User",
+  "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/KeyRotationSessionIntegrationTest.java": "Session",
   "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/PasswordResetEndpointsIntegrationTest.java": "User",
+  "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductControllerCommandMappingTest.java": "Product",
   "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductControllerOwnershipTest.java": "Product",
+  "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductControllerPathOwnershipMatrixTest.java": "Product",
+  "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductPathOwnershipIntegrationTest.java": "Product",
   "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductRestoreIntegrationTest.java": "Product",
   "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/RecurrencePreviewControllerTest.java": "Event",
   "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/RegisterLoginIntegrationTest.java": "User",
@@ -260,6 +273,7 @@
   "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/SessionRevocationIntegrationTest.java": "Session",
   "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ThemePreferenceIntegrationTest.java": "User",
   "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/UserControllerTest.java": "User",
+  "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/UserTierProfilePatchIntegrationTest.java": "User",
   "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/email/PasswordResetEmailTemplateTest.java": "User",
   "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/CategoryDeleteReassignIntegrationTest.java": "Category",
   "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/EventConditionalCheckConstraintIntegrationTest.java": "Event",
@@ -269,8 +283,11 @@
   "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/ProductArchivedFilterIntegrationTest.java": "Product",
   "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/ProductEventCreationIntegrationTest.java": "Event",
   "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/UserRoleConstraintIntegrationTest.java": "User",
+  "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/EventQuotaCountIntegrationTest.java": "Event",
+  "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/EventQuotaCountScopeIntegrationTest.java": "Event",
   "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/PasswordResetTokenConcurrencyIntegrationTest.java": "PasswordResetToken",
   "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/PasswordResetTokenCreateStatisticsIntegrationTest.java": "PasswordResetToken",
+  "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/UserTierPersistenceIntegrationTest.java": "User",
   "backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/AuthErrorContractIntegrationTest.java": "User",
   "backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/PreferencesUserRateLimitIntegrationTest.java": "User",
   "backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/PreferencesUserRateLimitPathVariantsIntegrationTest.java": "User",
@@ -286,6 +303,7 @@
   "frontend:services/userService.test.ts": "User",
   "frontend:services/userService.ts": "User",
   "backend:src/main/java/com/matimeline/eventmanager/application/dtos/DeleteAccountRequest.java": "User",
+  "backend:src/main/java/com/matimeline/eventmanager/application/policy/PlanPolicy.java": "Product",
   "backend:src/main/java/com/matimeline/eventmanager/application/services/AsyncExportRunner.java": "ExportJob",
   "backend:src/main/java/com/matimeline/eventmanager/application/services/AvatarServiceImpl.java": "ExportJob",
   "backend:src/main/java/com/matimeline/eventmanager/application/services/ExportPurgeScheduler.java": "ExportJob",
@@ -317,17 +335,20 @@
   "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenController.java": "User",
   "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenFinderJpaAdapter.java": "PasswordResetToken",
   "backend:src/main/java/com/matimeline/eventmanager/infrastructure/config/StorageConfig.java": "ExportJob",
+  "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/CallerResolver.java": "Product",
   "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/ClientIpAnonymizer.java": "User",
   "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/ExportTokenService.java": "ExportJob",
   "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtFilter.java": "Session",
   "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtService.java": "Session",
   "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/SecurityConfig.java": "Session",
   "backend:src/main/java/com/matimeline/eventmanager/utils/Utils.java": "Event",
+  "backend:src/test/java/com/matimeline/eventmanager/application/policy/PlanPolicyTest.java": "User",
   "backend:src/test/java/com/matimeline/eventmanager/application/services/AvatarServiceImplTest.java": "ExportJob",
   "backend:src/test/java/com/matimeline/eventmanager/application/services/ExportPurgeSchedulerIntegrationTest.java": "ExportJob",
   "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/GlobalExceptionHandlerContractTest.java": "Event",
   "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/GlobalExceptionHandlerErrorCodeTest.java": "Event",
   "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/GlobalExceptionHandlerOptimisticLockTest.java": "Event",
+  "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/GlobalExceptionHandlerValidationTest.java": "Product",
   "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/JwksEndpointIntegrationTest.java": "Session",
   "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenEndpointIntegrationTest.java": "PasswordResetToken",
   "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eTestSupportProfileTest.java": "User",
@@ -340,8 +361,8 @@
   "backend:src/main/java/com/matimeline/eventmanager/application/dtos/JwksResponse.java": "Session",
   "backend:src/main/java/com/matimeline/eventmanager/domain/exceptions/InvalidDurationUnitException.java": "Event",
   "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/JwksController.java": "Session",
-  "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/CallerResolver.java": "Event",
-  "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/GlobalExceptionHandlerValidationTest.java": "Event",
+  "backend:src/main/java/com/matimeline/eventmanager/infrastructure/config/DevCorsStartupLogger.java": "Session",
+  "backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/JwtServiceKeyRotationTest.java": "Session",
   "frontend:i18n/locales.test.ts": "User"
  },
  "how": {
@@ -391,6 +412,7 @@
   "backend:src/main/java/com/matimeline/eventmanager/domain/exceptions/CategoryReassignTargetInvalidException.java": "name",
   "backend:src/main/java/com/matimeline/eventmanager/domain/exceptions/EventConflictException.java": "name",
   "backend:src/main/java/com/matimeline/eventmanager/domain/exceptions/EventNotFoundException.java": "name",
+  "backend:src/main/java/com/matimeline/eventmanager/domain/exceptions/EventQuotaExceededException.java": "name",
   "backend:src/main/java/com/matimeline/eventmanager/domain/exceptions/InvalidEventTypeException.java": "name",
   "backend:src/main/java/com/matimeline/eventmanager/domain/exceptions/InvalidPasswordResetTokenException.java": "name",
   "backend:src/main/java/com/matimeline/eventmanager/domain/exceptions/ProductNotFoundException.java": "name",
@@ -406,12 +428,14 @@
   "backend:src/main/java/com/matimeline/eventmanager/domain/models/EventUpdateCommand.java": "name",
   "backend:src/main/java/com/matimeline/eventmanager/domain/models/PasswordResetToken.java": "name",
   "backend:src/main/java/com/matimeline/eventmanager/domain/models/Product.java": "name",
+  "backend:src/main/java/com/matimeline/eventmanager/domain/models/ProductCreateCommand.java": "name",
+  "backend:src/main/java/com/matimeline/eventmanager/domain/models/ProductUpdateCommand.java": "name",
   "backend:src/main/java/com/matimeline/eventmanager/domain/models/RecurrenceExpansion.java": "name",
   "backend:src/main/java/com/matimeline/eventmanager/domain/models/RecurrenceUnit.java": "name",
-  "backend:src/main/java/com/matimeline/eventmanager/domain/models/Role.java": "name",
   "backend:src/main/java/com/matimeline/eventmanager/domain/models/Session.java": "name",
   "backend:src/main/java/com/matimeline/eventmanager/domain/models/ThemePreference.java": "name",
   "backend:src/main/java/com/matimeline/eventmanager/domain/models/User.java": "name",
+  "backend:src/main/java/com/matimeline/eventmanager/domain/models/UserTier.java": "name",
   "backend:src/main/java/com/matimeline/eventmanager/domain/models/export/ExportJob.java": "name",
   "backend:src/main/java/com/matimeline/eventmanager/domain/models/export/ExportJobStatus.java": "name",
   "backend:src/main/java/com/matimeline/eventmanager/domain/models/export/UserDataExport.java": "name",
@@ -436,6 +460,7 @@
   "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/RecurrencePreviewController.java": "name",
   "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/SessionController.java": "name",
   "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/UserController.java": "name",
+  "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/mappers/EventCommandMapper.java": "name",
   "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/PasswordResetEmailTemplate.java": "name",
   "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/CategoryRepositoryJpaImpl.java": "name",
   "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/EventRepositoryJpaImpl.java": "name",
@@ -463,6 +488,7 @@
   "backend:src/main/resources/db/migration/V14__idx_export_jobs_expires_at.sql": "name",
   "backend:src/main/resources/db/migration/V15__password_reset_tokens_version.sql": "name",
   "backend:src/main/resources/db/migration/V16__user_theme_preference.sql": "name",
+  "backend:src/main/resources/db/migration/V17__user_tier.sql": "name",
   "backend:src/main/resources/db/migration/V4__reconcile_events_constraints.sql": "name",
   "backend:src/main/resources/db/migration/V6__create_password_reset_tokens.sql": "name",
   "backend:src/main/resources/db/migration/V8__category_ownership.sql": "name",
@@ -472,11 +498,13 @@
   "backend:src/test/java/com/matimeline/eventmanager/application/services/EventServiceImplTest.java": "name",
   "backend:src/test/java/com/matimeline/eventmanager/application/services/PasswordResetServiceImplTest.java": "name",
   "backend:src/test/java/com/matimeline/eventmanager/application/services/PasswordResetTokenPurgeSchedulerIntegrationTest.java": "name",
+  "backend:src/test/java/com/matimeline/eventmanager/application/services/ProductServiceImplQuotaBatchTest.java": "name",
   "backend:src/test/java/com/matimeline/eventmanager/application/services/ProductServiceImplTest.java": "name",
   "backend:src/test/java/com/matimeline/eventmanager/application/services/RecurrenceExpansionServiceImplTest.java": "name",
   "backend:src/test/java/com/matimeline/eventmanager/application/services/SessionServiceImplTest.java": "name",
   "backend:src/test/java/com/matimeline/eventmanager/application/services/UserServiceImplTest.java": "name",
   "backend:src/test/java/com/matimeline/eventmanager/application/validation/PasswordPolicyTest.java": "name",
+  "backend:src/test/java/com/matimeline/eventmanager/domain/models/ProductCommandsTest.java": "name",
   "backend:src/test/java/com/matimeline/eventmanager/domain/models/ThemePreferenceTest.java": "name",
   "backend:src/test/java/com/matimeline/eventmanager/domain/models/export/ExportJobTest.java": "name",
   "backend:src/test/java/com/matimeline/eventmanager/domain/models/export/UserDataExportTest.java": "name",
@@ -489,9 +517,15 @@
   "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryControllerTest.java": "name",
   "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/EventControllerOwnershipTest.java": "name",
   "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/EventControllerValidationTest.java": "name",
+  "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/EventQuotaDefaultsIntegrationTest.java": "name",
+  "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/EventQuotaExceededIntegrationTest.java": "name",
   "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ForgotPasswordAsyncTest.java": "name",
+  "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/KeyRotationSessionIntegrationTest.java": "name",
   "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/PasswordResetEndpointsIntegrationTest.java": "name",
+  "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductControllerCommandMappingTest.java": "name",
   "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductControllerOwnershipTest.java": "name",
+  "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductControllerPathOwnershipMatrixTest.java": "name",
+  "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductPathOwnershipIntegrationTest.java": "name",
   "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductRestoreIntegrationTest.java": "name",
   "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/RecurrencePreviewControllerTest.java": "name",
   "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/RegisterLoginIntegrationTest.java": "name",
@@ -499,6 +533,7 @@
   "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/SessionRevocationIntegrationTest.java": "name",
   "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ThemePreferenceIntegrationTest.java": "name",
   "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/UserControllerTest.java": "name",
+  "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/UserTierProfilePatchIntegrationTest.java": "name",
   "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/email/PasswordResetEmailTemplateTest.java": "name",
   "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/CategoryDeleteReassignIntegrationTest.java": "name",
   "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/EventConditionalCheckConstraintIntegrationTest.java": "name",
@@ -508,8 +543,11 @@
   "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/ProductArchivedFilterIntegrationTest.java": "name",
   "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/ProductEventCreationIntegrationTest.java": "name",
   "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/UserRoleConstraintIntegrationTest.java": "name",
+  "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/EventQuotaCountIntegrationTest.java": "name",
+  "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/EventQuotaCountScopeIntegrationTest.java": "name",
   "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/PasswordResetTokenConcurrencyIntegrationTest.java": "name",
   "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/PasswordResetTokenCreateStatisticsIntegrationTest.java": "name",
+  "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/UserTierPersistenceIntegrationTest.java": "name",
   "backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/AuthErrorContractIntegrationTest.java": "name",
   "backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/PreferencesUserRateLimitIntegrationTest.java": "name",
   "backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/PreferencesUserRateLimitPathVariantsIntegrationTest.java": "name",
@@ -525,6 +563,7 @@
   "frontend:services/userService.test.ts": "name",
   "frontend:services/userService.ts": "name",
   "backend:src/main/java/com/matimeline/eventmanager/application/dtos/DeleteAccountRequest.java": "fanin",
+  "backend:src/main/java/com/matimeline/eventmanager/application/policy/PlanPolicy.java": "fanin",
   "backend:src/main/java/com/matimeline/eventmanager/application/services/AsyncExportRunner.java": "imports",
   "backend:src/main/java/com/matimeline/eventmanager/application/services/AvatarServiceImpl.java": "imports",
   "backend:src/main/java/com/matimeline/eventmanager/application/services/ExportPurgeScheduler.java": "imports",
@@ -556,17 +595,20 @@
   "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenController.java": "imports",
   "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenFinderJpaAdapter.java": "imports",
   "backend:src/main/java/com/matimeline/eventmanager/infrastructure/config/StorageConfig.java": "imports",
+  "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/CallerResolver.java": "fanin",
   "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/ClientIpAnonymizer.java": "fanin",
   "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/ExportTokenService.java": "fanin",
   "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtFilter.java": "imports",
   "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtService.java": "fanin",
   "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/SecurityConfig.java": "imports",
   "backend:src/main/java/com/matimeline/eventmanager/utils/Utils.java": "imports",
+  "backend:src/test/java/com/matimeline/eventmanager/application/policy/PlanPolicyTest.java": "imports",
   "backend:src/test/java/com/matimeline/eventmanager/application/services/AvatarServiceImplTest.java": "imports",
   "backend:src/test/java/com/matimeline/eventmanager/application/services/ExportPurgeSchedulerIntegrationTest.java": "imports",
   "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/GlobalExceptionHandlerContractTest.java": "imports",
   "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/GlobalExceptionHandlerErrorCodeTest.java": "imports",
   "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/GlobalExceptionHandlerOptimisticLockTest.java": "imports",
+  "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/GlobalExceptionHandlerValidationTest.java": "imports",
   "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/JwksEndpointIntegrationTest.java": "imports",
   "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenEndpointIntegrationTest.java": "imports",
   "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eTestSupportProfileTest.java": "imports",
@@ -579,8 +621,8 @@
   "backend:src/main/java/com/matimeline/eventmanager/application/dtos/JwksResponse.java": "fanin",
   "backend:src/main/java/com/matimeline/eventmanager/domain/exceptions/InvalidDurationUnitException.java": "fanin",
   "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/JwksController.java": "imports",
-  "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/CallerResolver.java": "fanin",
-  "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/GlobalExceptionHandlerValidationTest.java": "imports",
+  "backend:src/main/java/com/matimeline/eventmanager/infrastructure/config/DevCorsStartupLogger.java": "imports",
+  "backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/JwtServiceKeyRotationTest.java": "imports",
   "frontend:i18n/locales.test.ts": "imports"
  },
  "group_of": {
@@ -588,8 +630,8 @@
   "User": "User",
   "Category": "Category",
   "Event": "Event",
-  "ExportJob": "Event",
-  "Session": "Event",
+  "ExportJob": "ExportJob",
+  "Session": "Session",
   "PasswordResetToken": "Event"
  },
  "merge_trace": [
@@ -599,20 +641,6 @@
    "size": 14,
    "edges_to_target": 1,
    "edges_total": 1
-  },
-  {
-   "from": "Session",
-   "into": "Event",
-   "size": 24,
-   "edges_to_target": 4,
-   "edges_total": 4
-  },
-  {
-   "from": "ExportJob",
-   "into": "Event",
-   "size": 37,
-   "edges_to_target": 5,
-   "edges_total": 5
   }
  ],
  "hubs": [
@@ -640,16 +668,16 @@
     "ProductEntity"
    ],
    "seed_folders": [],
-   "n_files": 18,
-   "bytes": 132509,
+   "n_files": 28,
+   "bytes": 174654,
    "by_repo": {
-    "backend": 17,
+    "backend": 27,
     "frontend": 1
    },
    "by_layer": {
-    "backend/application": 7,
-    "backend/infrastructure": 6,
-    "backend/domain": 4,
+    "backend/infrastructure": 11,
+    "backend/application": 9,
+    "backend/domain": 7,
     "frontend/services/services": 1
    },
    "controllers": [
@@ -668,21 +696,23 @@
    ],
    "selectors": [],
    "top_folders": [
-    "backend:application.dtos",
     "backend:infrastructure.adapters.controllers",
+    "backend:application.dtos",
+    "backend:domain.models",
     "backend:application.services",
     "backend:application.mappers",
     "backend:domain.exceptions",
-    "backend:domain.models",
     "backend:domain.ports.repositories",
     "backend:domain.ports.services"
    ],
    "overlay_hits": {
-    "integrations": 29,
-    "authorization": 2
+    "integrations": 49,
+    "authorization": 12
    },
    "how": {
-    "name": 18
+    "name": 25,
+    "fanin": 2,
+    "imports": 1
    },
    "files": [
     "backend:src/main/java/com/matimeline/eventmanager/application/dtos/ArchivedProductResponse.java",
@@ -690,16 +720,26 @@
     "backend:src/main/java/com/matimeline/eventmanager/application/dtos/ProductResponse.java",
     "backend:src/main/java/com/matimeline/eventmanager/application/dtos/ProductUpdateRequest.java",
     "backend:src/main/java/com/matimeline/eventmanager/application/mappers/ProductMapper.java",
+    "backend:src/main/java/com/matimeline/eventmanager/application/policy/PlanPolicy.java",
     "backend:src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
     "backend:src/main/java/com/matimeline/eventmanager/domain/exceptions/ProductNotFoundException.java",
     "backend:src/main/java/com/matimeline/eventmanager/domain/models/Product.java",
+    "backend:src/main/java/com/matimeline/eventmanager/domain/models/ProductCreateCommand.java",
+    "backend:src/main/java/com/matimeline/eventmanager/domain/models/ProductUpdateCommand.java",
     "backend:src/main/java/com/matimeline/eventmanager/domain/ports/repositories/ProductRepository.java",
     "backend:src/main/java/com/matimeline/eventmanager/domain/ports/services/ProductService.java",
     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java",
     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ProductRepositoryJpaImpl.java",
     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/entities/ProductEntity.java",
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/CallerResolver.java",
+    "backend:src/test/java/com/matimeline/eventmanager/application/services/ProductServiceImplQuotaBatchTest.java",
     "backend:src/test/java/com/matimeline/eventmanager/application/services/ProductServiceImplTest.java",
+    "backend:src/test/java/com/matimeline/eventmanager/domain/models/ProductCommandsTest.java",
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/GlobalExceptionHandlerValidationTest.java",
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductControllerCommandMappingTest.java",
     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductControllerOwnershipTest.java",
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductControllerPathOwnershipMatrixTest.java",
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductPathOwnershipIntegrationTest.java",
     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductRestoreIntegrationTest.java",
     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/ProductArchivedFilterIntegrationTest.java",
     "frontend:services/productService.ts"
@@ -714,18 +754,18 @@
     "UserEntity"
    ],
    "seed_folders": [],
-   "n_files": 71,
-   "bytes": 369597,
+   "n_files": 75,
+   "bytes": 383794,
    "by_repo": {
-    "backend": 65,
+    "backend": 69,
     "frontend": 6
    },
    "by_layer": {
-    "backend/infrastructure": 32,
-    "backend/application": 19,
+    "backend/infrastructure": 34,
+    "backend/application": 20,
     "backend/domain": 12,
     "frontend/services/services": 4,
-    "backend/db": 2,
+    "backend/db": 3,
     "frontend/i18n/i18n": 2
    },
    "controllers": [
@@ -772,15 +812,15 @@
     "backend:domain.ports.services"
    ],
    "overlay_hits": {
-    "authorization": 112,
+    "authorization": 113,
     "batch": 10,
-    "state-machine": 2,
-    "integrations": 109
+    "state-machine": 4,
+    "integrations": 119
    },
    "how": {
-    "name": 62,
+    "name": 65,
     "fanin": 4,
-    "imports": 5
+    "imports": 6
    },
    "files": [
     "backend:src/main/java/com/matimeline/eventmanager/application/dtos/AuthRequest.java",
@@ -801,9 +841,9 @@
     "backend:src/main/java/com/matimeline/eventmanager/application/validation/StrongPasswordValidator.java",
     "backend:src/main/java/com/matimeline/eventmanager/domain/exceptions/SamePasswordException.java",
     "backend:src/main/java/com/matimeline/eventmanager/domain/exceptions/UserNotFoundException.java",
-    "backend:src/main/java/com/matimeline/eventmanager/domain/models/Role.java",
     "backend:src/main/java/com/matimeline/eventmanager/domain/models/ThemePreference.java",
     "backend:src/main/java/com/matimeline/eventmanager/domain/models/User.java",
+    "backend:src/main/java/com/matimeline/eventmanager/domain/models/UserTier.java",
     "backend:src/main/java/com/matimeline/eventmanager/domain/models/export/UserDataExport.java",
     "backend:src/main/java/com/matimeline/eventmanager/domain/ports/repositories/UserRepository.java",
     "backend:src/main/java/com/matimeline/eventmanager/domain/ports/services/EmailService.java",
@@ -823,6 +863,8 @@
     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/UserRateLimitingFilter.java",
     "backend:src/main/resources/db/migration/V12__users_role_not_null_check.sql",
     "backend:src/main/resources/db/migration/V16__user_theme_preference.sql",
+    "backend:src/main/resources/db/migration/V17__user_tier.sql",
+    "backend:src/test/java/com/matimeline/eventmanager/application/policy/PlanPolicyTest.java",
     "backend:src/test/java/com/matimeline/eventmanager/application/services/PasswordResetServiceImplTest.java",
     "backend:src/test/java/com/matimeline/eventmanager/application/services/UserServiceImplTest.java",
     "backend:src/test/java/com/matimeline/eventmanager/application/validation/PasswordPolicyTest.java",
@@ -839,8 +881,10 @@
     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/RegisterLoginIntegrationTest.java",
     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ThemePreferenceIntegrationTest.java",
     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/UserControllerTest.java",
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/UserTierProfilePatchIntegrationTest.java",
     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/email/PasswordResetEmailTemplateTest.java",
     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/UserRoleConstraintIntegrationTest.java",
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/UserTierPersistenceIntegrationTest.java",
     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eTestSupportProfileTest.java",
     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/AuthErrorContractIntegrationTest.java",
     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/CallerResolverTest.java",
@@ -937,41 +981,261 @@
    "id": "Event",
    "seeds": [
     "Event",
-    "ExportJob",
-    "PasswordResetToken",
-    "Session"
+    "PasswordResetToken"
    ],
    "entities": [
     "EventEntity",
-    "ExportJobEntity",
-    "PasswordResetTokenEntity",
-    "SessionEntity"
+    "PasswordResetTokenEntity"
    ],
    "seed_folders": [],
-   "n_files": 127,
-   "bytes": 553146,
+   "n_files": 70,
+   "bytes": 344333,
    "by_repo": {
-    "backend": 125,
-    "frontend": 2
+    "backend": 69,
+    "frontend": 1
    },
    "by_layer": {
-    "backend/infrastructure": 49,
-    "backend/domain": 38,
-    "backend/application": 28,
-    "backend/db": 8,
-    "frontend/services/services": 2,
-    "backend/utils": 2
+    "backend/infrastructure": 27,
+    "backend/domain": 21,
+    "backend/application": 14,
+    "backend/db": 5,
+    "backend/utils": 2,
+    "frontend/services/services": 1
    },
    "controllers": [
     "EventController",
-    "ExportController",
+    "RecurrencePreviewController"
+   ],
+   "class_paths": [
+    "/api/events"
+   ],
+   "front_urls": [],
+   "front_routes": [],
+   "front_folders": [
+    "services"
+   ],
+   "services": [
+    "EventService",
+    "RecurrenceExpansionService"
+   ],
+   "selectors": [],
+   "top_folders": [
+    "backend:domain.exceptions",
+    "backend:infrastructure.adapters.controllers",
+    "backend:application.dtos",
+    "backend:application.services",
+    "backend:domain.models",
+    "backend:infrastructure.adapters.repositories.jpa",
+    "backend:db",
+    "backend:infrastructure.adapters.repositories"
+   ],
+   "overlay_hits": {
+    "state-machine": 3,
+    "authorization": 7,
+    "integrations": 128,
+    "batch": 10
+   },
+   "how": {
+    "name": 58,
+    "fanin": 4,
+    "imports": 8
+   },
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/application/dtos/EventCreationRequest.java",
+    "backend:src/main/java/com/matimeline/eventmanager/application/dtos/EventResponse.java",
+    "backend:src/main/java/com/matimeline/eventmanager/application/dtos/EventUpdateRequest.java",
+    "backend:src/main/java/com/matimeline/eventmanager/application/dtos/RecurrencePreviewRequest.java",
+    "backend:src/main/java/com/matimeline/eventmanager/application/dtos/RecurrencePreviewResponse.java",
+    "backend:src/main/java/com/matimeline/eventmanager/application/mappers/EventMapper.java",
+    "backend:src/main/java/com/matimeline/eventmanager/application/mappers/PasswordResetTokenMapper.java",
+    "backend:src/main/java/com/matimeline/eventmanager/application/services/EventServiceImpl.java",
+    "backend:src/main/java/com/matimeline/eventmanager/application/services/PasswordResetTokenPurgeScheduler.java",
+    "backend:src/main/java/com/matimeline/eventmanager/application/services/RecurrenceExpansionServiceImpl.java",
+    "backend:src/main/java/com/matimeline/eventmanager/domain/exceptions/AccountDeletionMismatchException.java",
+    "backend:src/main/java/com/matimeline/eventmanager/domain/exceptions/EndDateBeforeStartException.java",
+    "backend:src/main/java/com/matimeline/eventmanager/domain/exceptions/EventConflictException.java",
+    "backend:src/main/java/com/matimeline/eventmanager/domain/exceptions/EventNotFoundException.java",
+    "backend:src/main/java/com/matimeline/eventmanager/domain/exceptions/EventQuotaExceededException.java",
+    "backend:src/main/java/com/matimeline/eventmanager/domain/exceptions/InvalidCredentialsException.java",
+    "backend:src/main/java/com/matimeline/eventmanager/domain/exceptions/InvalidDurationUnitException.java",
+    "backend:src/main/java/com/matimeline/eventmanager/domain/exceptions/InvalidEventTypeException.java",
+    "backend:src/main/java/com/matimeline/eventmanager/domain/exceptions/InvalidPasswordResetTokenException.java",
+    "backend:src/main/java/com/matimeline/eventmanager/domain/exceptions/RecurrenceEndDateBeforeStartException.java",
+    "backend:src/main/java/com/matimeline/eventmanager/domain/exceptions/RecurrenceUnitRequiredException.java",
+    "backend:src/main/java/com/matimeline/eventmanager/domain/models/Event.java",
+    "backend:src/main/java/com/matimeline/eventmanager/domain/models/EventCreateCommand.java",
+    "backend:src/main/java/com/matimeline/eventmanager/domain/models/EventUpdateCommand.java",
+    "backend:src/main/java/com/matimeline/eventmanager/domain/models/PasswordResetToken.java",
+    "backend:src/main/java/com/matimeline/eventmanager/domain/models/RecurrenceExpansion.java",
+    "backend:src/main/java/com/matimeline/eventmanager/domain/models/RecurrenceUnit.java",
+    "backend:src/main/java/com/matimeline/eventmanager/domain/ports/repositories/EventRepository.java",
+    "backend:src/main/java/com/matimeline/eventmanager/domain/ports/repositories/PasswordResetTokenRepository.java",
+    "backend:src/main/java/com/matimeline/eventmanager/domain/ports/services/EventService.java",
+    "backend:src/main/java/com/matimeline/eventmanager/domain/ports/services/RecurrenceExpansionService.java",
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/EventController.java",
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/GlobalExceptionHandler.java",
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/RecurrencePreviewController.java",
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/mappers/EventCommandMapper.java",
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/EventRepositoryJpaImpl.java",
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/PasswordResetTokenRepositoryJpaImpl.java",
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenFinderJpaAdapter.java",
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/entities/EventEntity.java",
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/entities/PasswordResetTokenEntity.java",
+    "backend:src/main/java/com/matimeline/eventmanager/utils/Utils.java",
+    "backend:src/main/resources/db/migration/V11__events_conditional_check_constraints.sql",
+    "backend:src/main/resources/db/migration/V15__password_reset_tokens_version.sql",
+    "backend:src/main/resources/db/migration/V4__reconcile_events_constraints.sql",
+    "backend:src/main/resources/db/migration/V6__create_password_reset_tokens.sql",
+    "backend:src/main/resources/db/migration/V9__neutralize_invalid_recurrence_unit.sql",
+    "backend:src/test/java/com/matimeline/eventmanager/application/dtos/EventCreationRequestContractTest.java",
+    "backend:src/test/java/com/matimeline/eventmanager/application/services/EventServiceImplTest.java",
+    "backend:src/test/java/com/matimeline/eventmanager/application/services/PasswordResetTokenPurgeSchedulerIntegrationTest.java",
+    "backend:src/test/java/com/matimeline/eventmanager/application/services/RecurrenceExpansionServiceImplTest.java",
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/EventControllerOwnershipTest.java",
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/EventControllerValidationTest.java",
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/EventQuotaDefaultsIntegrationTest.java",
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/EventQuotaExceededIntegrationTest.java",
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/GlobalExceptionHandlerContractTest.java",
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/GlobalExceptionHandlerErrorCodeTest.java",
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/GlobalExceptionHandlerOptimisticLockTest.java",
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/RecurrencePreviewControllerTest.java",
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/EventConditionalCheckConstraintIntegrationTest.java",
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/EventDeleteStatisticsIntegrationTest.java",
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/EventOptimisticLockConflictIntegrationTest.java",
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/EventPatchAndRecurrenceIntegrationTest.java",
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/ProductEventCreationIntegrationTest.java",
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/EventQuotaCountIntegrationTest.java",
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/EventQuotaCountScopeIntegrationTest.java",
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/PasswordResetTokenConcurrencyIntegrationTest.java",
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/PasswordResetTokenCreateStatisticsIntegrationTest.java",
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenEndpointIntegrationTest.java",
+    "backend:src/test/java/com/matimeline/eventmanager/utils/UtilsTest.java",
+    "frontend:services/eventService.ts"
+   ]
+  },
+  "ExportJob": {
+   "id": "ExportJob",
+   "seeds": [
+    "ExportJob"
+   ],
+   "entities": [
+    "ExportJobEntity"
+   ],
+   "seed_folders": [],
+   "n_files": 37,
+   "bytes": 113984,
+   "by_repo": {
+    "backend": 37
+   },
+   "by_layer": {
+    "backend/domain": 14,
+    "backend/infrastructure": 13,
+    "backend/application": 8,
+    "backend/db": 2
+   },
+   "controllers": [
+    "ExportController"
+   ],
+   "class_paths": [
+    "/api/export"
+   ],
+   "front_urls": [],
+   "front_routes": [],
+   "front_folders": [],
+   "services": [
+    "AvatarService",
+    "ExportService",
+    "ExportTokenService"
+   ],
+   "selectors": [],
+   "top_folders": [
+    "backend:application.services",
+    "backend:domain.models.export",
+    "backend:infrastructure.adapters.export",
+    "backend:domain.ports.services",
+    "backend:domain.exceptions",
+    "backend:infrastructure.adapters.repositories.jpa",
+    "backend:db",
+    "backend:infrastructure.config"
+   ],
+   "overlay_hits": {
+    "state-machine": 17,
+    "integrations": 111,
+    "batch": 13,
+    "authorization": 10
+   },
+   "how": {
+    "name": 10,
+    "imports": 18,
+    "fanin": 9
+   },
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/application/dtos/ExportJobResponse.java",
+    "backend:src/main/java/com/matimeline/eventmanager/application/services/AsyncExportRunner.java",
+    "backend:src/main/java/com/matimeline/eventmanager/application/services/AvatarServiceImpl.java",
+    "backend:src/main/java/com/matimeline/eventmanager/application/services/ExportPurgeScheduler.java",
+    "backend:src/main/java/com/matimeline/eventmanager/application/services/ExportRendererRegistry.java",
+    "backend:src/main/java/com/matimeline/eventmanager/application/services/ExportServiceImpl.java",
+    "backend:src/main/java/com/matimeline/eventmanager/domain/exceptions/AvatarNotFoundException.java",
+    "backend:src/main/java/com/matimeline/eventmanager/domain/exceptions/ExportFormatNotSupportedException.java",
+    "backend:src/main/java/com/matimeline/eventmanager/domain/exceptions/InvalidAvatarException.java",
+    "backend:src/main/java/com/matimeline/eventmanager/domain/models/AvatarContent.java",
+    "backend:src/main/java/com/matimeline/eventmanager/domain/models/export/ExportFormat.java",
+    "backend:src/main/java/com/matimeline/eventmanager/domain/models/export/ExportJob.java",
+    "backend:src/main/java/com/matimeline/eventmanager/domain/models/export/ExportJobStatus.java",
+    "backend:src/main/java/com/matimeline/eventmanager/domain/models/export/RenderedExport.java",
+    "backend:src/main/java/com/matimeline/eventmanager/domain/ports/repositories/ExportJobRepository.java",
+    "backend:src/main/java/com/matimeline/eventmanager/domain/ports/services/AvatarService.java",
+    "backend:src/main/java/com/matimeline/eventmanager/domain/ports/services/ExportRenderer.java",
+    "backend:src/main/java/com/matimeline/eventmanager/domain/ports/services/ExportService.java",
+    "backend:src/main/java/com/matimeline/eventmanager/domain/ports/services/StoragePort.java",
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapter.java",
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ExportController.java",
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/CsvExportRenderer.java",
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/ExportFilenames.java",
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/JsonExportRenderer.java",
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/MarkdownExportRenderer.java",
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/ZipExportRenderer.java",
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ExportJobMapper.java",
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ExportJobRepositoryJpaImpl.java",
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/config/StorageConfig.java",
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/entities/ExportJobEntity.java",
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/ExportTokenService.java",
+    "backend:src/main/resources/db/migration/V13__export_jobs.sql",
+    "backend:src/main/resources/db/migration/V14__idx_export_jobs_expires_at.sql",
+    "backend:src/test/java/com/matimeline/eventmanager/application/services/AvatarServiceImplTest.java",
+    "backend:src/test/java/com/matimeline/eventmanager/application/services/ExportPurgeSchedulerIntegrationTest.java",
+    "backend:src/test/java/com/matimeline/eventmanager/domain/models/export/ExportJobTest.java",
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/config/StorageConfigTest.java"
+   ]
+  },
+  "Session": {
+   "id": "Session",
+   "seeds": [
+    "Session"
+   ],
+   "entities": [
+    "SessionEntity"
+   ],
+   "seed_folders": [],
+   "n_files": 27,
+   "bytes": 151756,
+   "by_repo": {
+    "backend": 26,
+    "frontend": 1
+   },
+   "by_layer": {
+    "backend/infrastructure": 15,
+    "backend/application": 6,
+    "backend/domain": 4,
+    "backend/db": 1,
+    "frontend/services/services": 1
+   },
+   "controllers": [
     "JwksController",
-    "RecurrencePreviewController",
     "SessionController"
    ],
    "class_paths": [
-    "/api/events",
-    "/api/export",
     "/api/sessions"
    ],
    "front_urls": [],
@@ -980,163 +1244,56 @@
     "services"
    ],
    "services": [
-    "AvatarService",
-    "EventService",
-    "ExportService",
-    "ExportTokenService",
     "JwtService",
-    "RecurrenceExpansionService",
     "SessionService"
    ],
    "selectors": [],
    "top_folders": [
     "backend:infrastructure.adapters.controllers",
-    "backend:application.services",
-    "backend:domain.exceptions",
+    "backend:infrastructure.security",
     "backend:application.dtos",
+    "backend:application.services",
+    "backend:application.mappers",
+    "backend:domain.exceptions",
     "backend:domain.models",
-    "backend:db",
-    "backend:domain.ports.services",
-    "backend:infrastructure.adapters.repositories.jpa"
+    "backend:domain.ports.repositories"
    ],
    "overlay_hits": {
-    "state-machine": 20,
-    "authorization": 76,
-    "integrations": 249,
-    "batch": 23
+    "authorization": 73,
+    "integrations": 36
    },
    "how": {
-    "name": 78,
-    "fanin": 17,
-    "imports": 32
+    "name": 17,
+    "imports": 7,
+    "fanin": 3
    },
    "files": [
-    "backend:src/main/java/com/matimeline/eventmanager/application/dtos/EventCreationRequest.java",
-    "backend:src/main/java/com/matimeline/eventmanager/application/dtos/EventResponse.java",
-    "backend:src/main/java/com/matimeline/eventmanager/application/dtos/EventUpdateRequest.java",
-    "backend:src/main/java/com/matimeline/eventmanager/application/dtos/ExportJobResponse.java",
     "backend:src/main/java/com/matimeline/eventmanager/application/dtos/JwkResponse.java",
     "backend:src/main/java/com/matimeline/eventmanager/application/dtos/JwksResponse.java",
-    "backend:src/main/java/com/matimeline/eventmanager/application/dtos/RecurrencePreviewRequest.java",
-    "backend:src/main/java/com/matimeline/eventmanager/application/dtos/RecurrencePreviewResponse.java",
     "backend:src/main/java/com/matimeline/eventmanager/application/dtos/SessionResponse.java",
-    "backend:src/main/java/com/matimeline/eventmanager/application/mappers/EventMapper.java",
-    "backend:src/main/java/com/matimeline/eventmanager/application/mappers/PasswordResetTokenMapper.java",
     "backend:src/main/java/com/matimeline/eventmanager/application/mappers/SessionMapper.java",
-    "backend:src/main/java/com/matimeline/eventmanager/application/services/AsyncExportRunner.java",
-    "backend:src/main/java/com/matimeline/eventmanager/application/services/AvatarServiceImpl.java",
-    "backend:src/main/java/com/matimeline/eventmanager/application/services/EventServiceImpl.java",
-    "backend:src/main/java/com/matimeline/eventmanager/application/services/ExportPurgeScheduler.java",
-    "backend:src/main/java/com/matimeline/eventmanager/application/services/ExportRendererRegistry.java",
-    "backend:src/main/java/com/matimeline/eventmanager/application/services/ExportServiceImpl.java",
-    "backend:src/main/java/com/matimeline/eventmanager/application/services/PasswordResetTokenPurgeScheduler.java",
-    "backend:src/main/java/com/matimeline/eventmanager/application/services/RecurrenceExpansionServiceImpl.java",
     "backend:src/main/java/com/matimeline/eventmanager/application/services/SessionServiceImpl.java",
-    "backend:src/main/java/com/matimeline/eventmanager/domain/exceptions/AccountDeletionMismatchException.java",
-    "backend:src/main/java/com/matimeline/eventmanager/domain/exceptions/AvatarNotFoundException.java",
-    "backend:src/main/java/com/matimeline/eventmanager/domain/exceptions/EndDateBeforeStartException.java",
-    "backend:src/main/java/com/matimeline/eventmanager/domain/exceptions/EventConflictException.java",
-    "backend:src/main/java/com/matimeline/eventmanager/domain/exceptions/EventNotFoundException.java",
-    "backend:src/main/java/com/matimeline/eventmanager/domain/exceptions/ExportFormatNotSupportedException.java",
-    "backend:src/main/java/com/matimeline/eventmanager/domain/exceptions/InvalidAvatarException.java",
-    "backend:src/main/java/com/matimeline/eventmanager/domain/exceptions/InvalidCredentialsException.java",
-    "backend:src/main/java/com/matimeline/eventmanager/domain/exceptions/InvalidDurationUnitException.java",
-    "backend:src/main/java/com/matimeline/eventmanager/domain/exceptions/InvalidEventTypeException.java",
-    "backend:src/main/java/com/matimeline/eventmanager/domain/exceptions/InvalidPasswordResetTokenException.java",
-    "backend:src/main/java/com/matimeline/eventmanager/domain/exceptions/RecurrenceEndDateBeforeStartException.java",
-    "backend:src/main/java/com/matimeline/eventmanager/domain/exceptions/RecurrenceUnitRequiredException.java",
     "backend:src/main/java/com/matimeline/eventmanager/domain/exceptions/SessionNotFoundException.java",
-    "backend:src/main/java/com/matimeline/eventmanager/domain/models/AvatarContent.java",
-    "backend:src/main/java/com/matimeline/eventmanager/domain/models/Event.java",
-    "backend:src/main/java/com/matimeline/eventmanager/domain/models/EventCreateCommand.java",
-    "backend:src/main/java/com/matimeline/eventmanager/domain/models/EventUpdateCommand.java",
-    "backend:src/main/java/com/matimeline/eventmanager/domain/models/PasswordResetToken.java",
-    "backend:src/main/java/com/matimeline/eventmanager/domain/models/RecurrenceExpansion.java",
-    "backend:src/main/java/com/matimeline/eventmanager/domain/models/RecurrenceUnit.java",
     "backend:src/main/java/com/matimeline/eventmanager/domain/models/Session.java",
-    "backend:src/main/java/com/matimeline/eventmanager/domain/models/export/ExportFormat.java",
-    "backend:src/main/java/com/matimeline/eventmanager/domain/models/export/ExportJob.java",
-    "backend:src/main/java/com/matimeline/eventmanager/domain/models/export/ExportJobStatus.java",
-    "backend:src/main/java/com/matimeline/eventmanager/domain/models/export/RenderedExport.java",
-    "backend:src/main/java/com/matimeline/eventmanager/domain/ports/repositories/EventRepository.java",
-    "backend:src/main/java/com/matimeline/eventmanager/domain/ports/repositories/ExportJobRepository.java",
-    "backend:src/main/java/com/matimeline/eventmanager/domain/ports/repositories/PasswordResetTokenRepository.java",
     "backend:src/main/java/com/matimeline/eventmanager/domain/ports/repositories/SessionRepository.java",
-    "backend:src/main/java/com/matimeline/eventmanager/domain/ports/services/AvatarService.java",
-    "backend:src/main/java/com/matimeline/eventmanager/domain/ports/services/EventService.java",
-    "backend:src/main/java/com/matimeline/eventmanager/domain/ports/services/ExportRenderer.java",
-    "backend:src/main/java/com/matimeline/eventmanager/domain/ports/services/ExportService.java",
-    "backend:src/main/java/com/matimeline/eventmanager/domain/ports/services/RecurrenceExpansionService.java",
     "backend:src/main/java/com/matimeline/eventmanager/domain/ports/services/SessionService.java",
-    "backend:src/main/java/com/matimeline/eventmanager/domain/ports/services/StoragePort.java",
-    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapter.java",
-    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/EventController.java",
-    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ExportController.java",
-    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/GlobalExceptionHandler.java",
     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/JwksController.java",
-    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/RecurrencePreviewController.java",
     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/SessionController.java",
-    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/CsvExportRenderer.java",
-    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/ExportFilenames.java",
-    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/JsonExportRenderer.java",
-    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/MarkdownExportRenderer.java",
-    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/ZipExportRenderer.java",
-    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/EventRepositoryJpaImpl.java",
-    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ExportJobMapper.java",
-    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ExportJobRepositoryJpaImpl.java",
-    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/PasswordResetTokenRepositoryJpaImpl.java",
     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/SessionRepositoryJpaImpl.java",
-    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenFinderJpaAdapter.java",
-    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/config/StorageConfig.java",
-    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/entities/EventEntity.java",
-    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/entities/ExportJobEntity.java",
-    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/entities/PasswordResetTokenEntity.java",
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/config/DevCorsStartupLogger.java",
     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/entities/SessionEntity.java",
-    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/CallerResolver.java",
-    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/ExportTokenService.java",
     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtFilter.java",
     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtService.java",
     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/SecurityConfig.java",
-    "backend:src/main/java/com/matimeline/eventmanager/utils/Utils.java",
     "backend:src/main/resources/db/migration/V10__create_sessions.sql",
-    "backend:src/main/resources/db/migration/V11__events_conditional_check_constraints.sql",
-    "backend:src/main/resources/db/migration/V13__export_jobs.sql",
-    "backend:src/main/resources/db/migration/V14__idx_export_jobs_expires_at.sql",
-    "backend:src/main/resources/db/migration/V15__password_reset_tokens_version.sql",
-    "backend:src/main/resources/db/migration/V4__reconcile_events_constraints.sql",
-    "backend:src/main/resources/db/migration/V6__create_password_reset_tokens.sql",
-    "backend:src/main/resources/db/migration/V9__neutralize_invalid_recurrence_unit.sql",
-    "backend:src/test/java/com/matimeline/eventmanager/application/dtos/EventCreationRequestContractTest.java",
-    "backend:src/test/java/com/matimeline/eventmanager/application/services/AvatarServiceImplTest.java",
-    "backend:src/test/java/com/matimeline/eventmanager/application/services/EventServiceImplTest.java",
-    "backend:src/test/java/com/matimeline/eventmanager/application/services/ExportPurgeSchedulerIntegrationTest.java",
-    "backend:src/test/java/com/matimeline/eventmanager/application/services/PasswordResetTokenPurgeSchedulerIntegrationTest.java",
-    "backend:src/test/java/com/matimeline/eventmanager/application/services/RecurrenceExpansionServiceImplTest.java",
     "backend:src/test/java/com/matimeline/eventmanager/application/services/SessionServiceImplTest.java",
-    "backend:src/test/java/com/matimeline/eventmanager/domain/models/export/ExportJobTest.java",
-    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/EventControllerOwnershipTest.java",
-    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/EventControllerValidationTest.java",
-    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/GlobalExceptionHandlerContractTest.java",
-    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/GlobalExceptionHandlerErrorCodeTest.java",
-    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/GlobalExceptionHandlerOptimisticLockTest.java",
-    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/GlobalExceptionHandlerValidationTest.java",
     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/JwksEndpointIntegrationTest.java",
-    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/RecurrencePreviewControllerTest.java",
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/KeyRotationSessionIntegrationTest.java",
     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/SessionControllerTest.java",
     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/SessionRevocationIntegrationTest.java",
-    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/EventConditionalCheckConstraintIntegrationTest.java",
-    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/EventDeleteStatisticsIntegrationTest.java",
-    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/EventOptimisticLockConflictIntegrationTest.java",
-    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/EventPatchAndRecurrenceIntegrationTest.java",
-    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/ProductEventCreationIntegrationTest.java",
-    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/PasswordResetTokenConcurrencyIntegrationTest.java",
-    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/PasswordResetTokenCreateStatisticsIntegrationTest.java",
-    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenEndpointIntegrationTest.java",
-    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/config/StorageConfigTest.java",
     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/JwtFilterTest.java",
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/JwtServiceKeyRotationTest.java",
     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/StatelessSessionGuardTest.java",
-    "backend:src/test/java/com/matimeline/eventmanager/utils/UtilsTest.java",
-    "frontend:services/eventService.ts",
     "frontend:services/sessionService.ts"
    ]
   }
@@ -1144,53 +1301,73 @@
  "group_links": [
   {
    "from": "Event",
+   "to": "Product",
+   "n": 34
+  },
+  {
+   "from": "Product",
+   "to": "Event",
+   "n": 27
+  },
+  {
+   "from": "Event",
    "to": "User",
-   "n": 41
+   "n": 26
+  },
+  {
+   "from": "Product",
+   "to": "User",
+   "n": 19
+  },
+  {
+   "from": "Product",
+   "to": "Category",
+   "n": 17
   },
   {
    "from": "User",
    "to": "Event",
-   "n": 34
+   "n": 16
   },
   {
-   "from": "Event",
-   "to": "Product",
-   "n": 25
-  },
-  {
-   "from": "Product",
-   "to": "Event",
+   "from": "ExportJob",
+   "to": "User",
    "n": 15
   },
   {
-   "from": "Product",
-   "to": "Category",
-   "n": 14
-  },
-  {
-   "from": "Product",
-   "to": "User",
-   "n": 11
-  },
-  {
    "from": "Event",
    "to": "Category",
+   "n": 13
+  },
+  {
+   "from": "User",
+   "to": "Session",
    "n": 9
   },
   {
    "from": "User",
-   "to": "Category",
-   "n": 5
+   "to": "Product",
+   "n": 7
   },
   {
    "from": "User",
-   "to": "Product",
-   "n": 5
+   "to": "ExportJob",
+   "n": 7
   },
   {
    "from": "Category",
    "to": "Product",
-   "n": 4
+   "n": 6
+  },
+  {
+   "from": "User",
+   "to": "Category",
+   "n": 5
+  },
+  {
+   "from": "Session",
+   "to": "User",
+   "n": 5
   },
   {
    "from": "Category",
@@ -1198,9 +1375,24 @@
    "n": 4
   },
   {
-   "from": "Category",
-   "to": "Event",
+   "from": "Event",
+   "to": "ExportJob",
+   "n": 4
+  },
+  {
+   "from": "Event",
+   "to": "Session",
    "n": 2
+  },
+  {
+   "from": "Session",
+   "to": "Product",
+   "n": 2
+  },
+  {
+   "from": "ExportJob",
+   "to": "Product",
+   "n": 1
   }
  ],
  "tech": [
@@ -1219,7 +1411,7 @@
   },
   {
    "id": "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ErrorCode.java",
-   "bytes": 1891,
+   "bytes": 2143,
    "layer": "backend/infrastructure",
    "test": false,
    "fanin_groups": [],
@@ -1409,7 +1601,7 @@
   },
   {
    "id": "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/RsaKeyMaterial.java",
-   "bytes": 9109,
+   "bytes": 10086,
    "layer": "backend/infrastructure",
    "test": false,
    "fanin_groups": [],
@@ -1499,6 +1691,24 @@
    }
   },
   {
+   "id": "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/fixtures/FakeControllerUsingServiceImpl.java",
+   "bytes": 687,
+   "layer": "backend/infrastructure",
+   "test": true,
+   "fanin_groups": [],
+   "overlay": {
+    "integrations": 5
+   },
+   "tokens": [
+    "fake",
+    "controller",
+    "using",
+    "service",
+    "impl"
+   ],
+   "candidates": null
+  },
+  {
    "id": "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailServiceLocaleTest.java",
    "bytes": 6553,
    "layer": "backend/infrastructure",
@@ -1569,6 +1779,22 @@
     "test",
     "support",
     "package"
+   ],
+   "candidates": null
+  },
+  {
+   "id": "backend:src/test/java/com/matimeline/eventmanager/infrastructure/config/DevCorsStartupLoggerTest.java",
+   "bytes": 6504,
+   "layer": "backend/infrastructure",
+   "test": true,
+   "fanin_groups": [],
+   "overlay": {},
+   "tokens": [
+    "dev",
+    "cor",
+    "startup",
+    "logger",
+    "test"
    ],
    "candidates": null
   },
@@ -1673,12 +1899,12 @@
   },
   {
    "id": "backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/JwtServiceRs256Test.java",
-   "bytes": 12675,
+   "bytes": 17889,
    "layer": "backend/infrastructure",
    "test": true,
    "fanin_groups": [],
    "overlay": {
-    "authorization": 16
+    "authorization": 20
    },
    "tokens": [
     "jwt",
@@ -2210,7 +2436,7 @@
   },
   {
    "id": "frontend:components/dashboard/WeekAgenda.tsx",
-   "bytes": 7641,
+   "bytes": 7468,
    "layer": "frontend/components/components",
    "test": false,
    "fanin_groups": [],
@@ -2472,7 +2698,7 @@
   },
   {
    "id": "frontend:components/events/EventPreviewTimeline.tsx",
-   "bytes": 11505,
+   "bytes": 11301,
    "layer": "frontend/components/components",
    "test": false,
    "fanin_groups": [],
@@ -3839,7 +4065,7 @@
   },
   {
    "id": "frontend:components/timeline/EventDrawer.tsx",
-   "bytes": 5402,
+   "bytes": 5246,
    "layer": "frontend/components/components",
    "test": false,
    "fanin_groups": [],
@@ -4810,7 +5036,7 @@
   },
   {
    "id": "frontend:components/ui/dialog.test.tsx",
-   "bytes": 4868,
+   "bytes": 6193,
    "layer": "frontend/components/components",
    "test": true,
    "fanin_groups": [],
@@ -4822,7 +5048,7 @@
   },
   {
    "id": "frontend:components/ui/dialog.tsx",
-   "bytes": 8143,
+   "bytes": 8983,
    "layer": "frontend/components/components",
    "test": false,
    "fanin_groups": [],
@@ -6623,6 +6849,7 @@
     "Category",
     "Event",
     "Product",
+    "Session",
     "User"
    ],
    "overlay": {
@@ -6793,8 +7020,25 @@
    "candidates": null
   },
   {
+   "id": "frontend:styles/__tests__/i18n-date-long-declarations.test.ts",
+   "bytes": 2482,
+   "layer": "frontend/styles/styles",
+   "test": true,
+   "fanin_groups": [],
+   "overlay": {},
+   "tokens": [
+    "i",
+    "18",
+    "n",
+    "date",
+    "long",
+    "declaration"
+   ],
+   "candidates": null
+  },
+  {
    "id": "frontend:styles/__tests__/i18n-intl-classes.test.ts",
-   "bytes": 9009,
+   "bytes": 8858,
    "layer": "frontend/styles/styles",
    "test": true,
    "fanin_groups": [],
@@ -6964,7 +7208,7 @@
    "layer": "frontend/types/types",
    "test": false,
    "fanin_groups": [
-    "Event",
+    "Session",
     "User"
    ],
    "overlay": {},
@@ -7190,8 +7434,51 @@
    "candidates": null
   },
   {
+   "id": "backend:src/test/java/com/matimeline/archfixtures/FakeMisplacedAdvice.java",
+   "bytes": 733,
+   "layer": "backend/com",
+   "test": true,
+   "fanin_groups": [],
+   "overlay": {},
+   "tokens": [
+    "fake",
+    "misplaced",
+    "advice"
+   ],
+   "candidates": null
+  },
+  {
+   "id": "backend:src/test/java/com/matimeline/archfixtures/FakeMisplacedController.java",
+   "bytes": 788,
+   "layer": "backend/com",
+   "test": true,
+   "fanin_groups": [],
+   "overlay": {},
+   "tokens": [
+    "fake",
+    "misplaced",
+    "controller"
+   ],
+   "candidates": null
+  },
+  {
+   "id": "backend:src/test/java/com/matimeline/eventmanager/application/services/fixtures/FakeConcreteServiceImpl.java",
+   "bytes": 255,
+   "layer": "backend/application",
+   "test": true,
+   "fanin_groups": [],
+   "overlay": {},
+   "tokens": [
+    "fake",
+    "concrete",
+    "service",
+    "impl"
+   ],
+   "candidates": null
+  },
+  {
    "id": "backend:src/test/java/com/matimeline/eventmanager/architecture/ArchitectureTest.java",
-   "bytes": 9128,
+   "bytes": 12594,
    "layer": "backend/architecture",
    "test": true,
    "fanin_groups": [],
@@ -7200,6 +7487,38 @@
    },
    "tokens": [
     "architecture",
+    "test"
+   ],
+   "candidates": null
+  },
+  {
+   "id": "backend:src/test/java/com/matimeline/eventmanager/architecture/ControllerRuleStrictnessTest.java",
+   "bytes": 3043,
+   "layer": "backend/architecture",
+   "test": true,
+   "fanin_groups": [],
+   "overlay": {
+    "integrations": 1
+   },
+   "tokens": [
+    "controller",
+    "rule",
+    "strictness",
+    "test"
+   ],
+   "candidates": null
+  },
+  {
+   "id": "backend:src/test/java/com/matimeline/eventmanager/architecture/FreezeStoreGuardTest.java",
+   "bytes": 4381,
+   "layer": "backend/architecture",
+   "test": true,
+   "fanin_groups": [],
+   "overlay": {},
+   "tokens": [
+    "freeze",
+    "store",
+    "guard",
     "test"
    ],
    "candidates": null
@@ -7216,6 +7535,23 @@
    "tokens": [
     "bom",
     "drift",
+    "test"
+   ],
+   "candidates": null
+  },
+  {
+   "id": "backend:src/test/java/com/matimeline/eventmanager/build/PomHygieneTest.java",
+   "bytes": 3362,
+   "layer": "backend/build",
+   "test": true,
+   "fanin_groups": [],
+   "overlay": {
+    "authorization": 2,
+    "integrations": 1
+   },
+   "tokens": [
+    "pom",
+    "hygiene",
     "test"
    ],
    "candidates": null
@@ -7635,18 +7971,23 @@
  ],
  "overlays": {
   "authorization": {
-   "n_files": 35,
-   "n_files_10plus": 6,
+   "n_files": 37,
+   "n_files_10plus": 7,
    "top": [
+    {
+     "id": "backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/JwtServiceRs256Test.java",
+     "hits": 20,
+     "group": "(tech/non rattaché)"
+    },
     {
      "id": "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/SecurityConfig.java",
      "hits": 19,
-     "group": "Event"
+     "group": "Session"
     },
     {
-     "id": "backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/JwtServiceRs256Test.java",
-     "hits": 16,
-     "group": "(tech/non rattaché)"
+     "id": "backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/JwtServiceKeyRotationTest.java",
+     "hits": 13,
+     "group": "Session"
     },
     {
      "id": "backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/UserRateLimitingFilterTest.java",
@@ -7656,7 +7997,7 @@
     {
      "id": "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtFilter.java",
      "hits": 11,
-     "group": "Event"
+     "group": "Session"
     },
     {
      "id": "backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/ExportTokenServiceTest.java",
@@ -7674,9 +8015,14 @@
      "group": "User"
     },
     {
+     "id": "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtService.java",
+     "hits": 9,
+     "group": "Session"
+    },
+    {
      "id": "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/ExportTokenService.java",
      "hits": 9,
-     "group": "Event"
+     "group": "ExportJob"
     },
     {
      "id": "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/CustomUserDetailsService.java",
@@ -7686,7 +8032,7 @@
     {
      "id": "backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/JwtFilterTest.java",
      "hits": 8,
-     "group": "Event"
+     "group": "Session"
     },
     {
      "id": "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/UserRateLimitingFilter.java",
@@ -7694,14 +8040,9 @@
      "group": "User"
     },
     {
-     "id": "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/JwtService.java",
-     "hits": 8,
-     "group": "Event"
-    },
-    {
      "id": "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/CallerResolver.java",
      "hits": 8,
-     "group": "Event"
+     "group": "Product"
     },
     {
      "id": "backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/PreferencesUserRateLimitIntegrationTest.java",
@@ -7721,7 +8062,7 @@
     {
      "id": "backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/StatelessSessionGuardTest.java",
      "hits": 6,
-     "group": "Event"
+     "group": "Session"
     },
     {
      "id": "backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/PreferencesUserRateLimitPathVariantsIntegrationTest.java",
@@ -7757,17 +8098,14 @@
      "id": "backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/RateLimitTunableCeilingTest.java",
      "hits": 5,
      "group": "(tech/non rattaché)"
-    },
-    {
-     "id": "backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/RateLimitE2eProfileIntegrationTest.java",
-     "hits": 5,
-     "group": "(tech/non rattaché)"
     }
    ],
    "by_group": {
     "(tech/non rattaché)": 14,
     "User": 14,
-    "Event": 7
+    "Session": 7,
+    "ExportJob": 1,
+    "Product": 1
    }
   },
   "state-machine": {
@@ -7777,7 +8115,7 @@
     {
      "id": "backend:src/main/java/com/matimeline/eventmanager/domain/models/export/ExportJob.java",
      "hits": 8,
-     "group": "Event"
+     "group": "ExportJob"
     },
     {
      "id": "frontend:lib/schemas/export.ts",
@@ -7786,12 +8124,12 @@
     }
    ],
    "by_group": {
-    "Event": 1,
+    "ExportJob": 1,
     "(tech/non rattaché)": 1
    }
   },
   "integrations": {
-   "n_files": 97,
+   "n_files": 109,
    "n_files_10plus": 4,
    "top": [
     {
@@ -7802,7 +8140,7 @@
     {
      "id": "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/ZipExportRenderer.java",
      "hits": 33,
-     "group": "Event"
+     "group": "ExportJob"
     },
     {
      "id": "frontend:components/timeline/TimelineEditHost.forbidden.test.tsx",
@@ -7812,7 +8150,7 @@
     {
      "id": "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapter.java",
      "hits": 10,
-     "group": "Event"
+     "group": "ExportJob"
     },
     {
      "id": "frontend:services/apiClient.ts",
@@ -7842,17 +8180,17 @@
     {
      "id": "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/MarkdownExportRenderer.java",
      "hits": 8,
-     "group": "Event"
+     "group": "ExportJob"
     },
     {
      "id": "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/JsonExportRenderer.java",
      "hits": 8,
-     "group": "Event"
+     "group": "ExportJob"
     },
     {
      "id": "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/CsvExportRenderer.java",
      "hits": 8,
-     "group": "Event"
+     "group": "ExportJob"
     },
     {
      "id": "frontend:components/categories/CategoryDrawer.forbidden.test.tsx",
@@ -7867,7 +8205,7 @@
     {
      "id": "backend:src/main/java/com/matimeline/eventmanager/application/services/ExportRendererRegistry.java",
      "hits": 7,
-     "group": "Event"
+     "group": "ExportJob"
     },
     {
      "id": "frontend:components/shared/DeleteConfirmDialog.forbidden.test.tsx",
@@ -7895,6 +8233,11 @@
      "group": "Event"
     },
     {
+     "id": "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/UserTierPersistenceIntegrationTest.java",
+     "hits": 5,
+     "group": "User"
+    },
+    {
      "id": "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/PasswordResetTokenCreateStatisticsIntegrationTest.java",
      "hits": 5,
      "group": "Event"
@@ -7905,26 +8248,23 @@
      "group": "Event"
     },
     {
-     "id": "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/UserRoleConstraintIntegrationTest.java",
-     "hits": 5,
-     "group": "User"
-    },
-    {
-     "id": "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/ProductEventCreationIntegrationTest.java",
+     "id": "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/EventQuotaCountScopeIntegrationTest.java",
      "hits": 5,
      "group": "Event"
     },
     {
-     "id": "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/ProductArchivedFilterIntegrationTest.java",
+     "id": "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/EventQuotaCountIntegrationTest.java",
      "hits": 5,
-     "group": "Product"
+     "group": "Event"
     }
    ],
    "by_group": {
-    "Event": 39,
-    "(tech/non rattaché)": 26,
-    "User": 21,
-    "Product": 6,
+    "(tech/non rattaché)": 27,
+    "Event": 25,
+    "User": 23,
+    "ExportJob": 12,
+    "Product": 10,
+    "Session": 7,
     "Category": 5
    }
   },
@@ -7940,7 +8280,7 @@
     {
      "id": "backend:src/main/java/com/matimeline/eventmanager/application/services/ExportPurgeScheduler.java",
      "hits": 5,
-     "group": "Event"
+     "group": "ExportJob"
     },
     {
      "id": "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ForgotPasswordAsyncTest.java",
@@ -7955,7 +8295,7 @@
     {
      "id": "backend:src/test/java/com/matimeline/eventmanager/application/services/ExportPurgeSchedulerIntegrationTest.java",
      "hits": 4,
-     "group": "Event"
+     "group": "ExportJob"
     },
     {
      "id": "backend:src/main/java/com/matimeline/eventmanager/infrastructure/config/SchedulingConfig.java",
@@ -7975,22 +8315,23 @@
     {
      "id": "backend:src/main/java/com/matimeline/eventmanager/application/services/AsyncExportRunner.java",
      "hits": 3,
-     "group": "Event"
+     "group": "ExportJob"
     }
    ],
    "by_group": {
-    "Event": 5,
+    "ExportJob": 3,
+    "Event": 2,
     "User": 2,
     "(tech/non rattaché)": 2
    }
   }
  },
  "metrics": {
-  "files": 700,
-  "bytes": 4621905,
+  "files": 730,
+  "bytes": 4768799,
   "by_repo": {
-   "backend": 270,
-   "frontend": 389,
+   "backend": 299,
+   "frontend": 390,
    "frontend-app": 41
   },
   "entities": 7,
@@ -8003,22 +8344,22 @@
   },
   "seeds_from_folders": [],
   "folders_on_entity_seeds": [],
-  "groups": 4,
-  "groups_with_files": 4,
-  "labelled": 237,
+  "groups": 6,
+  "groups_with_files": 6,
+  "labelled": 258,
   "by_how": {
-   "name": 179,
-   "fanin": 21,
-   "imports": 37
+   "name": 196,
+   "fanin": 22,
+   "imports": 40
   },
-  "tech": 423,
+  "tech": 426,
   "transversal_home": 0,
   "ambiguous": 0,
-  "unassigned": 40,
-  "unassigned_rate": 0.0571,
-  "unassigned_bytes_rate": 0.0384,
+  "unassigned": 46,
+  "unassigned_rate": 0.063,
+  "unassigned_bytes_rate": 0.0405,
   "edges_source": "regex",
-  "file_edges": 1684,
+  "file_edges": 1762,
   "graphify": {},
   "motifs": [
    "authorization",
@@ -8027,7 +8368,7 @@
    "state-machine"
   ],
   "notes": [],
-  "duration_s": 0.97
+  "duration_s": 1.16
  },
  "aliases": [
   {

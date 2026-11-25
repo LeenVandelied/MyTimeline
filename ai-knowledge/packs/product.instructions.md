@@ -2,16 +2,16 @@
 pack: product
 kind: domain
 name: Produit
-generated_at: 2026-11-20T11:40:00Z
+generated_at: 2026-11-25T15:00:00
 generator: synth/1
-base_sha256: 48603b17eec1692561b8c8848c9a1c4ecb2a0d40d8cc4dbbaa436654b0a99b3b
-facts_in_base: 216
-facts_in_pool: 238
-facts_cited: 54
+base_sha256: f617040c5848ea7419279b0ebbd6470e39225471b2270772fbfec5f565af4b71
+facts_in_base: 240
+facts_in_pool: 301
+facts_cited: 51
 sections: product.sections.json
 details: [product.details.md]
 lang: fr
-curated_at: 2026-11-20T12:45:00Z
+curated_at: 2026-11-25T15:00:00
 curation: product.curation.json
 ---
 ## 1. Quand activer {#activate}
@@ -27,64 +27,61 @@ Aucun fait de la base ne relève de cette section.
 
 ## 3. Règles {#rules}
 
-### Archivage et restauration
-- Un produit inconnu, non archivé ou d'un autre utilisateur donne la même ProductNotFoundException (réponse uniforme). [#ee944d529b683e6d-1]
 ### Création
-- La catégorie est obligatoire et doit appartenir à l'appelant ou être système, sinon CategoryNotFoundException est levée. [#f1ff1bcbd432dc1a-1] [#5905874ac78b836f-1]
-### Mise à jour partielle
-- clearColor, prioritaire, remet la couleur à null, sinon elle n'est remplacée que si la valeur fournie est non null. [#1f81adc7889b6ff7-3]
-- Le nom (1 à 100 caractères, pas uniquement des espaces) et la couleur (#RRGGBB) sont validés, null étant ignoré. [#e6032e4c6921b184-2] [#85cfb8bf280a8bdd-1]
-### Vérifié dans le code
-- Ne pas utiliser ProductRepositoryJpaImpl.save pour détecter l'absence d'un produit : charger d'abord avec findDomainProductById et lever ProductNotFoundException, comme le font updateProduct et archiveById [#01e0685abee3c880-1] `backend:src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java:123-124`.
+- Le quota ne s'applique pas quand la monétisation est désactivée ou l'utilisateur est null, FREE et PLUS sont bornés par leur limite et PRO est illimité. [#11e0f21a84422e3d-1] [#11e0f21a84422e3d-2]
+### Mise à jour
+- Dans un PATCH, clearColor prioritaire remet la couleur à null même si une couleur est fournie, et une couleur null seule la laisse inchangée. [#1f81adc7889b6ff7-4] [#abe44a2a3ad1bbde-1]
+- Un nom de PATCH fait 1 à 100 caractères sans être blanc, null est ignoré et le rejet en 400 précède le service. [#e6032e4c6921b184-2] [#f78d9c0de8326bdd-2]
 
 ## 4. Structure {#structure}
 
 #### backend:src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java
 | Symbole | Énoncé | Lignes | Fait |
 |---|---|---|---|
-| ProductServiceImpl.archiveById | Passe le produit à archived true par soft delete puis le sauvegarde, en levant ProductNotFoundException si le produit est introuvable. (partiel) | L174-179 | [#7e4b226aac0bc03f-1] |
-| ProductServiceImpl.restoreProduct | Restaure un produit archivé via un UPDATE natif filtré sur id, user_id et archived, et lève ProductNotFoundException si aucune ligne n'est modifiée. (partiel) | L195-200 | [#1633108a3ab71d25-1] |
+| ProductServiceImpl.archiveById | Passe le produit à archived true par setArchived(true) puis le sauvegarde, et lève ProductNotFoundException si le produit est absent. (partiel) | L190-195 | [#7e4b226aac0bc03f-1] |
+| ProductServiceImpl.restoreProduct | La restauration échoue avec ProductNotFoundException quand le nombre de lignes modifiées est zéro, soit produit inconnu, non archivé ou appartenant à un autre utilisateur. (partiel) | L213-215 | [#ee944d529b683e6d-1] |
+#### backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/ProductArchivedFilterIntegrationTest.java
+| Symbole | Énoncé | Lignes | Fait |
+|---|---|---|---|
+| ProductService.archiveById | archiveById fait passer le produit de archived à false vers archived à true, sans suppression physique de la ligne. (partiel) | L209 | [#integrations/c8ad55e4fb12fd53-1] |
 #### backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ProductRepositoryJpaImpl.java
 | Symbole | Énoncé | Lignes | Fait |
 |---|---|---|---|
-| ProductRepositoryJpaImpl.restoreArchivedByIdAndUserId | Le produit passe de archived = true à archived = false par restoreArchivedByIdAndUserId, si l'id, le user_id et archived = true correspondent, et la méthode renvoie le nombre de lignes modifiées. | L249-259 | [#b94a2c6577ba3262-1] |
+| ProductRepositoryJpaImpl.restoreArchivedByIdAndUserId | Un produit archivé passe à archived égal à false par UPDATE natif, seulement si id et user_id correspondent et que archived vaut true dans le même WHERE, avec incrément de version et mise à jour de updated_at. (partiel) | L257-267 | [#integrations/e72f9182ccf38928-2] |
 #### backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java
 | Symbole | Énoncé | Lignes | Fait |
 |---|---|---|---|
-| ProductController.createProduct | POST /api/users/{userId}/products crée un produit, renvoie 201 avec ProductResponse, 401 sans caller et 403 si userId du path diffère du caller. | L50-66 | [#08ca27937943ea62-1] |
-| ProductController.getProducts | GET /api/users/{userId}/products renvoie la liste des ProductResponse du caller, avec 401 sans caller et 403 si userId diffère du caller. | L68-85 | [#38b72c1d6851ad52-1] |
-| ProductController.getArchivedProducts | GET /api/users/{userId}/products/archived renvoie la liste des ArchivedProductResponse du caller, avec les mêmes contrôles 401 et 403. | L92-106 | [#2ba17dfa95093054-1] |
-| ProductController.restoreProduct | POST /api/users/{userId}/products/{productId}/restore restaure le produit et renvoie 204, sans lecture préalable de la cible, 401 sans caller et 403 si userId diffère du caller. | L118-132 | [#214af15c4a16cfc3-1] |
+| ProductController | Contrôleur REST dont les routes sont préfixées par /api. | L37-38 | [#3c60f5d05550c6f7-1] |
+| ProductController.createProduct | POST /api/users/{userId}/products, reçoit un ProductCreationRequest validé, répond 201 avec ProductResponse, ou le statut de refus de requireOwner. | L54-66 | [#08ca27937943ea62-1] |
+| ProductController.getProducts | GET /api/users/{userId}/products, renvoie la liste des ProductResponse de l'utilisateur après contrôle requireOwner. | L68-82 | [#38b72c1d6851ad52-1] |
 
 ## 5. Endpoints et écrans {#surface}
 
-- La restauration ne lit pas la cible dans le contrôleur et laisse le service vérifier l'ownership via userId, donc le 404 ne vient que de ProductNotFoundException [#214af15c4a16cfc3-1] [#1b85008a2de7f5c1-1].
-- Les autres routes sur un produit lisent d'abord le produit puis contrôlent la propriété, 404 si absent et 403 si c'est un produit d'autrui [#integrations/19fecc33e428b2ad-1] [#a692ab10977b0f60-1].
-- Un produit sans utilisateur est considéré comme n'appartenant à personne, la vérification de propriété renvoie faux [#integrations/ee9ecada784b2990-1].
-- DELETE archive le produit (soft delete) et renvoie 204, il ne le supprime pas [#895ce336064b5985-1].
-- Les archivés ont leur propre route et leur propre requête native, triée par date de mise à jour décroissante puis par id [#2ba17dfa95093054-1] [#2f24c825d05e665c-1].
-- La restauration ne modifie que les produits archivés du userId donné et retourne le nombre de lignes modifiées [#3e052d935a2dbdca-1].
-- Une RuntimeException levée par le service pendant la liste se propage et n'est pas convertie en 401, comportement fixé par un test [#integrations/38fae44ada312d48-2].
-- Un PATCH sur le produit d'un autre utilisateur renvoie 403 sans appeler updateProduct [#integrations/25068b338c5f8b14-1] [#b8e07eeec1904e4d-1].
-- La création lève UserNotFoundException si l'utilisateur n'existe pas, et le front injecte le userId dans le corps en plus du chemin [#8236045f458a8db1-1] [#b11cebb63b3990b9-1].
+- Les routes produit vivent dans `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java:37-38` sous le préfixe /api [#3c60f5d05550c6f7-1], et le front les appelle via `frontend:services/productService.ts:18-45` [#b11cebb63b3990b9-1].
+- Sur les routes par productId, un chemin qui correspond à l'appelant ne suffit pas : un produit d'un autre propriétaire reçoit 403 et un produit absent 404 [#a692ab10977b0f60-1] [#612b7cd55d571598-1] [#integrations/b5e740085931eb05-1]. Ce contrôle est répété dans update, delete et events [#integrations/19fecc33e428b2ad-2], et un produit sans propriétaire renseigné est refusé [#fa80e328df0f56b0-2].
+- DELETE ne supprime pas : il archive le produit et répond 204 [#895ce336064b5985-1]. Un DELETE sur un produit d'autrui répond 403 sans archiver [#integrations/c8091f7bc266881b-1].
+- La liste GET /products n'inclut pas les archivés (exclus par @SQLRestriction selon la javadoc) [#2cf44af0f6907afa-1] et charge les événements [#a404ffbc862a833b-1]. La liste /products/archived vient d'une requête native distincte, sans événements, triée par mise à jour décroissante [#2f24c825d05e665c-1] [#2ba17dfa95093054-1].
+- Le PATCH valide la catégorie cible contre le propriétaire du produit et non contre l'appelant [#04bf5d072340f230-1]. Une catégorie d'un autre utilisateur est traitée comme inexistante, une catégorie sans propriétaire reste assignable [#e6c8d4fc25ec6d20-1] [#5905874ac78b836f-2].
+- Le PATCH est partiel : name et category ne changent que si fournis, et color suit clearColor puis color [#1f81adc7889b6ff7-3].
+- La création contrôle le quota de l'utilisateur avant d'enregistrer le produit et ses événements [#787ddafee8cb5825-1].
 
 ## 6. Fichiers critiques {#files}
 
-Fichiers du pool au poids le plus élevé (11 sur 19), le poids étant la somme des scores de spécificité de leurs faits. Liste complète : annexe.
+Fichiers du pool au poids le plus élevé (11 sur 29), le poids étant la somme des scores de spécificité de leurs faits. Liste complète : annexe.
 
 | Fichier | Faits | Sortes dominantes |
 |---|---|---|
-| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductControllerOwnershipTest.java` | 36 | test_case 15, role_check 9, business_rule 3 |
-| `backend:src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java` | 20 | business_rule 7, service_method 5, suspicious 4 |
-| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ProductRepositoryJpaImpl.java` | 26 | persistence_query 9, convention 7, other 3 |
-| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java` | 17 | endpoint 8, role_check 4, suspicious 2 |
-| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductRestoreIntegrationTest.java` | 22 | convention 8, test_case 8, business_rule 2 |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductControllerOwnershipTest.java` | 38 | role_check 10, test_case 10, validation 6 |
+| `backend:src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java` | 34 | convention 11, service_method 7, business_rule 5 |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductController.java` | 23 | endpoint 9, role_check 5, convention 4 |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductRestoreIntegrationTest.java` | 26 | test_case 10, convention 7, business_rule 4 |
 | `frontend:services/productService.ts` | 20 | convention 7, other 7, suspicious 3 |
-| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/ProductArchivedFilterIntegrationTest.java` | 21 | test_case 11, convention 3, other 2 |
-| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/entities/ProductEntity.java` | 16 | entity 8, other 4, convention 2 |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/entities/ProductEntity.java` | 13 | entity 5, convention 3, business_rule 2 |
+| `backend:src/test/java/com/matimeline/eventmanager/application/services/ProductServiceImplTest.java` | 15 | test_case 9, business_rule 6 |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/ProductArchivedFilterIntegrationTest.java` | 20 | test_case 11, business_rule 2, convention 2 |
 | `backend:src/main/java/com/matimeline/eventmanager/domain/ports/repositories/ProductRepository.java` | 10 | persistence_query 7, convention 2, suspicious 1 |
-| `backend:src/test/java/com/matimeline/eventmanager/application/services/ProductServiceImplTest.java` | 21 | test_case 18, business_rule 3 |
-| `backend:src/main/java/com/matimeline/eventmanager/application/dtos/ProductCreationRequest.java` | 4 | validation 3, suspicious 1 |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductPathOwnershipIntegrationTest.java` | 10 | convention 4, role_check 2, test_case 2 |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/ProductRepositoryJpaImpl.java` | 16 | persistence_query 7, other 6, convention 2 |
 
 ## 7. Relations avec d'autres packs {#relations}
 
@@ -92,39 +89,33 @@ Packs liés par des faits repris, des faits équivalents écartés à la dédupl
 
 | Pack | Faits repris | Faits équivalents | Catalogue |
 |---|---|---|---|
-| integrations | 20 | 13 |  |
-| backend-core | 8 | 5 |  |
+| integrations | 40 | 15 |  |
+| backend-core | 36 | 13 |  |
 | frontend-core | 6 | 0 |  |
 
 ## 8. Tests attendus {#tests}
 
-- Les tests fixent que clearColor remet la couleur à null et l'emporte sur color, que l'absence de color laisse la valeur et qu'une création sans couleur persiste null. [#bbfc4f67ad3dc4f3-1] [#ab04586cc2314a7e-1] [#1ff9190d9f49ffee-1]
-- Les tests fixent que PATCH avec name vide ou blanc donne 400 sans appel au service, et qu'un PATCH avec seulement categoryId donne 200. [#1cfd6e24b15be414-1] [#56ee0eef1027811f-1] [#fb61a40c3eff3e71-1]
-- Les tests fixent que les réponses ne contiennent ni user ni owner, et que les archivés n'ont ni events ni archived. [#3d1c8f1b7951785a-1] [#230d3c1e55d17b27-1] [#94942f07db2a5e6b-1]
-- Un test de contrôleur doit brancher GlobalExceptionHandler via setControllerAdvice, sinon le 404 sur ProductNotFoundException n'est pas obtenu. [#0e76e9555a6756f0-1]
+- Les tests fixent le quota d'un lot pour un compte gratuit : 18 événements possédés plus 3 sont refusés sans aucun save, 17 plus 3 sont acceptés. [#4de9547380354437-1] [#backend-core/8ccee0097639357c-2] [#d87e112a6ce3fdf3-1]
+- Les tests fixent la restauration : 204 avec version relue à 1 en SQL natif, 404 pour un produit d'autrui, inconnu ou actif, 403 si le chemin diffère. [#0ec6802f2a932147-1] [#db988d4f7835ee90-1] [#888010a00ad834aa-1] [#441bfc843eb29e7f-1] [#d62c687ed28b897c-1]
+- Les tests fixent qu'un PATCH sur le nom seul laisse categoryId et color à null et clearColor à false, et qu'une catégorie d'un autre utilisateur lève CategoryNotFoundException. [#dfdb4b2ae7bedef6-1] [#ce53344659d7f357-1]
 
 ## 9. Questions ouvertes {#questions}
 
-- Le 403 de restauration est-il voulu côté client ? restoreProduct du service frontend n'accepte pas de paramètre options, contrairement aux autres mutations produit. [#integrations/145742ba350d6f89-1]
-- Les produits sans catégorie doivent-ils rester hors du comptage ? Les lignes dont category_id est null sont ignorées sans erreur dans countByCategoryForUser. [#7e554cf0d1309bdb-1]
-- getProducts et createProduct du frontend divergent-ils volontairement de categoryService ? Le premier n'a pas de validation Zod, le second journalise toute erreur. [#integrations/bdb861ee54c6c577-1] [#integrations/dda27156f28e13ec-1]
+- Les écarts de productService.ts avec categoryService sont-ils voulus ? getProducts ne valide pas la réponse avec Zod et createProduct journalise toute erreur, y compris 403, 404 et 409 [#integrations/bdb861ee54c6c577-1] [#integrations/dda27156f28e13ec-1].
 
 ## 10. Alertes {#alerts}
 
-- Un produit existant sans événement renvoie 404 sur la route des événements au lieu d'une liste vide, ce qui contredit la règle des produits sans événement. Traiter ce 404 comme une liste vide côté client ou corriger le contrôleur. [#4593c850244cd3aa-1]
-- ProductMapper.toDomain appelle getEvents().stream() sans test de null, et Product.addEvent ajoute sans test alors que hasEvents gère le null. Une liste nulle fait échouer ces appels, l'initialiser avant. [#cd959b5c2a578081-1] [#backend-core/7609dab35d65be14-1]
-- Le commentaire du contrôleur de mise à jour attribue au service la validation des bornes du nom, mais le service pose le nom sans contrôle et seul le DTO valide. Tout appel au service hors DTO validé contourne les bornes, garder les annotations du DTO. [#b4d705cd3e628fe2-1] [#1f81adc7889b6ff7-1]
-- createProduct construit chaque Event avec product.getId() alors que le produit vient d'être créé avec un id null. La valeur transmise est null à ce stade, ne pas supposer l'id renseigné dans ce flux. [#5fdd4ac6b14115d8-1]
-- La liste events de ProductCreationRequest n'a pas @Valid dans ce fichier, donc les contraintes des événements imbriqués ne sont pas déclenchées par cette classe seule. Vérifier où elles sont appliquées avant d'y compter. [#backend-core/d58358f7f920e99c-1]
-- ProductEntity.hashCode renvoie le hash de la classe, identique pour toutes les instances, alors que equals se fonde sur id. Éviter de mettre ces entités dans des ensembles hachés volumineux. [#0d1a3b72ab180c62-1]
-- Selon la javadoc, getProductsWithEvents liste tous les produits, avec ou sans événements, et le code retourne bien tous ceux de l'utilisateur. Le nom trompe, ne pas supposer un filtre. [#94c60305c01dfa59-1] [#df007001f59cff4d-1]
-- Le port ProductRepository importe une annotation Spring et le port ProductService utilise des DTO de la couche application, contre la règle hexagonale du projet. Ne pas copier ce modèle, préférer les commandes du domaine comme EventService. [#backend-core/f5728797d94e6d35-1] [#backend-core/54c376e6a3ecbd60-1]
-- Un test affirme que les événements d'un produit archivé sont inaccessibles mais n'asserte que findDomainProductById, et un autre accepte toute Exception. Ils prouvent moins que leur nom, ne pas s'y fier comme garantie. [#ea7a4b9c5c1b2b40-1] [#80aacdf81dad7441-1]
+- La route des événements d'un produit répond 404 quand la liste est vide, alors que la création accepte une liste null ou vide et qu'un test le vérifie [#4593c850244cd3aa-1] [#14ee1b6e889854a1-2] [#09543570e51aec71-1]. Un produit sans événement est donc créé puis traité comme introuvable par cette route, alors ne pas lire ce 404 comme un produit inconnu et trancher la règle avant de modifier l'un des deux côtés.
+- Le quota est lu par un décompte sans verrou avant la boucle de construction des événements, ce qui correspond au risque de dépassement décrit dans la javadoc de PlanPolicy [#5fdd4ac6b14115d8-2]. Deux créations simultanées peuvent dépasser le quota, donc ne pas supposer la limite stricte et ajouter un verrou ou une contrainte si elle doit l'être.
+- ProductMapper.toDomain appelle getEvents().stream() sans test de null, et Product.addEvent ajoute sans test alors que hasEvents gère le null [#cd959b5c2a578081-1] [#backend-core/7609dab35d65be14-1]. Une liste d'événements null lève une exception à ces endroits malgré ce qu'affirme la javadoc de ProductServiceImpl, donc garder la liste initialisée et ne pas s'y fier.
+- ProductCreationRequest déclare la liste events sans @Valid dans ce fichier, donc les contraintes de EventCreationRequest ne sont pas déclenchées par cette classe seule [#backend-core/d58358f7f920e99c-1]. Une valeur invalide dans un événement peut passer la validation du corps, alors vérifier où la validation est faite avant de s'en remettre à elle.
+- Le port de domaine ProductRepository importe une annotation Spring, alors que la règle du projet interdit tout import Spring dans le domaine et que UserRepository n'en a pas [#backend-core/f5728797d94e6d35-1]. Le modèle sert de contre-exemple, donc ne pas le copier pour un nouveau port et retirer l'import.
+- Le test getProducts_serviceThrows_propagates_notMaskedAs401 attrape la classe Exception, si bien qu'il passe pour n'importe quelle exception [#80aacdf81dad7441-2]. Il ne prouve pas la propagation voulue, donc resserrer le type attendu avant de s'appuyer sur lui.
 
 ## 11. Couverture {#coverage}
 
-- Fichiers du pack : 18 ; avec au moins un fait en base : 18 ; sans fait après remise en file : 0.
-- Faits en base : 216, repris d'autres packs : +52, hors périmètre : -0, doublons écartés à la déduplication : -30, soit 238 dans le pool.
-- Faits du pool venus d'un autre pack : 34 (par pack : section Relations).
-- Destination des 238 faits du pool : Lexique 9 ; Règles 19 ; Endpoints et écrans 50 ; Tests attendus 52 ; Alertes / Questions ouvertes 37 ; annexe seule 46 ; écartés (sorte `other` ou inconnue) 25.
-- Base : sha256 48603b17eec1…, générée le 2026-11-20.
+- Fichiers du pack : 28 ; avec au moins un fait en base : 28 ; sans fait après remise en file : 0.
+- Faits en base : 240, repris d'autres packs : +110, hors périmètre : -0, doublons écartés à la déduplication : -49, soit 301 dans le pool.
+- Faits du pool venus d'un autre pack : 82 (par pack : section Relations).
+- Destination des 301 faits du pool : Lexique 6 ; Règles 36 ; Endpoints et écrans 60 ; Tests attendus 55 ; Alertes / Questions ouvertes 29 ; annexe seule 74 ; écartés (sorte `other` ou inconnue) 41.
+- Base : sha256 f617040c5848…, générée le 2026-11-24.

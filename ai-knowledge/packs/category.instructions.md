@@ -2,16 +2,16 @@
 pack: category
 kind: domain
 name: Catégorie
-generated_at: 2026-11-20T11:40:00Z
+generated_at: 2026-11-24T17:40:00
 generator: synth/1
-base_sha256: 11c2f66f1c520d57378e57d6eb3fd66d8f2d2f1ce2e1b84845268ce4390de31f
-facts_in_base: 126
-facts_in_pool: 149
-facts_cited: 39
+base_sha256: 1c3ba2b2ab8afb147eeb50d3153249366347f1d356cbb29094938375a527098e
+facts_in_base: 142
+facts_in_pool: 170
+facts_cited: 37
 sections: category.sections.json
 details: [category.details.md]
 lang: fr
-curated_at: 2026-11-20T12:45:00Z
+curated_at: 2026-11-25T15:00:00
 curation: category.curation.json
 ---
 ## 1. Quand activer {#activate}
@@ -51,27 +51,22 @@ Ce pack s'active quand la demande ou le code touche l'un de ces éléments.
 #### backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryController.java
 | Symbole | Énoncé | Lignes | Fait |
 |---|---|---|---|
-| CategoryController.getAllCategories | GET /api/categories renvoie les catégories du caller et les catégories système, chacune enrichie de ses compteurs de produits, ou 401 sans utilisateur. | L59-80 | [#0170a42b57affd2f-1] |
+| CategoryController.createCategory | Expose POST /api/categories avec un CategoryRequest validé, crée la catégorie pour l'appelant et répond 201 avec un CategoryResponse. | L47-57 | [#5d4de9737b8d7fe4-1] |
+| CategoryController.getAllCategories | Expose GET /api/categories, qui liste les catégories de l'appelant et les catégories système, avec leurs compteurs de produits, et répond 401 sans appelant. | L59-80 | [#0170a42b57affd2f-1] |
+| CategoryController.getCategoryById | Expose GET /api/categories/{id}, qui répond 404 si la catégorie n'est ni possédée par l'appelant ni système. | L82-96 | [#d1b77c1fd8b164d0-1] |
+| CategoryController.deleteCategory | Expose DELETE /api/categories/{id} avec reassignToCategoryId optionnel, et répond 204 après suppression. | L121-155 | [#c3f8c255fa64dbd4-2] |
 #### frontend:services/categoryService.ts
 | Symbole | Énoncé | Lignes | Fait |
 |---|---|---|---|
 | createCategory | createCategory envoie POST /categories avec les données et les options, valide la réponse avec categorySchema.parse, et propage l'erreur axios pour l'affichage inline. | L59-71 | [#d4a7bea8ee8ef950-1] |
 | updateCategory | updateCategory envoie PATCH sur /categories/{id} avec les données partielles et les options, puis valide la réponse avec categorySchema.parse. | L80-92 | [#5324d5474548a79d-1] |
 | deleteCategory | deleteCategory envoie DELETE sur /categories/{id} via apiClient, en fusionnant les options reçues, et propage l'erreur après journalisation éventuelle. | L104-118 | [#4e18165a1bd821ee-1] |
-#### backend:src/main/java/com/matimeline/eventmanager/infrastructure/entities/CategoryEntity.java
-| Symbole | Énoncé | Lignes | Fait |
-|---|---|---|---|
-| CategoryEntity | CategoryEntity est mappée sur la table categories, avec audit via AuditingEntityListener. | L12-14 | [#70949eb0610b171b-1] |
-| CategoryEntity.owner | La relation owner est un @ManyToOne LAZY vers UserEntity, jointe sur la colonne owner_id et nullable. | L28-30 | [#9f17359f6dd43cea-1] |
-| CategoryEntity.version | La colonne version est annotée @Version et non nulle, et created_at est non modifiable. | L32-42 | [#2e4940d72431828b-1] |
 
 ## 5. Endpoints et écrans {#surface}
 
 - Le point d'entrée HTTP est `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryController.java:47-51`, chaque route résolvant l'appelant et répondant 401 s'il est absent [#integrations/3cbc6ad692a65eaa-1] [#6fc50f0b113733e6-1], et le client front est `frontend:services/categoryService.ts:59-71` [#d4a7bea8ee8ef950-1].
-- Le listing GET /api/categories renvoie les catégories du caller plus les catégories système (sans propriétaire), chacune avec ses compteurs de produits, le filtrage étant fait par le service et non par le contrôleur [#0170a42b57affd2f-1] [#e058eec72b9dbdf2-1] [#419bb430c6dff34f-1].
 - La lecture et la modification n'appliquent pas la même règle d'appartenance, car la lecture accepte les catégories système via `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryController.java:167-169` [#45903f846bdb1978-1], alors que la modification exige que l'owner soit l'appelant [#integrations/8e9c429e14d99314-1].
 - Les compteurs de produits viennent d'une requête dédiée scopée au caller, qui n'est pas reconstruite à partir d'un comptage par catégorie [#0f363444e8ef529b-1].
-- Le save d'un id existant recopie nom, couleur, description et owner sur l'entité gérée, owner compris [#7b6ce2f6cec0ab25-2].
 - Côté front, la création propage l'erreur axios pour un affichage inline et valide la réponse par schéma, comme la mise à jour PATCH partielle [#d4a7bea8ee8ef950-1] [#5324d5474548a79d-1].
 
 ## 6. Fichiers critiques {#files}
@@ -80,13 +75,13 @@ Fichiers du pool au poids le plus élevé (12 sur 20), le poids étant la somme 
 
 | Fichier | Faits | Sortes dominantes |
 |---|---|---|
-| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryControllerTest.java` | 35 | test_case 17, role_check 8, convention 4 |
-| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/CategoryDeleteReassignIntegrationTest.java` | 23 | test_case 12, convention 5, business_rule 3 |
-| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryController.java` | 9 | role_check 7, convention 1, endpoint 1 |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryController.java` | 19 | role_check 9, endpoint 4, business_rule 3 |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryControllerTest.java` | 38 | test_case 23, role_check 6, convention 4 |
+| `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/CategoryDeleteReassignIntegrationTest.java` | 28 | test_case 14, business_rule 5, convention 4 |
+| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/CategoryRepositoryJpaImpl.java` | 12 | convention 4, persistence_query 4, suspicious 3 |
 | `backend:src/main/java/com/matimeline/eventmanager/application/services/CategoryServiceImpl.java` | 10 | business_rule 7, service_method 3 |
 | `frontend:services/categoryService.ts` | 12 | convention 3, endpoint 3, other 3 |
 | `backend:src/test/java/com/matimeline/eventmanager/application/services/CategoryServiceImplTest.java` | 19 | test_case 12, business_rule 4, other 2 |
-| `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/CategoryRepositoryJpaImpl.java` | 9 | persistence_query 5, convention 2, suspicious 2 |
 | `backend:src/main/java/com/matimeline/eventmanager/infrastructure/entities/CategoryEntity.java` | 7 | convention 4, entity 3 |
 | `backend:src/main/java/com/matimeline/eventmanager/application/dtos/CategoryResponse.java` | 5 | business_rule 2, convention 1, entity 1 |
 | `backend:src/main/java/com/matimeline/eventmanager/application/dtos/CategoryRequest.java` | 3 | convention 2, validation 1 |
@@ -99,7 +94,7 @@ Packs liés par des faits repris, des faits équivalents écartés à la dédupl
 
 | Pack | Faits repris | Faits équivalents | Catalogue |
 |---|---|---|---|
-| integrations | 24 | 15 |  |
+| integrations | 25 | 14 |  |
 | backend-core | 10 | 2 |  |
 
 ## 8. Tests attendus {#tests}
@@ -119,7 +114,7 @@ Aucun fait de la base ne relève de cette section.
 ## 11. Couverture {#coverage}
 
 - Fichiers du pack : 20 ; avec au moins un fait en base : 20 ; sans fait après remise en file : 0.
-- Faits en base : 126, repris d'autres packs : +51, hors périmètre : -0, doublons écartés à la déduplication : -28, soit 149 dans le pool.
-- Faits du pool venus d'un autre pack : 34 (par pack : section Relations).
-- Destination des 149 faits du pool : Lexique 5 ; Règles 18 ; Endpoints et écrans 27 ; Tests attendus 41 ; Alertes / Questions ouvertes 9 ; annexe seule 32 ; écartés (sorte `other` ou inconnue) 17.
-- Base : sha256 11c2f66f1c52…, générée le 2026-11-20.
+- Faits en base : 142, repris d'autres packs : +51, hors périmètre : -0, doublons écartés à la déduplication : -23, soit 170 dans le pool.
+- Faits du pool venus d'un autre pack : 35 (par pack : section Relations).
+- Destination des 170 faits du pool : Lexique 5 ; Règles 19 ; Endpoints et écrans 30 ; Tests attendus 49 ; Alertes / Questions ouvertes 14 ; annexe seule 35 ; écartés (sorte `other` ou inconnue) 18.
+- Base : sha256 1c3ba2b2ab8a…, générée le 2026-11-24.

@@ -10,6 +10,7 @@
 | `frontend:services/apiClient.ts` | 12 | convention 11, config 1 |
 | `frontend:__tests__/i18n-namespaces.test.ts` | 8 | convention 4, test_case 3, other 1 |
 | `frontend:styles/__tests__/eyebrow-consumers.test.tsx` | 8 | convention 5, test_case 2, suspicious 1 |
+| `frontend:styles/__tests__/i18n-date-long-declarations.test.ts` | 8 | convention 4, test_case 3, other 1 |
 | `frontend:styles/__tests__/ink-faint-non-text.test.ts` | 8 | convention 5, test_case 3 |
 | `frontend:utils/time-utils.ts` | 8 | convention 7, suspicious 1 |
 | `frontend:__tests__/ds-type-scale.test.ts` | 7 | convention 4, test_case 2, suspicious 1 |
@@ -34,6 +35,7 @@
 | `frontend:hooks/useDensity.ts` | 4 | convention 4 |
 | `frontend:i18n/locales.test.ts` | 4 | convention 2, test_case 2 |
 | `frontend:services/apiErrorMessages.ts` | 4 | convention 4 |
+| `frontend:styles/__tests__/i18n-intl-classes.test.ts` | 4 | test_case 2, convention 1, suspicious 1 |
 | `frontend:types/category.ts` | 4 | convention 4 |
 | `frontend:types/product.ts` | 4 | convention 3, suspicious 1 |
 | `frontend:types/settings.ts` | 4 | convention 3, suspicious 1 |
@@ -56,8 +58,11 @@
 | `frontend:types/auth.ts` | 3 | convention 3 |
 | `frontend:types/user.test.ts` | 3 | test_case 2, suspicious 1 |
 | `frontend:types/user.ts` | 3 | convention 2, suspicious 1 |
+| `frontend:components/dashboard/WeekAgenda.tsx` | 2 | convention 2 |
+| `frontend:components/events/EventPreviewTimeline.tsx` | 2 | convention 2 |
 | `frontend:components/settings/mobile/SettingsIndex.test.tsx` | 2 | test_case 2 |
 | `frontend:components/shared/LoadingSkeleton.test.tsx` | 2 | test_case 2 |
+| `frontend:components/timeline/EventDrawer.tsx` | 2 | convention 2 |
 | `frontend:hooks/useCategories.ts` | 2 | convention 2 |
 | `frontend:hooks/useCreateProduct.ts` | 2 | convention 2 |
 | `frontend:hooks/useMediaQuery.ts` | 2 | convention 2 |
@@ -106,10 +111,9 @@
 | rules | - La traduction formulaire vers payload de création se fait dans une seule fonction, `frontend:types/event.ts:435`. [#e1f61a0325088578-1] | framework |
 | rules | - Les règles entre champs passent par superRefine avec un path ciblé. [#b7b7c6d036cba012-2] | framework |
 | rules | - Les gardes statiques excluent leur propre fichier, les tests et stories, et déclarent leurs exceptions dans un Set commenté. [#2438aac9fa665a6a-1] [#88cd9d892f334cae-1] [#826d206128cb3fee-1] | framework |
-| tests | - Les tests TanStack Query créent un QueryClient neuf avec retry désactivé, et absorbent le rejet de mutation par un MutationCache à onError vide [#3567e8ecf8cbb6a3-1] [#8dd03e17489c8b12-1] [#9ca3ebac108c3813-1]. | deducible |
-| tests | - Une mise à jour du store réseau depuis un test passe par act [#627a77b7049c5912-1]. | deducible |
-| tests | - Les tests fixent que en, de et es exposent les mêmes namespaces que fr [#4b7f79446e4b86e1-1]. | deducible |
-| tests | - Les tests fixent que useAuth lève hors Provider, avec console.error espionné [#0dda85ff5207150e-2] [#e4d52b686118e74f-1]. | deducible |
+| rules | - Un élément time reçoit un attribut dateTime calculé par toLocalIsoDate avec repli sur undefined, comme dans `frontend:components/timeline/EventDrawer.tsx:87-92` et `frontend:components/events/EventPreviewTimeline.tsx:242-247`. [#858f242a1530a2cf-2] [#61ce9f1c68773f47-2] | framework |
+| rules | - Les tests de la couche styles compilent la vraie feuille globals.css avec postcss et le plugin Tailwind, sans rendu DOM, et résolvent son chemin depuis import.meta.url (voir `frontend:styles/__tests__/i18n-date-long-declarations.test.ts:16-23`). [#be9c44be13fefeb7-1] [#ec2a012b754622e1-1] [#ac46ed6e1c86b909-1] | framework |
+| tests | - Les tests de composants mockent next-intl, soit en renvoyant la clé telle quelle [#67b6193be51eb5f8-2], soit en la préfixant par le namespace [#31e4140d2a82fdf7-1]. | deducible |
 
 ## Faits suspects {#t-suspicious}
 
@@ -128,6 +132,7 @@
 | `frontend:services/eventService.ts:80` | Les messages console.error de ce service sont en français sauf updateEventColor qui journalise en anglais, écart à la convention observée dans le reste du fichier. | [#d9495e70bdb7be7f-1] |
 | `frontend:services/exportService.test.ts:12` | Ce test mocke apiClient par chemin relatif './apiClient' alors que les autres tests du lot utilisent l'alias '@/services/apiClient', écart de convention. | [#5f19d1e9416bc5ba-1] |
 | `frontend:styles/__tests__/eyebrow-consumers.test.tsx:129-134` | Le commentaire de la garde statique note une limite connue : une chaîne de classes coupée sur plusieurs lignes échappe au balayage ligne par ligne. | [#5c59fd416c4ec02e-1] |
+| `frontend:styles/__tests__/i18n-intl-classes.test.ts:186` | Le titre de ce test est rédigé en anglais alors que les autres titres du même fichier sont en français, écart à la convention observée dans le lot. | [#28fe290b48c5bd28-1] |
 | `frontend:styles/__tests__/storybook-font-shell.test.ts:46-47` | Le commentaire de la garde signale une limite connue : un troisième html (app/global-error.tsx) devra être ajouté à CONSUMERS, la garde ne le couvre pas aujourd'hui. | [#c228baf7867f32cf-1] |
 | `frontend:types/event.ts:90` | Le fichier contient des messages d'erreur en français écrits en dur dans `eventCreationSchema`, alors que les schémas d'édition passent par une fabrique i18n. | [#b7b7c6d036cba012-1] |
 | `frontend:types/product.ts:101` | Le message du `refine` est écrit en français en dur, sans passage par une fabrique i18n comme dans category.ts. | [#e08a2298e3f018c0-1] |
@@ -173,11 +178,17 @@
 | `frontend:components/dashboard/GreetingHeader.tsx:46` | La racine du composant porte un attribut data-testid dont la valeur est un identifiant en kebab-case, et les sous-éléments utilisés par les tests suivent le même préfixe. | [#0a66016217483edc-4] |
 | `frontend:components/dashboard/GreetingHeader.tsx:52` | Une classe du design system déjà posée sur un élément n'est pas combinée avec des utilitaires text-* ou tracking-* sur le même élément. | [#0a66016217483edc-5] |
 | `frontend:components/dashboard/GreetingHeader.tsx:56` | Les styles sont écrits en classes Tailwind qui reprennent les tokens du design system (text-ink, text-md, text-ink-muted) directement dans className. | [#0a66016217483edc-6] |
+| `frontend:components/dashboard/WeekAgenda.tsx:122-124` | Commentaire : Une date d'agenda se rend dans un élément time portant la classe mt-date--long du design system, qui fixe la fonte mono, les chiffres tabulaires et le nowrap. | [#10b874a493705444-1] |
+| `frontend:components/dashboard/WeekAgenda.tsx:125-127` | Commentaire : L'attribut dateTime d'un time d'agenda est calculé par toLocalIsoDate et non par toISOString, afin de rester dans le fuseau du navigateur comme le libellé affiché. | [#73592ce4c5d18069-1] |
+| `frontend:components/events/EventPreviewTimeline.tsx:238-241` | Commentaire : La classe mt-date--long du design system porte la taille et la fonte des dates longues, la taille d'une date longue appartient au DS et non au text de la légende. | [#61ce9f1c68773f47-1] |
+| `frontend:components/events/EventPreviewTimeline.tsx:242-247` | Dans la légende de l'aperçu, la date prochaine occurrence se rend dans un time dont dateTime vient de toLocalIsoDate avec repli sur undefined, le texte visible étant produit par dateFormatter.format. | [#61ce9f1c68773f47-2] |
 | `frontend:components/landing/FooterSection.test.tsx:40-41` | Commentaire : Les tests de régression citent dans un commentaire le numéro de ticket qui a motivé le retrait d'une section ou d'une ancre. | [#a6da7ba155ed6d0d-1] |
 | `frontend:components/layout/CreateEventContext.tsx:48-54` | Une valeur d'origine non fiable est normalisée par un helper qui ne garde qu'un objet simple dont la propriété productId est une chaîne non vide, et renvoie undefined sinon. | [#89ca58da9690a122-1] |
 | `frontend:components/layout/CreateEventContext.tsx:56` | Un contexte React est créé avec createContext et une valeur par défaut null, et le hook d'accès renvoie useContext tel quel, donc null hors du provider. | [#92178b6bcafe792f-1] |
 | `frontend:components/layout/CreateEventContext.tsx:64-66` | Le provider reçoit une fonction stable en prop, typée par une interface de props dédiée, et l'expose par CreateEventContext.Provider avec children. | [#7959ea54bc78a8b6-1] |
 | `frontend:components/settings/touchTarget.ts:9-12` | Ce module ne contient aucune logique et réexporte des constantes sous un alias depuis le module central @/lib/touchTarget, pour garder des noms stables pour les importeurs. | [#25bd67fddb393dfe-1] |
+| `frontend:components/timeline/EventDrawer.tsx:83-86` | Commentaire : Une date du drawer se rend en time avec la classe mt-date--long, convention du design system pour les dates. | [#858f242a1530a2cf-1] |
+| `frontend:components/timeline/EventDrawer.tsx:87-92` | Les dates de début et de fin du drawer sont rendues en time avec la classe mt-drawer__v et mt-date--long, l'attribut dateTime étant calculé par toLocalIsoDate sur un Date issu de parseLocalDate. | [#858f242a1530a2cf-2] |
 | `frontend:components/timeline/useFocusTrap.ts:28` | Les éléments focusables sont listés dans une constante de sélecteur CSS partagée par le focus initial et la boucle Tab. | [#63c3201770e280f1-1] |
 | `frontend:components/timeline/useFocusTrap.ts:30-34` | Un hook de focus-trap prend une RefObject de conteneur, un booléen active et un callback onEscape optionnel, et il est exporté en nommé et par défaut. | [#a7643996dcc58e88-1] |
 | `frontend:components/timeline/useFocusTrap.ts:39-44` | Le dernier callback onEscape est copié dans une ref par useLayoutEffect sans dépendances, et le handler keydown lit cette ref, si bien que l'effet ne dépend que de containerRef et active. | [#a7643996dcc58e88-2] |
@@ -314,6 +325,11 @@
 | `frontend:styles/__tests__/eyebrow-consumers.test.tsx:91-94` | Les gardes statiques lisent la source d'un fichier avec readFileSync puis extraient la className par expression régulière sur le JSX. | [#42a2058cf6558079-1] |
 | `frontend:styles/__tests__/eyebrow-consumers.test.tsx:136-140` | Un motif de garde statique est une liste de regex, une par marqueur, et une ligne est signalée seulement si toutes les regex y correspondent. | [#050064225102bae2-1] |
 | `frontend:styles/__tests__/eyebrow-consumers.test.tsx:153` | Les exceptions à une garde statique sont déclarées dans un Set de chemins relatifs au frontend, avec un commentaire qui justifie l'exception. | [#826d206128cb3fee-1] |
+| `frontend:styles/__tests__/i18n-date-long-declarations.test.ts:1` | Commentaire : Un test de la couche styles qui inspecte le CSS compilé déclare en tête de fichier l'environnement vitest node. | [#9c9c50a8a68a9eb0-1] |
+| `frontend:styles/__tests__/i18n-date-long-declarations.test.ts:16` | Le chemin de globals.css est résolu par fileURLToPath relatif à import.meta.url, sans chemin en dur. | [#ac46ed6e1c86b909-1] |
+| `frontend:styles/__tests__/i18n-date-long-declarations.test.ts:16-23` | Un test de la couche styles compile la vraie feuille globals.css avec postcss et le plugin @tailwindcss/postcss, puis renvoie la racine de l'AST, sans rendu DOM. | [#be9c44be13fefeb7-1] |
+| `frontend:styles/__tests__/i18n-date-long-declarations.test.ts:26-35` | Un helper de test parcourt les règles CSS via walkRules et fusionne leurs déclarations dans une Map prop vers valeur, pour les règles dont un sélecteur vaut exactement la classe demandée. | [#0a3f7de8df58be8d-1] |
+| `frontend:styles/__tests__/i18n-intl-classes.test.ts:37` | Un test de la couche styles compile la vraie feuille globals.css avec postcss et le plugin @tailwindcss/postcss, puis renvoie la racine de l'AST, sans rendu DOM. | [#ec2a012b754622e1-1] |
 | `frontend:styles/__tests__/ink-faint-non-text.test.ts:1` | Commentaire : Les tests de cette couche qui lisent des fichiers statiques déclarent en première ligne l'environnement node avec le commentaire @vitest-environment (même forme dans les quatre autres fichiers du lot). | [#241589380b96bde6-1] |
 | `frontend:styles/__tests__/ink-faint-non-text.test.ts:22-23` | La racine frontend et le dossier styles se résolvent depuis import.meta.url avec fileURLToPath et new URL relatif. | [#33f1bb1b689b11fb-1] |
 | `frontend:styles/__tests__/ink-faint-non-text.test.ts:29-32` | Les exceptions TSX d'une garde sont une Set de chemins relatifs, chacune suivie d'un commentaire en ligne qui précise l'élément concerné. | [#f5e1f4afc9b16364-1] |

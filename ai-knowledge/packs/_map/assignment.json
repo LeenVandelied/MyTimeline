@@ -131,6 +131,10 @@
 "pack": "user",
 "how": "seed"
 },
+"backend:src/main/java/com/matimeline/eventmanager/application/policy/PlanPolicy.java": {
+"pack": "product",
+"how": "seed"
+},
 "backend:src/main/java/com/matimeline/eventmanager/application/services/AsyncExportRunner.java": {
 "pack": "export",
 "how": "seed"
@@ -231,6 +235,10 @@
 "pack": "event",
 "how": "seed"
 },
+"backend:src/main/java/com/matimeline/eventmanager/domain/exceptions/EventQuotaExceededException.java": {
+"pack": "event",
+"how": "seed"
+},
 "backend:src/main/java/com/matimeline/eventmanager/domain/exceptions/ExportFormatNotSupportedException.java": {
 "pack": "export",
 "how": "seed"
@@ -311,16 +319,20 @@
 "pack": "product",
 "how": "seed"
 },
+"backend:src/main/java/com/matimeline/eventmanager/domain/models/ProductCreateCommand.java": {
+"pack": "product",
+"how": "seed"
+},
+"backend:src/main/java/com/matimeline/eventmanager/domain/models/ProductUpdateCommand.java": {
+"pack": "product",
+"how": "seed"
+},
 "backend:src/main/java/com/matimeline/eventmanager/domain/models/RecurrenceExpansion.java": {
 "pack": "event",
 "how": "seed"
 },
 "backend:src/main/java/com/matimeline/eventmanager/domain/models/RecurrenceUnit.java": {
 "pack": "event",
-"how": "seed"
-},
-"backend:src/main/java/com/matimeline/eventmanager/domain/models/Role.java": {
-"pack": "user",
 "how": "seed"
 },
 "backend:src/main/java/com/matimeline/eventmanager/domain/models/Session.java": {
@@ -332,6 +344,10 @@
 "how": "seed"
 },
 "backend:src/main/java/com/matimeline/eventmanager/domain/models/User.java": {
+"pack": "user",
+"how": "seed"
+},
+"backend:src/main/java/com/matimeline/eventmanager/domain/models/UserTier.java": {
 "pack": "user",
 "how": "seed"
 },
@@ -479,6 +495,10 @@
 "pack": "user",
 "how": "seed"
 },
+"backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/mappers/EventCommandMapper.java": {
+"pack": "event",
+"how": "seed"
+},
 "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailService.java": {
 "pack": "user",
 "how": "seed"
@@ -567,6 +587,10 @@
 "pack": "backend-core",
 "how": "path_rule:tech"
 },
+"backend:src/main/java/com/matimeline/eventmanager/infrastructure/config/DevCorsStartupLogger.java": {
+"pack": "session",
+"how": "seed"
+},
 "backend:src/main/java/com/matimeline/eventmanager/infrastructure/config/JpaSharedEntityManagerConfig.java": {
 "pack": "backend-core",
 "how": "path_rule:tech"
@@ -620,7 +644,7 @@
 "how": "seed"
 },
 "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/CallerResolver.java": {
-"pack": "event",
+"pack": "product",
 "how": "seed"
 },
 "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/ClientIpAnonymizer.java": {
@@ -699,6 +723,10 @@
 "pack": "migrations",
 "how": "path_rule:R12"
 },
+"backend:src/main/resources/db/migration/V17__user_tier.sql": {
+"pack": "migrations",
+"how": "path_rule:R12"
+},
 "backend:src/main/resources/db/migration/V1__baseline.sql": {
 "pack": "migrations",
 "how": "path_rule:unassigned"
@@ -735,12 +763,24 @@
 "pack": "migrations",
 "how": "path_rule:R12"
 },
+"backend:src/test/java/com/matimeline/archfixtures/FakeMisplacedAdvice.java": {
+"pack": "backend-core",
+"how": "path_rule:unassigned"
+},
+"backend:src/test/java/com/matimeline/archfixtures/FakeMisplacedController.java": {
+"pack": "backend-core",
+"how": "path_rule:unassigned"
+},
 "backend:src/test/java/com/matimeline/eventmanager/EventmanagerApplicationTests.java": {
 "pack": "backend-core",
 "how": "path_rule:tech"
 },
 "backend:src/test/java/com/matimeline/eventmanager/application/dtos/EventCreationRequestContractTest.java": {
 "pack": "event",
+"how": "seed"
+},
+"backend:src/test/java/com/matimeline/eventmanager/application/policy/PlanPolicyTest.java": {
+"pack": "user",
 "how": "seed"
 },
 "backend:src/test/java/com/matimeline/eventmanager/application/services/AvatarServiceImplTest.java": {
@@ -767,6 +807,10 @@
 "pack": "user",
 "how": "seed"
 },
+"backend:src/test/java/com/matimeline/eventmanager/application/services/ProductServiceImplQuotaBatchTest.java": {
+"pack": "product",
+"how": "seed"
+},
 "backend:src/test/java/com/matimeline/eventmanager/application/services/ProductServiceImplTest.java": {
 "pack": "product",
 "how": "seed"
@@ -783,6 +827,10 @@
 "pack": "user",
 "how": "seed"
 },
+"backend:src/test/java/com/matimeline/eventmanager/application/services/fixtures/FakeConcreteServiceImpl.java": {
+"pack": "backend-core",
+"how": "path_rule:unassigned"
+},
 "backend:src/test/java/com/matimeline/eventmanager/application/validation/PasswordPolicyTest.java": {
 "pack": "user",
 "how": "seed"
@@ -791,9 +839,25 @@
 "pack": "backend-core",
 "how": "path_rule:unassigned"
 },
+"backend:src/test/java/com/matimeline/eventmanager/architecture/ControllerRuleStrictnessTest.java": {
+"pack": "backend-core",
+"how": "path_rule:unassigned"
+},
+"backend:src/test/java/com/matimeline/eventmanager/architecture/FreezeStoreGuardTest.java": {
+"pack": "backend-core",
+"how": "path_rule:unassigned"
+},
 "backend:src/test/java/com/matimeline/eventmanager/build/BomDriftTest.java": {
 "pack": "backend-core",
 "how": "path_rule:unassigned"
+},
+"backend:src/test/java/com/matimeline/eventmanager/build/PomHygieneTest.java": {
+"pack": "backend-core",
+"how": "path_rule:unassigned"
+},
+"backend:src/test/java/com/matimeline/eventmanager/domain/models/ProductCommandsTest.java": {
+"pack": "product",
+"how": "seed"
 },
 "backend:src/test/java/com/matimeline/eventmanager/domain/models/ThemePreferenceTest.java": {
 "pack": "user",
@@ -851,6 +915,14 @@
 "pack": "event",
 "how": "seed"
 },
+"backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/EventQuotaDefaultsIntegrationTest.java": {
+"pack": "event",
+"how": "seed"
+},
+"backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/EventQuotaExceededIntegrationTest.java": {
+"pack": "event",
+"how": "seed"
+},
 "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ExportEndpointsIntegrationTest.java": {
 "pack": "backend-core",
 "how": "path_rule:tech"
@@ -872,10 +944,14 @@
 "how": "seed"
 },
 "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/GlobalExceptionHandlerValidationTest.java": {
-"pack": "event",
+"pack": "product",
 "how": "seed"
 },
 "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/JwksEndpointIntegrationTest.java": {
+"pack": "session",
+"how": "seed"
+},
+"backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/KeyRotationSessionIntegrationTest.java": {
 "pack": "session",
 "how": "seed"
 },
@@ -883,7 +959,19 @@
 "pack": "user",
 "how": "seed"
 },
+"backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductControllerCommandMappingTest.java": {
+"pack": "product",
+"how": "seed"
+},
 "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductControllerOwnershipTest.java": {
+"pack": "product",
+"how": "seed"
+},
+"backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductControllerPathOwnershipMatrixTest.java": {
+"pack": "product",
+"how": "seed"
+},
+"backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductPathOwnershipIntegrationTest.java": {
 "pack": "product",
 "how": "seed"
 },
@@ -914,6 +1002,14 @@
 "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/UserControllerTest.java": {
 "pack": "user",
 "how": "seed"
+},
+"backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/UserTierProfilePatchIntegrationTest.java": {
+"pack": "user",
+"how": "seed"
+},
+"backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/fixtures/FakeControllerUsingServiceImpl.java": {
+"pack": "backend-core",
+"how": "path_rule:tech"
 },
 "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailServiceLocaleTest.java": {
 "pack": "backend-core",
@@ -963,11 +1059,23 @@
 "pack": "user",
 "how": "seed"
 },
+"backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/EventQuotaCountIntegrationTest.java": {
+"pack": "event",
+"how": "seed"
+},
+"backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/EventQuotaCountScopeIntegrationTest.java": {
+"pack": "event",
+"how": "seed"
+},
 "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/PasswordResetTokenConcurrencyIntegrationTest.java": {
 "pack": "user",
 "how": "seed"
 },
 "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/PasswordResetTokenCreateStatisticsIntegrationTest.java": {
+"pack": "user",
+"how": "seed"
+},
+"backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/UserTierPersistenceIntegrationTest.java": {
 "pack": "user",
 "how": "seed"
 },
@@ -982,6 +1090,10 @@
 "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eTestSupportProfileTest.java": {
 "pack": "user",
 "how": "seed"
+},
+"backend:src/test/java/com/matimeline/eventmanager/infrastructure/config/DevCorsStartupLoggerTest.java": {
+"pack": "backend-core",
+"how": "path_rule:tech"
 },
 "backend:src/test/java/com/matimeline/eventmanager/infrastructure/config/ProdConfigStartupLoggerTest.java": {
 "pack": "backend-core",
@@ -1020,6 +1132,10 @@
 "how": "path_rule:tech"
 },
 "backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/JwtFilterTest.java": {
+"pack": "session",
+"how": "seed"
+},
+"backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/JwtServiceKeyRotationTest.java": {
 "pack": "session",
 "how": "seed"
 },
@@ -2732,6 +2848,10 @@
 "how": "path_rule:tech"
 },
 "frontend:styles/__tests__/eyebrow-consumers.test.tsx": {
+"pack": "frontend-core",
+"how": "path_rule:tech"
+},
+"frontend:styles/__tests__/i18n-date-long-declarations.test.ts": {
 "pack": "frontend-core",
 "how": "path_rule:tech"
 },

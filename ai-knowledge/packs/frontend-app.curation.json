@@ -1,20 +1,20 @@
 {
  "pack": "frontend-app",
  "schema": 1,
- "curated_at": "2026-11-20T12:45:00Z",
+ "curated_at": "2026-11-25T15:00:00",
  "curator": "curate/1",
  "base_sha256": "ad9937b97d60ecec667f209978fcd6eb87e8aec92df4275b4f5fe40f0cb1b7c3",
- "pack_sha256_before": "57e5c4cfadd27e9de251400e7884941afd9d4734c4b83476a163f84bcdd25f0e",
- "pack_sha256_after": "304e4fd11d32544c8afd8fbc3a3cc74250f6cf4b4e287dc4eac0d4d500b37301",
- "criteria_sha256": "48e0e20f086c5b11deecfecdc547ba1d6115faee1597a5aaf682f6c699e92423",
+ "pack_sha256_before": "d1b14ca0fc21bdd7895d3e9ae9df3c293239c650ac1430fb896f2efa6986ca50",
+ "pack_sha256_after": "a982d8972a6f69e1e793b238a56141c2b349211cb8e53b655ac3e82d3d11de2f",
+ "criteria_sha256": "ab7790cd5eeee6662e4839ed473485849ec7230c69cee20910a09fbe76ae6957",
  "models": {
   "measure": "haiku",
   "refute": "sonnet"
  },
  "base_fingerprint": "f7a937d1bb5fbfcc372ad2f2b13cdc1840e3ef26e3e85b9712d7fc5f4de5a619",
  "bytes": {
-  "before": 7388,
-  "after": 7388,
+  "before": 7387,
+  "after": 7387,
   "by_section": {
    "activate": {
     "before": 140,
@@ -84,16 +84,16 @@
      "frontend-app:global-error.tsx",
      66,
      66,
-     "e2c1db056889586c279ef896089372318e81ed1142619ea34b423921971537cb"
+     "433719eaa8c70a900e1f00b589995b67194f98d6635b76c8a7127baa4b77dfad"
     ],
     [
      "frontend-app:global-not-found-screen.tsx",
      93,
      93,
-     "25cfd3d7eea6bf6838d42218a3bca68b8f26ff25c874cdda1833d047a7a7104c"
+     "b33720b463d66d17687087c8d58e619d13ea53b007d9e0644a946da44e6bc6c8"
     ]
    ],
-   "code_sha256": "2350dff1bf3856663bb47ad089bc79dd75aa3bb4620b8d373f14187d74ea6571",
+   "code_sha256": "55b407e9fa526e11df6e0f1e5ec9df52d99028d97dd7c4b5728409540b48d3b2",
    "verdict": "admit",
    "reason": "admitted",
    "final": true,
@@ -115,7 +115,7 @@
      "confidence": "medium",
      "files_read_missing": true,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "rediscover": {
      "found": true,
@@ -136,7 +136,7 @@
      },
      "job": "frontend-app:rediscover:frontend-app_locale_app_dashboard_loading.test.tsx:1",
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "comment": [],
     "refute": {
@@ -190,7 +190,7 @@
       "unproven": 0
      },
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     }
    },
    "contrary": null,
@@ -221,10 +221,10 @@
      "frontend-app:global-not-found-screen.tsx",
      93,
      93,
-     "25cfd3d7eea6bf6838d42218a3bca68b8f26ff25c874cdda1833d047a7a7104c"
+     "b33720b463d66d17687087c8d58e619d13ea53b007d9e0644a946da44e6bc6c8"
     ]
    ],
-   "code_sha256": "25cfd3d7eea6bf6838d42218a3bca68b8f26ff25c874cdda1833d047a7a7104c",
+   "code_sha256": "b33720b463d66d17687087c8d58e619d13ea53b007d9e0644a946da44e6bc6c8",
    "verdict": "admit",
    "reason": "rediscovered",
    "final": true,
@@ -245,7 +245,7 @@
      "restatement": "Le fichier global-not-found-screen.tsx déclare la constante MESSAGES typée Record<Locale, NotFoundMessages>, ce qui impose une entrée de messages pour chaque locale. L'extrait ne montre que la déclaration, pas les valeurs des messages.",
      "confidence": "medium",
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "rediscover": {
      "found": true,
@@ -267,7 +267,7 @@
      "job": "frontend-app:rediscover:frontend-app_global-error.tsx:2",
      "rank_in_lot": 1,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "comment": [],
     "refute": null
@@ -302,16 +302,16 @@
      "frontend-app:global-error.tsx",
      100,
      101,
-     "379415987cd4d84cbaeb452fe397c71ef65b54afc9ceccc0492bae4c70ba6764"
+     "474cc92f1246c3176ace4531be62a196e4a5514c96ba4d4d728b4c72383f79dc"
     ],
     [
      "frontend-app:global-error.tsx",
      112,
      112,
-     "918c068ec4c66aa1939a0ff0ffe13247e06ebc61f0268b1b3ca97bbf972ce81f"
+     "5112e3936337ef7f656e4bd05cb3fc9c868cc99dc62b88bcf76ec089c62c05e4"
     ]
    ],
-   "code_sha256": "de666801ab52955c29a64b8e84395dfd012f28e79ab87619cb7b5d8c82f4b488",
+   "code_sha256": "8d0fdf53970a273b693c8305ce6767914a0f380bf413518eb85d88f99366f871",
    "verdict": "admit",
    "reason": "admitted",
    "final": true,
@@ -332,7 +332,7 @@
      "restatement": "GlobalError.resolveLocale lit le premier segment de window.location.pathname et le renvoie s'il passe isSupportedLocale, sinon renvoie DEFAULT_LOCALE. GlobalError utilise ensuite MESSAGES[locale] avec repli sur MESSAGES.fr si la clé est absente (opérateur ??).",
      "confidence": "high",
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "rediscover": {
      "found": true,
@@ -353,7 +353,7 @@
      },
      "job": "frontend-app:rediscover:frontend-app_global-error.tsx:2",
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "comment": [],
     "refute": {
@@ -407,7 +407,7 @@
       "unproven": 0
      },
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     }
    },
    "contrary": null,
@@ -438,10 +438,10 @@
      "frontend-app:global-error.tsx",
      3,
      3,
-     "fc09971321f6ef1403ef41578139ea1a93485c5bf8ff65337ebc8f9a2641b9c5"
+     "328506f76605d6542faf06428ae90b0ca4721c4c1b284136b43a14322ea07bba"
     ]
    ],
-   "code_sha256": "fc09971321f6ef1403ef41578139ea1a93485c5bf8ff65337ebc8f9a2641b9c5",
+   "code_sha256": "328506f76605d6542faf06428ae90b0ca4721c4c1b284136b43a14322ea07bba",
    "verdict": "admit",
    "reason": "admitted",
    "final": true,
@@ -462,7 +462,7 @@
      "restatement": "Le composant GlobalError importe la feuille de style globale via import '../src/styles/globals.css'. L'extrait ne montre que cette ligne d'import, sans logique de rendu.",
      "confidence": "high",
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "rediscover": {
      "found": true,
@@ -483,7 +483,7 @@
      },
      "job": "frontend-app:rediscover:frontend-app_global-error.tsx:2",
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "comment": [],
     "refute": {
@@ -537,7 +537,7 @@
       "unproven": 0
      },
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     }
    },
    "contrary": null,
@@ -568,10 +568,10 @@
      "frontend-app:global-not-found.tsx",
      20,
      20,
-     "60990e651fcc18f66cb57c7166d730509b09a076c048c3d070d8d5d952432fe2"
+     "593f10319e27e666976292b48de86b0c1e6d9ab47331d25bb1e63c409f6899a1"
     ]
    ],
-   "code_sha256": "60990e651fcc18f66cb57c7166d730509b09a076c048c3d070d8d5d952432fe2",
+   "code_sha256": "593f10319e27e666976292b48de86b0c1e6d9ab47331d25bb1e63c409f6899a1",
    "verdict": "admit",
    "reason": "admitted",
    "final": true,
@@ -641,7 +641,7 @@
       "unproven": 0
      },
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     }
    },
    "contrary": null,
@@ -672,10 +672,10 @@
      "frontend-app:global-not-found-screen.tsx",
      159,
      159,
-     "cea65f4ce5e660fcb5a3539ac6de8cf88441da32f07c94641d58b7c84c8e7cc0"
+     "113f128490fd1873811f70be7f8273afbe52db808bacd21f91cf70d6cb8f6781"
     ]
    ],
-   "code_sha256": "cea65f4ce5e660fcb5a3539ac6de8cf88441da32f07c94641d58b7c84c8e7cc0",
+   "code_sha256": "113f128490fd1873811f70be7f8273afbe52db808bacd21f91cf70d6cb8f6781",
    "verdict": "admit",
    "reason": "admitted",
    "final": true,
@@ -740,7 +740,7 @@
       "unproven": 0
      },
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     }
    },
    "contrary": null,
@@ -773,16 +773,16 @@
      "frontend-app:[locale]/forgot-password/page.tsx",
      34,
      37,
-     "8f6c2919dc4ae243baa703cb85c61b0509b9f88de17f6b92a923f52aa0b03268"
+     "9dfb35764d7475c32755bcccb3e0f829959b9450635e7fa1349cfe958b5cd2fd"
     ],
     [
      "frontend-app:[locale]/login/page.tsx",
      36,
      36,
-     "e4c8b4d0de9c3a308bde4ac1bbd0c41fd3372e67ee234573cd58b94dabcba503"
+     "1262695d293be739d5ac81623bb0740ea973bbe10600a9a2014662a69bd6944d"
     ]
    ],
-   "code_sha256": "0daf0468a2676cae9e86a7e383391a510a50449413e70599025e979221fb0200",
+   "code_sha256": "88c5c37730a33eec38483192a2e857b1d2a4a11969208444907c21e1399536a0",
    "verdict": "admit",
    "reason": "admitted",
    "final": true,
@@ -804,7 +804,7 @@
      "confidence": "high",
      "files_read_missing": true,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "rediscover": {
      "found": true,
@@ -825,7 +825,7 @@
      },
      "job": "frontend-app:rediscover:frontend-app_locale_app_dashboard_loading.test.tsx:1",
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "comment": [],
     "refute": {
@@ -884,7 +884,7 @@
       "unproven": 0
      },
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     }
    },
    "contrary": null,
@@ -915,10 +915,10 @@
      "frontend-app:[locale]/login/page.tsx",
      53,
      59,
-     "94b5730476948315b1a3e48b39cda1c7fb8b63a29addb773bbf31574fc34a873"
+     "3477b910f58d26bef7de7c2a2e7962a77d0a685beae6aca895ecc6a2a8581437"
     ]
    ],
-   "code_sha256": "94b5730476948315b1a3e48b39cda1c7fb8b63a29addb773bbf31574fc34a873",
+   "code_sha256": "3477b910f58d26bef7de7c2a2e7962a77d0a685beae6aca895ecc6a2a8581437",
    "verdict": "admit",
    "reason": "rediscovered",
    "final": true,
@@ -940,7 +940,7 @@
      "confidence": "high",
      "files_read_missing": true,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "rediscover": {
      "found": true,
@@ -962,7 +962,7 @@
      "job": "frontend-app:rediscover:frontend-app_locale_app_dashboard_loading.test.tsx:1",
      "rank_in_lot": 4,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "comment": [],
     "refute": null
@@ -998,16 +998,16 @@
      "frontend-app:[locale]/forgot-password/page.tsx",
      158,
      158,
-     "84bfd95681097c5f12616a3fe2c31b31665b3c1a7618d21448b729946c2eb56b"
+     "0c011342693481709a99c96caa6f746a8510974f9addc62e8d77036672221e51"
     ],
     [
      "frontend-app:[locale]/login/page.tsx",
      44,
      46,
-     "e4ddb895ab73f56d06f139c1083966439e1ae54542a41dbab248e89771b43cba"
+     "6f8d96e4390f261de0cf5181a2eb027d141d18a1250fc6a965fe5c564dc964d1"
     ]
    ],
-   "code_sha256": "aaf8f6228b2fb63397e2154845902e377075e9679a5a69b90befb6a6cd374db4",
+   "code_sha256": "ed145cc6d8e2416205e753a004ade5d29efb940d437bfd7eb194071b80c30fc5",
    "verdict": "admit",
    "reason": "rediscovered",
    "final": true,
@@ -1029,7 +1029,7 @@
      "confidence": "high",
      "files_read_missing": true,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "rediscover": {
      "found": true,
@@ -1051,7 +1051,7 @@
      "job": "frontend-app:rediscover:frontend-app_locale_app_dashboard_loading.test.tsx:1",
      "rank_in_lot": 5,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "comment": [],
     "refute": null
@@ -1085,10 +1085,10 @@
      "frontend-app:[locale]/(app)/products/loading.tsx",
      16,
      21,
-     "73285b4548c962a8b1e60222a245d4ea1a2270ad8b0702e190cdc87fa4643ae3"
+     "7de8fda9e0fcd18bdf4a1bc6d9174fb285be11239153f5a07ed539af6ff04bc4"
     ]
    ],
-   "code_sha256": "73285b4548c962a8b1e60222a245d4ea1a2270ad8b0702e190cdc87fa4643ae3",
+   "code_sha256": "7de8fda9e0fcd18bdf4a1bc6d9174fb285be11239153f5a07ed539af6ff04bc4",
    "verdict": "admit",
    "reason": "admitted",
    "final": true,
@@ -1153,7 +1153,7 @@
       "unproven": 0
      },
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     }
    },
    "contrary": null,
@@ -1186,16 +1186,16 @@
      "frontend-app:[locale]/(app)/products/loading.tsx",
      5,
      5,
-     "1a384394f423e63d0ffe1c8fff1e4b1f5b8dbe501c965dd29b7712e9804d798e"
+     "8e5dd188dcc59dc39b527d1227c1a468e6ff4cbc03c8e61a5cf7bd8c3d70ec06"
     ],
     [
      "frontend-app:[locale]/(app)/timeline/loading.tsx",
      41,
      47,
-     "49b25015af84963f440f9902bbe9bc18ae1a6b47764ffcdddabf72bae6afab76"
+     "424a9cf6b5fd1e4d9f1a72c8de5d2f78c705f0982026ec4119a57995731b1e80"
     ]
    ],
-   "code_sha256": "ab30072d8e58d5e853c999ba08765f7d02eb600a4f92ed323e893a7905805406",
+   "code_sha256": "3712ec20366cda4ed9c48c60323ec65ffd2ca523b09d0c1e8689e041ca97764c",
    "verdict": "admit",
    "reason": "admitted",
    "final": true,
@@ -1217,7 +1217,7 @@
      "confidence": "high",
      "files_read_missing": true,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "rediscover": {
      "found": true,
@@ -1238,7 +1238,7 @@
      },
      "job": "frontend-app:rediscover:frontend-app_locale_app_dashboard_loading.test.tsx:1",
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "comment": [],
     "refute": {
@@ -1307,7 +1307,7 @@
       "unproven": 0
      },
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     }
    },
    "contrary": null,
@@ -1339,16 +1339,16 @@
      "frontend-app:[locale]/error.tsx",
      44,
      45,
-     "e6ab3d89ddb6c8b3c306b3a8c66a5f1c80c2321cf9c3f1fd4b522c37404c268a"
+     "4973d975455bd164795e94453092732f8e32275eae8f9e31a5d1c05a5ab46fc0"
     ],
     [
      "frontend-app:[locale]/error.tsx",
      54,
      86,
-     "2e33ad7d28648e05d773af587647a6fbe52f5e38c0ca01550258ace8200a0d10"
+     "cabc13aae308306c57fb3c4041e022af18b8f9c03a691adf8715dd6c66a1e40e"
     ]
    ],
-   "code_sha256": "2a2eb02e787787f2f9806062c653605a468aec1ccbd218916903c24ee34475cc",
+   "code_sha256": "2d86ba561e6b54790cb28b6a3f4ab8ad53c0f40034c00db601b2efcb2b89e10b",
    "verdict": "admit",
    "reason": "rediscovered",
    "final": true,
@@ -1370,7 +1370,7 @@
      "confidence": "high",
      "files_read_missing": true,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "rediscover": {
      "found": true,
@@ -1392,7 +1392,7 @@
      "job": "frontend-app:rediscover:frontend-app_locale_app_dashboard_loading.test.tsx:1",
      "rank_in_lot": 3,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "comment": [],
     "refute": null
@@ -1426,10 +1426,10 @@
      "frontend-app:[locale]/(app)/dashboard/loading.test.tsx",
      11,
      13,
-     "6c654c014724b84e839bbd7b1612fa9f1173f1429cc59c15b88be541143d64d0"
+     "f322d08ab8e7f85e9f2a095511c84edc4dfd2a7f86fc21619c6b3d79b5603353"
     ]
    ],
-   "code_sha256": "6c654c014724b84e839bbd7b1612fa9f1173f1429cc59c15b88be541143d64d0",
+   "code_sha256": "f322d08ab8e7f85e9f2a095511c84edc4dfd2a7f86fc21619c6b3d79b5603353",
    "verdict": "admit",
    "reason": "admitted",
    "final": true,
@@ -1451,7 +1451,7 @@
      "confidence": "high",
      "files_read_missing": true,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "rediscover": {
      "found": true,
@@ -1472,7 +1472,7 @@
      },
      "job": "frontend-app:rediscover:frontend-app_locale_app_dashboard_loading.test.tsx:1",
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "comment": [],
     "refute": {
@@ -1492,7 +1492,7 @@
      "consigne_verdict": "n/a",
      "question_verdict": "n/a",
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     }
    },
    "contrary": null,
@@ -1523,16 +1523,16 @@
      "frontend-app:[locale]/(app)/dashboard/loading.test.tsx",
      47,
      48,
-     "48d8e50c44792e00ab336a1351e25dafac9a0fd1ec8b255d1144be060c589d26"
+     "141846ea781ff2631d1f8775969a0b927d1a6a7574724f92a15057390ef6c88b"
     ],
     [
      "frontend-app:[locale]/(app)/products/loading.test.tsx",
      15,
      18,
-     "d91d3b8f7d5d2ba7d240f220681ade4d2f80f967e7c772d2139908a910781b5a"
+     "e7403432577b71e3997d9006c86e7bb4a68d0c6079d5bc13b5b1df919c50e6fd"
     ]
    ],
-   "code_sha256": "aa251ea76a3dbe0f9ba10c53b6c5cb76e1bc43583e311e163de5f86b4d16f43e",
+   "code_sha256": "8e3cab217d0ecc6ac15dd80c5883e5c7b41c718a11429b22344f088f2800792b",
    "verdict": "admit",
    "reason": "admitted",
    "final": true,
@@ -1554,7 +1554,7 @@
      "confidence": "high",
      "files_read_missing": true,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "rediscover": {
      "found": true,
@@ -1575,7 +1575,7 @@
      },
      "job": "frontend-app:rediscover:frontend-app_locale_app_dashboard_loading.test.tsx:1",
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "comment": [],
     "refute": {
@@ -1595,7 +1595,7 @@
      "consigne_verdict": "n/a",
      "question_verdict": "n/a",
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     }
    },
    "contrary": null,
@@ -1626,16 +1626,16 @@
      "frontend-app:[locale]/(app)/dashboard/loading.test.tsx",
      19,
      20,
-     "3e34979a5632dc7c5dbe9eaf5bcbb31364fd7ad57e7c031ee803e04b89319436"
+     "1d571c65761d666573b66814ffb32fa62f13ccd2ae45ba90f69bfc80dc6725e3"
     ],
     [
      "frontend-app:[locale]/(app)/timeline/loading.test.tsx",
      25,
      25,
-     "50702aaa01b766ef5ad8ea36e2295486f2e9d5ae4a609216a2786feaa7d7e74f"
+     "c9c9430f962a6f0c7502b9f30cb6737da2dcf23d8a2fa6c1c776a40d5844a352"
     ]
    ],
-   "code_sha256": "6add883587990d70d9f922b0d0ea77b6f602b7236c52966548a574d239e9af62",
+   "code_sha256": "245617b2d04e3d734ef461d0f93193109a1d8f91ff46bcb6bf93d533c17dc448",
    "verdict": "admit",
    "reason": "admitted",
    "final": true,
@@ -1657,7 +1657,7 @@
      "confidence": "high",
      "files_read_missing": true,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "rediscover": {
      "found": true,
@@ -1678,7 +1678,7 @@
      },
      "job": "frontend-app:rediscover:frontend-app_locale_app_dashboard_loading.test.tsx:1",
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "comment": [],
     "refute": {
@@ -1698,7 +1698,7 @@
      "consigne_verdict": "n/a",
      "question_verdict": "n/a",
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     }
    },
    "contrary": null,
@@ -1729,16 +1729,16 @@
      "frontend-app:[locale]/(app)/products/[productId]/loading.test.tsx",
      24,
      24,
-     "337e4fea848391138c1ddacd8a458edc9f5f5cf1e34e7e982a0614776dd217f7"
+     "49242a0c9de8f5433578ab3f5b0d5297e9531bcd4609b4bd9d395cd666af10aa"
     ],
     [
      "frontend-app:[locale]/(app)/timeline/loading.test.tsx",
      36,
      37,
-     "fc8557d185b144a47674013ca3f7c683380f05b27690cc0bace2f8279e7475e2"
+     "80b5b412a6ae40cbbbb9ecc5bdab7427d42c33aa79d201c3331da713d8136d39"
     ]
    ],
-   "code_sha256": "e8b0b24f784bc904084966c6c70bf021a413b5491e1ddfc3bcdd6e81dcd93fe2",
+   "code_sha256": "82d091698e4a9a546a25447f9539cdca8fc7b14390df329f5288d50f94bd81bf",
    "verdict": "admit",
    "reason": "rediscovered",
    "final": true,
@@ -1760,7 +1760,7 @@
      "confidence": "high",
      "files_read_missing": true,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "rediscover": {
      "found": true,
@@ -1782,7 +1782,7 @@
      "job": "frontend-app:rediscover:frontend-app_locale_app_dashboard_loading.test.tsx:1",
      "rank_in_lot": 6,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "comment": [],
     "refute": null
@@ -1816,16 +1816,16 @@
      "frontend-app:global-error.test.tsx",
      49,
      51,
-     "37c0307d89823e1eb07ee60652780bcf55482698c05d94fa51fa9ddfef9dd907"
+     "7e2a4edf9cdc56973a30e88fd01f195f9bf7d96d362fead59cb3642156f7dfee"
     ],
     [
      "frontend-app:global-not-found.test.tsx",
      62,
      62,
-     "752cbb51ad771c1897a15d7fdb60efcea36e850c15325badecf1c4a67d55b600"
+     "440ca35bea5c4705f1d3cc1109c39d27dc33aac089bb3b6d7d3db4a8bf32f16c"
     ]
    ],
-   "code_sha256": "c8f52b650baf2b32aebe43db2a39b86e606985bbfcc6bdd714d8c1d63d22a354",
+   "code_sha256": "3200c17b94310f2f76885c88e1ac6452a81a434944998768bd771755430bac26",
    "verdict": "admit",
    "reason": "admitted",
    "final": true,
@@ -1847,7 +1847,7 @@
      "confidence": "medium",
      "files_read_missing": true,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "rediscover": {
      "found": true,
@@ -1868,7 +1868,7 @@
      },
      "job": "frontend-app:rediscover:frontend-app_locale_app_dashboard_loading.test.tsx:1",
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "comment": [],
     "refute": {
@@ -1888,7 +1888,7 @@
      "consigne_verdict": "n/a",
      "question_verdict": "n/a",
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     }
    },
    "contrary": null,
@@ -1917,10 +1917,10 @@
      "frontend-app:global-error.test.tsx",
      11,
      11,
-     "ba9044fc30d15c5ee558ebf4ca08a4fc429f782461b9f371323680570e25796e"
+     "d924bcd4b4101a279d03a86bb15442ab0163fcc92c665d513762e5e5920c481b"
     ]
    ],
-   "code_sha256": "ba9044fc30d15c5ee558ebf4ca08a4fc429f782461b9f371323680570e25796e",
+   "code_sha256": "d924bcd4b4101a279d03a86bb15442ab0163fcc92c665d513762e5e5920c481b",
    "verdict": "admit",
    "reason": "rediscovered",
    "final": true,
@@ -1942,7 +1942,7 @@
      "confidence": "high",
      "files_read_missing": true,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "rediscover": {
      "found": true,
@@ -1964,7 +1964,7 @@
      "job": "frontend-app:rediscover:frontend-app_locale_app_dashboard_loading.test.tsx:1",
      "rank_in_lot": 1,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "comment": [],
     "refute": null
@@ -1996,10 +1996,10 @@
      "frontend-app:global-error.test.tsx",
      36,
      36,
-     "cf873cef8686f2b9e171939af2a5ee5803d876f76daa3d27d500d294784b8628"
+     "3416d207859a6473e3bc52634e2ba68c0e1324b657b3e16f4944c55aee8fd467"
     ]
    ],
-   "code_sha256": "cf873cef8686f2b9e171939af2a5ee5803d876f76daa3d27d500d294784b8628",
+   "code_sha256": "3416d207859a6473e3bc52634e2ba68c0e1324b657b3e16f4944c55aee8fd467",
    "verdict": "admit",
    "reason": "rediscovered",
    "final": true,
@@ -2021,7 +2021,7 @@
      "confidence": "high",
      "files_read_missing": true,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "rediscover": {
      "found": true,
@@ -2043,7 +2043,7 @@
      "job": "frontend-app:rediscover:frontend-app_locale_app_dashboard_loading.test.tsx:1",
      "rank_in_lot": 2,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "comment": [],
     "refute": null
@@ -2075,10 +2075,10 @@
      "frontend-app:global-error.test.tsx",
      114,
      114,
-     "609640d676ddad6a358cc5731a8570305ac7daadf55e7be01ab13378ec11a8d1"
+     "52e060bff53b313e37e4361946d44748387d6177f79093d3c5a9e011c6b65ebc"
     ]
    ],
-   "code_sha256": "609640d676ddad6a358cc5731a8570305ac7daadf55e7be01ab13378ec11a8d1",
+   "code_sha256": "52e060bff53b313e37e4361946d44748387d6177f79093d3c5a9e011c6b65ebc",
    "verdict": "admit",
    "reason": "admitted",
    "final": true,
@@ -2100,7 +2100,7 @@
      "confidence": "medium",
      "files_read_missing": true,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "rediscover": {
      "found": true,
@@ -2121,7 +2121,7 @@
      },
      "job": "frontend-app:rediscover:frontend-app_locale_app_dashboard_loading.test.tsx:1",
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "comment": [],
     "refute": {
@@ -2141,7 +2141,7 @@
      "consigne_verdict": "n/a",
      "question_verdict": "n/a",
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     }
    },
    "contrary": null,
@@ -2170,10 +2170,10 @@
      "frontend-app:global-not-found.test.tsx",
      46,
      47,
-     "3cb8205b423eecc5537d93763de07af8b2b72095ca948451e430b14119172e82"
+     "5f1192c59add29da5c59743afed143dd436f98a6db9d32991638227fc6f92c14"
     ]
    ],
-   "code_sha256": "3cb8205b423eecc5537d93763de07af8b2b72095ca948451e430b14119172e82",
+   "code_sha256": "5f1192c59add29da5c59743afed143dd436f98a6db9d32991638227fc6f92c14",
    "verdict": "admit",
    "reason": "admitted",
    "final": true,
@@ -2194,7 +2194,7 @@
      "restatement": "Le beforeEach de GlobalNotFound.test ne simule que l'objet Date avec vi.useFakeTimers({ toFake: ['Date'] }) puis fixe l'heure système au 24 septembre 2026 à 09:00 heure locale (new Date(2026, 8, 24, 9, 0)), ce qui rend les tests déterministes pour le code qui lit la date. Les autres timers ne sont pas simulés.",
      "confidence": "high",
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "rediscover": {
      "found": true,
@@ -2215,7 +2215,7 @@
      },
      "job": "frontend-app:rediscover:frontend-app_global-error.tsx:2",
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "comment": [],
     "refute": {
@@ -2235,7 +2235,7 @@
      "consigne_verdict": "n/a",
      "question_verdict": "n/a",
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     }
    },
    "contrary": null,
@@ -2264,10 +2264,10 @@
      "frontend-app:[locale]/login/page.tsx",
      28,
      28,
-     "59872b2f6585b651436c8d7c0ea439cfe233528cd72fc5d4c5da31e59bdce9f9"
+     "d1d853730f0f7abfbc0c7eebff7db83daf8718e869258aff55544b7672ea90c1"
     ]
    ],
-   "code_sha256": "59872b2f6585b651436c8d7c0ea439cfe233528cd72fc5d4c5da31e59bdce9f9",
+   "code_sha256": "d1d853730f0f7abfbc0c7eebff7db83daf8718e869258aff55544b7672ea90c1",
    "verdict": "admit",
    "reason": "admitted",
    "final": true,
@@ -2327,7 +2327,7 @@
       "unproven": 0
      },
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     }
    },
    "contrary": null,
@@ -2359,16 +2359,16 @@
      "frontend-app:global-error.tsx",
      123,
      123,
-     "c932d841fc1d16d9e2de2626ad0155b9910083398c3789627b4ab6a856290c8f"
+     "23d3f2f01b9715fa3a7231fe64c3711c4eb843db61cc0fb3c1e574eea47400db"
     ],
     [
      "frontend-app:global-not-found-screen.tsx",
      144,
      144,
-     "d203d681ef2bbe8479ed26036af0c8d4e51afbeba1030ce31782f39c3a844ecd"
+     "ba825f769a92a229754cd4bc57bbc00a6b50edb91be04afcef048651d738fc57"
     ]
    ],
-   "code_sha256": "773695999309e79af07dea216a04f2ccf548218298446c1845526a877a452ca6",
+   "code_sha256": "bea73fdbb8c8902262d2a0a932e94582146b6182f7f4aeb1ae2364749af8b848",
    "verdict": "admit",
    "reason": "admitted",
    "final": true,
@@ -2428,7 +2428,7 @@
       "unproven": 0
      },
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     }
    },
    "contrary": null,
@@ -2453,7 +2453,7 @@
    "invalid": false,
    "cache_digest": "a958638e6e8d0540a9ec3593a8d575baf0eb8255eb553d5bf260f823e6b03d47",
    "reused": true,
-   "reused_from": "2026-11-20T12:20:00Z",
+   "reused_from": "2026-11-24T17:40:00",
    "cited_by": [
     "frontend-app:rules:5"
    ],
@@ -2471,7 +2471,7 @@
    "invalid": false,
    "cache_digest": "bb9c37e0181cdf19028e7d592051fce05aa6a34e1aadf08ca2d4ebacb78fb69b",
    "reused": true,
-   "reused_from": "2026-11-20T12:20:00Z",
+   "reused_from": "2026-11-24T17:40:00",
    "cited_by": [
     "frontend-app:rules:6"
    ],
@@ -2489,7 +2489,7 @@
    "invalid": false,
    "cache_digest": "65c0d274bafb2985314f6fa6dd6686bd1c934a02d68f65cdbe3f5c72ab7cca28",
    "reused": true,
-   "reused_from": "2026-11-20T12:20:00Z",
+   "reused_from": "2026-11-24T17:40:00",
    "cited_by": [
     "frontend-app:rules:10"
    ],

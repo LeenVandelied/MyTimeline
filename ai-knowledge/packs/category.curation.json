@@ -1,20 +1,20 @@
 {
  "pack": "category",
  "schema": 1,
- "curated_at": "2026-11-20T12:45:00Z",
+ "curated_at": "2026-11-25T15:00:00",
  "curator": "curate/1",
- "base_sha256": "cd195350ee93ad65bb0718114e374d87cbcb8236ea661ab9fd377b098a1fc309",
- "pack_sha256_before": "9d4d23089bfab4e653b0b1396db46748ba03d1372e41aa053012248d59046432",
- "pack_sha256_after": "4412089bd5800727218732ee3bf567eceede6f0ddbe7178fb0236e80badc7d99",
- "criteria_sha256": "48e0e20f086c5b11deecfecdc547ba1d6115faee1597a5aaf682f6c699e92423",
+ "base_sha256": "e66dde856eb55ab1bf9528c9058154f95a855f69622958aff74fd4f2af29bc00",
+ "pack_sha256_before": "a565b688bf0350d07eb0732a606fd50daca1462ae2de21889ee256e3b99b80ab",
+ "pack_sha256_after": "8b40364b9af1fbec7a624a98fcc8856ab71bc94b83ae4f2908644f1680d92c06",
+ "criteria_sha256": "ab7790cd5eeee6662e4839ed473485849ec7230c69cee20910a09fbe76ae6957",
  "models": {
   "measure": "haiku",
   "refute": "sonnet"
  },
- "base_fingerprint": "0038a945be6b6a3174b87e0c5aeca3ff8eabacde39d10fe34276d403a17d8866",
+ "base_fingerprint": "0f544b9d40e0fcff193c51c2e15442e470887bea34429ea527adcdaff1fb4e4b",
  "bytes": {
-  "before": 11431,
-  "after": 11431,
+  "before": 10987,
+  "after": 10987,
   "by_section": {
    "activate": {
     "before": 227,
@@ -29,16 +29,16 @@
     "after": 2453
    },
    "structure": {
-    "before": 1780,
-    "after": 1780
+    "before": 1753,
+    "after": 1753
    },
    "surface": {
-    "before": 1564,
-    "after": 1564
+    "before": 1143,
+    "after": 1143
    },
    "files": {
-    "before": 1966,
-    "after": 1966
+    "before": 1971,
+    "after": 1971
    },
    "relations": {
     "before": 291,
@@ -57,8 +57,8 @@
     "after": 418
    },
    "coverage": {
-    "before": 612,
-    "after": 612
+    "before": 613,
+    "after": 613
    }
   }
  },
@@ -84,16 +84,16 @@
      "backend:src/main/java/com/matimeline/eventmanager/application/dtos/CategoryResponse.java",
      30,
      45,
-     "d07694e9d3e4d2217b9a06d72c28f8166f8971b9ea7924b3cea7527803ed99e5"
+     "0d4d5d10c625d9c47285c503da7e965201e169be97ea487b205ba826661fdecb"
     ],
     [
      "backend:src/main/java/com/matimeline/eventmanager/domain/models/Category.java",
      5,
      12,
-     "bf72651aa8b1bf1f6a3a4ed659be23bcb91016bf6731bda9d5b1a1426f7918f7"
+     "5ef7426f45d5e688dd10dbdf2a81bb07a6c3bf15541b7dc29dc121b03a582c5c"
     ]
    ],
-   "code_sha256": "e74bf89df8acc86897ba3d0195d82fcad7d5dc6b96d9541a2c56a1a3ffbaff14",
+   "code_sha256": "c4d7e73e9184c70d01335ce7eedc6e2f2213750e7c370db7d4ed1d9aa957baf9",
    "verdict": "admit",
    "reason": "admitted",
    "final": true,
@@ -119,7 +119,7 @@
      "consigne_verdict": "n/a",
      "question_verdict": "n/a",
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     }
    },
    "contrary": null,
@@ -150,16 +150,16 @@
      "backend:src/main/java/com/matimeline/eventmanager/domain/models/Category.java",
      5,
      12,
-     "bf72651aa8b1bf1f6a3a4ed659be23bcb91016bf6731bda9d5b1a1426f7918f7"
+     "5ef7426f45d5e688dd10dbdf2a81bb07a6c3bf15541b7dc29dc121b03a582c5c"
     ],
     [
      "backend:src/main/java/com/matimeline/eventmanager/application/dtos/CategoryResponse.java",
      30,
      45,
-     "d07694e9d3e4d2217b9a06d72c28f8166f8971b9ea7924b3cea7527803ed99e5"
+     "0d4d5d10c625d9c47285c503da7e965201e169be97ea487b205ba826661fdecb"
     ]
    ],
-   "code_sha256": "8149b1844e9f4a6efb79b7741aef251eac478450172a8412e9fd1c84883e0e0a",
+   "code_sha256": "206ddec05c974b0933f67dc9c56a9af21e59d8bfe570e6a9304e93ec29fa9c7c",
    "verdict": "admit",
    "reason": "admitted",
    "final": true,
@@ -185,7 +185,7 @@
      "consigne_verdict": "n/a",
      "question_verdict": "n/a",
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     }
    },
    "contrary": null,
@@ -214,10 +214,10 @@
      "backend:src/main/java/com/matimeline/eventmanager/infrastructure/entities/CategoryEntity.java",
      28,
      30,
-     "9396044b830e9976c62dba16449a9e3a3a42bf33d7affeac303774de878085d0"
+     "75e6947c44fbdf4a1b032a285806d7178621581b6b473eb320254869fb6f5c1a"
     ]
    ],
-   "code_sha256": "9396044b830e9976c62dba16449a9e3a3a42bf33d7affeac303774de878085d0",
+   "code_sha256": "75e6947c44fbdf4a1b032a285806d7178621581b6b473eb320254869fb6f5c1a",
    "verdict": "admit",
    "reason": "admitted",
    "final": true,
@@ -243,7 +243,7 @@
      "consigne_verdict": "n/a",
      "question_verdict": "n/a",
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     }
    },
    "contrary": null,
@@ -274,16 +274,16 @@
      "backend:src/main/java/com/matimeline/eventmanager/application/services/CategoryServiceImpl.java",
      41,
      43,
-     "657dce6c596259dec883e7173283c5c909590632cf4a82035aef9045c6a61a19"
+     "009a04f947429fd5684a0989cd5ed0ab9464084cd3e54ae5e442b94f7878d1be"
     ],
     [
      "backend:src/test/java/com/matimeline/eventmanager/application/services/CategoryServiceImplTest.java",
      58,
      58,
-     "8dcd7c33d3aa8c6210f224619a424af619534813a66c0a19344bc38a91b2894b"
+     "5d1a099fc09b927d061d8f47694f2fdb828927d324b934e0abc7eed3c655b0eb"
     ]
    ],
-   "code_sha256": "d64be022a54846fe3773abc7e34671d6790418dc00fd9397d7cc45ee7c320f3c",
+   "code_sha256": "6adf061389676f84ec68f57cb8e59506ca35ab6c0f758337b09aef19e6cce4c2",
    "verdict": "admit",
    "reason": "admitted",
    "final": true,
@@ -305,7 +305,7 @@
      "confidence": "high",
      "files_read_missing": true,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "rediscover": {
      "found": true,
@@ -326,7 +326,7 @@
      },
      "job": "category:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_CategoryResponse.java:1",
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "comment": [],
     "refute": {
@@ -346,7 +346,7 @@
      "consigne_verdict": "n/a",
      "question_verdict": "n/a",
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     }
    },
    "contrary": null,
@@ -377,16 +377,16 @@
      "backend:src/main/java/com/matimeline/eventmanager/application/services/CategoryServiceImpl.java",
      63,
      71,
-     "0b746dd930162dc06ecc3baa60e3436d52c1949820036147ea4ea782c2fcbec8"
+     "750324e82ff1a05e326416644be947ebeb343878b30d05a09bddf06fe8a1f38f"
     ],
     [
      "backend:src/test/java/com/matimeline/eventmanager/application/services/CategoryServiceImplTest.java",
      147,
      158,
-     "8ec58b4348ce0c4732f4aba8bf9251516a9c7876547804f716ec3a36190c6350"
+     "576cbe5de060161399344afdd556961913ca5097faede02923f8ceb03faa67cb"
     ]
    ],
-   "code_sha256": "cd1ede89d529d807147560b1c82e6887e945bbfea4dcf38183dc4af3867c5230",
+   "code_sha256": "2ecf7b5d6b3a1270570fc86f580dc4be8ccec34b9ddd46d5c12f61af4a4df9c7",
    "verdict": "admit",
    "reason": "admitted",
    "final": true,
@@ -408,7 +408,7 @@
      "confidence": "high",
      "files_read_missing": true,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "rediscover": {
      "found": true,
@@ -429,7 +429,7 @@
      },
      "job": "category:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_CategoryResponse.java:1",
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "comment": [],
     "refute": {
@@ -449,7 +449,7 @@
      "consigne_verdict": "n/a",
      "question_verdict": "n/a",
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     }
    },
    "contrary": null,
@@ -478,10 +478,10 @@
      "backend:src/main/java/com/matimeline/eventmanager/application/services/CategoryServiceImpl.java",
      58,
      61,
-     "6719254262958a673354b9aa8768f13c0c63abd2ea86b10b4e43e2d745edc497"
+     "acbd0abe2e5d4ca902c0188ca6a1423a33388d276c76ddad876fe89c2876dcf2"
     ]
    ],
-   "code_sha256": "6719254262958a673354b9aa8768f13c0c63abd2ea86b10b4e43e2d745edc497",
+   "code_sha256": "acbd0abe2e5d4ca902c0188ca6a1423a33388d276c76ddad876fe89c2876dcf2",
    "verdict": "admit",
    "reason": "rediscovered",
    "final": true,
@@ -503,7 +503,7 @@
      "confidence": "high",
      "files_read_missing": true,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "rediscover": {
      "found": true,
@@ -525,7 +525,7 @@
      "job": "category:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_CategoryResponse.java:1",
      "rank_in_lot": 1,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "comment": [],
     "refute": null
@@ -557,10 +557,10 @@
      "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryControllerTest.java",
      297,
      307,
-     "d9b7eba51c0b678824f06494911f01f0599dce003f7f1b71c8b3a4cf12c559fa"
+     "d597cd97b5c392893d4444153f74415420dc63b8fd31b2a55a11a3ce50ba2028"
     ]
    ],
-   "code_sha256": "d9b7eba51c0b678824f06494911f01f0599dce003f7f1b71c8b3a4cf12c559fa",
+   "code_sha256": "d597cd97b5c392893d4444153f74415420dc63b8fd31b2a55a11a3ce50ba2028",
    "verdict": "admit",
    "reason": "admitted",
    "final": true,
@@ -581,7 +581,7 @@
      "restatement": "Le test patchCategory_emptyName_returns400 montre qu'un PATCH /api/categories/{id} avec un corps {\"name\":\"\"} renvoie HTTP 400 et n'appelle jamais categoryService.updateCategory.",
      "confidence": "high",
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "rediscover": {
      "found": true,
@@ -602,7 +602,7 @@
      },
      "job": "category:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_CategoryResponse.java:1",
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "comment": [],
     "refute": {
@@ -622,7 +622,7 @@
      "consigne_verdict": "n/a",
      "question_verdict": "n/a",
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     }
    },
    "contrary": null,
@@ -653,16 +653,16 @@
      "backend:src/main/java/com/matimeline/eventmanager/application/services/CategoryServiceImpl.java",
      125,
      130,
-     "1eb57a06e8db11a53b22c0fd85d3e2483475a026a2f3094da02bd56187d07e8e"
+     "d341d741a7456886e09f249a5ab5df7e2f5ba57db06e26e62d4a5d9bfcc263d6"
     ],
     [
      "backend:src/test/java/com/matimeline/eventmanager/application/services/CategoryServiceImplTest.java",
      185,
      197,
-     "36d2ea2feeced6e8584d7064a0f1e76857a6584780481ca2f0fc300a6fde8f6d"
+     "3738e493dcc6f373c0fa9befba73ed11777f57b87fc3c477d7f21e58ac5f2b1f"
     ]
    ],
-   "code_sha256": "8cc845515fcf2e846e2dd734f15d3c1edeaabd4c59ae883afba94c4e861d3584",
+   "code_sha256": "89e9183ced485257bfe8e06b5594ff815ccd2db83a09f5ac88641b4743475175",
    "verdict": "admit",
    "reason": "admitted",
    "final": true,
@@ -684,7 +684,7 @@
      "confidence": "high",
      "files_read_missing": true,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "rediscover": {
      "found": true,
@@ -705,7 +705,7 @@
      },
      "job": "category:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_CategoryResponse.java:1",
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "comment": [],
     "refute": {
@@ -759,7 +759,7 @@
       "unproven": 0
      },
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     }
    },
    "contrary": null,
@@ -790,10 +790,10 @@
      "backend:src/main/java/com/matimeline/eventmanager/application/services/CategoryServiceImpl.java",
      142,
      148,
-     "cc1d28aea364fb55e599269db3d3da0b35ed6daa439340aefabb0b1369b982ca"
+     "f7906d52f877ec01f53a20d4b2af3217c26718d909c1ca01d2a3093358b40ab3"
     ]
    ],
-   "code_sha256": "cc1d28aea364fb55e599269db3d3da0b35ed6daa439340aefabb0b1369b982ca",
+   "code_sha256": "f7906d52f877ec01f53a20d4b2af3217c26718d909c1ca01d2a3093358b40ab3",
    "verdict": "admit",
    "reason": "admitted",
    "final": true,
@@ -815,7 +815,7 @@
      "confidence": "high",
      "files_read_missing": true,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "rediscover": {
      "found": true,
@@ -836,7 +836,7 @@
      },
      "job": "category:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_CategoryResponse.java:1",
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "comment": [],
     "refute": {
@@ -856,7 +856,7 @@
      "consigne_verdict": "n/a",
      "question_verdict": "n/a",
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     }
    },
    "contrary": null,
@@ -885,10 +885,10 @@
      "backend:src/main/java/com/matimeline/eventmanager/application/dtos/CategoryResponse.java",
      47,
      57,
-     "dd40f369e1063ca4d8d5f7243370e1778b1447434fc7f00eac3b6a67a0d7fc9e"
+     "ea3e1996dbc71e79b1426c64812ef0a7184af0be08fdbca890d6a9af7f6c330a"
     ]
    ],
-   "code_sha256": "dd40f369e1063ca4d8d5f7243370e1778b1447434fc7f00eac3b6a67a0d7fc9e",
+   "code_sha256": "ea3e1996dbc71e79b1426c64812ef0a7184af0be08fdbca890d6a9af7f6c330a",
    "verdict": "admit",
    "reason": "admitted",
    "final": true,
@@ -910,7 +910,7 @@
      "confidence": "high",
      "files_read_missing": true,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "rediscover": {
      "found": true,
@@ -931,7 +931,7 @@
      },
      "job": "category:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_CategoryResponse.java:1",
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "comment": [],
     "refute": {
@@ -951,7 +951,7 @@
      "consigne_verdict": "n/a",
      "question_verdict": "n/a",
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     }
    },
    "contrary": null,
@@ -982,16 +982,16 @@
      "backend:src/main/java/com/matimeline/eventmanager/application/dtos/CategoryResponse.java",
      60,
      69,
-     "cbf5dad3a45cd3d2aa9c3d71cb9c7c3b55d94bf1d35b61806bb800a90538dd24"
+     "9b5277c980a760c1711a795c7ce1285a40bc329bcdbf6cf71c7e7bea9ded2dce"
     ],
     [
      "backend:src/main/java/com/matimeline/eventmanager/domain/models/CategoryProductCounts.java",
      20,
      31,
-     "a18354dd307b672e92978730089c62701fcb09a49a6c9ee3bb6d5a5b36195a81"
+     "fca1f587bcaec3d5ce106d0e96b7baafbb2ff72c537eb31af4b9d88fa3087e3a"
     ]
    ],
-   "code_sha256": "172b57fd08377252396905272a503be8a7926d53c787e77f0e1f6616cf099f39",
+   "code_sha256": "718aea5505165090bd6f3c4a999c944b6550b269a577bb903d16c606cd80c733",
    "verdict": "admit",
    "reason": "admitted",
    "final": true,
@@ -1013,7 +1013,7 @@
      "confidence": "high",
      "files_read_missing": true,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "rediscover": {
      "found": true,
@@ -1034,7 +1034,7 @@
      },
      "job": "category:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_CategoryResponse.java:1",
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "comment": [],
     "refute": {
@@ -1054,7 +1054,7 @@
      "consigne_verdict": "n/a",
      "question_verdict": "n/a",
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     }
    },
    "contrary": null,
@@ -1083,10 +1083,10 @@
      "backend:src/main/java/com/matimeline/eventmanager/application/services/CategoryServiceImpl.java",
      58,
      61,
-     "6719254262958a673354b9aa8768f13c0c63abd2ea86b10b4e43e2d745edc497"
+     "acbd0abe2e5d4ca902c0188ca6a1423a33388d276c76ddad876fe89c2876dcf2"
     ]
    ],
-   "code_sha256": "6719254262958a673354b9aa8768f13c0c63abd2ea86b10b4e43e2d745edc497",
+   "code_sha256": "acbd0abe2e5d4ca902c0188ca6a1423a33388d276c76ddad876fe89c2876dcf2",
    "verdict": "admit",
    "reason": "admitted",
    "final": true,
@@ -1106,7 +1106,9 @@
      },
      "restatement": "La méthode CategoryServiceImpl.updateCategory(id, name, color, description) commence par la règle BR-CAT-003 : elle charge la catégorie via categoryRepository.findDomainCategoryById(id) et, si rien n'est trouvé, lève CategoryNotFoundException(id). L'extrait s'arrête là, donc la suite de la mise à jour n'est pas visible.",
      "confidence": "high",
-     "files_read_missing": true
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-24T17:40:00"
     },
     "rediscover": {
      "found": true,
@@ -1125,7 +1127,9 @@
        "terms": 5
       }
      },
-     "job": "category:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_services_CategoryServiceImpl.java:1"
+     "job": "category:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_services_CategoryServiceImpl.java:1",
+     "reused": true,
+     "reused_from": "2026-11-24T17:40:00"
     },
     "comment": [],
     "refute": {
@@ -1197,7 +1201,9 @@
       "untraced": 0,
       "over_budget": 0,
       "unproven": 0
-     }
+     },
+     "reused": true,
+     "reused_from": "2026-11-24T17:40:00"
     }
    },
    "contrary": null,
@@ -1231,22 +1237,22 @@
      "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryController.java",
      47,
      51,
-     "afa4796632845f3e9366137507e1a5d27912593c8103ce6cee5fe29b200c2187"
+     "b4a48ad0ba5b276f31e978166ba077f660197a4ce8b4d23c7d9678dccc282c10"
     ],
     [
      "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryController.java",
      49,
      52,
-     "d5d71ae7c2bdcfebaf4c618ba69239ab6ab0585f3113a4dfe8ed41a22ed60dc9"
+     "54be5ce8e5b5a23c76d73cdf3784b4d5391065decf904233f263528d200da973"
     ],
     [
      "frontend:services/categoryService.ts",
      59,
      71,
-     "b3de947b6a0b062fa7581964f7af1e542eea61f32a65a8bd45502a08f87d0f40"
+     "d0848f85ec4ab1795c757a5bd651b10bb3ea08894c8f994e186d23361bcd5451"
     ]
    ],
-   "code_sha256": "8f924cd60cb83ff86a6ee1b0e22acdebccdc349221f7d4e986722eac7808b41c",
+   "code_sha256": "28ef37fd087391a6a0f0f14c94c0102fe0cf776960a859167eee98ae37b67a72",
    "verdict": "admit",
    "reason": "admitted",
    "final": true,
@@ -1268,7 +1274,7 @@
      "confidence": "high",
      "files_read_missing": true,
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "rediscover": {
      "found": true,
@@ -1289,7 +1295,7 @@
      },
      "job": "category:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_CategoryResponse.java:1",
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     },
     "comment": [],
     "refute": {
@@ -1348,12 +1354,294 @@
       "unproven": 0
      },
      "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "reused_from": "2026-11-24T17:40:00"
     }
    },
    "contrary": null,
    "check": "scope",
    "general": "words:chaque",
+   "placed": {
+    "pack_line": 67,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "category:surface:2",
+   "section": "surface",
+   "rank": 2,
+   "text": "- La lecture et la modification n'appliquent pas la même règle d'appartenance, car la lecture accepte les catégories système via `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryController.java:167-169` [#45903f846bdb1978-1], alors que la modification exige que l'owner soit l'appelant [#integrations/8e9c429e14d99314-1].",
+   "fact_text": "La lecture et la modification n'appliquent pas la même règle d'appartenance, car la lecture accepte les catégories système via CategoryController.java, alors que la modification exige que l'owner soit l'appelant",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "category/45903f846bdb1978-1",
+    "integrations/8e9c429e14d99314-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryController.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryController.java",
+     167,
+     169,
+     "c93b49672b5f84c7b06cd8240faea481b5973925259b8d80454d60e95e156e90"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryController.java",
+     111,
+     114,
+     "1c12fbd937518bd27a047f056c41cdba7bf388130bc0318c9fc5ad89cb7ca357"
+    ]
+   ],
+   "code_sha256": "449b0cfd0b3f542b40f31105d8ab8649aa7b0b9ec0c51e8a37bc40739c660c84",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
+      "terms": 0.364,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 11
+      }
+     },
+     "restatement": "`isVisibleTo` rend une catégorie visible si son `ownerId` est null (système) ou égal à `callerId`. Dans `updateCategory`, si `isOwnedBy` renvoie faux, le contrôleur répond 403 FORBIDDEN. Le corps de `isOwnedBy` n'est pas dans l'extrait, donc la règle exacte d'appartenance reste à confirmer.",
+     "confidence": "medium",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-24T17:40:00"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 4,
+     "within_budget": true,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryController.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
+      "terms": 0.273,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 11
+      }
+     },
+     "job": "category:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_CategoryResponse.java:1",
+     "reused": true,
+     "reused_from": "2026-11-24T17:40:00"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "isVisibleTo accepte owner null ou égal au caller (L168). updateCategory exige isOwnedBy et renvoie 403 sinon (L111-114).",
+      "isVisibleTo accepte ownerId null ou égal au caller (L168), alors que updateCategory renvoie 403 si isOwnedBy est faux (L112).",
+      "isVisibleTo accepte owner null ou égal à l'appelant (L168). updateCategory renvoie 403 si !isOwnedBy (L112)."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-24T17:40:00"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 68,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "category:surface:3",
+   "section": "surface",
+   "rank": 3,
+   "text": "- Les compteurs de produits viennent d'une requête dédiée scopée au caller, qui n'est pas reconstruite à partir d'un comptage par catégorie [#0f363444e8ef529b-1].",
+   "fact_text": "Les compteurs de produits viennent d'une requête dédiée scopée au caller, qui n'est pas reconstruite à partir d'un comptage par catégorie",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "category/0f363444e8ef529b-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/application/services/CategoryServiceImpl.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/services/CategoryServiceImpl.java",
+     93,
+     101,
+     "28178cd5e2eba74cdad08a8eea3cbcd8b89d66d86802f23689fc73aabc390df0"
+    ]
+   ],
+   "code_sha256": "28178cd5e2eba74cdad08a8eea3cbcd8b89d66d86802f23689fc73aabc390df0",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 0.182,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 11
+      }
+     },
+     "restatement": "`getProductCountsForOwner` délègue directement à `productRepository.countByCategoryForUser(callerId)`. Le commentaire interdit de recalculer ce compteur avec `countByCategoryId`, car ce dernier compte les produits de tous les utilisateurs et exposerait le nombre de produits d'autrui.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-24T17:40:00"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 2,
+     "within_budget": true,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/application/services/CategoryServiceImpl.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 0.364,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 11
+      }
+     },
+     "job": "category:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_CategoryResponse.java:1",
+     "reused": true,
+     "reused_from": "2026-11-24T17:40:00"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "getProductCountsForOwner délègue à productRepository.countByCategoryForUser(callerId) (L100), le commentaire L97 interdit de reconstruire depuis countByCategoryId.",
+      "getProductCountsForOwner L95-100 délègue à countByCategoryForUser(callerId), et le commentaire interdit de le reconstruire depuis countByCategoryId.",
+      "getProductCountsForOwner délègue à countByCategoryForUser (L100) et le commentaire L97 interdit de reconstruire depuis countByCategoryId."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-24T17:40:00"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 69,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "category:surface:4",
+   "section": "surface",
+   "rank": 4,
+   "text": "- Côté front, la création propage l'erreur axios pour un affichage inline et valide la réponse par schéma, comme la mise à jour PATCH partielle [#d4a7bea8ee8ef950-1] [#5324d5474548a79d-1].",
+   "fact_text": "Côté front, la création propage l'erreur axios pour un affichage inline et valide la réponse par schéma, comme la mise à jour PATCH partielle",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "category/d4a7bea8ee8ef950-1",
+    "category/5324d5474548a79d-1"
+   ],
+   "files": [
+    "frontend:services/categoryService.ts"
+   ],
+   "ranges": [
+    [
+     "frontend:services/categoryService.ts",
+     59,
+     71,
+     "d0848f85ec4ab1795c757a5bd651b10bb3ea08894c8f994e186d23361bcd5451"
+    ],
+    [
+     "frontend:services/categoryService.ts",
+     80,
+     92,
+     "9f1128fa6005469576f730de7e85aa82e14926ddd82b1047504c122b3c41887c"
+    ]
+   ],
+   "code_sha256": "5ab0b649988fcbb13c0e04041e721b10579d1406856101d4d1648fad4559f8e6",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.214,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 14
+      }
+     },
+     "restatement": "Le service frontend createCategory envoie un POST sur /categories avec des options optionnelles d'erreur inline, parse la réponse avec categorySchema, journalise l'erreur via logUnexpected puis la relance. updateCategory fait de même avec un PATCH sur `/categories/${id}`.",
+     "confidence": "high",
+     "reused": true,
+     "reused_from": "2026-11-24T17:40:00"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 4,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/services/categoryService.ts",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.571,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 14
+      }
+     },
+     "job": "category:rediscover:backend_src_test_java_com_matimeline_eventmanager_infrastructure_adapters_repositories_CategoryDeleteReassignIntegrationTest.java:2",
+     "rank_in_lot": 1,
+     "reused": true,
+     "reused_from": "2026-11-24T17:40:00"
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
    "placed": {
     "pack_line": 70,
     "annex_table": null
@@ -1361,7 +1649,435 @@
    "uses": 0
   },
   {
-   "id": "category:surface:2",
+   "id": "category:tests:1",
+   "section": "tests",
+   "rank": 1,
+   "text": "- Les tests fixent qu'avec une cible, les produits actifs et archivés migrent avant la suppression, qu'un produit archivé reste archivé, et qu'une erreur de deleteById après réassignation remonte. [#3840d7f06f853e2d-2] [#c8aa8d37f01818e5-2] [#6e7fcbb795f82f39-1] [#8b47d0a54f642844-1]",
+   "fact_text": "Les tests fixent qu'avec une cible, les produits actifs et archivés migrent avant la suppression, qu'un produit archivé reste archivé, et qu'une erreur de deleteById après réassignation remonte",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "category/3840d7f06f853e2d-2",
+    "category/c8aa8d37f01818e5-2",
+    "category/6e7fcbb795f82f39-1",
+    "category/8b47d0a54f642844-1"
+   ],
+   "files": [
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/CategoryDeleteReassignIntegrationTest.java",
+    "backend:src/test/java/com/matimeline/eventmanager/application/services/CategoryServiceImplTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/CategoryDeleteReassignIntegrationTest.java",
+     214,
+     234,
+     "86a39e81394a08cbd96843a6c2455ccfd8c631c507e10c2a9459a126ac5b7582"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/CategoryDeleteReassignIntegrationTest.java",
+     228,
+     232,
+     "1dcae73fed67e7b40855f30dc1595a2f823de39bd76d7ed8275fdc4eabb72eb2"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/application/services/CategoryServiceImplTest.java",
+     199,
+     213,
+     "8380c23fcc891b0219742fa3df601af4584cc3b6d94f428f218d7376aa8a4b1c"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/application/services/CategoryServiceImplTest.java",
+     253,
+     266,
+     "b38385fb2d6622494f4a867bd8bd75c88c799297da255cfb65ab2ae3c8cf5d7b"
+    ]
+   ],
+   "code_sha256": "4fb2ab1c10673b76924083c9cc27f37d64382e96bdcf32ae5a2951f86fd32331",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
+      "terms": 0.538,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 13
+      }
+     },
+     "restatement": "Le test d'intégration vérifie que supprimer une catégorie dont les seuls produits sont archivés, avec réassignation vers une autre catégorie, déplace le produit archivé vers la cible (archived reste true) puis supprime la source, qui n'existe plus.",
+     "confidence": "high",
+     "reused": true,
+     "reused_from": "2026-11-24T17:40:00"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 4,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/test/java/com/matimeline/eventmanager/application/services/CategoryServiceImplTest.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.769,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 13
+      }
+     },
+     "job": "category:rediscover:backend_src_test_java_com_matimeline_eventmanager_infrastructure_adapters_controllers_CategoryControllerTest.java:1",
+     "rank_in_lot": 1,
+     "reused": true,
+     "reused_from": "2026-11-24T17:40:00"
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 102,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "category:tests:2",
+   "section": "tests",
+   "rank": 2,
+   "text": "- Côté API, un DELETE utilisé sans cible renvoie 409 avec le nombre de produits, et une cible égale à la catégorie renvoie 409 avec un message dédié. [#a24d15a2d893c519-2] [#a24d15a2d893c519-4]",
+   "fact_text": "Côté API, un DELETE utilisé sans cible renvoie 409 avec le nombre de produits, et une cible égale à la catégorie renvoie 409 avec un message dédié",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "category/a24d15a2d893c519-2",
+    "category/a24d15a2d893c519-4"
+   ],
+   "files": [
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryControllerTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryControllerTest.java",
+     390,
+     404,
+     "b246d191f6f5d121593e8a1cd41ce29af68d45d8e18e867939996990be10ffcc"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryControllerTest.java",
+     427,
+     441,
+     "d0429df8580f6ea87c72f0aabebe39642ee22ff440dea1baff53e9aa31643283"
+    ]
+   ],
+   "code_sha256": "76c0f3559ac25dc14bcd6519ae308c5e2a1e4988b5720872b115b0a95c205b36",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": 1.0,
+      "terms": 0.6,
+      "n": {
+       "identifiers": 2,
+       "values": 1,
+       "terms": 10
+      }
+     },
+     "restatement": "Le test vérifie que la suppression d'une catégorie référencée sans `reassignToCategoryId` renvoie 409 avec `error` = \"conflict\" et un message contenant le nombre de produits (ici 3). Un second test montre que réassigner vers la catégorie elle-même renvoie aussi 409 avec le message dédié `CategoryReassignTargetInvalidException`.",
+     "confidence": "high",
+     "reused": true,
+     "reused_from": "2026-11-24T17:40:00"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 3,
+     "within_budget": true,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/application/services/CategoryServiceImpl.java",
+     "file_ok": false,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": 1.0,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 2,
+       "values": 1,
+       "terms": 10
+      }
+     },
+     "job": "category:rediscover:backend_src_test_java_com_matimeline_eventmanager_infrastructure_adapters_controllers_CategoryControllerTest.java:1",
+     "reused": true,
+     "reused_from": "2026-11-24T17:40:00"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "deleteCategory_referencedWithoutReassign_returns409_withMessage (L390-404) attend 409 avec CategoryInUseException(3) et le message sur 3 produits, et deleteCategory_reassignToSelf (L427-441) attend 409 avec le message dédié de CategoryReassignTargetInvalidException. La ligne est fidèle.",
+      "CategoryControllerTest L390-404 et L427-441 : CategoryInUseException(3) donne 409 avec le nombre de produits, et CategoryReassignTargetInvalidException donne 409 avec un message dédié, ce que dit la ligne.",
+      "CategoryControllerTest L390-404 et L427-441 : CategoryInUseException(3) donne 409 avec le message de 3 produits, et CategoryReassignTargetInvalidException (cible = id) donne 409 avec un message dédié."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-24T17:40:00"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 103,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "category:tests:3",
+   "section": "tests",
+   "rank": 3,
+   "text": "- Les compteurs séparent produits actifs et archivés, valent 0 si la catégorie est absente de la map, et ne comptent que les produits de l'appelant sur une catégorie système partagée, contrairement à countByCategoryId. [#86005ad7688e238a-4] [integrations/fe41b39f745c9020-1] [integrations/d290b87af4c36960-1] [#e90c8521a757ba43-1]",
+   "fact_text": "Les compteurs séparent produits actifs et archivés, valent 0 si la catégorie est absente de la map, et ne comptent que les produits de l'appelant sur une catégorie système partagée, contrairement à countByCategoryId. [integrations/fe41b39f745c9020-1] [integrations/d290b87af4c36960-1]",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "category/86005ad7688e238a-4",
+    "category/e90c8521a757ba43-1"
+   ],
+   "files": [
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryControllerTest.java",
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/CategoryDeleteReassignIntegrationTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryControllerTest.java",
+     176,
+     199,
+     "2740c7cf390b170039e5962e40b303abbe95fdb18222711d51dbd3bd5a7d7b97"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/CategoryDeleteReassignIntegrationTest.java",
+     312,
+     327,
+     "b6725de06edd2da2b62d5d1035d234cf030f0cf1134fa7d7ad53358d4c88f7c7"
+    ]
+   ],
+   "code_sha256": "ce276611ea6345682f023f38dc252a028520d02c4ae8807780e2476bbd9b3cc0",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": 0.5,
+      "terms": 0.214,
+      "n": {
+       "identifiers": 3,
+       "values": 2,
+       "terms": 14
+      }
+     },
+     "restatement": "Le test vérifie que chaque carte de catégorie expose `productCount` et `archivedProductCount` issus de la map `getProductCountsForOwner`, et qu'une catégorie absente de la map affiche 0 pour les deux compteurs.",
+     "confidence": "high",
+     "reused": true,
+     "reused_from": "2026-11-24T17:40:00"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 2,
+     "within_budget": true,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/CategoryDeleteReassignIntegrationTest.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.333,
+      "values": 0.5,
+      "terms": 0.571,
+      "n": {
+       "identifiers": 3,
+       "values": 2,
+       "terms": 14
+      }
+     },
+     "job": "category:rediscover:backend_src_test_java_com_matimeline_eventmanager_infrastructure_adapters_controllers_CategoryControllerTest.java:1",
+     "reused": true,
+     "reused_from": "2026-11-24T17:40:00"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Le test du contrôleur (L176-199) sépare productCount et archivedProductCount, avec 0/0 pour emptyId absent de la map. Le test d'intégration (L312-327) donne total()==1 pour l'appelant contre countByCategoryId==2 sur la catégorie système.",
+      "L185-196 : les catégories absentes de la map renvoient 0 pour les deux compteurs, et les actifs et archivés sont séparés. L322-326 : countByCategoryForUser compte 1 produit pour l'appelant alors que countByCategoryId en compte 2.",
+      "Le test contrôleur (L185-196) vérifie productCount et archivedProductCount séparés, et 0 pour une catégorie absente de la map. Le test d'intégration (L322-326) montre que countByCategoryForUser ne compte que les produits de l'appelant (1) alors que countByCategoryId en compte 2."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-24T17:40:00"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 104,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "category:alerts:1",
+   "section": "alerts",
+   "rank": 1,
+   "text": "- Pour la catégorie d'un autre utilisateur, les tests attendent 404 sur le GET et 403 sur PATCH et DELETE. Unifier les codes d'un côté casse les tests de l'autre, donc conserver cet écart ou modifier les deux ensemble [#8ecde30c288f4e1a-2] [#4709057d35de99a0-1] `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryControllerTest.java:265-335`.",
+   "fact_text": "Pour la catégorie d'un autre utilisateur, les tests attendent 404 sur le GET et 403 sur PATCH et DELETE. Unifier les codes d'un côté casse les tests de l'autre, donc conserver cet écart ou modifier les deux ensemble CategoryControllerTest.java",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "category/8ecde30c288f4e1a-2",
+    "category/4709057d35de99a0-1"
+   ],
+   "files": [
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryControllerTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryControllerTest.java",
+     298,
+     307,
+     "977b11a89fde360ec142f46e19659b85679c0d6f8e1bc2b9b3be6500b524ec4a"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryControllerTest.java",
+     257,
+     266,
+     "63a7dfe65dbe7e4930c3d78d0a5ee18f0170595c7c8e860c4be1ef1787685c2b"
+    ]
+   ],
+   "code_sha256": "b3c1ddf36bc91255c9e4591ea2ee71560ecee41efb87a7d5ec84972c0afdc345",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "CategoryControllerTest lines 257-265 expects 404 on GET of another user's category, and patchCategory_ownedByAnotherUser_returns403 (325-335) and deleteCategory_ownedByAnotherUser_returns403 (460-468) expect 403. The controller code (CategoryController lines 93-95 vs 113, 136, 146) matches this gap.",
+      "CategoryControllerTest confirme 404 sur GET (getCategoryById_ownedByAnotherUser_returns404, L257-265), 403 sur PATCH (L325-335) et 403 sur DELETE (L460-468). Aucun garde-fou ne rend l'alerte fausse.",
+      "Les tests lus confirment 404 sur GET (getCategoryById_ownedByAnotherUser_returns404, l.257-265), 403 sur PATCH (l.325-335) et DELETE (l.460-468), et CategoryController renvoie NOT_FOUND l.95 et FORBIDDEN l.113/136/146, donc l'écart est réel."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "supported",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "guards",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 6,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "status().is* in CategoryControllerTest",
+         "found": "404 at lines 265/275 for GET, 403 at 335/351/454/468 for PATCH/DELETE"
+        },
+        {
+         "tool": "Read",
+         "target": "CategoryControllerTest.java 308-472",
+         "found": "PATCH and DELETE of a foreign category return 403 with never() verify on the service"
+        },
+        {
+         "tool": "Grep",
+         "target": "FORBIDDEN|NOT_FOUND in CategoryController.java",
+         "found": "GET filters on isVisibleTo then 404 (93-95); PATCH and DELETE return 403 (113, 136, 146)"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "status().is* dans CategoryControllerTest.java",
+         "found": "Liste des statuts attendus : 404 L265, 403 L335/L351/L454/L468."
+        },
+        {
+         "tool": "Read",
+         "target": "CategoryControllerTest.java L308-472",
+         "found": "Tests PATCH et DELETE d'une catégorie d'un autre utilisateur attendent 403, avec verify never() sur le service."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "status().is* dans CategoryControllerTest",
+         "found": "404 aux l.265/275/319, 403 aux l.335/351/454/468"
+        },
+        {
+         "tool": "Read",
+         "target": "CategoryControllerTest l.308-470",
+         "found": "PATCH et DELETE d'une catégorie d'un autre utilisateur attendent 403"
+        },
+        {
+         "tool": "Grep",
+         "target": "NOT_FOUND|FORBIDDEN dans CategoryController.java",
+         "found": "GET renvoie 404 (l.95), PATCH et DELETE renvoient 403 (l.113, 136, 146)"
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-24T17:40:00"
+    }
+   },
+   "contrary": null,
+   "check": "guards",
+   "placed": {
+    "pack_line": 112,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "category:surface:annex:cbbe83d0",
    "section": "surface",
    "rank": 2,
    "text": "- Le listing GET /api/categories renvoie les catégories du caller plus les catégories système (sans propriétaire), chacune avec ses compteurs de produits, le filtrage étant fait par le service et non par le contrôleur [#0170a42b57affd2f-1] [#e058eec72b9dbdf2-1] [#419bb430c6dff34f-1].",
@@ -1393,21 +2109,21 @@
     ],
     [
      "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryControllerTest.java",
-     142,
+     143,
      166,
-     "d37a117d83a078f4bb5eb223a1f1b4314f10f988e2923818ee19b794836408b2"
+     "bf6b5c1ded95af256978279f673c041ef6b21ddca87e9096a0c3696545dddc5c"
     ]
    ],
-   "code_sha256": "25caa2f574e66c404f3739ca6936bbc3b205bb2fe278f1e9d08c0f653e81bdab",
-   "verdict": "admit",
-   "reason": "admitted",
+   "code_sha256": "759e40d4aa5c71ac4e348ecd91ff9f4e1b65d7c70ec419f88bd60d2fc57085c2",
+   "verdict": "annex",
+   "reason": "deducible",
    "final": true,
    "measures": {
     "fidelity": null,
     "deduce": {
-     "covered": false,
+     "covered": true,
      "overlap": {
-      "identifiers": 0.0,
+      "identifiers": 1.0,
       "values": null,
       "terms": 0.5,
       "n": {
@@ -1416,260 +2132,26 @@
        "terms": 12
       }
      },
-     "restatement": "`getAllCategories` renvoie 401 sans caller. Sinon il récupère les compteurs de l'appelant via `getProductCountsForOwner`, puis mappe `getCategoriesForOwner(caller.getId())` en `CategoryResponse` avec `CategoryProductCounts.EMPTY` pour les catégories absentes de la map. `getCategoriesForOwner` appelle `findByOwnerIdOrSystem(callerId)`, donc le listing contient les catégories de l'appelant et les système.",
-     "confidence": "high",
-     "files_read_missing": true,
-     "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "restatement": "Le GET /api/categories renvoie 401 si `callerResolver.currentUser()` est vide, sinon il ne liste que les catégories du caller et les catégories système via `findByOwnerIdOrSystem`, avec les compteurs produits du caller et `CategoryProductCounts.EMPTY` par défaut pour une catégorie absente de la map. La correction vise une fuite cross-tenant.",
+     "confidence": "high"
     },
-    "rediscover": {
-     "found": true,
-     "cost": 4,
-     "within_budget": true,
-     "covered": false,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryController.java",
-     "file_ok": true,
-     "overlap": {
-      "identifiers": 0.0,
-      "values": null,
-      "terms": 0.333,
-      "n": {
-       "identifiers": 1,
-       "values": 0,
-       "terms": 12
-      }
-     },
-     "job": "category:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_CategoryResponse.java:1",
-     "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
-    },
+    "rediscover": null,
     "comment": [],
-    "refute": {
-     "votes": 3,
-     "refuted": 0,
-     "refute_unproven": 0,
-     "reasons": [
-      "Le contrôleur L72-78 joint les compteurs et délègue à getCategoriesForOwner, qui appelle findByOwnerIdOrSystem (L90).",
-      "Le contrôleur L72-78 joint les compteurs, le service getCategoriesForOwner filtre via findByOwnerIdOrSystem.",
-      "Le contrôleur appelle categoryService.getCategoriesForOwner (L74), qui délègue à findByOwnerIdOrSystem (L90), et joint les compteurs."
-     ],
-     "evidence": [
-      "",
-      "",
-      ""
-     ],
-     "consigne_verdict": "n/a",
-     "question_verdict": "n/a",
-     "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
-    }
+    "refute": null
    },
    "contrary": null,
    "placed": {
-    "pack_line": 71,
-    "annex_table": null
-   },
-   "uses": 0
-  },
-  {
-   "id": "category:surface:3",
-   "section": "surface",
-   "rank": 3,
-   "text": "- La lecture et la modification n'appliquent pas la même règle d'appartenance, car la lecture accepte les catégories système via `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryController.java:167-169` [#45903f846bdb1978-1], alors que la modification exige que l'owner soit l'appelant [#integrations/8e9c429e14d99314-1].",
-   "fact_text": "La lecture et la modification n'appliquent pas la même règle d'appartenance, car la lecture accepte les catégories système via CategoryController.java, alors que la modification exige que l'owner soit l'appelant",
-   "consigne": null,
-   "consigne_dropped": false,
-   "cites": [
-    "category/45903f846bdb1978-1",
-    "integrations/8e9c429e14d99314-1"
-   ],
-   "files": [
-    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryController.java"
-   ],
-   "ranges": [
-    [
-     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryController.java",
-     167,
-     169,
-     "ca74324106095c029ad013c916880ba1c86d602cf2cc7b830756cb800ff8d113"
-    ],
-    [
-     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryController.java",
-     111,
-     114,
-     "64e42d5141194702bf39626922dfb7d6d131423818b14404f458cc851848e3ea"
-    ]
-   ],
-   "code_sha256": "05778a5279514b9a818f41c2d254760e034e6c8bdfed997d7ac99bcdf8998053",
-   "verdict": "admit",
-   "reason": "admitted",
-   "final": true,
-   "measures": {
-    "fidelity": null,
-    "deduce": {
-     "covered": false,
-     "overlap": {
-      "identifiers": 0.0,
-      "values": null,
-      "terms": 0.364,
-      "n": {
-       "identifiers": 1,
-       "values": 0,
-       "terms": 11
-      }
-     },
-     "restatement": "`isVisibleTo` rend une catégorie visible si son `ownerId` est null (système) ou égal à `callerId`. Dans `updateCategory`, si `isOwnedBy` renvoie faux, le contrôleur répond 403 FORBIDDEN. Le corps de `isOwnedBy` n'est pas dans l'extrait, donc la règle exacte d'appartenance reste à confirmer.",
-     "confidence": "medium",
-     "files_read_missing": true,
-     "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
-    },
-    "rediscover": {
-     "found": true,
-     "cost": 4,
-     "within_budget": true,
-     "covered": false,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryController.java",
-     "file_ok": true,
-     "overlap": {
-      "identifiers": 0.0,
-      "values": null,
-      "terms": 0.273,
-      "n": {
-       "identifiers": 1,
-       "values": 0,
-       "terms": 11
-      }
-     },
-     "job": "category:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_CategoryResponse.java:1",
-     "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
-    },
-    "comment": [],
-    "refute": {
-     "votes": 3,
-     "refuted": 0,
-     "refute_unproven": 0,
-     "reasons": [
-      "isVisibleTo accepte owner null ou égal au caller (L168). updateCategory exige isOwnedBy et renvoie 403 sinon (L111-114).",
-      "isVisibleTo accepte ownerId null ou égal au caller (L168), alors que updateCategory renvoie 403 si isOwnedBy est faux (L112).",
-      "isVisibleTo accepte owner null ou égal à l'appelant (L168). updateCategory renvoie 403 si !isOwnedBy (L112)."
-     ],
-     "evidence": [
-      "",
-      "",
-      ""
-     ],
-     "consigne_verdict": "n/a",
-     "question_verdict": "n/a",
-     "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+    "pack_line": null,
+    "annex_table": {
+     "part": "category.details.md",
+     "row": 9
     }
    },
-   "contrary": null,
-   "placed": {
-    "pack_line": 72,
-    "annex_table": null
-   },
-   "uses": 0
+   "uses": 0,
+   "carried_from": "2026-11-24T17:40:00"
   },
   {
-   "id": "category:surface:4",
-   "section": "surface",
-   "rank": 4,
-   "text": "- Les compteurs de produits viennent d'une requête dédiée scopée au caller, qui n'est pas reconstruite à partir d'un comptage par catégorie [#0f363444e8ef529b-1].",
-   "fact_text": "Les compteurs de produits viennent d'une requête dédiée scopée au caller, qui n'est pas reconstruite à partir d'un comptage par catégorie",
-   "consigne": null,
-   "consigne_dropped": false,
-   "cites": [
-    "category/0f363444e8ef529b-1"
-   ],
-   "files": [
-    "backend:src/main/java/com/matimeline/eventmanager/application/services/CategoryServiceImpl.java"
-   ],
-   "ranges": [
-    [
-     "backend:src/main/java/com/matimeline/eventmanager/application/services/CategoryServiceImpl.java",
-     93,
-     101,
-     "60eaa571a72743ada2132ab4594e293a57c9f7006a8e132db566e6b1477f04e8"
-    ]
-   ],
-   "code_sha256": "60eaa571a72743ada2132ab4594e293a57c9f7006a8e132db566e6b1477f04e8",
-   "verdict": "admit",
-   "reason": "admitted",
-   "final": true,
-   "measures": {
-    "fidelity": null,
-    "deduce": {
-     "covered": false,
-     "overlap": {
-      "identifiers": null,
-      "values": null,
-      "terms": 0.182,
-      "n": {
-       "identifiers": 0,
-       "values": 0,
-       "terms": 11
-      }
-     },
-     "restatement": "`getProductCountsForOwner` délègue directement à `productRepository.countByCategoryForUser(callerId)`. Le commentaire interdit de recalculer ce compteur avec `countByCategoryId`, car ce dernier compte les produits de tous les utilisateurs et exposerait le nombre de produits d'autrui.",
-     "confidence": "high",
-     "files_read_missing": true,
-     "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
-    },
-    "rediscover": {
-     "found": true,
-     "cost": 2,
-     "within_budget": true,
-     "covered": false,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/application/services/CategoryServiceImpl.java",
-     "file_ok": true,
-     "overlap": {
-      "identifiers": null,
-      "values": null,
-      "terms": 0.364,
-      "n": {
-       "identifiers": 0,
-       "values": 0,
-       "terms": 11
-      }
-     },
-     "job": "category:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_CategoryResponse.java:1",
-     "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
-    },
-    "comment": [],
-    "refute": {
-     "votes": 3,
-     "refuted": 0,
-     "refute_unproven": 0,
-     "reasons": [
-      "getProductCountsForOwner délègue à productRepository.countByCategoryForUser(callerId) (L100), le commentaire L97 interdit de reconstruire depuis countByCategoryId.",
-      "getProductCountsForOwner L95-100 délègue à countByCategoryForUser(callerId), et le commentaire interdit de le reconstruire depuis countByCategoryId.",
-      "getProductCountsForOwner délègue à countByCategoryForUser (L100) et le commentaire L97 interdit de reconstruire depuis countByCategoryId."
-     ],
-     "evidence": [
-      "",
-      "",
-      ""
-     ],
-     "consigne_verdict": "n/a",
-     "question_verdict": "n/a",
-     "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
-    }
-   },
-   "contrary": null,
-   "placed": {
-    "pack_line": 73,
-    "annex_table": null
-   },
-   "uses": 0
-  },
-  {
-   "id": "category:surface:5",
+   "id": "category:surface:annex:edd699ab",
    "section": "surface",
    "rank": 5,
    "text": "- Le save d'un id existant recopie nom, couleur, description et owner sur l'entité gérée, owner compris [#7b6ce2f6cec0ab25-2].",
@@ -1686,41 +2168,18 @@
     [
      "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/CategoryRepositoryJpaImpl.java",
      97,
-     107,
-     "c876943a13d80225ee9e608fe8da7c33aeb5ac7142a4e128ada372fee27a9b58"
+     111,
+     "46d69b7a7d4584bd7592fe04f80cb2af1a370c663ceea10c0a18daf3db1dfda2"
     ]
    ],
-   "code_sha256": "c876943a13d80225ee9e608fe8da7c33aeb5ac7142a4e128ada372fee27a9b58",
-   "verdict": "admit",
-   "reason": "rediscovered",
+   "code_sha256": "e87951c4041e89a566cc60b1e4958b7e97a481e404c521e60e8c807e0c7f4566",
+   "verdict": "annex",
+   "reason": "deducible",
    "final": true,
    "measures": {
     "fidelity": null,
     "deduce": {
-     "covered": false,
-     "overlap": {
-      "identifiers": null,
-      "values": null,
-      "terms": 0.333,
-      "n": {
-       "identifiers": 0,
-       "values": 0,
-       "terms": 9
-      }
-     },
-     "restatement": "`CategoryRepositoryJpaImpl.save` recharge l'entité avec `super.findById` quand l'id est non null. Si elle existe, il copie name, color, description et owner depuis le domaine, puis sauvegarde et reconvertit en domaine. Le cas où l'entité n'existe pas n'est pas visible dans l'extrait.",
-     "confidence": "high",
-     "files_read_missing": true,
-     "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
-    },
-    "rediscover": {
-     "found": true,
-     "cost": 5,
-     "within_budget": true,
      "covered": true,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/CategoryRepositoryJpaImpl.java",
-     "file_ok": true,
      "overlap": {
       "identifiers": null,
       "values": null,
@@ -1731,524 +2190,23 @@
        "terms": 9
       }
      },
-     "job": "category:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_CategoryResponse.java:1",
-     "rank_in_lot": 2,
-     "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
+     "restatement": "`CategoryRepositoryJpaImpl.save` met à jour une catégorie existante quand `findById` trouve une entité gérée (name, color, description, owner via `applyOwner`) puis la sauvegarde. Sinon il crée une nouvelle entité, et l'owner est rattaché via `getReference` pour éviter d'attacher un `UserEntity` détaché. La branche de création est coupée dans l'extrait.",
+     "confidence": "high"
     },
-    "comment": [],
-    "refute": null
-   },
-   "contrary": null,
-   "kept_for": "rediscovered",
-   "placed": {
-    "pack_line": 74,
-    "annex_table": null
-   },
-   "uses": 0
-  },
-  {
-   "id": "category:surface:6",
-   "section": "surface",
-   "rank": 6,
-   "text": "- Côté front, la création propage l'erreur axios pour un affichage inline et valide la réponse par schéma, comme la mise à jour PATCH partielle [#d4a7bea8ee8ef950-1] [#5324d5474548a79d-1].",
-   "fact_text": "Côté front, la création propage l'erreur axios pour un affichage inline et valide la réponse par schéma, comme la mise à jour PATCH partielle",
-   "consigne": null,
-   "consigne_dropped": false,
-   "cites": [
-    "category/d4a7bea8ee8ef950-1",
-    "category/5324d5474548a79d-1"
-   ],
-   "files": [
-    "frontend:services/categoryService.ts"
-   ],
-   "ranges": [
-    [
-     "frontend:services/categoryService.ts",
-     59,
-     71,
-     "b3de947b6a0b062fa7581964f7af1e542eea61f32a65a8bd45502a08f87d0f40"
-    ],
-    [
-     "frontend:services/categoryService.ts",
-     80,
-     92,
-     "15a13f553c090b8ef528ff2ec9a0d134f807d4bde2426ed1cdce63bda6cd712c"
-    ]
-   ],
-   "code_sha256": "2dc3c3168a273a1d7a7889a5d9755a40060d4a8d6c42763435b288658b80a642",
-   "verdict": "admit",
-   "reason": "rediscovered",
-   "final": true,
-   "measures": {
-    "fidelity": null,
-    "deduce": {
-     "covered": false,
-     "overlap": {
-      "identifiers": 1.0,
-      "values": null,
-      "terms": 0.214,
-      "n": {
-       "identifiers": 1,
-       "values": 0,
-       "terms": 14
-      }
-     },
-     "restatement": "Le service frontend createCategory envoie un POST sur /categories avec des options optionnelles d'erreur inline, parse la réponse avec categorySchema, journalise l'erreur via logUnexpected puis la relance. updateCategory fait de même avec un PATCH sur `/categories/${id}`.",
-     "confidence": "high",
-     "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
-    },
-    "rediscover": {
-     "found": true,
-     "cost": 4,
-     "within_budget": true,
-     "covered": true,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/services/categoryService.ts",
-     "file_ok": true,
-     "overlap": {
-      "identifiers": 1.0,
-      "values": null,
-      "terms": 0.571,
-      "n": {
-       "identifiers": 1,
-       "values": 0,
-       "terms": 14
-      }
-     },
-     "job": "category:rediscover:backend_src_test_java_com_matimeline_eventmanager_infrastructure_adapters_repositories_CategoryDeleteReassignIntegrationTest.java:2",
-     "rank_in_lot": 1,
-     "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
-    },
-    "comment": [],
-    "refute": null
-   },
-   "contrary": null,
-   "kept_for": "rediscovered",
-   "placed": {
-    "pack_line": 75,
-    "annex_table": null
-   },
-   "uses": 0
-  },
-  {
-   "id": "category:tests:1",
-   "section": "tests",
-   "rank": 1,
-   "text": "- Les tests fixent qu'avec une cible, les produits actifs et archivés migrent avant la suppression, qu'un produit archivé reste archivé, et qu'une erreur de deleteById après réassignation remonte. [#3840d7f06f853e2d-2] [#c8aa8d37f01818e5-2] [#6e7fcbb795f82f39-1] [#8b47d0a54f642844-1]",
-   "fact_text": "Les tests fixent qu'avec une cible, les produits actifs et archivés migrent avant la suppression, qu'un produit archivé reste archivé, et qu'une erreur de deleteById après réassignation remonte",
-   "consigne": null,
-   "consigne_dropped": false,
-   "cites": [
-    "category/3840d7f06f853e2d-2",
-    "category/c8aa8d37f01818e5-2",
-    "category/6e7fcbb795f82f39-1",
-    "category/8b47d0a54f642844-1"
-   ],
-   "files": [
-    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/CategoryDeleteReassignIntegrationTest.java",
-    "backend:src/test/java/com/matimeline/eventmanager/application/services/CategoryServiceImplTest.java"
-   ],
-   "ranges": [
-    [
-     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/CategoryDeleteReassignIntegrationTest.java",
-     146,
-     179,
-     "ef939459e2fe6bbe46e919483f501d95cf0d4f28b0d8da30b3d64ac10793d3a3"
-    ],
-    [
-     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/CategoryDeleteReassignIntegrationTest.java",
-     214,
-     234,
-     "650011b96da3625d79d7e9b861d13ce55208c20e4c85caba3737416827d48b63"
-    ],
-    [
-     "backend:src/test/java/com/matimeline/eventmanager/application/services/CategoryServiceImplTest.java",
-     199,
-     213,
-     "8372056e6661ca7ecd657f3f45e53c9dcf097ca8d20c8ae8e65c03b1dd14ee23"
-    ],
-    [
-     "backend:src/test/java/com/matimeline/eventmanager/application/services/CategoryServiceImplTest.java",
-     253,
-     266,
-     "d3daf8015fc6707ec3a1d120e372e9d0459de3a3af0581fa777e756428e66251"
-    ]
-   ],
-   "code_sha256": "0523dcb25913746d3588411a661766bbd67f4ec0eca7a936e67e682b8fd89d70",
-   "verdict": "admit",
-   "reason": "rediscovered",
-   "final": true,
-   "measures": {
-    "fidelity": null,
-    "deduce": {
-     "covered": false,
-     "overlap": {
-      "identifiers": 0.0,
-      "values": null,
-      "terms": 0.462,
-      "n": {
-       "identifiers": 1,
-       "values": 0,
-       "terms": 13
-      }
-     },
-     "restatement": "Le test deleteCategory_withReassign_movesAllProducts montre qu'avec une cible, deleteCategory déplace tous les produits de la source vers la cible, actifs et archivés, puis supprime la source. Après l'opération, countByCategoryId de la source vaut 0 et celui de la cible vaut 2. Le second test vérifie qu'un produit archivé seul est déplacé vers la cible en gardant archived = true.",
-     "confidence": "high",
-     "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
-    },
-    "rediscover": {
-     "found": true,
-     "cost": 8,
-     "within_budget": true,
-     "covered": true,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/CategoryDeleteReassignIntegrationTest.java",
-     "file_ok": true,
-     "overlap": {
-      "identifiers": 1.0,
-      "values": null,
-      "terms": 0.846,
-      "n": {
-       "identifiers": 1,
-       "values": 0,
-       "terms": 13
-      }
-     },
-     "job": "category:rediscover:backend_src_test_java_com_matimeline_eventmanager_infrastructure_adapters_repositories_CategoryDeleteReassignIntegrationTest.java:2",
-     "rank_in_lot": 2,
-     "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
-    },
-    "comment": [],
-    "refute": null
-   },
-   "contrary": null,
-   "kept_for": "rediscovered",
-   "placed": {
-    "pack_line": 107,
-    "annex_table": null
-   },
-   "uses": 0
-  },
-  {
-   "id": "category:tests:2",
-   "section": "tests",
-   "rank": 2,
-   "text": "- Côté API, un DELETE utilisé sans cible renvoie 409 avec le nombre de produits, et une cible égale à la catégorie renvoie 409 avec un message dédié. [#a24d15a2d893c519-2] [#a24d15a2d893c519-4]",
-   "fact_text": "Côté API, un DELETE utilisé sans cible renvoie 409 avec le nombre de produits, et une cible égale à la catégorie renvoie 409 avec un message dédié",
-   "consigne": null,
-   "consigne_dropped": false,
-   "cites": [
-    "category/a24d15a2d893c519-2",
-    "category/a24d15a2d893c519-4"
-   ],
-   "files": [
-    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryControllerTest.java"
-   ],
-   "ranges": [
-    [
-     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryControllerTest.java",
-     389,
-     404,
-     "70a970a992c386a2624b96f2c7645a84415a1ce5f831ae34f3c07f8d9cb2be76"
-    ],
-    [
-     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryControllerTest.java",
-     421,
-     441,
-     "5b2af4565d2e3c5a9cf789330920e5d99980ebc8466b1cb368441924c397317e"
-    ]
-   ],
-   "code_sha256": "6a52e70d5ebda9be291b73b5060ef7b1a49adf8c4ea1668bb06e246e9d203a90",
-   "verdict": "admit",
-   "reason": "admitted",
-   "final": true,
-   "measures": {
-    "fidelity": null,
-    "deduce": {
-     "covered": false,
-     "overlap": {
-      "identifiers": 0.5,
-      "values": 1.0,
-      "terms": 0.6,
-      "n": {
-       "identifiers": 2,
-       "values": 1,
-       "terms": 10
-      }
-     },
-     "restatement": "Un DELETE sans reassignToCategoryId sur une catégorie référencée renvoie HTTP 409 avec error « conflict » et un message dynamique reprenant le nombre de produits (« La catégorie est utilisée par 3 produits. Fournissez reassignToCategoryId. »). Un DELETE où reassignToCategoryId vaut l'id de la catégorie elle-même renvoie HTTP 409 avec un message dédié en anglais, issu de CategoryReassignTargetInvalidException.",
-     "confidence": "high",
-     "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
-    },
-    "rediscover": {
-     "found": true,
-     "cost": 16,
-     "within_budget": false,
-     "covered": false,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryControllerTest.java",
-     "file_ok": true,
-     "overlap": {
-      "identifiers": 0.5,
-      "values": 1.0,
-      "terms": 0.7,
-      "n": {
-       "identifiers": 2,
-       "values": 1,
-       "terms": 10
-      }
-     },
-     "job": "category:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_CategoryResponse.java:1",
-     "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
-    },
-    "comment": [],
-    "refute": {
-     "votes": 3,
-     "refuted": 0,
-     "refute_unproven": 0,
-     "reasons": [
-      "Les tests L389-441 vérifient 409 avec 'utilisée par 3 produits' et 409 avec message dédié pour cible == source.",
-      "Les deux tests attendent 409, avec 3 produits dans le message pour le premier et un message dédié pour la cible égale à la source.",
-      "Les tests L389-441 montrent 409 avec « utilisée par 3 produits » sans cible, et 409 avec message dédié si cible == source."
-     ],
-     "evidence": [
-      "",
-      "",
-      ""
-     ],
-     "consigne_verdict": "n/a",
-     "question_verdict": "n/a",
-     "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
-    }
-   },
-   "contrary": null,
-   "placed": {
-    "pack_line": 108,
-    "annex_table": null
-   },
-   "uses": 0
-  },
-  {
-   "id": "category:tests:3",
-   "section": "tests",
-   "rank": 3,
-   "text": "- Les compteurs séparent produits actifs et archivés, valent 0 si la catégorie est absente de la map, et ne comptent que les produits de l'appelant sur une catégorie système partagée, contrairement à countByCategoryId. [#86005ad7688e238a-4] [integrations/fe41b39f745c9020-1] [integrations/d290b87af4c36960-1] [#e90c8521a757ba43-1]",
-   "fact_text": "Les compteurs séparent produits actifs et archivés, valent 0 si la catégorie est absente de la map, et ne comptent que les produits de l'appelant sur une catégorie système partagée, contrairement à countByCategoryId. [integrations/fe41b39f745c9020-1] [integrations/d290b87af4c36960-1]",
-   "consigne": null,
-   "consigne_dropped": false,
-   "cites": [
-    "category/86005ad7688e238a-4",
-    "category/e90c8521a757ba43-1"
-   ],
-   "files": [
-    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryControllerTest.java",
-    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/CategoryDeleteReassignIntegrationTest.java"
-   ],
-   "ranges": [
-    [
-     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryControllerTest.java",
-     175,
-     199,
-     "4a070524139fd67916ca7b6ed971e9e25786d0531fe42a0cd1bcd1f5e73b3bb7"
-    ],
-    [
-     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/CategoryDeleteReassignIntegrationTest.java",
-     312,
-     327,
-     "17f49528446c90db4ad5af31f871351c81eba0f4897cb002388e91b45af3bdc2"
-    ]
-   ],
-   "code_sha256": "3471570e7730274f43b9f64b3f046237a7e01b226ae66a75d7b30991cfbafba2",
-   "verdict": "admit",
-   "reason": "admitted",
-   "final": true,
-   "measures": {
-    "fidelity": null,
-    "deduce": {
-     "covered": false,
-     "overlap": {
-      "identifiers": 0.333,
-      "values": 0.5,
-      "terms": 0.143,
-      "n": {
-       "identifiers": 3,
-       "values": 2,
-       "terms": 14
-      }
-     },
-     "restatement": "Le test getAllCategories_exposesActiveAndArchivedProductCounts montre que GET /api/categories renvoie pour chaque catégorie productCount et archivedProductCount, issus de getProductCountsForOwner, avec 0 par défaut quand la catégorie n'a pas d'entrée dans la map. Le bloc du dépôt test countByCategoryForUser_isNotCountByCategoryId indique que countByCategoryForUser ne compte que les produits de l'utilisateur, alors que countByCategoryId compte tous les produits (2 dans le test). Le libellé du symbole ne correspond pas au nom réel du test, d'où une confiance moyenne.",
-     "confidence": "medium",
-     "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
-    },
-    "rediscover": {
-     "found": true,
-     "cost": 13,
-     "within_budget": false,
-     "covered": false,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/CategoryDeleteReassignIntegrationTest.java",
-     "file_ok": true,
-     "overlap": {
-      "identifiers": 0.333,
-      "values": 1.0,
-      "terms": 0.143,
-      "n": {
-       "identifiers": 3,
-       "values": 2,
-       "terms": 14
-      }
-     },
-     "job": "category:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_CategoryResponse.java:1",
-     "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
-    },
-    "comment": [],
-    "refute": {
-     "votes": 3,
-     "refuted": 0,
-     "refute_unproven": 0,
-     "reasons": [
-      "Test L175-199 : actifs/archivés séparés et 0 si absent de la map. Test L313-327 : forMe.total()==1 contre countByCategoryId==2 sur une catégorie système partagée.",
-      "Les tests L185-196 montrent actifs/archivés séparés et 0 pour une catégorie absente. Le test L313-327 distingue countByCategoryForUser (1) de countByCategoryId (2).",
-      "Test L175-199 : actifs et archivés séparés, 0 par défaut (EMPTY). Test d'intégration L313-326 : forMe.total() vaut 1 contre 2 pour countByCategoryId."
-     ],
-     "evidence": [
-      "",
-      "",
-      ""
-     ],
-     "consigne_verdict": "n/a",
-     "question_verdict": "n/a",
-     "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
-    }
-   },
-   "contrary": null,
-   "placed": {
-    "pack_line": 109,
-    "annex_table": null
-   },
-   "uses": 0
-  },
-  {
-   "id": "category:alerts:1",
-   "section": "alerts",
-   "rank": 1,
-   "text": "- Pour la catégorie d'un autre utilisateur, les tests attendent 404 sur le GET et 403 sur PATCH et DELETE. Unifier les codes d'un côté casse les tests de l'autre, donc conserver cet écart ou modifier les deux ensemble [#8ecde30c288f4e1a-2] [#4709057d35de99a0-1] `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryControllerTest.java:265-335`.",
-   "fact_text": "Pour la catégorie d'un autre utilisateur, les tests attendent 404 sur le GET et 403 sur PATCH et DELETE. Unifier les codes d'un côté casse les tests de l'autre, donc conserver cet écart ou modifier les deux ensemble CategoryControllerTest.java",
-   "consigne": null,
-   "consigne_dropped": false,
-   "cites": [
-    "category/8ecde30c288f4e1a-2",
-    "category/4709057d35de99a0-1"
-   ],
-   "files": [
-    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryControllerTest.java"
-   ],
-   "ranges": [
-    [
-     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryControllerTest.java",
-     265,
-     335,
-     "60afb55ffb6197948555b9cc27d7d563d8c66336ed5afd3418995a2a081a8b7b"
-    ],
-    [
-     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryControllerTest.java",
-     256,
-     266,
-     "d108f65ff46e8c84cfe7e476f142fe4da47fb1bf1158ccc9c12d877a1720278b"
-    ]
-   ],
-   "code_sha256": "98545432d8ba8196d56f1a6204ae1080fc195be9dd497ea2ed8c9caf81b81084",
-   "verdict": "admit",
-   "reason": "admitted",
-   "final": true,
-   "measures": {
-    "fidelity": null,
-    "deduce": null,
     "rediscover": null,
-    "comment": [
-     {
-      "id": "category/4709057d35de99a0-1",
-      "verdict": "confirmed"
-     }
-    ],
-    "refute": {
-     "votes": 3,
-     "refuted": 0,
-     "refute_unproven": 0,
-     "reasons": [
-      "Le contrôleur donne 404 sur GET (isVisibleTo) et 403 sur PATCH/DELETE (isOwnedBy), et les tests (lignes 257-265, 325-335, 460-468) fixent cet écart. Rien ne garantit l'invariant contraire.",
-      "Le contrôleur renvoie bien 404 sur GET d'une catégorie d'autrui (isVisibleTo, L92-95) et 403 sur PATCH et DELETE (isOwnedBy, L112 et L135). CategoryControllerTest l'attend : L257 (404), L325 (403), L460 (403). Aucun garde-fou ne supprime l'écart, il est voulu et testé.",
-      "CategoryControllerTest[secret retiré] (L257), patchCategory_ownedByAnotherUser_returns403 (L325) et deleteCategory_ownedByAnotherUser_returns403 (L460) confirment l'écart, qui correspond au contrôleur (isVisibleTo vs isOwnedBy)."
-     ],
-     "evidence": [
-      "",
-      "",
-      ""
-     ],
-     "consigne_verdict": "supported",
-     "question_verdict": "n/a",
-     "searched": true,
-     "search": {
-      "check": "guards",
-      "outcome": null,
-      "votes": 3,
-      "supporters": 0,
-      "budget": 24,
-      "searches": [
-       [
-        {
-         "tool": "Grep",
-         "target": "isForbidden|isNotFound dans CategoryControllerTest",
-         "found": "GET autrui 404, PATCH autrui 403, DELETE autrui 403"
-        },
-        {
-         "tool": "Read",
-         "target": "CategoryController.java",
-         "found": "GET filtre isVisibleTo puis 404, PATCH/DELETE renvoient FORBIDDEN"
-        }
-       ],
-       [
-        {
-         "tool": "Grep",
-         "target": "ownedByAnotherUser|isForbidden dans CategoryControllerTest",
-         "found": "GET autrui -> 404 (L257), PATCH -> 403 (L325), DELETE -> 403 (L460)."
-        }
-       ],
-       [
-        {
-         "tool": "Grep",
-         "target": "isForbidden|isNotFound dans CategoryControllerTest.java",
-         "found": "404 sur GET autrui, 403 sur PATCH et DELETE autrui"
-        },
-        {
-         "tool": "Read",
-         "target": "CategoryController.java",
-         "found": "GET filtre par isVisibleTo puis 404, PATCH et DELETE renvoient 403 si non propriétaire"
-        }
-       ]
-      ],
-      "untraced": 0,
-      "over_budget": 0,
-      "unproven": 0
-     },
-     "reused": true,
-     "reused_from": "2026-11-20T12:20:00Z"
-    }
+    "comment": [],
+    "refute": null
    },
    "contrary": null,
-   "check": "guards",
    "placed": {
-    "pack_line": 117,
-    "annex_table": null
+    "pack_line": null,
+    "annex_table": {
+     "part": "category.details.md",
+     "row": 10
+    }
    },
-   "uses": 0
+   "uses": 0,
+   "carried_from": "2026-11-24T17:40:00"
   },
   {
    "id": "category:rules:annex:5076debe",
@@ -2272,7 +2230,7 @@
      "dae84bb7f37ea9ecea6fc5daeb7f4ce4a61ca86c79a1dec54680c8845391be24"
     ]
    ],
-   "code_sha256": "dae84bb7f37ea9ecea6fc5daeb7f4ce4a61ca86c79a1dec54680c8845391be24",
+   "code_sha256": "4c4a165f4196732304bc571283478f7bc92f14d9ed41a62f198f7c9d9c32811a",
    "verdict": "annex",
    "reason": "deducible",
    "final": true,
@@ -2307,7 +2265,7 @@
     }
    },
    "uses": 0,
-   "carried_from": "2026-11-20T12:20:00Z"
+   "carried_from": "2026-11-24T17:40:00"
   },
   {
    "id": "category:rules:annex:26b1c200",
@@ -2339,7 +2297,7 @@
      "8af30d140ca533ea483f9408e02847e8a22871b085118025ac0dfe5a6ce9d9ac"
     ]
    ],
-   "code_sha256": "04de545631eb35e47d61f5305d5c1a539a5feb11431a007eda63f2871bf03fea",
+   "code_sha256": "61f097ef1df78b92b37d5cddb86ff084d4ffa553f6c595b5d177b83d5e0033b1",
    "verdict": "annex",
    "reason": "deducible",
    "final": true,
@@ -2376,7 +2334,7 @@
     }
    },
    "uses": 0,
-   "carried_from": "2026-11-20T12:20:00Z"
+   "carried_from": "2026-11-24T17:40:00"
   },
   {
    "id": "category:surface:annex:9a71485c",
@@ -2407,7 +2365,7 @@
      "d3cca4d92fb4abfd9b3fd96520474c45fabfcfeb4ce3468329158072128113ae"
     ]
    ],
-   "code_sha256": "6516d8d816b02a047bad663c1b97abb57b7c7e3b2229dab5ecdcb3f80f7d6944",
+   "code_sha256": "280ea2b4f4751d60df7781fd714f560bc0c7657c5299eb06941732545fb35798",
    "verdict": "annex",
    "reason": "deducible",
    "final": true,
@@ -2441,76 +2399,7 @@
     }
    },
    "uses": 0,
-   "carried_from": "2026-11-20T12:20:00Z"
-  },
-  {
-   "id": "category:surface:annex:10e02cf8",
-   "section": "surface",
-   "rank": 5,
-   "text": "- La suppression avec réassignation contrôle aussi la catégorie de destination, qui doit appartenir à l'appelant, sinon 403 ou 404 et aucun appel à deleteCategory [#integrations/c7bb5008d3494cfa-1] [#1bcba06ae8e16148-1].",
-   "fact_text": "La suppression avec réassignation contrôle aussi la catégorie de destination, qui doit appartenir à l'appelant, sinon 403 ou 404 et aucun appel à deleteCategory",
-   "consigne": null,
-   "consigne_dropped": false,
-   "cites": [
-    "integrations/c7bb5008d3494cfa-1",
-    "category/1bcba06ae8e16148-1"
-   ],
-   "files": [
-    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryController.java",
-    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryControllerTest.java"
-   ],
-   "ranges": [
-    [
-     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryController.java",
-     135,
-     148,
-     "45e629a82f1e36c4b672a479163ec4dfb7c88401805fc9a379076709137d346d"
-    ],
-    [
-     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryControllerTest.java",
-     443,
-     457,
-     "0fdaa4655d41c51fb3c8de036d07a4ee2a332a81b27e2e038eed175a907c4269"
-    ]
-   ],
-   "code_sha256": "d1ea2cfad6a40c3aee79ae4da4807a2e23942737270c5e92d64ea0362edcc780",
-   "verdict": "annex",
-   "reason": "deducible",
-   "final": true,
-   "measures": {
-    "fidelity": null,
-    "deduce": {
-     "covered": true,
-     "overlap": {
-      "identifiers": 1.0,
-      "values": 1.0,
-      "terms": 0.5,
-      "n": {
-       "identifiers": 1,
-       "values": 2,
-       "terms": 8
-      }
-     },
-     "restatement": "`deleteCategory` du contrôleur renvoie 403 si la catégorie n'appartient pas à l'appelant. Si `reassignToCategoryId` est fourni, il renvoie 404 si la cible est introuvable et 403 si la cible n'appartient pas à l'appelant. Le service n'est appelé qu'après ces contrôles, comme le montre le test qui vérifie `deleteCategory` jamais appelé.",
-     "confidence": "high",
-     "files_read_missing": true
-    },
-    "rediscover": null,
-    "comment": [],
-    "refute": null
-   },
-   "contrary": null,
-   "check": "scope",
-   "general": "words:aucun",
-   "placed": {
-    "pack_line": null,
-    "annex_table": {
-     "part": "category.details.md",
-     "row": 4
-    }
-   },
-   "uses": 0,
-   "carried_from": "2026-11-20T12:20:00Z"
+   "carried_from": "2026-11-24T17:40:00"
   },
   {
    "id": "category:tests:annex:79c67ca0",
@@ -2541,7 +2430,7 @@
      "6fcdc0da95277e057a2313d3375f3353466ba8c6d63eaa3ca2d49404ebe57469"
     ]
    ],
-   "code_sha256": "ccacfa7beb36537613935b5f9a46a76004db004d6a24178c292a62db565f2c92",
+   "code_sha256": "7dced3c45e996897acd21080785cd7a7ca4216523693ce91803d60cd54043fdb",
    "verdict": "annex",
    "reason": "deducible",
    "final": true,
@@ -2575,7 +2464,7 @@
     }
    },
    "uses": 0,
-   "carried_from": "2026-11-20T12:20:00Z"
+   "carried_from": "2026-11-24T17:40:00"
   },
   {
    "id": "category:tests:annex:d0fb592b",
@@ -2613,7 +2502,7 @@
      "7d516b9f6a1a1d50821763492a688a0a50692dac6618baf5393356c613c19b27"
     ]
    ],
-   "code_sha256": "d058ec3c54d533f5de7b4fa85a6a6f79e010219acc13d69484d3e0f94b69f080",
+   "code_sha256": "1966bdff43c732fe28b714cd4ce0c76c207604745209176e0b70bfae9ff4e715",
    "verdict": "annex",
    "reason": "deducible",
    "final": true,
@@ -2647,7 +2536,7 @@
     }
    },
    "uses": 0,
-   "carried_from": "2026-11-20T12:20:00Z"
+   "carried_from": "2026-11-24T17:40:00"
   },
   {
    "id": "category:tests:annex:215fd2b4",
@@ -2692,7 +2581,7 @@
      "9c89c5fc606229b3d3dc4d9927a3947c23f754cc4a83ae7b2e5dffa127af2723"
     ]
    ],
-   "code_sha256": "aeb293e662a07a50a039b2fd6204a10b7280667d2f3391d2335bc820d4c9def0",
+   "code_sha256": "4027d48cba4de366ca5cb760788fe75cae0b45f8f06469ab3dbe228a9b56f357",
    "verdict": "annex",
    "reason": "deducible",
    "final": true,
@@ -2726,108 +2615,10 @@
     }
    },
    "uses": 0,
-   "carried_from": "2026-11-20T12:20:00Z"
-  },
-  {
-   "id": "category:tests:annex:2b1172f4",
-   "section": "tests",
-   "rank": 6,
-   "text": "- Un POST ou un PATCH en doublon renvoie 409 avec error à conflict, un nom vide renvoie 400 sans appel au service. [#2c1f8c2b2134e263-3] [#61d291963ad8f848-1] [#f176de32cdeed4d9-1] [#67d7538d6cd2b940-1]",
-   "fact_text": "Un POST ou un PATCH en doublon renvoie 409 avec error à conflict, un nom vide renvoie 400 sans appel au service",
-   "consigne": null,
-   "consigne_dropped": false,
-   "cites": [
-    "category/2c1f8c2b2134e263-3",
-    "category/61d291963ad8f848-1",
-    "category/f176de32cdeed4d9-1",
-    "category/67d7538d6cd2b940-1"
-   ],
-   "files": [
-    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryControllerTest.java"
-   ],
-   "ranges": [
-    [
-     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryControllerTest.java",
-     116,
-     130,
-     "284c763259d9f341c474f7507ab85c39f4f150b8afa17d7f10e9ca5b597c914b"
-    ],
-    [
-     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryControllerTest.java",
-     356,
-     372,
-     "1d612e235f3335ea6746de26631318fe37ccd32dedc115090f7141fb8c4de420"
-    ],
-    [
-     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryControllerTest.java",
-     86,
-     96,
-     "563faed59395b2faf104cbf84dce96a270cddeb872a1f59de795c45cdd9eac0a"
-    ],
-    [
-     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryControllerTest.java",
-     297,
-     307,
-     "d9b7eba51c0b678824f06494911f01f0599dce003f7f1b71c8b3a4cf12c559fa"
-    ]
-   ],
-   "code_sha256": "4a5b5bec6a5d4d60a3f5fb3e36c47f1c7124beae7b7196d482f533987d5085f6",
-   "verdict": "annex",
-   "reason": "deducible",
-   "final": true,
-   "measures": {
-    "fidelity": null,
-    "deduce": {
-     "covered": true,
-     "overlap": {
-      "identifiers": 1.0,
-      "values": 1.0,
-      "terms": 0.714,
-      "n": {
-       "identifiers": 2,
-       "values": 2,
-       "terms": 7
-      }
-     },
-     "restatement": "Un POST ou un PATCH dont le nom est déjà utilisé par l'utilisateur renvoie HTTP 409 avec error « conflict » et le message fixe « category name already used », via CategoryNameConflictException. Un POST ou un PATCH avec un nom vide renvoie HTTP 400 sans appeler le service (le test du POST n'a pas de stub JWT, car la validation @NotBlank échoue avant le corps).",
-     "confidence": "high"
-    },
-    "rediscover": null,
-    "comment": [],
-    "refute": null
-   },
-   "contrary": null,
-   "placed": {
-    "pack_line": null,
-    "annex_table": {
-     "part": "category.details.md",
-     "row": 8
-    }
-   },
-   "uses": 0,
-   "carried_from": "2026-11-20T12:20:00Z"
+   "carried_from": "2026-11-24T17:40:00"
   }
  ],
- "comment_facts": [
-  {
-   "id": "category/4709057d35de99a0-1",
-   "verdict": "confirmed",
-   "code_says": "Le test crée une catégorie \"Foreign\" dont le propriétaire est un UUID aléatoire, distinct du caller, puis attend un statut HTTP 404 sur le GET.",
-   "code_line_start": 256,
-   "code_line_end": 266,
-   "code_evidence": ".andExpect(status().isNotFound());",
-   "evidence_check": null,
-   "code_file": "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryControllerTest.java",
-   "invalid": false,
-   "cache_digest": "d882c491bdd85a4253296973b30056e7dbe936c17e22faf5e0e3953d39563ff1",
-   "reused": true,
-   "reused_from": "2026-11-20T12:20:00Z",
-   "cited_by": [
-    "category:alerts:1"
-   ],
-   "structure_rows_removed": []
-  }
- ],
+ "comment_facts": [],
  "facts_validated": [
   "category/c900077dbf944eb3-1",
   "category/054a3aaf703706f1-1",
@@ -2847,9 +2638,6 @@
   "integrations/3cbc6ad692a65eaa-1",
   "category/6fc50f0b113733e6-1",
   "category/d4a7bea8ee8ef950-1",
-  "category/0170a42b57affd2f-1",
-  "category/e058eec72b9dbdf2-1",
-  "category/419bb430c6dff34f-1",
   "category/45903f846bdb1978-1",
   "integrations/8e9c429e14d99314-1",
   "category/0f363444e8ef529b-1",
@@ -2861,8 +2649,8 @@
   "category/4709057d35de99a0-1"
  ],
  "counts": {
-  "units": 30,
-  "admit": 22,
+  "units": 28,
+  "admit": 20,
   "annex": 8,
   "drop": 0,
   "hold": 0,
@@ -2877,7 +2665,7 @@
   "counterexample": 0,
   "promoted": 0,
   "kept_for": {
-   "rediscovered": 4
+   "rediscovered": 3
   },
   "pointers_removed": 0,
   "restored_alerts": 0,
@@ -2887,15 +2675,15 @@
  "budget_cut": [],
  "structure_rows_removed": [],
  "notes": [],
- "base_sha256_after": "cd195350ee93ad65bb0718114e374d87cbcb8236ea661ab9fd377b098a1fc309",
+ "base_sha256_after": "e66dde856eb55ab1bf9528c9058154f95a855f69622958aff74fd4f2af29bc00",
  "bases_touched": {
   "category": {
-   "fingerprint": "0038a945be6b6a3174b87e0c5aeca3ff8eabacde39d10fe34276d403a17d8866",
-   "sha256_after": "cd195350ee93ad65bb0718114e374d87cbcb8236ea661ab9fd377b098a1fc309"
+   "fingerprint": "0f544b9d40e0fcff193c51c2e15442e470887bea34429ea527adcdaff1fb4e4b",
+   "sha256_after": "e66dde856eb55ab1bf9528c9058154f95a855f69622958aff74fd4f2af29bc00"
   },
   "integrations": {
-   "fingerprint": "f7984eacb1b983b17187ea75176f49511bb0644b8c83f802588dac68e31c8537",
-   "sha256_after": "88ad6cc38a54980e577165c9e049a2633584d262d9613dedc80680c6e9b3b7a2"
+   "fingerprint": "10e0c8db6c7512a2d7d41bae0a39c438365551a84d036423e340d918e7cdf48a",
+   "sha256_after": "236f8d72a311a95ce3f7f86e23c60e23dbf5d165dd15f9480ace940e95325f03"
   }
  },
  "lint": {

@@ -5,48 +5,48 @@
  "invented": {},
  "leftover": [],
  "leftover_rate": 0.0,
- "assigned": 700,
- "total": 700,
+ "assigned": 727,
+ "total": 727,
  "sizes": {
   "frontend-core": {
    "files": 344,
    "kb": 2598
   },
   "integrations": {
-   "files": 98,
-   "kb": 767
+   "files": 110,
+   "kb": 830
   },
   "user": {
-   "files": 81,
-   "kb": 397
-  },
-  "backend-core": {
-   "files": 38,
-   "kb": 318
+   "files": 84,
+   "kb": 409
   },
   "authorization": {
-   "files": 35,
-   "kb": 313
+   "files": 37,
+   "kb": 351
+  },
+  "backend-core": {
+   "files": 45,
+   "kb": 340
   },
   "lib-socle": {
    "files": 35,
    "kb": 277
   },
   "event": {
-   "files": 49,
-   "kb": 255
+   "files": 53,
+   "kb": 274
   },
   "frontend-app": {
    "files": 41,
    "kb": 179
   },
   "product": {
-   "files": 18,
-   "kb": 129
+   "files": 28,
+   "kb": 170
   },
   "session": {
-   "files": 23,
-   "kb": 108
+   "files": 25,
+   "kb": 143
   },
   "export": {
    "files": 35,
@@ -57,8 +57,8 @@
    "kb": 93
   },
   "migrations": {
-   "files": 16,
-   "kb": 47
+   "files": 17,
+   "kb": 49
   },
   "batch": {
    "files": 9,
@@ -68,15 +68,15 @@
  "small_domain_packs_R7": {},
  "giant_domain_packs_R8": {},
  "giant_domain_packs_R8_why": {},
- "median_domain_kb": 119,
+ "median_domain_kb": 157,
  "overlay_claims": {
   "batch": 9,
-  "authorization": 35,
-  "integrations": 98
+  "authorization": 37,
+  "integrations": 110
  },
  "by_how": {
-  "seed": 226,
-  "path_rule": 420,
+  "seed": 245,
+  "path_rule": 428,
   "R10": 54
  },
  "assumptions": {
