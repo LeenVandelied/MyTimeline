@@ -1,8 +1,8 @@
 import { expect, test } from './support/fixtures'
 import { PROD } from './support/accounts'
 import { sessionState } from './support/session'
-import { getUserId, openCategoriesTab, unique } from './support/products'
-import { flushSeedTracking, trackSeed } from './support/seed-cleanup'
+import { getUserId } from './support/products'
+import { trackSeed } from './support/seed-cleanup'
 
 /**
  * #463 (cycle 2 de revue, S79) — CONTRÔLE NÉGATIF de la fixture de purge.
@@ -65,45 +65,5 @@ test.describe('#463 — contrôle négatif : une purge en échec doit faire roug
 
     // Corps volontairement VERT : c'est la purge, et elle seule, qui doit rougir.
     expect(userId).toBeTruthy()
-  })
-})
-
-/**
- * #550 — une catégorie créée en cliquant dans le tiroir doit être purgée. Le cas
- * reproduit le parcours de `categories.spec.ts`, déclenche la purge de fin de test
- * lui-même (`flushSeedTracking`, la fixture la rejouera à vide) puis lit le compte
- * par l'API : un test ne peut pas observer son propre teardown.
- */
-test.describe('#550 — catégories créées à l’interface', () => {
-  test('a category created through the drawer is purged at the end of the test', async ({
-    page,
-  }) => {
-    const name = unique('Cat Drawer Purge')
-    const listCategories = async () => {
-      const res = await page.request.get('/api/categories')
-      expect(res.status()).toBe(200)
-      return (await res.json()) as { id: string; name: string }[]
-    }
-
-    await openCategoriesTab(page)
-    await page.getByTestId('categories-new-button').click()
-    await expect(page.getByTestId('category-drawer-form')).toBeVisible()
-    await page.getByTestId('category-name-input').fill(name)
-    await page.getByTestId('category-swatch-#3B62D4').click()
-    await page.getByTestId('category-submit').click()
-    await expect(page.getByTestId('category-drawer-form')).toBeHidden()
-    await expect(page.getByTestId('categories-view')).toContainText(name)
-
-    const created = (await listCategories()).find((c) => c.name === name)
-    expect(created, 'la catégorie créée doit exister avant la purge').toBeDefined()
-
-    try {
-      expect(await flushSeedTracking()).toEqual([])
-      const remaining = (await listCategories()).filter((c) => c.name === name)
-      expect(remaining).toEqual([])
-    } finally {
-      // Pas de résidu si l'assertion ci-dessus échoue : la catégorie n'a aucun produit.
-      await page.request.delete(`/api/categories/${created!.id}`)
-    }
   })
 })

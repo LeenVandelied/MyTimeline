@@ -1,6 +1,6 @@
 import { expect, type Page } from '@playwright/test'
 import { ensureAuthenticated } from './auth'
-import { categorySeedFromResponse, trackSeed, trackSeedLater } from './seed-cleanup'
+import { trackSeed } from './seed-cleanup'
 
 /**
  * Helpers E2E domaine Produits & Catégories (#218).
@@ -105,38 +105,8 @@ export async function gotoProducts(page: Page): Promise<void> {
   await expect(page.getByTestId('products-list-view')).toBeVisible()
 }
 
-/** Pages déjà équipées de l'écouteur : rouvrir l'onglet ne doit pas en brancher un second. */
-const pagesWithCategoryRecorder = new WeakSet<Page>()
-
-/**
- * #550 — Note pour la purge les catégories créées au clic dans le tiroir : elles ne
- * passent pas par `seedCategory`, et leur création est lue sur la réponse du POST.
- */
-function recordUiCategories(page: Page): void {
-  if (pagesWithCategoryRecorder.has(page)) return
-  pagesWithCategoryRecorder.add(page)
-  page.on('response', (res) => {
-    if (res.request().method() !== 'POST' || res.status() !== 201) return
-    if (!/\/api\/categories\/?$/.test(new URL(res.url()).pathname)) return
-    // Lance la lecture du corps tout de suite : le contexte peut fermer avant la fin du test.
-    trackSeedLater(async () => {
-      // Une réponse simulée (`route.fulfill`) n'a pas d'adresse serveur : rien à purger.
-      const [serverAddr, body] = await Promise.all([res.serverAddr(), res.json()])
-      if (serverAddr === null) return
-      const entry = categorySeedFromResponse({
-        method: 'POST',
-        url: res.url(),
-        status: res.status(),
-        body,
-      })
-      if (entry) await trackSeed(page, entry)
-    })
-  })
-}
-
 /** Ouvre la page Produits puis bascule sur l'onglet Catégories. */
 export async function openCategoriesTab(page: Page): Promise<void> {
-  recordUiCategories(page)
   await ensureAuthenticated(page)
   await page.goto('/fr/products', { waitUntil: 'domcontentloaded' })
   await expect(page.getByTestId('products-tabs')).toBeVisible()
