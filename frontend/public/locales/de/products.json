@@ -9,12 +9,6 @@
       "submit": "Hinzufügen",
       "error": "Beim Hinzufügen des Produkts ist ein Fehler aufgetreten."
     },
-    "categories": {
-      "vehicles": "Fahrzeuge",
-      "insurance": "Versicherung",
-      "food": "Lebensmittel",
-      "medical": "Medizinisch"
-    },
     "event": {
       "title": "Ereignis hinzufügen",
       "list": "Hinzugefügte Ereignisse",
@@ -204,7 +198,18 @@
     "archivedCount": "{count, plural, one {# archiviert} other {# archiviert}}",
     "delete": "Löschen",
     "edit": "Bearbeiten",
-    "openEdit": "{name} bearbeiten"
+    "openEdit": "{name} bearbeiten",
+    "suggestionConflict": "Die Kategorie „{name}“ gibt es bereits.",
+    "suggestionError": "„{name}“ konnte nicht erstellt werden. Versuche es erneut.",
+    "suggestions": {
+      "vehicles": "Fahrzeuge",
+      "insurance": "Versicherung",
+      "health": "Gesundheit",
+      "food": "Ernährung",
+      "housing": "Wohnen",
+      "travel": "Reisen",
+      "finance": "Finanzen"
+    }
   },
   "archived": {
     "title": "Archiviert",

@@ -9,12 +9,6 @@
       "submit": "Ajouter",
       "error": "Une erreur est survenue lors de l'ajout du produit."
     },
-    "categories": {
-      "vehicles": "Véhicules",
-      "insurance": "Assurance",
-      "food": "Aliments",
-      "medical": "Médical"
-    },
     "event": {
       "title": "Ajouter un événement",
       "list": "Événements ajoutés",
@@ -204,7 +198,18 @@
     "archivedCount": "{count, plural, one {# archivé} other {# archivés}}",
     "delete": "Supprimer",
     "edit": "Modifier",
-    "openEdit": "Modifier {name}"
+    "openEdit": "Modifier {name}",
+    "suggestionConflict": "La catégorie « {name} » existe déjà.",
+    "suggestionError": "Impossible de créer « {name} ». Réessaie.",
+    "suggestions": {
+      "vehicles": "Véhicules",
+      "insurance": "Assurance",
+      "health": "Santé",
+      "food": "Alimentation",
+      "housing": "Logement",
+      "travel": "Voyage",
+      "finance": "Finances"
+    }
   },
   "archived": {
     "title": "Archivés",

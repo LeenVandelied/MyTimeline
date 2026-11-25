@@ -9,12 +9,6 @@
       "submit": "Add",
       "error": "An error occurred while adding the product."
     },
-    "categories": {
-      "vehicles": "Vehicles",
-      "insurance": "Insurance",
-      "food": "Food",
-      "medical": "Medical"
-    },
     "event": {
       "title": "Add Event",
       "list": "Added Events",
@@ -204,7 +198,18 @@
     "archivedCount": "{count, plural, one {# archived} other {# archived}}",
     "delete": "Delete",
     "edit": "Edit",
-    "openEdit": "Edit {name}"
+    "openEdit": "Edit {name}",
+    "suggestionConflict": "A category named “{name}” already exists.",
+    "suggestionError": "Could not create “{name}”. Try again.",
+    "suggestions": {
+      "vehicles": "Vehicles",
+      "insurance": "Insurance",
+      "health": "Health",
+      "food": "Food",
+      "housing": "Housing",
+      "travel": "Travel",
+      "finance": "Finance"
+    }
   },
   "archived": {
     "title": "Archived",

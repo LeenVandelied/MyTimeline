@@ -1197,6 +1197,8 @@ describe(
         'reset-password-failures.spec.ts': 2,
         // #653 (S111) : UN compte neuf pour la préférence de thème (jamais `SHARED`).
         'sprint-111-theme-account-preference.spec.ts': 1,
+        // #638 (S117) : UN compte neuf, sans catégorie, pour les suggestions.
+        'categories-suggestions.spec.ts': 1,
       })
       // `submitLogin` / `submitResetPassword` sont des fonctions LOCALES de la spec, appelées
       // 2 et 3 fois : le compteur par regex de #475 les aurait vues 1 fois chacune.
@@ -1206,6 +1208,8 @@ describe(
         'forgot-password.spec.ts': 1,
         'reset-password-failures.spec.ts': 2,
         'sprint-111-theme-account-preference.spec.ts': 2,
+        // #638 (S117) : `loginViaForm`, appelée une fois.
+        'categories-suggestions.spec.ts': 1,
       })
       expect(countSpecs('reset-password').perFile).toEqual({
         'forgot-password.spec.ts': 1,

@@ -1,6 +1,7 @@
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { paletteHex } from '@/lib/event-palette'
 import type { Category } from '@/types/category'
 import { CategoriesView } from './CategoriesView'
 
@@ -20,12 +21,18 @@ const useCategoriesMock = vi.fn()
 // #245 : la suppression passe désormais par le hook useDeleteCategory (useMutation
 // + invalidation categories.all/products.all), plus par le service brut.
 const deleteMutateAsync = vi.fn()
+// #638 — un clic sur une suggestion crée par le hook de création existant : `mutate` et
+// `mutateAsync` partagent le même espion, le test ne dépend pas de la variante choisie.
+const createMutate = vi.fn()
 
 vi.mock('@/hooks/useCategories', () => ({
   useCategories: (...args: unknown[]) => useCategoriesMock(...args),
 }))
 vi.mock('@/hooks/useDeleteCategory', () => ({
   useDeleteCategory: () => ({ mutateAsync: deleteMutateAsync, isPending: false }),
+}))
+vi.mock('@/hooks/useCreateCategory', () => ({
+  useCreateCategory: () => ({ mutate: createMutate, mutateAsync: createMutate, isPending: false }),
 }))
 vi.mock('next-intl', () => ({
   useTranslations: (namespace: string) => (key: string) => `${namespace}.${key}`,
@@ -339,6 +346,80 @@ describe('CategoriesView', () => {
     expect(loading).not.toHaveAttribute('aria-busy')
     expect(screen.getByText('products.categories.loading')).toBeInTheDocument()
     expect(screen.getAllByTestId('loading-skeleton-item')).toHaveLength(6)
+    expect(screen.queryByTestId('categories-empty')).not.toBeInTheDocument()
+  })
+})
+
+/**
+ * #638 (DEC-S82-004) — catégories types proposées à un compte sans aucune catégorie.
+ *
+ * Contrat posé ici (le mock de traduction rend `ns.key`, les libellés réels sont joués
+ * par `CategoriesView.intl.test.tsx`) :
+ *   - bloc `categories-suggestions`, un bouton `categories-suggestion-<id>` par entrée ;
+ *   - ids, dans l'ordre : vehicles, insurance, health, food, housing, travel, finance ;
+ *   - libellé = clé `products.categories.suggestions.<id>` ;
+ *   - couleur = rôle de la palette unique, lue par `paletteHex` (aucun hex recopié ici).
+ */
+const SUGGESTION_IDS = [
+  'vehicles',
+  'insurance',
+  'health',
+  'food',
+  'housing',
+  'travel',
+  'finance',
+] as const
+
+const suggestionButtons = () => screen.queryAllByTestId(/^categories-suggestion-/)
+
+describe('#638 — catégories proposées à un compte neuf', () => {
+  beforeEach(() => {
+    createMutate.mockResolvedValue({ id: 'new', name: 'créée', system: false })
+  })
+
+  it('shows the seven suggestions when no category exists', () => {
+    mockAll({ data: [] })
+    render(<CategoriesView />)
+    expect(suggestionButtons().map((el) => el.getAttribute('data-testid'))).toEqual(
+      SUGGESTION_IDS.map((id) => `categories-suggestion-${id}`),
+    )
+    for (const el of suggestionButtons()) expect(el).toBeVisible()
+    // Le bouton de création habituel reste là, à côté des suggestions.
+    expect(screen.getByTestId('categories-empty-cta')).toBeVisible()
+  })
+
+  it('does not create anything when suggestions are displayed', () => {
+    mockAll({ data: [] })
+    render(<CategoriesView />)
+    // Sans suggestions affichées, « rien n'est créé » serait vrai à vide.
+    expect(suggestionButtons()).toHaveLength(SUGGESTION_IDS.length)
+    expect(createMutate).not.toHaveBeenCalled()
+  })
+
+  it('creates the chosen suggestion with its palette colour', async () => {
+    const user = userEvent.setup()
+    mockAll({ data: [] })
+    render(<CategoriesView />)
+    const vehicles = screen.queryByTestId('categories-suggestion-vehicles')
+    expect(vehicles).not.toBeNull()
+    await user.click(vehicles!)
+    expect(createMutate).toHaveBeenCalledTimes(1)
+    // Véhicules = rôle « sky » de la palette unique (#577).
+    expect(createMutate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: 'products.categories.suggestions.vehicles',
+        color: paletteHex('sky'),
+      }),
+    )
+  })
+
+  it('hides suggestions once a category exists', () => {
+    mockAll()
+    render(<CategoriesView />)
+    expect(suggestionButtons()).toHaveLength(0)
+    expect(screen.queryByTestId('categories-suggestions')).not.toBeInTheDocument()
+    // Seule la liste est affichée.
+    expect(screen.getByTestId('categories-card-c-1')).toBeInTheDocument()
     expect(screen.queryByTestId('categories-empty')).not.toBeInTheDocument()
   })
 })

@@ -9,6 +9,7 @@ import { contrastInk } from '@/lib/color'
 import { Button } from '@/components/ui/button'
 import { TOUCH_TARGET_BUTTON, TOUCH_TARGET_HITBOX } from '@/lib/touchTarget'
 import { CategoryDrawer } from '@/components/categories/CategoryDrawer'
+import { CategorySuggestions } from '@/components/categories/CategorySuggestions'
 import { DeleteConfirmDialog } from '@/components/shared/DeleteConfirmDialog'
 import { EmptyState } from '@/components/shared/EmptyState'
 import { LoadingSkeleton } from '@/components/shared/LoadingSkeleton'
@@ -93,10 +94,18 @@ export function CategoriesView() {
     }
     newButtonRef.current?.focus()
   }
+  // #638 — un choix de suggestion (clavier compris) démonte les boutons quand la liste
+  // arrive : le focus tombait sur `body`. Même rattrapage que le CTA, au même effet.
+  const focusBackFromSuggestionRef = React.useRef(false)
+  const handleSuggestionChoose = () => {
+    focusBackFromSuggestionRef.current = true
+  }
   const hasCategories = categories.length > 0
   React.useEffect(() => {
-    if (!hasCategories || !focusBackToEmptyCtaRef.current) return
+    if (!hasCategories) return
+    if (!focusBackToEmptyCtaRef.current && !focusBackFromSuggestionRef.current) return
     focusBackToEmptyCtaRef.current = false
+    focusBackFromSuggestionRef.current = false
     const active = document.activeElement
     if (active === null || active === document.body) newButtonRef.current?.focus()
   }, [hasCategories])
@@ -145,21 +154,24 @@ export function CategoriesView() {
         </p>
       ) : categories.length === 0 ? (
         // #630 — État vide partagé + CTA : même handler que `categories-new-button`
-        // (ouvre le `CategoryDrawer` de création). Aucune catégorie semée ni
-        // suggérée ici (DEC-S82-004, suggestions = #638).
+        // (ouvre le `CategoryDrawer` de création). Aucune catégorie semée (DEC-S82-004) :
+        // #638 propose les sept catégories types, créées seulement au clic.
         <EmptyState
           title={t('empty')}
           action={
-            <Button
-              type="button"
-              ref={emptyCtaRef}
-              onClick={() => openCreate(true)}
-              // #767 — mesuré 182×36 à 375 px (cva `h-9`) : 44 px sous 768 px.
-              className={TOUCH_TARGET_BUTTON}
-              data-testid="categories-empty-cta"
-            >
-              {t('emptyCta')}
-            </Button>
+            <div className="flex flex-col items-center gap-4">
+              <CategorySuggestions onChoose={handleSuggestionChoose} />
+              <Button
+                type="button"
+                ref={emptyCtaRef}
+                onClick={() => openCreate(true)}
+                // #767 — mesuré 182×36 à 375 px (cva `h-9`) : 44 px sous 768 px.
+                className={TOUCH_TARGET_BUTTON}
+                data-testid="categories-empty-cta"
+              >
+                {t('emptyCta')}
+              </Button>
+            </div>
           }
           className="border-rule rounded-lg border px-4"
           testId="categories-empty"
