@@ -22,7 +22,8 @@
     "title": "This page isn't in the almanac.",
     "description": "The page you're looking for has expired, moved, or never existed. Head back home — it's always a safe bet.",
     "week": "Week {week}",
-    "backHome": "Back to home"
+    "backHome": "Back to home",
+    "backToToday": "Back to today"
   },
   "forbidden": {
     "title": "Access denied",

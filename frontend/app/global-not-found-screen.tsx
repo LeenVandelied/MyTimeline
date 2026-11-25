@@ -7,7 +7,7 @@ import { useHydrated } from '@/hooks/useHydrated'
 import { StateScreen, stateActionPrimary } from '@/components/shared/StateScreen'
 import { DEFAULT_LOCALE, isSupportedLocale, type Locale } from '@/i18n/locales'
 import { fontVariables } from './fonts'
-import type { CSSProperties } from 'react'
+import { useEffect, useState, type CSSProperties } from 'react'
 
 /**
  * #413 (suite) — PARTIE CLIENT de l'écran 404 des URL non matchées.
@@ -83,6 +83,8 @@ type NotFoundMessages = {
   /** Gabarit ICU `{week}` ; substitué à la main (aucun formateur next-intl ici). */
   week: string
   backHome: string
+  /** #828 — libellé de la personne connectée (sonde de session confirmée). */
+  backToToday: string
 }
 
 /**
@@ -98,6 +100,7 @@ const MESSAGES: Record<Locale, NotFoundMessages> = {
       "La page que vous cherchez a expiré, déménagé, ou n'a jamais existé. Revenez à l'accueil — c'est toujours une valeur sûre.",
     week: 'Semaine {week}',
     backHome: "Retour à l'accueil",
+    backToToday: "Revenir à aujourd'hui",
   },
   en: {
     eyebrow: 'Error 404',
@@ -106,6 +109,7 @@ const MESSAGES: Record<Locale, NotFoundMessages> = {
       "The page you're looking for has expired, moved, or never existed. Head back home — it's always a safe bet.",
     week: 'Week {week}',
     backHome: 'Back to home',
+    backToToday: 'Back to today',
   },
   es: {
     eyebrow: 'Error 404',
@@ -114,6 +118,7 @@ const MESSAGES: Record<Locale, NotFoundMessages> = {
       'La página que buscas ha caducado, se ha mudado o nunca existió. Vuelve al inicio: siempre es una apuesta segura.',
     week: 'Semana {week}',
     backHome: 'Volver al inicio',
+    backToToday: 'Volver a hoy',
   },
   de: {
     eyebrow: 'Fehler 404',
@@ -122,6 +127,7 @@ const MESSAGES: Record<Locale, NotFoundMessages> = {
       'Die gesuchte Seite ist abgelaufen, umgezogen oder hat nie existiert. Kehren Sie zur Startseite zurück – dort sind Sie immer richtig.',
     week: 'KW {week}',
     backHome: 'Zurück zur Startseite',
+    backToToday: 'Zurück zu heute',
   },
 }
 
@@ -131,11 +137,56 @@ function resolveLocale(): Locale {
   return isSupportedLocale(segment) ? segment : DEFAULT_LOCALE
 }
 
+/**
+ * #828 — `true` seulement une fois `GET /api/auth/me` confirmé, sinon `false`.
+ * La sonde part après montage : le premier rendu, serveur comme client, reste anonyme
+ * (route statique, aucun écart d'hydratation). Un 401, une erreur réseau, un JSON
+ * invalide ou une sonde en cours laissent l'état anonyme, en silence.
+ *
+ * `fetch` direct, ni `apiClient` ni `authService` : importer `apiClient` sur ce document
+ * sans providers armerait le minuteur de rafraîchissement de 6 h (dont un 401 sur
+ * `/auth/refresh` redirige vers la connexion), le store réseau et le poids d'axios,
+ * react-hot-toast et Zod. Aucun intercepteur ici, donc aucun toast ni redirection.
+ * `authService.getUserProfile` importe `apiClient` : même raison.
+ *
+ * Un jeton d'accès expiré avec un rafraîchissement encore valide donne VOLONTAIREMENT
+ * l'état anonyme : la sonde ne rafraîchit rien, le lien reste « Retour à l'accueil ».
+ */
+function sessionProbeUrl(): string {
+  // Même composition que la `baseURL` d'axios (`apiClient`) : slashs finaux retirés.
+  const base = process.env.NEXT_PUBLIC_API_URL
+  return base ? `${base.replace(/\/+$/, '')}/auth/me` : '/auth/me'
+}
+
+function useSessionProbe(): boolean {
+  const [signedIn, setSignedIn] = useState(false)
+
+  useEffect(() => {
+    const controller = new AbortController()
+    fetch(sessionProbeUrl(), { credentials: 'include', signal: controller.signal })
+      .then(async (res) => {
+        if (!res.ok) {
+          // Corps non lu = requête jamais terminée pour le navigateur (`networkidle` bloqué).
+          await res.body?.cancel()
+          return
+        }
+        const user: unknown = await res.json()
+        const id = (user as { id?: unknown } | null)?.id
+        if (typeof id === 'string' && id !== '') setSignedIn(true)
+      })
+      .catch(() => {})
+    return () => controller.abort()
+  }, [])
+
+  return signedIn
+}
+
 export default function GlobalNotFoundScreen() {
   // #891 — locale lue dans l'URL une fois hydraté (prérendu : `DEFAULT_LOCALE`).
   const locale: Locale = useHydrated() ? resolveLocale() : DEFAULT_LOCALE
 
   const m = MESSAGES[locale]
+  const signedIn = useSessionProbe()
 
   return (
     <html
@@ -158,13 +209,14 @@ export default function GlobalNotFoundScreen() {
           actions={
             // `<a>` et non `<Link>` : ce document remplace le layout racine, une
             // navigation client depuis ici repartirait d'un arbre sans providers.
-            // Cible = racine de locale (ADR-006), préfixée (`localePrefix: 'always'`).
+            // Cible = racine de locale (ADR-006) pour une personne anonyme, tableau de bord
+            // une fois la session confirmée ; toujours préfixée (`localePrefix: 'always'`).
             <a
-              href={`/${locale}`}
+              href={signedIn ? `/${locale}/dashboard` : `/${locale}`}
               className={stateActionPrimary}
               data-testid="global-not-found-home-link"
             >
-              {m.backHome}
+              {signedIn ? m.backToToday : m.backHome}
             </a>
           }
         />

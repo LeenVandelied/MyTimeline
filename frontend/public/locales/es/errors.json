@@ -22,7 +22,8 @@
     "title": "Esta página no figura en el almanaque.",
     "description": "La página que buscas ha caducado, se ha mudado o nunca existió. Vuelve al inicio: siempre es una apuesta segura.",
     "week": "Semana {week}",
-    "backHome": "Volver al inicio"
+    "backHome": "Volver al inicio",
+    "backToToday": "Volver a hoy"
   },
   "forbidden": {
     "title": "Acceso denegado",

@@ -22,7 +22,8 @@
     "title": "Cette page n'a pas de date dans l'almanach.",
     "description": "La page que vous cherchez a expiré, déménagé, ou n'a jamais existé. Revenez à l'accueil — c'est toujours une valeur sûre.",
     "week": "Semaine {week}",
-    "backHome": "Retour à l'accueil"
+    "backHome": "Retour à l'accueil",
+    "backToToday": "Revenir à aujourd'hui"
   },
   "forbidden": {
     "title": "Accès refusé",

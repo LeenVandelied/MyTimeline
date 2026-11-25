@@ -1,4 +1,6 @@
-import { render, screen } from '@testing-library/react'
+import { act, render, screen, waitFor } from '@testing-library/react'
+import { AxiosError, type InternalAxiosRequestConfig } from 'axios'
+import { toast } from 'react-hot-toast'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -10,6 +12,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 vi.mock('../src/styles/globals.css', () => ({}))
 
 import GlobalNotFound, { metadata } from './global-not-found'
+import apiClient from '../src/services/apiClient'
 import deErrors from '../public/locales/de/errors.json'
 import enErrors from '../public/locales/en/errors.json'
 import esErrors from '../public/locales/es/errors.json'
@@ -148,5 +151,170 @@ describe('GlobalNotFound — metadata', () => {
 
   it('exporte la description du layout racine', () => {
     expect(metadata.description).toBe('Application de gestion de temps et événements')
+  })
+})
+
+/**
+ * #828 — « Revenir à aujourd'hui » pour une personne connectée.
+ *
+ * L'écran n'a ni provider ni `AuthContext` : une sonde `GET /api/auth/me` part après
+ * montage. Le premier rendu reste ANONYME (serveur comme client), la bascule n'a lieu
+ * que si la sonde confirme une session. Ces tests simulent la réponse au niveau du
+ * RÉSEAU (`fetch` global ET adaptateur axios de `apiClient`) pour ne pas dépendre du
+ * client HTTP que le composant choisira. Seule la requête `/auth/me` est interceptée.
+ */
+type Probe = 'authenticated' | 'unauthenticated' | 'network-error'
+
+const SIGNED_IN_USER = {
+  id: '018f3a2b-0000-7000-8000-000000000001',
+  name: 'Alice Liddell',
+  username: 'alice',
+  email: 'alice@example.com',
+  role: 'ROLE_USER',
+  avatarUrl: null,
+  themePreference: null,
+}
+
+const BACK_TO_TODAY_FR = "Revenir à aujourd'hui"
+const BACK_HOME_FR = "Retour à l'accueil"
+
+const isProbeUrl = (url: string): boolean => /\/auth\/me(\?.*)?$/.test(url)
+
+describe('GlobalNotFound — sonde de session (#828)', () => {
+  let probeCalls: number
+  let originalAdapter: typeof apiClient.defaults.adapter
+  let toastErrorSpy: ReturnType<typeof vi.spyOn>
+
+  function simulateProbe(outcome: Probe): void {
+    probeCalls = 0
+
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (input: RequestInfo | URL) => {
+        const url =
+          typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
+        if (!isProbeUrl(url)) return new Response('{}', { status: 404 })
+        probeCalls += 1
+        if (outcome === 'network-error') throw new TypeError('Failed to fetch')
+        if (outcome === 'unauthenticated') return new Response('{}', { status: 401 })
+        return new Response(JSON.stringify(SIGNED_IN_USER), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        })
+      }),
+    )
+
+    apiClient.defaults.adapter = async (config: InternalAxiosRequestConfig) => {
+      const url = `${config.baseURL ?? ''}${config.url ?? ''}`
+      if (!isProbeUrl(url)) throw new AxiosError('not found', 'ERR_BAD_REQUEST', config)
+      probeCalls += 1
+      if (outcome === 'network-error') throw new AxiosError('Network Error', 'ERR_NETWORK', config)
+      const response = {
+        data: outcome === 'authenticated' ? SIGNED_IN_USER : {},
+        status: outcome === 'authenticated' ? 200 : 401,
+        statusText: outcome === 'authenticated' ? 'OK' : 'Unauthorized',
+        headers: {},
+        config,
+      }
+      if (outcome === 'unauthenticated') {
+        throw new AxiosError('Unauthorized', 'ERR_BAD_REQUEST', config, null, response)
+      }
+      return response
+    }
+  }
+
+  /** Attend que la sonde soit partie, puis laisse sa réponse se résoudre. */
+  async function settleProbe(): Promise<void> {
+    await waitFor(() => expect(probeCalls).toBeGreaterThan(0))
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    })
+  }
+
+  beforeEach(() => {
+    originalAdapter = apiClient.defaults.adapter
+    toastErrorSpy = vi.spyOn(toast, 'error').mockImplementation(() => '')
+  })
+
+  afterEach(() => {
+    apiClient.defaults.adapter = originalAdapter
+    vi.unstubAllGlobals()
+    toastErrorSpy.mockRestore()
+  })
+
+  it('switches to the dashboard link and back-to-today label once the session probe confirms a signed-in user', async () => {
+    simulateProbe('authenticated')
+    window.history.pushState({}, '', '/fr/nope')
+    render(<GlobalNotFound />)
+
+    const link = screen.getByTestId('global-not-found-home-link')
+    await waitFor(() => expect(link).toHaveTextContent(BACK_TO_TODAY_FR))
+    expect(link).toHaveAttribute('href', '/fr/dashboard')
+    expect(link.tagName).toBe('A')
+  })
+
+  it('keeps the home link and back-to-home label when the session probe answers unauthenticated', async () => {
+    simulateProbe('unauthenticated')
+    window.history.pushState({}, '', '/fr/nope')
+    render(<GlobalNotFound />)
+
+    await settleProbe()
+
+    const link = screen.getByTestId('global-not-found-home-link')
+    expect(link).toHaveTextContent(BACK_HOME_FR)
+    expect(link).toHaveAttribute('href', '/fr')
+  })
+
+  it('server markup always renders the anonymous label and link regardless of session', () => {
+    // Session confirmée côté réseau : le rendu serveur ne doit PAS en tenir compte.
+    simulateProbe('authenticated')
+    window.history.pushState({}, '', '/fr/nope')
+
+    const html = renderToStaticMarkup(<GlobalNotFound />)
+
+    expect(html).toContain('href="/fr"')
+    expect(html).toMatch(/Retour à l(&#x27;|')accueil/)
+    expect(html).not.toContain('/dashboard')
+    expect(html).not.toContain('Revenir')
+    expect(probeCalls).toBe(0)
+  })
+
+  // Le libellé connecté est INLINÉ (aucun provider next-intl) : ce test échoue dès
+  // qu'il diverge de `errors.json` → `notFound.backToToday`.
+  it.each([
+    ['fr', frErrors.notFound],
+    ['en', enErrors.notFound],
+    ['es', esErrors.notFound],
+    ['de', deErrors.notFound],
+  ])(
+    '%s : connected label and dashboard href match the translation file for each of the 4 locales',
+    async (locale, messages) => {
+      const expected = (messages as Record<string, string>).backToToday
+      expect(expected, `errors.json (${locale}) → notFound.backToToday`).toEqual(expect.any(String))
+
+      simulateProbe('authenticated')
+      window.history.pushState({}, '', `/${locale}/nope`)
+      render(<GlobalNotFound />)
+
+      const link = screen.getByTestId('global-not-found-home-link')
+      await waitFor(() => expect(link.textContent).toBe(expected))
+      expect(link).toHaveAttribute('href', `/${locale}/dashboard`)
+    },
+  )
+
+  it('stays on the anonymous link when the session probe fails with a network error', async () => {
+    simulateProbe('network-error')
+    window.history.pushState({}, '', '/fr/nope')
+    render(<GlobalNotFound />)
+
+    await settleProbe()
+
+    const link = screen.getByTestId('global-not-found-home-link')
+    expect(link).toHaveTextContent(BACK_HOME_FR)
+    expect(link).toHaveAttribute('href', '/fr')
+    // Ni message d'erreur, ni redirection.
+    expect(toastErrorSpy).not.toHaveBeenCalled()
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    expect(window.location.pathname).toBe('/fr/nope')
   })
 })
