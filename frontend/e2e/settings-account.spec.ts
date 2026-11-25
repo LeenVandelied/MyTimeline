@@ -211,7 +211,8 @@ test.describe('Réglages — Compte : export asynchrone (#270)', () => {
     await download.click()
     const sent = new URL((await request).url())
     expect(`${sent.pathname}${sent.search}`).toBe(DOWNLOAD_URL)
-    expect(seen.downloads).toEqual([DOWNLOAD_URL])
+    // waitForRequest se résout avant le gestionnaire de route : on attend que le faux serveur ait enregistré la requête.
+    await expect.poll(() => seen.downloads).toEqual([DOWNLOAD_URL])
   })
 
   test('lien expiré : relancer ramène à l\u2019étape de confirmation', async ({ page }) => {
