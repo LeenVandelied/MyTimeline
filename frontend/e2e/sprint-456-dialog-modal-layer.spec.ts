@@ -107,9 +107,21 @@ for (const scheme of SCHEMES) {
 
       const viewport = page.viewportSize()
       if (viewport == null) throw new Error('viewport inconnu')
+      // Grille de points sur toute la page, construite avant la première capture.
+      const COLS = 9
+      const ROWS = 7
+      const grid: Point[] = []
+      for (let i = 0; i < COLS; i += 1) {
+        for (let j = 0; j < ROWS; j += 1) {
+          grid.push({
+            x: Math.round(((i + 0.5) * viewport.width) / COLS),
+            y: Math.round(((j + 0.5) * viewport.height) / ROWS),
+          })
+        }
+      }
       await page.mouse.move(0, 0)
       await settleForMeasurement(page)
-      const before = await readViewport(page)
+      const before = await readPixels(page, grid)
 
       await page.getByTestId(`categories-delete-${cat.id}`).click()
       const dialog = page.getByRole('dialog')
@@ -118,36 +130,34 @@ for (const scheme of SCHEMES) {
       await settleForMeasurement(page)
       const box = await dialog.boundingBox()
       if (box == null) throw new Error('boundingBox() nulle sur la fenêtre')
-      const after = await readViewport(page)
+      const innerPoint: Point = {
+        x: Math.round(box.x + box.width / 2),
+        y: Math.round(box.y + box.height - 6),
+      }
+      const [inner, ...afterGrid] = await readPixels(page, [innerPoint, ...grid])
 
-      // Grille de points sur toute la page, hors de la boîte de la fenêtre. Fond
-      // `bg-black/80` : chaque pixel doit valoir 20 % de celui d'avant (±8), quel que
-      // soit l'élément de page dessous. Un élément qui passe par-dessus reste à sa
-      // couleur d'origine et écarte le point.
-      const COLS = 9
-      const ROWS = 7
+      // Points de la grille hors de la boîte de la fenêtre. Fond `bg-black/80` : chaque
+      // pixel doit valoir 20 % de celui d'avant (±8), quel que soit l'élément de page
+      // dessous. Un élément qui passe par-dessus reste à sa couleur d'origine et écarte
+      // le point.
       const margin = 6
       const offenders: string[] = []
       let checked = 0
-      for (let i = 0; i < COLS; i += 1) {
-        for (let j = 0; j < ROWS; j += 1) {
-          const x = Math.round(((i + 0.5) * viewport.width) / COLS)
-          const y = Math.round(((j + 0.5) * viewport.height) / ROWS)
-          const inside =
-            x >= box.x - margin &&
-            x <= box.x + box.width + margin &&
-            y >= box.y - margin &&
-            y <= box.y + box.height + margin
-          if (inside) continue
-          checked += 1
-          const b = before(x, y)
-          const a = after(x, y)
-          const expected = { r: b.r * 0.2, g: b.g * 0.2, b: b.b * 0.2 }
-          if (maxChannelGap(a, expected) > 8) {
-            offenders.push(
-              `(${x},${y}) avant rgb(${b.r},${b.g},${b.b}) après rgb(${a.r},${a.g},${a.b})`,
-            )
-          }
+      for (const [k, { x, y }] of grid.entries()) {
+        const inside =
+          x >= box.x - margin &&
+          x <= box.x + box.width + margin &&
+          y >= box.y - margin &&
+          y <= box.y + box.height + margin
+        if (inside) continue
+        checked += 1
+        const b = before[k]
+        const a = afterGrid[k]
+        const expected = { r: b.r * 0.2, g: b.g * 0.2, b: b.b * 0.2 }
+        if (maxChannelGap(a, expected) > 8) {
+          offenders.push(
+            `(${x},${y}) avant rgb(${b.r},${b.g},${b.b}) après rgb(${a.r},${a.g},${a.b})`,
+          )
         }
       }
       expect(checked, 'trop peu de points hors fenêtre pour conclure').toBeGreaterThanOrEqual(30)
@@ -159,7 +169,6 @@ for (const scheme of SCHEMES) {
 
       // La boîte elle-même est peinte à son fond déclaré (rien ne la recouvre).
       const dialogBg = await declaredBackground(dialog)
-      const inner = after(Math.round(box.x + box.width / 2), Math.round(box.y + box.height - 6))
       expect(
         maxChannelGap(inner, dialogBg),
         `le bas de la fenêtre est peint rgb(${inner.r},${inner.g},${inner.b}), fond attendu ` +
@@ -169,28 +178,35 @@ for (const scheme of SCHEMES) {
   })
 }
 
-/** Capture du viewport entier, rendue sous forme de lecteur de pixel (coordonnées CSS). */
-async function readViewport(page: Page): Promise<(x: number, y: number) => Rgb> {
-  const png = (await page.screenshot()).toString('base64')
-  const decoded = await page.evaluate(async (b64: string) => {
-    const bytes = Uint8Array.from(atob(b64), (ch) => ch.charCodeAt(0))
-    const bitmap = await createImageBitmap(new Blob([bytes], { type: 'image/png' }))
-    const canvas = document.createElement('canvas')
-    canvas.width = bitmap.width
-    canvas.height = bitmap.height
-    const ctx = canvas.getContext('2d', { willReadFrequently: true })
-    if (ctx == null) throw new Error('canvas 2d indisponible')
-    ctx.drawImage(bitmap, 0, 0)
-    const { data } = ctx.getImageData(0, 0, bitmap.width, bitmap.height)
-    return { width: bitmap.width, height: bitmap.height, data: Array.from(data) }
-  }, png)
+type Point = { x: number; y: number }
+
+/**
+ * Capture le viewport et ne renvoie que les pixels des points demandés (coordonnées CSS).
+ * Le décodage et l'échantillonnage se font dans le navigateur : renvoyer toute l'image
+ * (millions d'entiers en JSON) faisait dépasser le budget du test sur la CI.
+ */
+async function readPixels(page: Page, points: Point[]): Promise<Rgb[]> {
   const viewport = page.viewportSize()
   if (viewport == null) throw new Error('viewport inconnu')
-  const scale = decoded.width / viewport.width
-  return (x, y) => {
-    const px = Math.min(decoded.width - 1, Math.round(x * scale))
-    const py = Math.min(decoded.height - 1, Math.round(y * scale))
-    const i = (py * decoded.width + px) * 4
-    return { r: decoded.data[i], g: decoded.data[i + 1], b: decoded.data[i + 2] }
-  }
+  const png = (await page.screenshot()).toString('base64')
+  return page.evaluate(
+    async ({ b64, pts, viewportWidth }) => {
+      const bytes = Uint8Array.from(atob(b64), (ch) => ch.charCodeAt(0))
+      const bitmap = await createImageBitmap(new Blob([bytes], { type: 'image/png' }))
+      const canvas = document.createElement('canvas')
+      canvas.width = bitmap.width
+      canvas.height = bitmap.height
+      const ctx = canvas.getContext('2d', { willReadFrequently: true })
+      if (ctx == null) throw new Error('canvas 2d indisponible')
+      ctx.drawImage(bitmap, 0, 0)
+      const scale = bitmap.width / viewportWidth
+      return pts.map(({ x, y }) => {
+        const px = Math.min(bitmap.width - 1, Math.round(x * scale))
+        const py = Math.min(bitmap.height - 1, Math.round(y * scale))
+        const [r, g, b] = ctx.getImageData(px, py, 1, 1).data
+        return { r, g, b }
+      })
+    },
+    { b64: png, pts: points, viewportWidth: viewport.width },
+  )
 }
