@@ -200,6 +200,9 @@
     "delete": "Supprimer",
     "edit": "Modifier",
     "openEdit": "Modifier {name}",
+    "assignLabel": "Catégorie de {name}",
+    "assignError": "Impossible de changer la catégorie du produit. Réessaie.",
+    "productsError": "Impossible de charger les produits : les puces sont masquées.",
     "suggestionConflict": "La catégorie « {name} » existe déjà.",
     "suggestionError": "Impossible de créer « {name} ». Réessaie.",
     "suggestions": {

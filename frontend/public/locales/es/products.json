@@ -200,6 +200,9 @@
     "delete": "Eliminar",
     "edit": "Editar",
     "openEdit": "Editar {name}",
+    "assignLabel": "Categoría de {name}",
+    "assignError": "No se pudo cambiar la categoría del producto. Inténtalo de nuevo.",
+    "productsError": "No se pudieron cargar los productos: las etiquetas están ocultas.",
     "suggestionConflict": "La categoría «{name}» ya existe.",
     "suggestionError": "No se pudo crear «{name}». Inténtalo de nuevo.",
     "suggestions": {

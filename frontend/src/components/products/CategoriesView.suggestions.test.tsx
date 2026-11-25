@@ -26,6 +26,14 @@ vi.mock('@/hooks/useDeleteCategory', () => ({
 vi.mock('@/hooks/useCreateCategory', () => ({
   useCreateCategory: () => ({ mutate: createMutate, mutateAsync: createMutate, isPending: false }),
 }))
+// #604 — la vue lit la liste produits et affecte par mutation : hors sujet ici.
+vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: 'user-1' } }) }))
+vi.mock('@/hooks/useProductsWithEvents', () => ({
+  useProductsWithEvents: () => ({ data: [], isLoading: false, isError: false }),
+}))
+vi.mock('@/hooks/useAssignProductCategory', () => ({
+  useAssignProductCategory: () => ({ mutate: vi.fn(), isPending: false, isError: false }),
+}))
 vi.mock('@/components/categories/CategoryDrawer', () => ({ CategoryDrawer: () => null }))
 vi.mock('@/components/shared/DeleteConfirmDialog', () => ({ DeleteConfirmDialog: () => null }))
 

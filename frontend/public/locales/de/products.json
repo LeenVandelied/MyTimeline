@@ -200,6 +200,9 @@
     "delete": "Löschen",
     "edit": "Bearbeiten",
     "openEdit": "{name} bearbeiten",
+    "assignLabel": "Kategorie von {name}",
+    "assignError": "Die Kategorie des Produkts konnte nicht geändert werden. Versuche es erneut.",
+    "productsError": "Die Produkte konnten nicht geladen werden: Die Chips sind ausgeblendet.",
     "suggestionConflict": "Die Kategorie „{name}“ gibt es bereits.",
     "suggestionError": "„{name}“ konnte nicht erstellt werden. Versuche es erneut.",
     "suggestions": {

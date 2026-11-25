@@ -328,3 +328,110 @@ test.describe('#218 Catégories — CRUD via CategoryDrawer', () => {
     await expect(page.getByTestId(`categories-count-${category.id}`)).toHaveCount(0)
   })
 })
+
+/**
+ * #604 — produits en puces sur les cartes catégorie et affectation en direct.
+ *
+ * Contrat de sélecteurs (posé par les tests unitaires de `CategoriesView.test.tsx`) :
+ *   - puce `categories-chip-<productId>` DANS la carte `categories-card-<categoryId>` ;
+ *   - `<select>` natif `categories-assign-<productId>`, options `value=<categoryId>`.
+ * Données semées par `seedCategory` / `seedProduct` : purgées en fin de test (#463).
+ */
+test.describe('#604 Catégories — produits en puces et affectation', () => {
+  // T5 — l'affectation se voit sans rechargement, puis persiste après rechargement.
+  test('reassigning a product moves its chip between category cards without reload', async ({
+    page,
+  }) => {
+    const userId = await getUserId(page)
+    const source = await seedCategory(page, unique('Cat Source'), '#E5484D')
+    const target = await seedCategory(page, unique('Cat Target'), '#46A758')
+    const product = await seedProduct(page, {
+      userId,
+      name: unique('Prod Move'),
+      categoryId: source.id,
+    })
+
+    await openCategoriesTab(page)
+    const sourceCard = page.getByTestId(`categories-card-${source.id}`)
+    const targetCard = page.getByTestId(`categories-card-${target.id}`)
+    const chip = (card: typeof sourceCard) => card.getByTestId(`categories-chip-${product.id}`)
+    await expect(chip(sourceCard)).toBeVisible()
+    await expect(chip(targetCard)).toHaveCount(0)
+
+    // Repère posé sur le document : il disparaît si la page est rechargée.
+    await page.evaluate(() => {
+      ;(window as unknown as { __noReload604: boolean }).__noReload604 = true
+    })
+
+    await page.getByTestId(`categories-assign-${product.id}`).selectOption(target.id)
+
+    await expect(chip(targetCard)).toBeVisible()
+    await expect(chip(sourceCard)).toHaveCount(0)
+    await expect(page.getByTestId(`categories-count-${target.id}`)).toContainText('1')
+    await expect(page.getByTestId(`categories-count-${source.id}`)).toHaveText('aucun produit')
+    expect(
+      await page.evaluate(() => (window as unknown as { __noReload604?: boolean }).__noReload604),
+      'la page ne doit pas avoir été rechargée',
+    ).toBe(true)
+
+    // Persistance : après rechargement, le produit est toujours dans sa nouvelle catégorie.
+    await openCategoriesTab(page)
+    await expect(
+      page.getByTestId(`categories-card-${target.id}`).getByTestId(`categories-chip-${product.id}`),
+    ).toBeVisible()
+    await expect(
+      page.getByTestId(`categories-card-${source.id}`).getByTestId(`categories-chip-${product.id}`),
+    ).toHaveCount(0)
+  })
+
+  // T8 — 375 px : pas de défilement horizontal, le choix de catégorie est atteignable, >= 44 px.
+  test('mobile viewport keeps chips and assignment select usable', async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 812 })
+    const userId = await getUserId(page)
+    const source = await seedCategory(page, unique('Cat Mobile'), '#8E4EC6')
+    const target = await seedCategory(page, unique('Cat Mobile Bin'), '#46A758')
+    const products = []
+    for (const label of ['Alpha', 'Bravo', 'Charlie', 'Delta']) {
+      products.push(
+        await seedProduct(page, {
+          userId,
+          name: unique(`Prod mobile ${label} avec un nom assez long`),
+          categoryId: source.id,
+        }),
+      )
+    }
+
+    await openCategoriesTab(page)
+    const card = page.getByTestId(`categories-card-${source.id}`)
+    for (const p of products)
+      await expect(card.getByTestId(`categories-chip-${p.id}`)).toBeVisible()
+
+    const noHorizontalScroll = await page.evaluate(
+      () => document.documentElement.scrollWidth <= window.innerWidth,
+    )
+    expect(noHorizontalScroll, 'la page ne doit pas défiler horizontalement').toBe(true)
+
+    const select = page.getByTestId(`categories-assign-${products[0].id}`)
+    await select.scrollIntoViewIfNeeded()
+    await expect(select).toBeVisible()
+    const box = await select.boundingBox()
+    expect(box, 'le choix de catégorie doit avoir une boîte rendue').not.toBeNull()
+    expect(box!.height, 'cible tactile >= 44 px').toBeGreaterThanOrEqual(44 - 0.01)
+    expect(box!.x).toBeGreaterThanOrEqual(0)
+    expect(box!.x + box!.width).toBeLessThanOrEqual(375)
+
+    // Atteignable : rien ne le recouvre en son centre, et il répond à une sélection.
+    const topmostIsSelect = await select.evaluate((el) => {
+      const r = el.getBoundingClientRect()
+      const hit = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2)
+      return hit === el || el.contains(hit)
+    })
+    expect(topmostIsSelect, 'le choix de catégorie ne doit pas être recouvert').toBe(true)
+    await select.selectOption(target.id)
+    await expect(
+      page
+        .getByTestId(`categories-card-${target.id}`)
+        .getByTestId(`categories-chip-${products[0].id}`),
+    ).toBeVisible()
+  })
+})

@@ -200,6 +200,9 @@
     "delete": "Delete",
     "edit": "Edit",
     "openEdit": "Edit {name}",
+    "assignLabel": "Category of {name}",
+    "assignError": "Could not change the product category. Try again.",
+    "productsError": "Could not load the products: the chips are hidden.",
     "suggestionConflict": "A category named “{name}” already exists.",
     "suggestionError": "Could not create “{name}”. Try again.",
     "suggestions": {
