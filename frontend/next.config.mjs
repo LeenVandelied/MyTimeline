@@ -22,6 +22,23 @@ const withNextIntl = createNextIntlPlugin('./i18n.ts')
  */
 const apiProxyTarget = process.env.E2E_API_PROXY_TARGET
 
+/**
+ * #558 / DEC-S80-002 — éviction du serveur de dev desserrée pour la recette E2E LOCALE.
+ *
+ * `next dev` évince une page compilée après 60 s d'inactivité ou au-delà de 5 pages
+ * gardées, puis la recompile à la demande : la fiche produit, visitée une fois puis
+ * laissée de côté pendant la suite, repartait en compilation et dépassait le budget du
+ * test de navigation. On garde la page compilée plus longtemps, au lieu de relever un
+ * délai de test. Le drapeau n'est posé que par la branche locale du `webServer` de
+ * `playwright.config.ts` : sans lui (ou vide, ou à `0`), la config reste identique.
+ * Le build de production ne lit pas `onDemandEntries`.
+ *
+ * LIMITE. `next dev` de Next 16 tourne par défaut sous Turbopack, qui ne lit pas
+ * `onDemandEntries` (seul le rechargeur webpack le lit). Le desserrage n'agit donc qu'avec
+ * `next dev --webpack` : la correction repose sur le préchauffage (`e2e/support/dev-warmup.ts`).
+ */
+const relaxDevCache = /^(1|true|yes|on)$/i.test(process.env.E2E_LOCAL_DEV_CACHE ?? '')
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // #37 — build autonome pour l'image Docker : `.next/standalone` embarque un
@@ -61,6 +78,14 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: false,
   },
+  ...(relaxDevCache
+    ? {
+        onDemandEntries: {
+          maxInactiveAge: 60 * 60 * 1000,
+          pagesBufferLength: 50,
+        },
+      }
+    : {}),
   ...(apiProxyTarget
     ? {
         async rewrites() {

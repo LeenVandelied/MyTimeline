@@ -363,7 +363,8 @@ export default defineConfig({
   // budget de test, et le local perdrait le signal que la CI, elle, garde. La
   // parade propre — précharger les routes, ou desserrer l'éviction de `next dev`
   // pour la recette e2e — touche la configuration du serveur, pas ce fichier, et
-  // n'a PAS été faite ici (hors périmètre #472).
+  // n'a PAS été faite par #472, elle l'est par #558 (DEC-S80-002) : éviction desserrée
+  // ci-dessous, préchauffage de la fiche produit dans `e2e/support/dev-warmup.ts`.
   //
   // webServer demarre uniquement si on n'utilise pas un baseURL externe.
   // #427 — `assertWebServerEnv()` s'execute AVANT la construction de l'objet :
@@ -382,5 +383,11 @@ export default defineConfig({
         url: baseURL,
         reuseExistingServer: !process.env.CI,
         timeout: 120_000,
+        // #558 / DEC-S80-002 — desserre l'éviction de `next dev` (cf. next.config.mjs) :
+        // posé ICI seulement, branche locale, jamais en CI ni dans les images. Playwright
+        // fusionne cet `env` à `process.env` : les variables exigées plus haut restent celles du lanceur.
+        // Limites : un serveur déjà ouvert et réutilisé (`reuseExistingServer`) ne reçoit pas ce
+        // drapeau, et `PLAYWRIGHT_BASE_URL` vers un serveur local désactive le préchauffage.
+        env: { E2E_LOCAL_DEV_CACHE: '1' },
       }),
 })
