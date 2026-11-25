@@ -1,1 +1,56 @@
-{"id": "A6", "verdict": "undecidable", "evidence": [], "statement": "Les douze fichiers lus (vue et hôte de la frise, formulaires d'événement, garde des chemins d'authentification, fiches et listes produit, drawer de catégorie, hook mobile) ne contiennent aucun code ni test portant sur les rôles, la préférence de thème ou les états d'export ou de session, donc ils ne tranchent pas la question.", "proposed_decision": "revendiqués par le transversal state-machine via path_rules, sans retirer leur propriétaire"}
+{
+  "id": "A6",
+  "verdict": "confirmed",
+  "evidence": [
+    {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/components/timeline/TimelineView.tsx",
+      "line_start": 662,
+      "line_end": 662,
+      "quote": "frise incrustée dans un autre écran (dashboard,"
+    },
+    {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/components/timeline/TimelineView.test.tsx",
+      "line_start": 1224,
+      "line_end": 1224,
+      "quote": "embedded (dashboard, fiche produit) : AUCUN des deux boutons, même sous le shell"
+    },
+    {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/components/timeline/TimelineView.tsx",
+      "line_start": 1362,
+      "line_end": 1362,
+      "quote": "`useDashboardData` n'a pas encore répondu."
+    },
+    {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/components/products/ProductDetailView.tsx",
+      "line_start": 35,
+      "line_end": 35,
+      "quote": "composant central du dashboard, risque de régression"
+    },
+    {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/components/products/ProductDetailView.tsx",
+      "line_start": 235,
+      "line_end": 235,
+      "quote": "même dérivation que `useDashboardData`."
+    },
+    {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/components/products/ProductsListView.tsx",
+      "line_start": 57,
+      "line_end": 57,
+      "quote": "du détail produit et du tableau de bord)."
+    },
+    {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/components/layout/AppShell.tsx",
+      "line_start": 37,
+      "line_end": 37,
+      "quote": "Segments enveloppés par le shell (sous `(app)/`) : dashboard, timeline,"
+    },
+    {
+      "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/components/layout/AppShell.tsx",
+      "line_start": 306,
+      "line_end": 306,
+      "quote": "href={`/${locale}/settings`}"
+    }
+  ],
+  "statement": "La frise que le tableau de bord embarque en layout embedded reçoit à la fois des événements et des produits en lanes, et l'AppShell enveloppe les segments dashboard, timeline, produits et réglages.",
+  "proposed_decision": "état courant"
+}

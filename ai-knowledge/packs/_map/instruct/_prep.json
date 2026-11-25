@@ -1,101 +1,41 @@
 [
  {
-  "id": "A1",
-  "seeds": [
-   "CategoryEntity",
-   "EventEntity",
-   "ExportJobEntity",
-   "PasswordResetTokenEntity",
-   "ProductEntity",
-   "SessionEntity",
-   "UserEntity"
-  ],
-  "confidence": "medium",
-  "decision": "un seul pack domain timeline, pivot UserEntity",
-  "rule": "R2 imports 37/37 (CategoryEntity), 16/16 (EventEntity), 9/10 (ProductEntity), 8/",
-  "files": 12,
-  "tests": 0,
-  "evidence_unresolved": [],
-  "status": "prepared"
- },
- {
-  "id": "A2",
-  "seeds": [
-   "ProductEntity"
-  ],
-  "confidence": "medium",
-  "decision": "fondu dans timeline",
-  "rule": "R7 pack sous pack_min_kb=60, liens 9/10 vers UserEntity",
-  "files": 3,
-  "tests": 8,
-  "evidence_unresolved": [],
-  "status": "prepared"
- },
- {
   "id": "A3",
   "seeds": [
-   "ExportJobEntity"
+   "PasswordResetToken"
   ],
-  "confidence": "medium",
-  "decision": "fondu dans timeline",
-  "rule": "R7 pack sous pack_min_kb=60, liens 2/2 vers UserEntity",
-  "files": 1,
-  "tests": 0,
+  "confidence": "low",
+  "decision": "event",
+  "rule": "R11 User est un hub, aucun groupe n'y est fondu ; la fusion du script dans Event",
+  "files": 10,
+  "tests": 6,
   "evidence_unresolved": [],
   "status": "prepared"
  },
  {
-  "id": "A4",
+  "id": "A10",
   "seeds": [
-   "EventEntity",
-   "CategoryEntity",
-   "ProductEntity"
+   "Session"
   ],
-  "confidence": "low",
-  "decision": "les composants nommés timeline, event, product, category, auth, theme ou conflict vont à timeline par alias, le reste (ui, layout, styles, lib générique) reste au socle frontend",
-  "rule": "R3 aucun import mesuré (arêtes de groupe vides), décision par noms de fichiers",
-  "files": 6,
+  "confidence": "medium",
+  "decision": "session",
+  "rule": "R7 le script fond Session dans Event (4 liens sur 4), mais Session a ses control",
+  "files": 12,
   "tests": 8,
   "evidence_unresolved": [],
   "status": "prepared"
  },
  {
-  "id": "A5",
+  "id": "A11",
   "seeds": [
-   "PasswordResetTokenEntity",
-   "ExportJobEntity"
+   "ExportJob"
   ],
-  "confidence": "low",
-  "decision": "oui, pack transversal batch",
-  "rule": "R5 motif mesuré (14 fichiers à 3 occurrences ou plus)",
-  "files": 3,
-  "tests": 0,
-  "evidence_unresolved": [],
-  "status": "prepared"
- },
- {
-  "id": "A6",
-  "seeds": [
-   "ExportJobEntity",
-   "UserEntity"
-  ],
-  "confidence": "low",
-  "decision": "revendiqués par le transversal state-machine via path_rules, sans retirer leur propriétaire",
-  "rule": "R10 recouvrement par path_rules, pas de transfert",
+  "confidence": "medium",
+  "decision": "export",
+  "rule": "R7 le script fond ExportJob dans Event (5 liens sur 5), mais ExportJob a son Exp",
   "files": 12,
-  "tests": 0,
+  "tests": 1,
   "evidence_unresolved": [],
   "status": "prepared"
- },
- {
-  "id": "A7",
-  "seeds": [],
-  "confidence": "low",
-  "decision": "nombre de fichiers du motif ou de la couche tel que donné, 0 ko tant que la taille n'est pas mesurée",
-  "rule": "R10 fichiers techniques possédés par le pack de leur couche, tailles non fournie",
-  "files": 0,
-  "tests": 0,
-  "evidence_unresolved": [],
-  "status": "no_files"
  }
 ]

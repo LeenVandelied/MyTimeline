@@ -1,0 +1,15 @@
+{
+ "id": "A11",
+ "question": "ExportJob (37 fichiers) : fondu dans Event comme le fait le script, ou pack propre ?",
+ "decision": "export",
+ "rule": "R7 le script fond ExportJob dans Event (5 liens sur 5), mais ExportJob a son ExportController sur /api/export et une machine d'états propre ; le pack existait déjà et reste séparé",
+ "confidence": "medium",
+ "seeds": [
+  "ExportJob"
+ ],
+ "evidence": [],
+ "falsified_if": "un ticket sur les événements modifie systématiquement ExportJob, ou ExportJob reste sous pack_min_kb une fois mesuré seul",
+ "status": "open",
+ "opened": "2026-11-20",
+ "touched_by": []
+}

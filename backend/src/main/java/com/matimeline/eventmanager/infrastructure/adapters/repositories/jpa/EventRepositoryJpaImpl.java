@@ -161,6 +161,20 @@ public class EventRepositoryJpaImpl
                 .executeUpdate();
     }
 
+    // #88 : comptage des lignes d'événement (un récurrent = une ligne). Les deux exclusions
+    // d'archivés sont écrites dans la requête (e.archived et e.product.archived), sans dépendre
+    // du @SQLRestriction de ProductEntity.
+    @Override
+    public long countActiveByUserId(UUID userId) {
+        return entityManager
+            .createQuery(
+                "SELECT COUNT(e) FROM EventEntity e WHERE e.product.user.id = :uid AND e.archived = false "
+                + "AND e.product.archived = false",
+                Long.class)
+            .setParameter("uid", userId)
+            .getSingleResult();
+    }
+
     @Override
     public Optional<Event> findEventById(UUID id) {
         Optional<EventEntity> optionalEntity = super.findById(id);

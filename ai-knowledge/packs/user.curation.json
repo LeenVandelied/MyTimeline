@@ -1,0 +1,4088 @@
+{
+ "pack": "user",
+ "schema": 1,
+ "curated_at": "2026-11-20T12:45:00Z",
+ "curator": "curate/1",
+ "base_sha256": "11e5cef4b1de5d0509506bcbd57f241683e97905b17546e5510aca6aa403729a",
+ "pack_sha256_before": "75d2923518b5e3ab269be5ecc1a59eeb1879912dc17249dcd13bb0512835b25d",
+ "pack_sha256_after": "5ce4b95c0d5e635bd38436d91bb7455f4e27767ad0409342721e72fdd7650297",
+ "criteria_sha256": "48e0e20f086c5b11deecfecdc547ba1d6115faee1597a5aaf682f6c699e92423",
+ "models": {
+  "measure": "haiku",
+  "refute": "sonnet"
+ },
+ "base_fingerprint": "d80ca607e97586deb1b527cce148f6b5066bb5389cb65d8abc86c170d9a13ab1",
+ "bytes": {
+  "before": 14979,
+  "after": 14979,
+  "by_section": {
+   "activate": {
+    "before": 380,
+    "after": 380
+   },
+   "lexicon": {
+    "before": 638,
+    "after": 638
+   },
+   "rules": {
+    "before": 1856,
+    "after": 1856
+   },
+   "structure": {
+    "before": 3686,
+    "after": 3686
+   },
+   "surface": {
+    "before": 1936,
+    "after": 1936
+   },
+   "files": {
+    "before": 1884,
+    "after": 1884
+   },
+   "relations": {
+    "before": 375,
+    "after": 375
+   },
+   "tests": {
+    "before": 464,
+    "after": 464
+   },
+   "questions": {
+    "before": 859,
+    "after": 859
+   },
+   "alerts": {
+    "before": 1899,
+    "after": 1899
+   },
+   "coverage": {
+    "before": 619,
+    "after": 619
+   }
+  }
+ },
+ "units": [
+  {
+   "id": "user:lexicon:1",
+   "section": "lexicon",
+   "rank": 1,
+   "text": "| CustomUserDetails | Adaptateur de sécurité qui enveloppe un User du domaine et une liste d'autorités pour Spring Security. | [#0fc2506546087885-1] |",
+   "fact_text": "CustomUserDetails : Adaptateur de sécurité qui enveloppe un User du domaine et une liste d'autorités pour Spring Security",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "user/0fc2506546087885-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/CustomUserDetails.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/CustomUserDetails.java",
+     11,
+     19,
+     "4f80ca562f32b62d8dfe1e266a9f15be99af43b5d56e1209db4e6518e50bec0f"
+    ]
+   ],
+   "code_sha256": "4f80ca562f32b62d8dfe1e266a9f15be99af43b5d56e1209db4e6518e50bec0f",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "CustomUserDetails implémente UserDetails et enveloppe un User et une List<GrantedAuthority> (L11-19).",
+      "CustomUserDetails L11-19 implémente UserDetails et enveloppe un User et une liste de GrantedAuthority.",
+      "CustomUserDetails implémente UserDetails et détient un User et une List<GrantedAuthority> (L11-19)."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 29,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "user:lexicon:2",
+   "section": "lexicon",
+   "rank": 2,
+   "text": "| PasswordResetToken | Modèle de domaine immuable sans dépendance framework, distinct de l'entité PasswordResetTokenEntity mappée sur la table password_reset_tokens. | [#2ed092cfa6c08b1d-1] [#3d8dced783bb55e1-1] |",
+   "fact_text": "PasswordResetToken : Modèle de domaine immuable sans dépendance framework, distinct de l'entité PasswordResetTokenEntity mappée sur la table password_reset_tokens",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "user/2ed092cfa6c08b1d-1",
+    "user/3d8dced783bb55e1-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/domain/models/PasswordResetToken.java",
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/entities/PasswordResetTokenEntity.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/domain/models/PasswordResetToken.java",
+     17,
+     17,
+     "7b6eeda020e1f189c7b47cc52f10302ba11b394c76e0f0b69608e52f961083bc"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/entities/PasswordResetTokenEntity.java",
+     24,
+     48,
+     "eecb96343d44b3bb37323cee3cfc4afc8facc69f3133f720a0c8c11d92d80485"
+    ]
+   ],
+   "code_sha256": "a0f6c917eb7cc3718f5b7e213f4e529a8076820e665d7ae6cd5b914ec0e53082",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "PasswordResetToken a des champs final sans import framework (L17-31), et PasswordResetTokenEntity est mappée sur password_reset_tokens (L24).",
+      "PasswordResetToken (L17-31) a des champs final sans import framework, et l'entité est mappée sur password_reset_tokens (L24).",
+      "PasswordResetToken (L17-75) est immuable (champs final, consume() renvoie une copie) sans import framework ; l'entité est mappée sur password_reset_tokens (L24)."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 30,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "user:lexicon:3",
+   "section": "lexicon",
+   "rank": 3,
+   "text": "| themePreference | Préférence de thème de l'utilisateur, colonne nullable de la table users, convertie par un convertisseur dédié. | [#a7e439b586fee252-2] [#4a8f78da327086e4-1] |",
+   "fact_text": "themePreference : Préférence de thème de l'utilisateur, colonne nullable de la table users, convertie par un convertisseur dédié",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "user/a7e439b586fee252-2",
+    "user/4a8f78da327086e4-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/entities/UserEntity.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/entities/UserEntity.java",
+     42,
+     44,
+     "72211835996690f5693c9df8ef836146281197d7eb238ae03944cce247e9204f"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/entities/UserEntity.java",
+     15,
+     18,
+     "70fab4872355a5e14becdbf0de0ed34fcb83031c65817229e7896e28ba0f7057"
+    ]
+   ],
+   "code_sha256": "d0ce699aa77ac81e2fd984de7b2271c9fd0ff218f575a5f76d898890cc163a04",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "UserEntity L42-44 : colonne theme_preference non marquée nullable=false, avec @Convert(ThemePreferenceConverter) ; table users.",
+      "UserEntity L42-44 : colonne theme_preference nullable par défaut, avec @Convert(ThemePreferenceConverter), dans la table users.",
+      "UserEntity L42-44 : colonne theme_preference sans nullable=false avec @Convert(ThemePreferenceConverter), table users."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 31,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "user:rules:1",
+   "section": "rules",
+   "rank": 1,
+   "text": "- Le login renvoie le même 401 pour un compte inconnu et un mot de passe faux, et le JWT ne passe que par le cookie HttpOnly. [#75b1482fae455a05-1] [#06585e8b4c5db0af-1]",
+   "fact_text": "Le login renvoie le même 401 pour un compte inconnu et un mot de passe faux, et le JWT ne passe que par le cookie HttpOnly",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "user/75b1482fae455a05-1",
+    "user/06585e8b4c5db0af-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java",
+     132,
+     137,
+     "542ccaaec960e98aa7e6d3024bf35cdf946784244ee2c86b227de343408e0f0b"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java",
+     131,
+     131,
+     "d73eb9f86eba23aba18599eba9ddd10d878d43a7ab8b2ca3935835c7678dbe96"
+    ]
+   ],
+   "code_sha256": "ba77b50305e7b4d87b50aa5ae6cce1a1d2c4ed8aa42c75b0870a65ccb422f14e",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": 1.0,
+      "terms": 0.571,
+      "n": {
+       "identifiers": 2,
+       "values": 1,
+       "terms": 7
+      }
+     },
+     "restatement": "AuthController.login renvoie 200 avec le message \"Authentification réussie\" en cas de succès. Sur BadCredentialsException, il renvoie 401 avec le corps plat {\"error\": \"unauthorized\"}, code neutre qui ne distingue pas un identifiant inconnu d'un mot de passe faux.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 2,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 0.857,
+      "n": {
+       "identifiers": 2,
+       "values": 1,
+       "terms": 7
+      }
+     },
+     "job": "user:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_UpdatePreferencesRequest.java:1",
+     "rank_in_lot": 1,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 36,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "user:rules:2",
+   "section": "rules",
+   "rank": 2,
+   "text": "- /api/auth/me renvoie 401 pour un token invalide, un username absent de la base ou un jti révoqué. [#ab8e31d3e5b08ee4-1] [#badc1ab0e710d816-1]",
+   "fact_text": "/api/auth/me renvoie 401 pour un token invalide, un username absent de la base ou un jti révoqué",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "user/ab8e31d3e5b08ee4-1",
+    "user/badc1ab0e710d816-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java",
+     153,
+     166,
+     "4f8ba597c1e4226a177db6d7e931340db6e2590884045c57441d2df36c86c6de"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java",
+     178,
+     182,
+     "6a1f37b52e04c30493d92cb73f8cdb65f38a245f3773b46a65221469925e24b9"
+    ]
+   ],
+   "code_sha256": "a9907c6c013643884a47707c2de9210f36dac22262dea98d71ef5c5a6be91a2e",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": null,
+      "values": 1.0,
+      "terms": 0.375,
+      "n": {
+       "identifiers": 0,
+       "values": 1,
+       "terms": 8
+      }
+     },
+     "restatement": "AuthController.getUserDetails renvoie 401 avec {\"error\": \"unauthorized\"} si le username extrait du token n'existe pas, au lieu d'un 404. Il renvoie aussi 401 si sessionService.isSessionActive(jti) est faux pour le jti du token.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 2,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": null,
+      "values": 1.0,
+      "terms": 0.625,
+      "n": {
+       "identifiers": 0,
+       "values": 1,
+       "terms": 8
+      }
+     },
+     "job": "user:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_UpdatePreferencesRequest.java:1",
+     "rank_in_lot": 2,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 37,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "user:rules:3",
+   "section": "rules",
+   "rank": 3,
+   "text": "- L'IP de session est anonymisée avant persistance et l'expiration vaut COOKIE_MAX_AGE secondes. [#72fdae6a021c1eda-2] [#72fdae6a021c1eda-3]",
+   "fact_text": "L'IP de session est anonymisée avant persistance et l'expiration vaut COOKIE_MAX_AGE secondes",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "user/72fdae6a021c1eda-2",
+    "user/72fdae6a021c1eda-3"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java",
+     394,
+     394,
+     "5c710d6e99f28ac0a959b5de40c199e232af5658492f6f44fab1d1978f30f384"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java",
+     395,
+     395,
+     "814407acbb965440b0a554d6c02fdc035cab402215f4ea68b041cd19b5c4eec0"
+    ]
+   ],
+   "code_sha256": "37bb196fd99f30791023966a83a60a1be6cabad4effe70de43c124076c1c143e",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.333,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 6
+      }
+     },
+     "restatement": "AuthController.registerSession enregistre l'adresse IP via ClientIpAnonymizer.anonymize(request.getRemoteAddr()), et fixe l'expiration à LocalDateTime.now() plus COOKIE_MAX_AGE secondes. Le détail de l'anonymisation n'est pas visible dans l'extrait.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 10,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 6
+      }
+     },
+     "job": "user:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_UpdatePreferencesRequest.java:1",
+     "rank_in_lot": 7,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 38,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "user:rules:4",
+   "section": "rules",
+   "rank": 4,
+   "text": "- StrongPassword impose 8 à 100 caractères avec une majuscule et un chiffre, et laisse null à @NotBlank. [#e2385a30ad2b3acd-1] [#bd040f4c8fa54886-2] [#bd040f4c8fa54886-3]",
+   "fact_text": "StrongPassword impose 8 à 100 caractères avec une majuscule et un chiffre, et laisse null à @NotBlank",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "user/e2385a30ad2b3acd-1",
+    "user/bd040f4c8fa54886-2",
+    "user/bd040f4c8fa54886-3"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/application/validation/StrongPasswordValidator.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/validation/StrongPasswordValidator.java",
+     28,
+     30,
+     "511fb06d07e64ed26e48c1f6700dd0b96c63a753ffa1842b4c426aac50a4451f"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/validation/StrongPasswordValidator.java",
+     33,
+     43,
+     "dce370095f903ecf9a4e6806d7832ebba6de0cf22d6832bd43a90b5432a34e51"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/validation/StrongPasswordValidator.java",
+     25,
+     27,
+     "ee0942b28c4c6e4ae9084ab44102f7ed19d46e46b68ff2b10d565980ae059527"
+    ]
+   ],
+   "code_sha256": "c3832fc112689228f1970ec0af1e5ff66fe52450004c02b3cbcab2a03e77571d",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": 0.0,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 2,
+       "values": 2,
+       "terms": 6
+      }
+     },
+     "restatement": "StrongPasswordValidator.isValid accepte une valeur null (retourne true, la vérification de blanc revient à @NotBlank). Une longueur hors de MIN_LENGTH à MAX_LENGTH retourne false. La boucle retourne true dès qu'elle a trouvé à la fois une majuscule (Character.isUpperCase) et un chiffre (Character.isDigit). Les valeurs de MIN_LENGTH et MAX_LENGTH ne figurent pas dans l'extrait, et la fin de la méthode n'est pas montrée.",
+     "confidence": "medium",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 14,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/application/validation/StrongPasswordValidator.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 2,
+       "values": 2,
+       "terms": 6
+      }
+     },
+     "job": "user:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_UpdatePreferencesRequest.java:1",
+     "rank_in_lot": 9,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 40,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "user:rules:5",
+   "section": "rules",
+   "rank": 5,
+   "text": "- forgot-password renvoie toujours 200 avec le même message, et sans compte correspondant aucun token ni email n'est créé. [#3b36126a4b26b1fd-1] [#8d2a9c9d767afb41-1]",
+   "fact_text": "forgot-password renvoie toujours 200 avec le même message, et sans compte correspondant aucun token ni email n'est créé",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "user/3b36126a4b26b1fd-1",
+    "user/8d2a9c9d767afb41-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java",
+    "backend:src/main/java/com/matimeline/eventmanager/application/services/PasswordResetServiceImpl.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java",
+     357,
+     359,
+     "4ff52d1f55dd42f5b92b13f0a9a78e34734e7ff9be0fc3d87f325716aa353bd2"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/services/PasswordResetServiceImpl.java",
+     103,
+     108,
+     "224e604825a68d89030673949ac6dbadd25081dd1a712bfcd33f1fe5d32c76e1"
+    ]
+   ],
+   "code_sha256": "0da6db77aa75f524351fae9faa7b71f9dc792c741794d29f646661378fe6096e",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": null,
+      "values": 1.0,
+      "terms": 0.444,
+      "n": {
+       "identifiers": 0,
+       "values": 1,
+       "terms": 9
+      }
+     },
+     "restatement": "AuthController.forgotPassword renvoie toujours 200 avec le même message neutre, qu'un compte corresponde à l'email ou non. PasswordResetServiceImpl.requestReset retourne sans aucune action ni signal si findDomainUserByEmail ne trouve rien (BR-AUT-012).",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 5,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/application/services/PasswordResetServiceImpl.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": null,
+      "values": 1.0,
+      "terms": 0.556,
+      "n": {
+       "identifiers": 0,
+       "values": 1,
+       "terms": 9
+      }
+     },
+     "job": "user:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_UpdatePreferencesRequest.java:1",
+     "rank_in_lot": 5,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "words:toujours,aucun",
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 42,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "user:rules:6",
+   "section": "rules",
+   "rank": 6,
+   "text": "- La purge des tokens tourne toutes les 24 h par défaut avec un délai initial de 300000 ms, et supprime les tokens consommés ou expirés. [#batch/99a2df300c170ed7-1] [#integrations/a48db1e25ff46d3d-1]",
+   "fact_text": "La purge des tokens tourne toutes les 24 h par défaut avec un délai initial de 300000 ms, et supprime les tokens consommés ou expirés",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "batch/99a2df300c170ed7-1",
+    "integrations/a48db1e25ff46d3d-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/application/services/PasswordResetTokenPurgeScheduler.java",
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/PasswordResetTokenRepositoryJpaImpl.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/services/PasswordResetTokenPurgeScheduler.java",
+     70,
+     73,
+     "d4bcb8077297e20a3c0c011131de185d3132086d0a1701156ab7d1c6ea07a89d"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/PasswordResetTokenRepositoryJpaImpl.java",
+     93,
+     97,
+     "b80c3180a5df202dad412e30ad65cbcb5e0f3efebc69c80fb372c2f526354aa1"
+    ]
+   ],
+   "code_sha256": "b6750bbcd1d31ed1f5394e6da76c08881aaf27f1f9ff63db43727cd37b57c104",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": null,
+      "values": 1.0,
+      "terms": 0.444,
+      "n": {
+       "identifiers": 0,
+       "values": 2,
+       "terms": 9
+      }
+     },
+     "restatement": "PasswordResetTokenPurgeScheduler.purgeConsumedAndExpired est planifié avec un délai fixe par défaut de 86400000 ms (24 h) et un délai initial de 300000 ms (5 min), en @Transactional. Le repository exécute un DELETE JPQL sur les tokens dont usedAt n'est pas nul ou dont expiresAt est antérieur au cutoff.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 8,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/application/services/PasswordResetTokenPurgeScheduler.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": null,
+      "values": 1.0,
+      "terms": 0.556,
+      "n": {
+       "identifiers": 0,
+       "values": 2,
+       "terms": 9
+      }
+     },
+     "job": "user:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_UpdatePreferencesRequest.java:1",
+     "rank_in_lot": 6,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "words:toutes",
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 43,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "user:rules:7",
+   "section": "rules",
+   "rank": 7,
+   "text": "- Sans clé Brevo l'envoi est ignoré avec un warning, et une RestClientException est loggée sans remonter au contrôleur. [#4db21754de87e441-1] [#4db21754de87e441-2]",
+   "fact_text": "Sans clé Brevo l'envoi est ignoré avec un warning, et une RestClientException est loggée sans remonter au contrôleur",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "user/4db21754de87e441-1",
+    "user/4db21754de87e441-2"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailService.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailService.java",
+     79,
+     84,
+     "2f14c4f4a450ad91b314e5438d2307d18a963cf6f5a8e98e2f17b5fccc4cccda"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailService.java",
+     99,
+     105,
+     "0f1d352d7517f79ee399e24cb7bce9db26f1265f5b9d4dc6cd731ee9d1ba70eb"
+    ]
+   ],
+   "code_sha256": "faf218e5b310943ab8dd5661b4cce9610635800fb1e3e0c0c76d83fcdd083793",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.0,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "restatement": "Dans BrevoEmailService.sendPasswordResetEmail, si la clé apiKey est null ou vide, la méthode journalise un warn et retourne sans appel HTTP, le flux métier continuant. Si l'appel lève RestClientException, seul le nom simple de la classe d'exception est journalisé, sans token ni clé, et l'exception n'est pas propagée, afin de garder une réponse 200.",
+     "confidence": "high",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 9,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailService.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.429,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "job": "user:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_UpdatePreferencesRequest.java:1",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "BrevoEmailService L79-84 ignore l'envoi avec log.warn sans clé, et L99-105 logue la RestClientException sans la propager.",
+      "BrevoEmailService L79-84 : warn puis return si la clé est absente. L99-105 : RestClientException loggée sans propagation.",
+      "BrevoEmailService L79-84 : log.warn et return sans clé ; L99-105 : RestClientException loggée sans propagation."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 44,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "user:rules:8",
+   "section": "rules",
+   "rank": 8,
+   "text": "- themePreference n'accepte que light, dark ou system en minuscules, une valeur comme LIGHT donne 400 validation_failed. [#bf3a08573de2927d-1] [#305052602b3573de-1]",
+   "fact_text": "themePreference n'accepte que light, dark ou system en minuscules, une valeur comme LIGHT donne 400 validation_failed",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "user/bf3a08573de2927d-1",
+    "user/305052602b3573de-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/application/dtos/UpdatePreferencesRequest.java",
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ThemePreferenceIntegrationTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/dtos/UpdatePreferencesRequest.java",
+     19,
+     21,
+     "ca16c33be9be469a08b0860ae614e00a8fff4b8dbada2788a27aa676d3089eab"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ThemePreferenceIntegrationTest.java",
+     209,
+     209,
+     "94da6be96b2580454e6817731d688ef2ce2aae222ec03b668f37e32148f81052"
+    ]
+   ],
+   "code_sha256": "9bc901ba41b1c2545a86c58131aaae9c694991aac3f1f6e3b1466992d09c75a8",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.667,
+      "values": 0.0,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 3,
+       "values": 1,
+       "terms": 6
+      }
+     },
+     "restatement": "UpdatePreferencesRequest.themePreference est soumis à @NotNull et à @Pattern(regexp = \"light|dark|system\"), donc sensible à la casse. Le test ThemePreferenceIntegrationTest envoie la valeur \"LIGHT\" en majuscules, qui ne correspond pas à ce motif. L'extrait ne montre pas le statut HTTP attendu par ce test.",
+     "confidence": "medium",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 4,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/application/dtos/UpdatePreferencesRequest.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.667,
+      "values": 1.0,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 3,
+       "values": 1,
+       "terms": 6
+      }
+     },
+     "job": "user:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_UpdatePreferencesRequest.java:1",
+     "rank_in_lot": 4,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 46,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "user:rules:9",
+   "section": "rules",
+   "rank": 9,
+   "text": "- PUT /api/me/preferences est limité à 30 requêtes par minute et par utilisateur, sans propriété de configuration. [#f4e96f1b78ded9c0-1]",
+   "fact_text": "PUT /api/me/preferences est limité à 30 requêtes par minute et par utilisateur, sans propriété de configuration",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "user/f4e96f1b78ded9c0-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/UserRateLimitingFilter.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/UserRateLimitingFilter.java",
+     91,
+     91,
+     "c3c3214b8281e7fd1a5586cfe890a928f24509ea664c64a7ff2c0ed3e0977dfe"
+    ]
+   ],
+   "code_sha256": "c3c3214b8281e7fd1a5586cfe890a928f24509ea664c64a7ff2c0ed3e0977dfe",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": 1.0,
+      "terms": 0.571,
+      "n": {
+       "identifiers": 1,
+       "values": 1,
+       "terms": 7
+      }
+     },
+     "restatement": "La constante UserRateLimitingFilter.DEFAULT_PREFERENCES_PER_MINUTE vaut 30, public static final int. Elle fixe une limite par défaut de 30 requêtes par minute pour les préférences. Le lien avec l'endpoint /preferences est inféré du nom de la constante, l'extrait ne montre pas son usage.",
+     "confidence": "medium",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 12,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/security/UserRateLimitingFilter.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 0.571,
+      "n": {
+       "identifiers": 1,
+       "values": 1,
+       "terms": 7
+      }
+     },
+     "job": "user:rediscover:backend_src_main_java_com_matimeline_eventmanager_infrastructure_adapters_email_BrevoEmailService.java:2",
+     "rank_in_lot": 2,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 47,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "user:rules:10",
+   "section": "rules",
+   "rank": 10,
+   "text": "- deleteAccount lève AccountDeletionMismatchException avant toute écriture si le username de confirmation diffère. [#0ec9a144d275a5ac-1]",
+   "fact_text": "deleteAccount lève AccountDeletionMismatchException avant toute écriture si le username de confirmation diffère",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "user/0ec9a144d275a5ac-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/application/services/UserServiceImpl.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/services/UserServiceImpl.java",
+     98,
+     100,
+     "fb30f2cdaa7c8cd468bf7f9865af91ac71542f21d10654aa2c78e572e2f6caa7"
+    ]
+   ],
+   "code_sha256": "fb30f2cdaa7c8cd468bf7f9865af91ac71542f21d10654aa2c78e572e2f6caa7",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.2,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 5
+      }
+     },
+     "restatement": "UserServiceImpl.deleteAccount exige que confirmUsername soit non nul et égal exactement (equals, sensible à la casse) au nom d'utilisateur de l'appelant. Sinon, il lève AccountDeletionMismatchException.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 15,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/application/services/UserServiceImpl.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.4,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 5
+      }
+     },
+     "job": "user:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_UpdatePreferencesRequest.java:1",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "UserServiceImpl.deleteAccount L98-100 lève l'exception avant revokeAllSessions et les suppressions (L116-120) ; aucun contre-exemple.",
+      "deleteAccount (UserServiceImpl L98-100) lève l'exception avant sessionService.revokeAllSessions et les suppressions (L116-120); seul appelant de l'exception dans le service, aucun contre-exemple.",
+      "UserServiceImpl.deleteAccount L98-100 lève l'exception avant les écritures (L116-120) ; seul appelant du throw dans main, aucun contre-exemple."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "scope",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "AccountDeletionMismatchException (backend/src/main)",
+         "found": "Levée uniquement dans UserServiceImpl L99, gérée par GlobalExceptionHandler."
+        },
+        {
+         "tool": "Read",
+         "target": "UserServiceImpl.java L85-125",
+         "found": "Le contrôle précède toute écriture (sessions, events, products, categories, user)."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "AccountDeletionMismatchException (backend main)",
+         "found": "Levée uniquement en UserServiceImpl L99, gérée par GlobalExceptionHandler"
+        },
+        {
+         "tool": "Read",
+         "target": "UserServiceImpl.java L80-130",
+         "found": "Le test précède toute écriture (revoke, deletes à partir de L116)"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "AccountDeletionMismatchException (backend/src/main)",
+         "found": "Un seul throw, dans UserServiceImpl L99, plus handler et javadoc."
+        },
+        {
+         "tool": "Read",
+         "target": "UserServiceImpl.java L80-130",
+         "found": "Le test de confirmation précède revokeAllSessions et les suppressions."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "words:toute",
+   "placed": {
+    "pack_line": 48,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "user:rules:11",
+   "section": "rules",
+   "rank": 11,
+   "text": "- L'export du profil recopie les champs un à un sans lire le mot de passe. [#39dc412702d5d599-1]",
+   "fact_text": "L'export du profil recopie les champs un à un sans lire le mot de passe",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "user/39dc412702d5d599-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/domain/models/export/UserDataExport.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/domain/models/export/UserDataExport.java",
+     95,
+     102,
+     "98d7730fee7f12d823442ecdc05dd4bb0964131615b5d0de7f137895418a6ef1"
+    ]
+   ],
+   "code_sha256": "98d7730fee7f12d823442ecdc05dd4bb0964131615b5d0de7f137895418a6ef1",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 0.167,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 6
+      }
+     },
+     "restatement": "UserDataExport.assemble construit ExportedProfile avec l'id, le username, le name, l'email et le role. L'avatar n'est exporté que sous forme de booléen, vrai si l'avatar est non nul et non vide, sans son contenu. La préférence de thème est exportée via value() si elle existe, sinon null.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 17,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/domain/models/export/UserDataExport.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 6
+      }
+     },
+     "job": "user:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_UpdatePreferencesRequest.java:1",
+     "rank_in_lot": 10,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 49,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "user:surface:1",
+   "section": "surface",
+   "rank": 1,
+   "text": "- Les contrôleurs d'entrée sont `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java:111-113` (préfixe /api/auth) et `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/UserController.java:48-49` (préfixe /api/me), appelés côté front par `frontend:services/userService.ts:37-41` et `frontend:services/authService.ts:17-24` [#b8df8b0ebcd1dac4-1] [#dc686d3191cfb9b2-1] [#ddebc1e226af208f-1] [#569886aa8c83bc9b-1].",
+   "fact_text": "Les contrôleurs d'entrée sont AuthController.java (préfixe /api/auth) et UserController.java (préfixe /api/me), appelés côté front par userService.ts et authService.ts",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "user/b8df8b0ebcd1dac4-1",
+    "user/dc686d3191cfb9b2-1",
+    "user/ddebc1e226af208f-1",
+    "user/569886aa8c83bc9b-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java",
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/UserController.java",
+    "frontend:services/userService.ts",
+    "frontend:services/authService.ts"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java",
+     111,
+     113,
+     "3126ae315c22a38c492390bec613e100ff39929c6a34e8aaf828d7eed5723031"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/UserController.java",
+     48,
+     49,
+     "1dfe00df0bd5d75e40ca4d4266494893ff836075d0af9575021ada3c5b29e97e"
+    ],
+    [
+     "frontend:services/userService.ts",
+     37,
+     41,
+     "78d6dd3c726d0ccff000327460bf871929d522718e7e5318fba63afe0204f75e"
+    ],
+    [
+     "frontend:services/authService.ts",
+     17,
+     24,
+     "683be713b382a3a8e9c008034b67d7d6c9018f85779ceb753d60248ec8c436f5"
+    ]
+   ],
+   "code_sha256": "6148e5b9354eb8c856f014b61f4d8d8c6c5f2a61123b42a0f066856c435c4b50",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": null,
+      "terms": 0.286,
+      "n": {
+       "identifiers": 4,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "restatement": "AuthController.login est exposé en POST /login avec @Valid @RequestBody AuthRequest et reçoit HttpServletRequest et HttpServletResponse. UserController est mappé sur /api/me. Côté frontend, updateProfile envoie PATCH /me et parse la réponse avec UserSchema, et getUserProfile appelle GET /auth/me, parse avec UserSchema et relance toute erreur telle quelle.",
+     "confidence": "high",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 13,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.75,
+      "values": null,
+      "terms": 0.571,
+      "n": {
+       "identifiers": 4,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "job": "user:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_UpdatePreferencesRequest.java:1",
+     "rank_in_lot": 8,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 85,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "user:surface:2",
+   "section": "surface",
+   "rank": 2,
+   "text": "- DELETE /api/me exige un corps avec le nom d'utilisateur de confirmation, supprime le compte puis efface le cookie jwt et renvoie 204 [#4b311aa3577f75bf-1] [#b173896ffc2c5373-1].",
+   "fact_text": "DELETE /api/me exige un corps avec le nom d'utilisateur de confirmation, supprime le compte puis efface le cookie jwt et renvoie 204",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "user/4b311aa3577f75bf-1",
+    "user/b173896ffc2c5373-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/UserController.java",
+    "frontend:services/userService.ts"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/UserController.java",
+     203,
+     204,
+     "8fbe5fe4387b020bbc77632ef8c53be8fdd15845c52b36ddfdac4f966e169eff"
+    ],
+    [
+     "frontend:services/userService.ts",
+     84,
+     86,
+     "d67af561266ee19e43b2fa4c729be0c19768b696f6c28f98783b4f5ccc0b586e"
+    ]
+   ],
+   "code_sha256": "199fb13ba5cca25e4c0e668ff0a8feb3dd65e9a4f9eceb20d0f753faa6d00fa4",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 0.0,
+      "terms": 0.0,
+      "n": {
+       "identifiers": 1,
+       "values": 1,
+       "terms": 9
+      }
+     },
+     "restatement": "UserController.deleteCurrentUser est exposé en DELETE /api/me avec @Valid @RequestBody DeleteAccountRequest. Côté frontend, deleteAccount(username) envoie DELETE /me avec un body JSON contenant le champ username.",
+     "confidence": "high",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 3,
+     "within_budget": true,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/UserController.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 0.333,
+      "n": {
+       "identifiers": 1,
+       "values": 1,
+       "terms": 9
+      }
+     },
+     "job": "user:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_UpdatePreferencesRequest.java:1",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "La signature exige un DeleteAccountRequest en corps (L204) et le front envoie { username }. Le 204 et l'effacement du cookie ne sont pas visibles dans l'extrait, donc pas de preuve contraire.",
+      "Le contrôleur exige un @RequestBody DeleteAccountRequest et le front envoie { username }. Le 204 et l'effacement du cookie ne sont pas contredits par l'extrait.",
+      "deleteCurrentUser (L203-219) prend @Valid DeleteAccountRequest avec username, appelle userService.deleteAccount, efface le cookie et renvoie 204."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 86,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "user:surface:3",
+   "section": "surface",
+   "rank": 3,
+   "text": "- Le changement de mot de passe POST /api/me/change-password (corps oldPassword et newPassword, 204) n'apparaît ici que dans un test et dans le service front, aucun fait de contrôleur ne le décrit [#0ea7f9c25b3e9a7e-1] [#fd23a1f381383690-1]. Côté service, le nouveau mot de passe est ré-encodé puis un User recréé est enregistré [#925ef7191fae0dbc-1].",
+   "fact_text": "Le changement de mot de passe POST /api/me/change-password (corps oldPassword et newPassword, 204) n'apparaît ici que dans un test et dans le service front, aucun fait de contrôleur ne le décrit. Côté service, le nouveau mot de passe est ré-encodé puis un User recréé est enregistré",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "user/0ea7f9c25b3e9a7e-1",
+    "user/fd23a1f381383690-1",
+    "user/925ef7191fae0dbc-1"
+   ],
+   "files": [
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/RegisterLoginIntegrationTest.java",
+    "frontend:services/userService.ts",
+    "backend:src/main/java/com/matimeline/eventmanager/application/services/UserServiceImpl.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/RegisterLoginIntegrationTest.java",
+     139,
+     139,
+     "0e31714b4828dfb9be5baa01223ebce9231c52ebb456e30fe48b4b6717b8711b"
+    ],
+    [
+     "frontend:services/userService.ts",
+     74,
+     76,
+     "c8ba258863c296094d7af28c137c3303d855960ddee13aed272532a6db99ecf4"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/services/UserServiceImpl.java",
+     79,
+     88,
+     "bd14f9985dab0ba3fec42ba1bc606fe32d3f8ad145a7ef1e400c718666ea3248"
+    ]
+   ],
+   "code_sha256": "08af00dc7cce56f0ac54f5941cf40affedb21dd34443de2d4d5fce2ed01097f6",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.667,
+      "values": 0.0,
+      "terms": 0.294,
+      "n": {
+       "identifiers": 3,
+       "values": 1,
+       "terms": 17
+      }
+     },
+     "restatement": "Le test d'intégration appelle POST /api/me/change-password. Le frontend changePassword envoie POST /me/change-password. UserServiceImpl.changePassword hache newPassword avec passwordEncoder.encode, construit un nouvel User avec l'id, le nom, le username, le role, l'email et l'avatar de l'appelant, puis appelle userRepository.save.",
+     "confidence": "high",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 16,
+     "within_budget": false,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/UserController.java",
+     "file_ok": false,
+     "overlap": {
+      "identifiers": 0.667,
+      "values": 1.0,
+      "terms": 0.529,
+      "n": {
+       "identifiers": 3,
+       "values": 1,
+       "terms": 17
+      }
+     },
+     "job": "user:rediscover:backend_src_main_java_com_matimeline_eventmanager_infrastructure_adapters_email_BrevoEmailService.java:2",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Le service recrée bien un User avec newHash (UserServiceImpl L79-88), le corps est oldPassword/newPassword et le contrôleur renvoie 204 (UserController L186-187). La ligne parle de ce que le pack décrit, pas de l'absence du contrôleur dans le code.",
+      "La ligne décrit ce que le pack montre. Le code concorde : UserServiceImpl L79-88 ré-encode puis enregistre un nouveau User. Le contrôleur existe (UserController L178), mais l'absence de fait de contrôleur concerne le pack, pas le code.",
+      "UserController L178-188 confirme POST /change-password, 204 (noContent), corps oldPassword/newPassword ; UserServiceImpl L79-88 ré-encode puis save d'un nouveau User. La phrase porte sur ce que le pack décrit, pas sur le code ; pas de contre-exemple."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "scope",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 24,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "change-password|changePassword dans backend/src/main",
+         "found": "UserController.changePassword L178 existe, avec UserServiceImpl L68 et RateLimitingFilter ; la règle porte sur le pack."
+        },
+        {
+         "tool": "Read",
+         "target": "UserController.java L170-195",
+         "found": "Retourne 204 noContent après userService.changePassword."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "change-password|changePassword dans backend/src/main",
+         "found": "UserController L178 expose @PostMapping(\"/change-password\") et délègue à userService.changePassword. Le service est dans UserServiceImpl L68."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "change-password|changePassword (backend main)",
+         "found": "Contrôleur UserController L178 existe, service UserServiceImpl L68, rate limit 5."
+        },
+        {
+         "tool": "Read",
+         "target": "UserController.java L170-195",
+         "found": "204 en succès, 401 si pas de caller, 400 si ancien faux."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "words:aucun",
+   "placed": {
+    "pack_line": 87,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "user:surface:4",
+   "section": "surface",
+   "rank": 4,
+   "text": "- L'envoi passe par l'API Brevo, où le champ to.name reçoit le nom brut non échappé, le HTML n'étant échappé que dans htmlContent [integrations/11d4aa8f36e6fb68-1] [#integrations/11d4aa8f36e6fb68-1].",
+   "fact_text": "L'envoi passe par l'API Brevo, où le champ to.name reçoit le nom brut non échappé, le HTML n'étant échappé que dans htmlContent [integrations/11d4aa8f36e6fb68-1]",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "integrations/11d4aa8f36e6fb68-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailService.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailService.java",
+     129,
+     133,
+     "9e7503a88e49c75aba7cec22f136a44365e5cff1eca8258a169cd11f4aeff9cf"
+    ]
+   ],
+   "code_sha256": "9e7503a88e49c75aba7cec22f136a44365e5cff1eca8258a169cd11f4aeff9cf",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.2,
+      "values": 0.0,
+      "terms": 0.0,
+      "n": {
+       "identifiers": 5,
+       "values": 1,
+       "terms": 8
+      }
+     },
+     "restatement": "BrevoEmailService.buildPayload construit une Map.of contenant l'expéditeur (email et name), une liste 'to' avec l'email du destinataire et safeName, le subject issu de template.subject() et le htmlContent.",
+     "confidence": "high",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 4,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailService.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.6,
+      "values": 1.0,
+      "terms": 0.625,
+      "n": {
+       "identifiers": 5,
+       "values": 1,
+       "terms": 8
+      }
+     },
+     "job": "user:rediscover:backend_src_main_java_com_matimeline_eventmanager_infrastructure_adapters_email_BrevoEmailService.java:2",
+     "rank_in_lot": 1,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 88,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "user:surface:5",
+   "section": "surface",
+   "rank": 5,
+   "text": "- POST /api/auth/logout révoque la session du jti courant avant d'effacer le cookie, et POST /api/auth/refresh ne renvoie un token que si l'ancien est valide et non révoqué [#e1bc96480b3ef4c3-1] [#aabb86633e0d2592-1].",
+   "fact_text": "POST /api/auth/logout révoque la session du jti courant avant d'effacer le cookie, et POST /api/auth/refresh ne renvoie un token que si l'ancien est valide et non révoqué",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "user/e1bc96480b3ef4c3-1",
+    "user/aabb86633e0d2592-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java",
+     250,
+     251,
+     "bd3e75b16b655176644c81539fa4021b267f3966d15ade3b74a0ca6a2a5a79f3"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java",
+     269,
+     270,
+     "5b8944c1e7c75265021b9e6ab65a969523430f99fb8eeb1044e8b73f91f55d1e"
+    ]
+   ],
+   "code_sha256": "ab23c96bc032c2dc170a98b6d64ba2b151b6676259eef80be457b97b90d269ff",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.25,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 12
+      }
+     },
+     "restatement": "Les endpoints AuthController.logout (POST /logout) et AuthController.refreshToken (POST /refresh) ne montrent que leur signature. Ils lisent le cookie jwt de façon optionnelle (required = false). Le corps de la méthode n'est pas visible dans l'extrait.",
+     "confidence": "medium",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 2,
+     "within_budget": true,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
+      "terms": 0.417,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 12
+      }
+     },
+     "job": "user:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_UpdatePreferencesRequest.java:1",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "logout appelle revokeSessionSilently(token) puis addCookie(buildJwtCookie(\"\",0)) (L257-260), et refresh vérifie validateToken puis le jti révoqué (L300-309).",
+      "logout appelle revokeSessionSilently(token) avant addCookie de suppression (L257-260). refresh valide le token puis contrôle le jti révoqué (L300-309).",
+      "logout appelle revokeSessionSilently(token) (L257) avant addCookie vide (L260) ; refresh valide via validateToken (L300) puis refuse un jti révoqué (commentaire L305-309)."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 89,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "user:surface:6",
+   "section": "surface",
+   "rank": 6,
+   "text": "- PUT /api/me/preferences ne change que la préférence de thème, et le service lève UserNotFoundException si le compte a disparu [#f3a65d295cff5005-1] [#a72b0b794db7ff69-2] [#6d59e8e49740b992-1].",
+   "fact_text": "PUT /api/me/preferences ne change que la préférence de thème, et le service lève UserNotFoundException si le compte a disparu",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "user/f3a65d295cff5005-1",
+    "user/a72b0b794db7ff69-2",
+    "user/6d59e8e49740b992-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/UserController.java",
+    "backend:src/main/java/com/matimeline/eventmanager/domain/ports/services/UserService.java",
+    "backend:src/main/java/com/matimeline/eventmanager/application/services/UserServiceImpl.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/UserController.java",
+     160,
+     161,
+     "f8fca470a850bff58920dc22aab89095813aa34bdba05af62bd2737da7656832"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/domain/ports/services/UserService.java",
+     49,
+     49,
+     "3114db88070ba884daacbd17a519748ad70415ff5ccb2306605c596d577b4b4c"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/services/UserServiceImpl.java",
+     143,
+     144,
+     "46476ddd646dfd32bce8d9dd76349280fb3344d4ee1be4f7e263115eee924baa"
+    ]
+   ],
+   "code_sha256": "67dcb299efa7ca4ae23d4d414c6e7647f61230494b91fc0d8eb3cbac6b088915",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.375,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 8
+      }
+     },
+     "restatement": "UserController.updatePreferences est exposé en PUT /preferences avec un @Valid @RequestBody UpdatePreferencesRequest. Le port updateThemePreference(User caller, ThemePreference) est implémenté par UserServiceImpl, qui appelle userRepository.updateThemePreference avec l'id de l'appelant et lève UserNotFoundException si le résultat est vide.",
+     "confidence": "high",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 18,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/application/services/UserServiceImpl.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.75,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 8
+      }
+     },
+     "job": "user:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_UpdatePreferencesRequest.java:1",
+     "rank_in_lot": 11,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 90,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "user:surface:7",
+   "section": "surface",
+   "rank": 7,
+   "text": "- L'avatar est envoyé en multipart sous la part file, GET /api/me/avatar répond 401 hors authentification et DELETE répond 204 [#f89dbbadc558a9d9-1] [#e843517efb5a96ab-1] [#9cb59a02980f65cc-1] [#3394e708bc740d15-1].",
+   "fact_text": "L'avatar est envoyé en multipart sous la part file, GET /api/me/avatar répond 401 hors authentification et DELETE répond 204",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "user/f89dbbadc558a9d9-1",
+    "user/e843517efb5a96ab-1",
+    "user/9cb59a02980f65cc-1",
+    "user/3394e708bc740d15-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/UserController.java",
+    "frontend:services/userService.ts"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/UserController.java",
+     233,
+     234,
+     "1e9c7a5d8fd0d22a6fd1e4c8fca637e7c6e4ffc16cc1c9945b64c7a1f2ceefbb"
+    ],
+    [
+     "frontend:services/userService.ts",
+     105,
+     110,
+     "481c78d14f845f26b93683dc3392bf41856e00d16c7a311b6c90de815bf5e0e4"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/UserController.java",
+     264,
+     265,
+     "c6b1f39dfc6dd0dfe2a6702a1323add140dbbd8e67b8aa84bd92b280f5dded7b"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/UserController.java",
+     282,
+     283,
+     "134ce184d46d2bf304ba93311b243168b68f668f23e339267518a3ec575590c2"
+    ]
+   ],
+   "code_sha256": "00802ed6ecee3fd2818eeaeb6332b0c037087c0869a921ae3d1c237dcb217d12",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 0.0,
+      "terms": 0.429,
+      "n": {
+       "identifiers": 2,
+       "values": 2,
+       "terms": 7
+      }
+     },
+     "restatement": "UserController.uploadAvatar est exposé en POST /avatar, consomme multipart/form-data et lit le paramètre \"file\". Le frontend uploadAvatar ajoute le fichier sous la clé 'file', envoie POST /me/avatar et parse la réponse avec UserSchema. getAvatar (GET /avatar) et deleteAvatar (DELETE /avatar) ne montrent que leur signature.",
+     "confidence": "high",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 3,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/UserController.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 0.714,
+      "n": {
+       "identifiers": 2,
+       "values": 2,
+       "terms": 7
+      }
+     },
+     "job": "user:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_UpdatePreferencesRequest.java:1",
+     "rank_in_lot": 3,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 91,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "user:tests:1",
+   "section": "tests",
+   "rank": 1,
+   "text": "- Les tests fixent qu'un token est à usage unique, avec un seul succès sur deux appels concurrents [#58f796c8fce18cc5-1] [#58f796c8fce18cc5-6].",
+   "fact_text": "Les tests fixent qu'un token est à usage unique, avec un seul succès sur deux appels concurrents",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "user/58f796c8fce18cc5-1",
+    "user/58f796c8fce18cc5-6"
+   ],
+   "files": [
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/PasswordResetTokenConcurrencyIntegrationTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/PasswordResetTokenConcurrencyIntegrationTest.java",
+     62,
+     62,
+     "1016b60d3adb54acfb655657c85f0c07712210a40fffa224584504a895494490"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/PasswordResetTokenConcurrencyIntegrationTest.java",
+     121,
+     122,
+     "55d1a9fff1b3e254c8485a454d15142d97385f8746f7e5c25b34f9240f012a78"
+    ]
+   ],
+   "code_sha256": "ee1192c3b9350989fa77e2bb2a887360443e1424724acd443cf91dd290a7928b",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 0.444,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 9
+      }
+     },
+     "restatement": "Le test concurrentConsumptionOfSameToken_onlyOneSucceeds vérifie qu'un second appel à passwordResetService.resetPassword avec le même token échoue avec InvalidPasswordResetTokenException. Le nom suggère une consommation concurrente, mais l'extrait ne montre pas la boucle de threads, seulement l'assertion finale.",
+     "confidence": "medium",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 18,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/PasswordResetTokenConcurrencyIntegrationTest.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 0.778,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 9
+      }
+     },
+     "job": "user:rediscover:backend_src_main_java_com_matimeline_eventmanager_infrastructure_adapters_email_BrevoEmailService.java:2",
+     "rank_in_lot": 3,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 124,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "user:tests:2",
+   "section": "tests",
+   "rank": 2,
+   "text": "- Le test asynchrone exige un retour en moins de 4000 ms puis attend jusqu'à 5000 ms l'envoi et la création du token [#1e05bff51f17c048-3] [#1e05bff51f17c048-4].",
+   "fact_text": "Le test asynchrone exige un retour en moins de 4000 ms puis attend jusqu'à 5000 ms l'envoi et la création du token",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "user/1e05bff51f17c048-3",
+    "user/1e05bff51f17c048-4"
+   ],
+   "files": [
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ForgotPasswordAsyncTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ForgotPasswordAsyncTest.java",
+     104,
+     105,
+     "dd4ad3fc5e188335e0f988cd67431501b2003dd4c6daea4bfc067f63cbcc800f"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ForgotPasswordAsyncTest.java",
+     108,
+     110,
+     "b5e810368fb01987ce63416e86636407c8dcdceb00b125775af7d0a86ecb12e7"
+    ]
+   ],
+   "code_sha256": "b06e613e77a968f67c5cca3c2a763bdcd1d9d20e26b0c75488b3c59e84797119",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": null,
+      "values": 1.0,
+      "terms": 0.333,
+      "n": {
+       "identifiers": 0,
+       "values": 2,
+       "terms": 9
+      }
+     },
+     "restatement": "Le test ForgotPasswordAsyncTest vérifie que requestReset sur un email connu rend la main en moins de 4000 ms, sans attendre l'envoi du mail. Il vérifie ensuite via des timeout de 5000 ms que emailService.sendPasswordResetEmail et tokenRepository.create ont bien été appelés, ce qui montre un envoi asynchrone.",
+     "confidence": "high",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 8,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ForgotPasswordAsyncTest.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": null,
+      "values": 1.0,
+      "terms": 0.111,
+      "n": {
+       "identifiers": 0,
+       "values": 2,
+       "terms": 9
+      }
+     },
+     "job": "user:rediscover:backend_src_main_java_com_matimeline_eventmanager_infrastructure_adapters_email_BrevoEmailService.java:2",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "ForgotPasswordAsyncTest L105 asserte elapsed < 4000 et L108-110 vérifie avec timeout(5000) l'envoi et la création du token.",
+      "ForgotPasswordAsyncTest L105 : isLessThan(4000L). L108-110 : verify avec timeout(5000) sur l'envoi d'email et sur tokenRepository.create.",
+      "ForgotPasswordAsyncTest L105 isLessThan(4000L) et L108-110 timeout(5000) pour sendPasswordResetEmail et tokenRepository.create."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 125,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "user:tests:3",
+   "section": "tests",
+   "rank": 3,
+   "text": "- Les contraintes CHECK en base se testent par SQL natif qui contourne l'API [#c086a9fa1e02dbe4-1] [#ddc2012d69f3cea7-1].",
+   "fact_text": "Les contraintes CHECK en base se testent par SQL natif qui contourne l'API",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "user/c086a9fa1e02dbe4-1",
+    "user/ddc2012d69f3cea7-1"
+   ],
+   "files": [
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ThemePreferenceIntegrationTest.java",
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/UserRoleConstraintIntegrationTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ThemePreferenceIntegrationTest.java",
+     236,
+     236,
+     "0783b8c01df9baf08cddf33c07866817fcc4f727f1ad4acf19b2e1d724287b34"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/UserRoleConstraintIntegrationTest.java",
+     86,
+     96,
+     "e2643e8ca7f8ddd3c21a997ad1853cd5163e489b2ae70b2b7321c3d03751a640"
+    ]
+   ],
+   "code_sha256": "cf38c156b0c925769c0069ab3feb0ae4c34d460b1a6e4a51074a5d82d7c061e5",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
+      "terms": 0.4,
+      "n": {
+       "identifiers": 3,
+       "values": 0,
+       "terms": 5
+      }
+     },
+     "restatement": "Le test checkConstraint_rejectsOutOfSetValue_atDatabaseLevel exécute une requête native UPDATE users SET theme_preference = 'LIGHT', en supposant que la contrainte de base refuse les valeurs hors ensemble. Le résultat attendu n'est pas visible dans l'extrait, donc le rejet est déduit du nom du test. UserRoleConstraintIntegrationTest vérifie que l'insertion avec role 'ROLE_USER' et celle avec 'ROLE_ADMIN' sont acceptées sans exception.",
+     "confidence": "medium",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 13,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/UserRoleConstraintIntegrationTest.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
+      "terms": 0.6,
+      "n": {
+       "identifiers": 3,
+       "values": 0,
+       "terms": 5
+      }
+     },
+     "job": "user:rediscover:backend_src_main_java_com_matimeline_eventmanager_infrastructure_adapters_email_BrevoEmailService.java:2",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "ThemePreferenceIntegrationTest L236 utilise em.createNativeQuery(\"UPDATE users SET theme_preference...\") pour tester la contrainte CHECK, et UserRoleConstraintIntegrationTest fait de même via insertUser.",
+      "ThemePreferenceIntegrationTest L236 utilise createNativeQuery (UPDATE SQL natif). Les tests de contrainte de rôle passent par insertUser, ce qui est cohérent avec le contournement de l'API.",
+      "ThemePreferenceIntegrationTest L236 utilise em.createNativeQuery(UPDATE users ...) pour tester la contrainte CHECK au niveau base, en contournant l'API."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 126,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "user:questions:1",
+   "section": "questions",
+   "rank": 1,
+   "text": "- Faut-il ajouter une colonne de création pour trier les tokens de réinitialisation, plutôt que expiresAt décroissant comme proxy de récence avec l'id UUID aléatoire en départage ? Le commentaire reconnaît le proxy, la requête applique ce tri `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenFinderJpaAdapter.java:41-58` [#integrations/949ac578b33a4870-1] [#integrations/12e77eb7b9e6d0c0-2].",
+   "fact_text": "Faut-il ajouter une colonne de création pour trier les tokens de réinitialisation, plutôt que expiresAt décroissant comme proxy de récence avec l'id UUID aléatoire en départage ? Le commentaire reconnaît le proxy, la requête applique ce tri E2eResetTokenFinderJpaAdapter.java",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "integrations/949ac578b33a4870-1",
+    "integrations/12e77eb7b9e6d0c0-2"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenFinderJpaAdapter.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenFinderJpaAdapter.java",
+     41,
+     53,
+     "deefac1b5f3d22c78d965c6912aa1bc3b9ea1621f031fc8b73091dc360d2e2c1"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenFinderJpaAdapter.java",
+     54,
+     58,
+     "56fc9524b79dd3cc3f883fd80790fee52519a9e19f1c7e359d9ec95b1bc0ef59"
+    ]
+   ],
+   "code_sha256": "c8f839da522f2e06a66964f79c58d2d6844bdc659908e920d0cdd1a15080ea63",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [
+     {
+      "id": "integrations/949ac578b33a4870-1",
+      "verdict": "confirmed"
+     }
+    ],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Le code confirme l'absence de colonne de création (PasswordResetTokenEntity : pas d'audit created_at) et le tri expiresAt DESC, id DESC, mais l'ajout d'une colonne reste une décision de conception.",
+      "Le code montre le tri expiresAt DESC, id DESC (L58) et le commentaire reconnaît le proxy, mais la décision d'ajouter une colonne reste un choix ouvert.",
+      "Le code applique ORDER BY t.expiresAt DESC, t.id DESC (L58) et le commentaire reconnaît le proxy ; la décision d'ajouter une colonne n'est pas tranchée par le code."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "open",
+     "searched": true,
+     "search": {
+      "check": "answer",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "createdAt|created_at dans fichiers PasswordReset",
+         "found": "Seul le commentaire de PasswordResetTokenEntity L15 : pas d'audit created_at."
+        }
+       ],
+       [
+        {
+         "tool": "Read",
+         "target": "extrait E2eResetTokenFinderJpaAdapter L41-58",
+         "found": "Tri proxy, pas de colonne de création; décision non tranchée par le code"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "E2eResetTokenFinder|expiresAt (backend/src)",
+         "found": "Test E2eResetTokenEndpointIntegrationTest attend le plus récent par expiresAt desc, pas de colonne de création."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "answer",
+   "placed": {
+    "pack_line": 130,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "user:questions:2",
+   "section": "questions",
+   "rank": 2,
+   "text": "- Pourquoi le champ role du User est-il une String alors que l'enum Role existe dans le même package ? Le fichier ne montre aucune conversion, et le service de détails utilisateur passe cette chaîne directement comme autorité `backend:src/main/java/com/matimeline/eventmanager/domain/models/User.java:10` [#61c574942f6d4fe2-1] [#backend-core/d835ba7c048e8354-1].",
+   "fact_text": "Pourquoi le champ role du User est-il une String alors que l'enum Role existe dans le même package ? Le fichier ne montre aucune conversion, et le service de détails utilisateur passe cette chaîne directement comme autorité User.java",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "user/61c574942f6d4fe2-1",
+    "backend-core/d835ba7c048e8354-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/domain/models/User.java",
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/CustomUserDetailsService.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/domain/models/User.java",
+     10,
+     10,
+     "0f8055696624ab89ef09ae8b606ae694d73e41fe37d328420c43bccd8c118077"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/CustomUserDetailsService.java",
+     27,
+     27,
+     "04289a6bc60dc522cb0bbf84e7309603c5945b8e1bbd35f47f8f9353cde1cb38"
+    ]
+   ],
+   "code_sha256": "fdf3bb79884894f3bcfe70950d2b73836f681ac43224b523dfe7d3afd10f1bde",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Le code montre que role est une String passée à SimpleGrantedAuthority (CustomUserDetailsService L27, AuthController), et que l'enum Role n'est jamais utilisé, mais rien n'explique pourquoi.",
+      "Le code ne tranche pas le pourquoi: l'enum Role n'est référencé nulle part ailleurs, User.role est String passée telle quelle à SimpleGrantedAuthority, mais la raison de conception n'est pas lue.",
+      "Le code montre que role est une String passée à SimpleGrantedAuthority, mais ne dit pas pourquoi ; l'enum Role n'est utilisée nulle part ailleurs. Le pourquoi reste ouvert."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "open",
+     "searched": true,
+     "search": {
+      "check": "answer",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "getRole() et Role. dans backend/src/main",
+         "found": "Toutes les utilisations passent la chaîne telle quelle ; aucune conversion vers l'enum."
+        },
+        {
+         "tool": "Grep",
+         "target": "\\bRole\\b dans backend/src",
+         "found": "Enum jamais référencé hors définition et ArchitectureTest."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "Role.valueOf|values|setRole",
+         "found": "Aucune conversion; mapper copie la String"
+        },
+        {
+         "tool": "Grep",
+         "target": "\\bRole\\b hors Role.java",
+         "found": "Aucune référence: enum inutilisée"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "getRole\\(\\)|Role\\. (backend/src/main)",
+         "found": "Role passe en String partout (mappers, CustomUserDetailsService L27, AuthController), aucune conversion ni usage de l'enum."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "answer",
+   "placed": {
+    "pack_line": 131,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "user:alerts:1",
+   "section": "alerts",
+   "rank": 1,
+   "text": "- Les quatre méthodes de statut de compte renvoient true, et le commentaire dit que la logique reste à écrire. Un compte désactivé ou verrouillé n'est donc jamais refusé par Spring Security, donc ne pas compter sur ces méthodes pour bloquer un compte `backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/CustomUserDetails.java:40-59` [#b13f9b62a1d0f815-1].",
+   "fact_text": "Les quatre méthodes de statut de compte renvoient true, et le commentaire dit que la logique reste à écrire. Un compte désactivé ou verrouillé n'est donc jamais refusé par Spring Security, donc ne pas compter sur ces méthodes pour bloquer un compte CustomUserDetails.java",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "user/b13f9b62a1d0f815-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/CustomUserDetails.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/CustomUserDetails.java",
+     40,
+     59,
+     "350c4f9bcde594e971908c34cffffdee62adffcfa4de313cee927b6e17872edd"
+    ]
+   ],
+   "code_sha256": "350c4f9bcde594e971908c34cffffdee62adffcfa4de313cee927b6e17872edd",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [
+     {
+      "id": "user/b13f9b62a1d0f815-1",
+      "verdict": "confirmed"
+     }
+    ],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "CustomUserDetails L40-59 : les quatre méthodes renvoient true avec le commentaire 'need to implement logic'. Aucun autre contrôle de statut de compte trouvé (CustomUserDetailsService ne lève que UsernameNotFoundException).",
+      "CustomUserDetails L40-59 : les quatre méthodes renvoient true avec le commentaire « need to implement logic ». Aucun autre code du backend ne gère un état désactivé ou verrouillé.",
+      "CustomUserDetails L40-59 : les quatre méthodes renvoient true, commentaire 'need to implement logic'. Aucun statut enabled/locked ni DisabledException/LockedException dans le code main."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "guards",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 24,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "NotFound|isEnabled|isAccountNonLocked dans backend/src",
+         "found": "isEnabled et isAccountNonLocked ne sont définis que dans CustomUserDetails ; CustomUserDetailsService ne lève que UsernameNotFoundException si l'utilisateur est absent."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "isEnabled|isAccountNonLocked|enabled|locked|DisabledException|LockedException dans backend/src/main/java",
+         "found": "Seules occurrences : CustomUserDetails (true) et le drapeau rate-limit. Rien sur un état de compte."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "DisabledException|LockedException|isEnabled|isAccountNonLocked|enabled|locked (backend main)",
+         "found": "Seul CustomUserDetails définit les méthodes ; le reste concerne le rate limiting, aucun blocage de compte."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "guards",
+   "placed": {
+    "pack_line": 135,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "user:alerts:2",
+   "section": "alerts",
+   "rank": 2,
+   "text": "- La javadoc du port de réinitialisation donne un minimum de 6 caractères, alors que la javadoc du test et le message de StrongPassword parlent de 8 ⇒ Se fier à la contrainte StrongPassword du DTO et corriger la javadoc du port `backend:src/main/java/com/matimeline/eventmanager/domain/ports/services/PasswordResetService.java:33` [#95c9f387250b23ad-1] [#c9ac9920eadf46a4-1] [#backend-core/5a9de540919d7828-1]",
+   "fact_text": "La javadoc du port de réinitialisation donne un minimum de 6 caractères, alors que la javadoc du test et le message de StrongPassword parlent de 8",
+   "consigne": "Se fier à la contrainte StrongPassword du DTO et corriger la javadoc du port PasswordResetService.java",
+   "consigne_dropped": false,
+   "cites": [
+    "user/95c9f387250b23ad-1",
+    "user/c9ac9920eadf46a4-1",
+    "backend-core/5a9de540919d7828-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/domain/ports/services/PasswordResetService.java",
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/PasswordResetEndpointsIntegrationTest.java",
+    "backend:src/main/java/com/matimeline/eventmanager/application/validation/StrongPassword.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/domain/ports/services/PasswordResetService.java",
+     33,
+     33,
+     "89d4de79968b596cd3215c6e36f580d075c95a777fc09cb2823e3bfddb18881a"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/PasswordResetEndpointsIntegrationTest.java",
+     93,
+     93,
+     "90b025ad72bacf68897585a31c22d1791038f8b36a445055d2747389ad663ac8"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/validation/StrongPassword.java",
+     38,
+     39,
+     "15b3318190d8ba9a171aa43eb39f5eff50df7c45ee42bb3ec693f5e654a8036e"
+    ]
+   ],
+   "code_sha256": "1ed948ee7a4aa009e08cb7f4fca8e4a4ea0fc9eeb28b2e67cfff9d8cabafd60a",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": {
+     "fact_supported": true,
+     "consigne_supported": true,
+     "reason": "Le constat est porté par les faits : la javadoc du port parle de 6 caractères, tandis que la javadoc du test et le message de StrongPassword parlent de 8. La consigne découle de ce conflit, même si aucun fait cité ne relie explicitement le DTO à StrongPassword.",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "deduce": null,
+    "rediscover": null,
+    "comment": [
+     {
+      "id": "user/95c9f387250b23ad-1",
+      "verdict": "unverifiable"
+     },
+     {
+      "id": "user/c9ac9920eadf46a4-1",
+      "verdict": "unverifiable"
+     }
+    ],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Le décalage de javadoc est réel (PasswordResetService L33 dit 6, StrongPassword L38-39 dit 8, ResetPasswordRequest dit >= 8) ; la validation correcte ne corrige pas la javadoc du port.",
+      "La javadoc du port dit 6 alors que StrongPassword et le test disent 8; la contrainte est bien appliquée au DTO ResetPasswordRequest L21, donc la consigne est correcte.",
+      "Javadoc du port L33 dit >= 6 alors que ResetPasswordRequest.newPassword porte @StrongPassword (L21, message 8 caractères) : la contradiction existe."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "supported",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "guards",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "caractères|@Size dans ResetPasswordRequest.java",
+         "found": "Le DTO documente >= 8 caractères, conforme à StrongPassword."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "@StrongPassword",
+         "found": "Appliqué sur ResetPasswordRequest L21, ChangePasswordRequest, RegisterRequest"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "minimum|6 |8  dans PasswordResetService.java",
+         "found": "L33 : >= 6 caractères."
+        },
+        {
+         "tool": "Grep",
+         "target": "StrongPassword (application/dtos)",
+         "found": "ResetPasswordRequest L21 @StrongPassword, politique unique, ce qui confirme la consigne."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "guards",
+   "placed": {
+    "pack_line": 136,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "user:alerts:3",
+   "section": "alerts",
+   "rank": 3,
+   "text": "- Le test d'email inconnu annonce noEmailSent et sa javadoc promet aucun envoi, mais il ne vérifie ni emailService ni autre chose que le 200. Une régression qui enverrait un mail passerait, donc ajouter la vérification avant de s'appuyer sur ce test pour l'anti-énumération `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ForgotPasswordAsyncTest.java:116-132` [#80b68d0409b633b8-1] [#batch/9c0729d39059d8b1-2].",
+   "fact_text": "Le test d'email inconnu annonce noEmailSent et sa javadoc promet aucun envoi, mais il ne vérifie ni emailService ni autre chose que le 200. Une régression qui enverrait un mail passerait, donc ajouter la vérification avant de s'appuyer sur ce test pour l'anti-énumération ForgotPasswordAsyncTest.java",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "user/80b68d0409b633b8-1",
+    "batch/9c0729d39059d8b1-2"
+   ],
+   "files": [
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ForgotPasswordAsyncTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ForgotPasswordAsyncTest.java",
+     120,
+     132,
+     "afa6ea85fba7fa2c1d64538b949df2903f0abe7982dbf07b4910cab133441549"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ForgotPasswordAsyncTest.java",
+     116,
+     117,
+     "e515f3253a1b477facf2e2cf8bff5022071e56ed5af4d67c9bc7698083c150fb"
+    ]
+   ],
+   "code_sha256": "77e920e28567f8965ccf3c66dee19a2b5c428bade785c454e8e8ed2ed9b99306",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [
+     {
+      "id": "batch/9c0729d39059d8b1-2",
+      "verdict": "unverifiable"
+     }
+    ],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "ForgotPasswordAsyncTest L120-132 : seul status().isOk() est vérifié, aucun verify sur emailService. Un test de service distinct (PasswordResetServiceImplTest L81) vérifie l'absence d'envoi, mais pas ce test-ci.",
+      "Le test unknownEmail (L120-132) ne vérifie que status().isOk() et l'absence d'exception. Le verify(emailService) du fichier (L108) appartient à un autre test.",
+      "Le test L120-132 ne vérifie que status 200 et l'absence d'exception. Aucun verify(emailService, never()) dans le fichier (verify seulement L108 et L110 pour le cas connu)."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "supported",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "guards",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 24,
+      "searches": [
+       [
+        {
+         "tool": "Read",
+         "target": "ForgotPasswordAsyncTest.java",
+         "found": "Le test unknownEmail n'a aucun verify sur emailService, la javadoc promet 'aucun envoi'."
+        },
+        {
+         "tool": "Grep",
+         "target": "verifyNoInteractions(emailService / never sendPasswordResetEmail dans backend/src/test",
+         "found": "Seulement PasswordResetServiceImplTest L81, niveau service, pas ce test."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "verify|emailService dans ForgotPasswordAsyncTest.java",
+         "found": "Les verify (L108-110) sont dans le test du cas nominal, pas dans le test d'email inconnu."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "emailService|verify\\(|never\\(\\) dans ForgotPasswordAsyncTest",
+         "found": "Verify uniquement L108/L110 dans le test du cas email connu, pas dans le test email inconnu."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "guards",
+   "placed": {
+    "pack_line": 137,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "user:alerts:4",
+   "section": "alerts",
+   "rank": 4,
+   "text": "- L'enum Role du domaine importe GrantedAuthority de Spring Security, ce qui rompt la règle d'un domaine sans import framework ⇒ Ne pas copier ce motif dans d'autres modèles du domaine `backend:src/main/java/com/matimeline/eventmanager/domain/models/Role.java:3-5` [#backend-core/d4207acb24ab9af6-1]",
+   "fact_text": "L'enum Role du domaine importe GrantedAuthority de Spring Security, ce qui rompt la règle d'un domaine sans import framework",
+   "consigne": "Ne pas copier ce motif dans d'autres modèles du domaine Role.java",
+   "consigne_dropped": false,
+   "cites": [
+    "backend-core/d4207acb24ab9af6-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/domain/models/Role.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/domain/models/Role.java",
+     3,
+     5,
+     "16c5454da4255f857e28b0886b3730faa42d6798f074b61ac99a6ddd9ee7d0ac"
+    ]
+   ],
+   "code_sha256": "16c5454da4255f857e28b0886b3730faa42d6798f074b61ac99a6ddd9ee7d0ac",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": {
+     "fact_supported": true,
+     "consigne_supported": true,
+     "reason": "L'import de GrantedAuthority dans l'enum Role est cité verbatim et qualifié d'écart avec la règle d'absence d'import framework du domaine, ce qui couvre le constat. La consigne ne fait que reformuler cet écart à l'impératif.",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Role.java L3-5 importe bien GrantedAuthority ; ArchitectureTest le tolère explicitement (gel), ce qui ne garantit aucun invariant.",
+      "Role.java L3-5 importe bien GrantedAuthority et implémente GrantedAuthority dans le domaine; aucun autre modèle ne l'utilise.",
+      "Role.java L3-5 importe bien GrantedAuthority et l'implémente dans domain/models."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "supported",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "guards",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "\\bRole\\b dans backend/src java",
+         "found": "Role n'est utilisé nulle part sauf sa définition ; ArchitectureTest le mentionne comme exception gelée."
+        },
+        {
+         "tool": "Grep",
+         "target": "GrantedAuthority|Role\\. dans backend/src/main",
+         "found": "Seuls Role.java (domaine) et la couche security importent GrantedAuthority."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "GrantedAuthority (backend main)",
+         "found": "Domaine: seul Role.java; les autres usages sont en infrastructure"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "GrantedAuthority|Role\\. (backend/src/main)",
+         "found": "Role.java importe Spring Security ; l'enum n'est référencée nulle part ailleurs, aucun garde-fou."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "guards",
+   "placed": {
+    "pack_line": 138,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "user:alerts:5",
+   "section": "alerts",
+   "rank": 5,
+   "text": "- Deux tests /me et /refresh portent NotFound dans leur nom alors qu'ils attendent un 401 générique. Se fier à l'assertion, pas au nom `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthControllerSecurityTest.java:166-176` [#548656e76cebceaa-1] [#76dc0be40ec09810-1].",
+   "fact_text": "Deux tests /me et /refresh portent NotFound dans leur nom alors qu'ils attendent un 401 générique. Se fier à l'assertion, pas au nom AuthControllerSecurityTest.java",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "user/548656e76cebceaa-1",
+    "user/76dc0be40ec09810-1"
+   ],
+   "files": [
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthControllerSecurityTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthControllerSecurityTest.java",
+     166,
+     176,
+     "72ec923b9f805f3f1d03dd3d16a29f954f5edcd959bd20eff93fe95d152c280d"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthControllerSecurityTest.java",
+     348,
+     359,
+     "4812a39454ff254bf145e40093ad462c2511a999cd0319285353dc2eff7fdd5c"
+    ]
+   ],
+   "code_sha256": "b80dd67fb01383b4a5462a7151788b90a566ef507009a3acdad7f1d234bda869",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "AuthControllerSecurityTest L166 et L348 : les noms contiennent notFound/NotFound mais les assertions attendent isUnauthorized et error=unauthorized, ce que la ligne dit.",
+      "Les tests me_..._returns401Generic_notFound (L166) et refresh_..._returns401NotFound (L348) attendent bien isUnauthorized et le code « unauthorized ». Le constat est exact.",
+      "Les deux tests (L166 me_..._notFound, L348 refresh_...returns401NotFound) attendent isUnauthorized et error=unauthorized, pas de 404."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "guards",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 24,
+      "searches": [
+       [
+        {
+         "tool": "Read",
+         "target": "AuthControllerSecurityTest.java via l'extrait L166-176 et L348-359",
+         "found": "Assertions sur 401 et $.error=unauthorized, noms contenant NotFound."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "NotFound dans AuthControllerSecurityTest.java",
+         "found": "Le nom du test refresh à la ligne 348 contient NotFound, et il asserte 401 avec error=unauthorized."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "NotFound dans AuthControllerSecurityTest",
+         "found": "Le test refresh L348 attend 401 générique ; le test me confirmé dans l'extrait."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "guards",
+   "placed": {
+    "pack_line": 139,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "user:rules:annex:362023a7",
+   "section": "rules",
+   "rank": 3,
+   "text": "- Le refresh renvoie 401 si le jti est révoqué ou inconnu, sinon il révoque l'ancienne session et en enregistre une nouvelle. [#502d18fb990a7103-1] [#c62478f0f1a3cf17-1]",
+   "fact_text": "Le refresh renvoie 401 si le jti est révoqué ou inconnu, sinon il révoque l'ancienne session et en enregistre une nouvelle",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "user/502d18fb990a7103-1",
+    "user/c62478f0f1a3cf17-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java",
+     300,
+     314,
+     "6e8fd69f096de7eba8b0b6680df7cb39b98359c66affe4c3e3c484b8b378a092"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java",
+     319,
+     324,
+     "942e93ec87267dd55693985a174ce2fc851cab74a4fc62225da944ee33a3c656"
+    ]
+   ],
+   "code_sha256": "fbe7a00947d8b9ac362e0e8bfb284ea41474580c8fc21410f9b88a11dc052bc4",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": null,
+      "values": 1.0,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 0,
+       "values": 1,
+       "terms": 8
+      }
+     },
+     "restatement": "AuthController.refreshToken renvoie 401 si jwtService.validateToken échoue, ou si isSessionActive(jti) est faux, ce qui bloque un token révoqué. En cas de succès, il génère un nouveau token, révoque l'ancien jti via revokeSessionSilently et enregistre le nouveau via registerSession (rotation de session).",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "user.details.md",
+     "row": 1
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  },
+  {
+   "id": "user:rules:annex:2d3e5235",
+   "section": "rules",
+   "rank": 4,
+   "text": "- register renvoie 409 conflict pour un username existant ou une violation d'intégrité (doublon d'email compris). [#6f3d723273af408f-1] [#85963bd8c274bb03-1]",
+   "fact_text": "register renvoie 409 conflict pour un username existant ou une violation d'intégrité (doublon d'email compris)",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "user/6f3d723273af408f-1",
+    "user/85963bd8c274bb03-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java",
+     212,
+     217,
+     "b36847d94163298b33d0b3d4eaff5b17cf890d7d2e4278dc8a658b74bcac8146"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java",
+     234,
+     242,
+     "177abe4423f833138660bf9b92515c72b43cc1b6efa0c1975bd4d6c825dae9af"
+    ]
+   ],
+   "code_sha256": "876589cc97985e601972f5aa396b804cac62e6b21477be3e9f586f9d10134d3c",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": null,
+      "values": 1.0,
+      "terms": 0.6,
+      "n": {
+       "identifiers": 0,
+       "values": 1,
+       "terms": 10
+      }
+     },
+     "restatement": "AuthController.register renvoie 409 avec {\"error\": \"conflict\"} si findDomainUserByUsername trouve déjà le username. Il renvoie le même 409 si une DataIntegrityViolationException survient (course concurrente ou email en doublon), sans distinguer username et email dans le corps.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "user.details.md",
+     "row": 2
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  },
+  {
+   "id": "user:rules:annex:aca651ae",
+   "section": "rules",
+   "rank": 6,
+   "text": "- StrongPassword s'applique à l'inscription, au changement et à la réinitialisation, mais pas au login. [#b73146529462ac20-1] [#3f255ce5de6bd69b-1] [#8fc6b2aa851360e4-1] [#aebf5f8226e56be2-1]",
+   "fact_text": "StrongPassword s'applique à l'inscription, au changement et à la réinitialisation, mais pas au login",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "user/b73146529462ac20-1",
+    "user/3f255ce5de6bd69b-1",
+    "user/8fc6b2aa851360e4-1",
+    "user/aebf5f8226e56be2-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/application/dtos/RegisterRequest.java",
+    "backend:src/main/java/com/matimeline/eventmanager/application/dtos/ChangePasswordRequest.java",
+    "backend:src/main/java/com/matimeline/eventmanager/application/dtos/ResetPasswordRequest.java",
+    "backend:src/main/java/com/matimeline/eventmanager/application/dtos/AuthRequest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/dtos/RegisterRequest.java",
+     23,
+     25,
+     "0a987f58d831c4a70fbaffe11fb2ab2c214687181a79dd53e4d1980efabf699a"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/dtos/ChangePasswordRequest.java",
+     17,
+     22,
+     "9d132a7a0318a56bb9ccf8af5cc1ffca9e63ad5e12f75d30d37bced200dd5944"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/dtos/ResetPasswordRequest.java",
+     20,
+     22,
+     "4a9527895d90176b6248c3b8a961ad84f511a90ec8d5b52257670ead00a2d45c"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/dtos/AuthRequest.java",
+     11,
+     12,
+     "af50873ac808992e514f8a51ebeaea3c118d689d833b5dfe1b94ac96fcfee967"
+    ]
+   ],
+   "code_sha256": "c2793d9be008212d26eca9578fe2377bb594f5a56bd433501c390d991246f2f3",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.6,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 5
+      }
+     },
+     "restatement": "Les DTO RegisterRequest.password, ChangePasswordRequest.newPassword et ResetPasswordRequest.newPassword portent @NotBlank et @StrongPassword. ChangePasswordRequest.oldPassword ne porte que @NotBlank, et AuthRequest.password n'a que @NotBlank et @Size(max = 100), sans contrôle de force. La force du mot de passe n'est donc vérifiée qu'à l'inscription, au changement et à la réinitialisation, pas à la connexion.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "user.details.md",
+     "row": 3
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  },
+  {
+   "id": "user:rules:annex:63aaa783",
+   "section": "rules",
+   "rank": 8,
+   "text": "- changePassword lève InvalidCredentialsException si l'ancien est faux, puis SamePasswordException si le nouveau est identique. [#6d9644d06bc8f672-1] [#6d9644d06bc8f672-2]",
+   "fact_text": "changePassword lève InvalidCredentialsException si l'ancien est faux, puis SamePasswordException si le nouveau est identique",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "user/6d9644d06bc8f672-1",
+    "user/6d9644d06bc8f672-2"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/application/services/UserServiceImpl.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/services/UserServiceImpl.java",
+     71,
+     73,
+     "d351a6f9e8cac383d64247a112a3271da73c993aded130f8d2181f48f67b4560"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/services/UserServiceImpl.java",
+     76,
+     78,
+     "d81793c8c73876587319c3ce0339e82208f95da6de5b61c3050bd2ebfc571045"
+    ]
+   ],
+   "code_sha256": "cce9f68a1934f8c73ec49566fea6ec3db0054736d13a355075b065f082959c0f",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.6,
+      "n": {
+       "identifiers": 3,
+       "values": 0,
+       "terms": 5
+      }
+     },
+     "restatement": "UserServiceImpl.changePassword vérifie d'abord l'ancien mot de passe avec passwordEncoder.matches, puis lève InvalidCredentialsException en cas d'échec. Ensuite, si le nouveau mot de passe correspond au hash actuel, il lève SamePasswordException.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "user.details.md",
+     "row": 4
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  },
+  {
+   "id": "user:rules:annex:ddd0da84",
+   "section": "rules",
+   "rank": 10,
+   "text": "- Un token est exploitable s'il n'est ni consommé ni expiré, l'expiration étant atteinte dès que expiresAt n'est plus strictement postérieur à l'instant. [#c030f2a7fb2f14fb-1] [#674ca13e46a183ed-1]",
+   "fact_text": "Un token est exploitable s'il n'est ni consommé ni expiré, l'expiration étant atteinte dès que expiresAt n'est plus strictement postérieur à l'instant",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "user/c030f2a7fb2f14fb-1",
+    "user/674ca13e46a183ed-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/domain/models/PasswordResetToken.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/domain/models/PasswordResetToken.java",
+     64,
+     66,
+     "311d77bb7efb566c5b780c7f100e1c4c061c780318d9225595900ec34b25fba9"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/domain/models/PasswordResetToken.java",
+     59,
+     61,
+     "a759935ef1f5fa171db6fa7890cb758ccccc69804c7cf4fbc81fdc95be93e338"
+    ]
+   ],
+   "code_sha256": "6faa71ab566f8613f6e6ac26a41393851cd151c73843a5c479f95912ea8513a9",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.556,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 9
+      }
+     },
+     "restatement": "PasswordResetToken.isUsable retourne true seulement si le token n'est pas consommé et n'est pas expiré. isExpired retourne true dès que expiresAt n'est pas strictement après now, donc un token expirant exactement à l'instant courant est considéré expiré.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "user.details.md",
+     "row": 5
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  },
+  {
+   "id": "user:rules:annex:1393d125",
+   "section": "rules",
+   "rank": 11,
+   "text": "- resetPassword lève InvalidPasswordResetTokenException pour un token non UUID, introuvable, inutilisable, sans compte ou en conflit de verrou optimiste. [#f161b00db820f46b-1] [#889d2f96ff3498a0-1] [#889d2f96ff3498a0-2] [#ff14c981b945f4fa-1]",
+   "fact_text": "resetPassword lève InvalidPasswordResetTokenException pour un token non UUID, introuvable, inutilisable, sans compte ou en conflit de verrou optimiste",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "user/f161b00db820f46b-1",
+    "user/889d2f96ff3498a0-1",
+    "user/889d2f96ff3498a0-2",
+    "user/ff14c981b945f4fa-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/application/services/PasswordResetServiceImpl.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/services/PasswordResetServiceImpl.java",
+     189,
+     199,
+     "537a2eeed2f2dbefb8f4eeff0b06cd440bc9bf97bf3b7746a39ada55e0e940f0"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/services/PasswordResetServiceImpl.java",
+     139,
+     145,
+     "a0e43cb5c22755c8108b0ada896d3f95ca75488e68c6b656461d371962149aa6"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/services/PasswordResetServiceImpl.java",
+     147,
+     150,
+     "1587fcdbe27768416c9763ae215475d56ffae37f43ccf2ccb76bc08223fc5e4f"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/services/PasswordResetServiceImpl.java",
+     181,
+     186,
+     "88e44ab280e3ba57aa20b0710f36bc67c96e4daece1985a31b36e72ec0844a1f"
+    ]
+   ],
+   "code_sha256": "3e44a40ed0cb23cb3c914ce0b2ae92645bf811164e2ede03ae3bc70f5296436b",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 3,
+       "values": 0,
+       "terms": 8
+      }
+     },
+     "restatement": "PasswordResetServiceImpl.parseToken lève InvalidPasswordResetTokenException si le token est null ou n'est pas un UUID, sans aucune recherche en base. resetPassword lève la même exception générique si le token est absent, s'il n'est pas utilisable, si l'utilisateur n'existe plus, ou si markConsumed échoue en verrou optimiste (ObjectOptimisticLockingFailureException ou OptimisticLockException). Toutes les causes d'échec renvoient donc le même message.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "user.details.md",
+     "row": 6
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  },
+  {
+   "id": "user:surface:annex:96f28b7f",
+   "section": "surface",
+   "rank": 4,
+   "text": "- POST /api/auth/forgot-password délègue à PasswordResetService sans valeur de retour, et le token brut part par email sans être journalisé [#fc21364fe89b1478-1] [#a29e5180102aef05-2] [#726fc97ea7d3c5a5-1].",
+   "fact_text": "POST /api/auth/forgot-password délègue à PasswordResetService sans valeur de retour, et le token brut part par email sans être journalisé",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "user/fc21364fe89b1478-1",
+    "user/a29e5180102aef05-2",
+    "user/726fc97ea7d3c5a5-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java",
+    "backend:src/main/java/com/matimeline/eventmanager/domain/ports/services/PasswordResetService.java",
+    "backend:src/main/java/com/matimeline/eventmanager/application/services/PasswordResetServiceImpl.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthController.java",
+     354,
+     356,
+     "1d3c0ea76355606b28a5ceda8f5d273e61c382943d9b5d05e6b27627d6e7f714"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/domain/ports/services/PasswordResetService.java",
+     25,
+     25,
+     "f0d84ca975cd93d709a4499c188b3283f7a01801e8c8632019b0730e1f87b602"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/services/PasswordResetServiceImpl.java",
+     123,
+     126,
+     "e191b5ff69098e437c19c8d18ed688ed75c35074783fa3d88b50651e7c5dd4df"
+    ]
+   ],
+   "code_sha256": "283bb37fe315f929a9dd6a690b9a7b0671ded868cf62172a1eb9ae8e609ce905",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.545,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 11
+      }
+     },
+     "restatement": "AuthController.forgotPassword est exposé en POST /forgot-password, valide le body ForgotPasswordRequest et délègue à passwordResetService.requestReset(email, locale). L'implémentation PasswordResetServiceImpl.requestReset envoie le mail via emailService.sendPasswordResetEmail avec l'email, le nom, le token brut et la locale, et le commentaire indique que le token brut n'est jamais loggé.",
+     "confidence": "high"
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "user.details.md",
+     "row": 7
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  },
+  {
+   "id": "user:tests:annex:e2d9ebbb",
+   "section": "tests",
+   "rank": 2,
+   "text": "- Les tests fixent l'anti-énumération de forgot-password, sans token ni email pour un email inconnu et avec une réponse 200 [#c72c07371932fb96-1] [#fe97df0f7d56d492-1].",
+   "fact_text": "Les tests fixent l'anti-énumération de forgot-password, sans token ni email pour un email inconnu et avec une réponse 200",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "user/c72c07371932fb96-1",
+    "user/fe97df0f7d56d492-1"
+   ],
+   "files": [
+    "backend:src/test/java/com/matimeline/eventmanager/application/services/PasswordResetServiceImplTest.java",
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/PasswordResetEndpointsIntegrationTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/application/services/PasswordResetServiceImplTest.java",
+     72,
+     82,
+     "896c17c0f4c0563aa4d8f14583e3aeb1ecb7fe4d300a74595883dce3051b3d21"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/PasswordResetEndpointsIntegrationTest.java",
+     40,
+     47,
+     "420b0b36465bd3d55efc8d9580cd2083baafce8fbd775ab9c665cbd83d8c2e7b"
+    ]
+   ],
+   "code_sha256": "c37a0396e2b43efdc0339c1bd4995d3b209e4b04616a95b74d150d28694c5d6a",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": null,
+      "values": 1.0,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 0,
+       "values": 1,
+       "terms": 10
+      }
+     },
+     "restatement": "Le test requestReset_unknownEmail_doesNothing_noLeak vérifie que, si findDomainUserByEmail ne trouve rien, requestReset ne lève pas d'exception, n'appelle jamais tokenRepository.create ni markConsumed et n'interagit pas avec emailService. Le test d'intégration forgotPassword_unknownEmail_noToken_returns200 attend un statut 200 sur POST /api/auth/forgot-password pour un email inconnu.",
+     "confidence": "high"
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "user.details.md",
+     "row": 8
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  },
+  {
+   "id": "user:tests:annex:9c0a8218",
+   "section": "tests",
+   "rank": 4,
+   "text": "- Les tests fixent le plafond par token de reset-password, cinq tentatives libres même avec des IP différentes, 429 à la sixième, Retry-After de 30 après 30 s et réouverture après 61 s, avec un meter dont on avance l'horloge [#e7361cf7a9194ecd-1] [#0fd8e1fcd091c1ee-1] [#fdc199c4ed71acba-1].",
+   "fact_text": "Les tests fixent le plafond par token de reset-password, cinq tentatives libres même avec des IP différentes, 429 à la sixième, Retry-After de 30 après 30 s et réouverture après 61 s, avec un meter dont on avance l'horloge",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "user/e7361cf7a9194ecd-1",
+    "user/0fd8e1fcd091c1ee-1",
+    "user/fdc199c4ed71acba-1"
+   ],
+   "files": [
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/ResetPasswordTokenRateLimitIntegrationTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/ResetPasswordTokenRateLimitIntegrationTest.java",
+     95,
+     111,
+     "c41e776d8f04456f14af53a0e9b83cae85da69937460b9d82a2bafd02cda2ba3"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/ResetPasswordTokenRateLimitIntegrationTest.java",
+     120,
+     137,
+     "7251c631032b23b2dba1d84d9a22b231351270e04360d7a474969f63ead4bb10"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/security/ResetPasswordTokenRateLimitIntegrationTest.java",
+     167,
+     181,
+     "0c7e3c3acbdf23a976db1a4a1735b717fe4736e5e9270968a94c1453586c9215"
+    ]
+   ],
+   "code_sha256": "2b85035814250944d785e919e16d92943a8003afd5dfea503b556aaaeaef739e",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": null,
+      "values": 1.0,
+      "terms": 0.529,
+      "n": {
+       "identifiers": 0,
+       "values": 3,
+       "terms": 17
+      }
+     },
+     "restatement": "Le point principal est une limite par token sur /api/auth/reset-password : les 5 premières tentatives avec le même token, depuis des IP différentes, ne renvoient pas 429, la 6e renvoie 429 avec un JSON contenant error=too_many_requests, même depuis une IP neuve. Le test sameToken_429_retryAfterIsTheTokenBucketDelay attend un Retry-After de 30 s quand le seau par token a été créé 30 s plus tôt. Le test sameToken_afterWindowAdvance_allowedAgain attend qu'après une avance de 61 s le token soit de nouveau accepté.",
+     "confidence": "high"
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "user.details.md",
+     "row": 9
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  },
+  {
+   "id": "user:tests:annex:03fe6f78",
+   "section": "tests",
+   "rank": 5,
+   "text": "- Les tests fixent que la politique de mot de passe est identique sur register, reset-password et change-password, que oldPassword n'est jamais contraint et que le login ne l'applique pas [#829273ea1e1f5554-1] [#8ade2927957a6d9c-1] [#1d0c91a5f7948ea6-1].",
+   "fact_text": "Les tests fixent que la politique de mot de passe est identique sur register, reset-password et change-password, que oldPassword n'est jamais contraint et que le login ne l'applique pas",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "user/829273ea1e1f5554-1",
+    "user/8ade2927957a6d9c-1",
+    "user/1d0c91a5f7948ea6-1"
+   ],
+   "files": [
+    "backend:src/test/java/com/matimeline/eventmanager/application/validation/PasswordPolicyTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/application/validation/PasswordPolicyTest.java",
+     124,
+     134,
+     "1ae4270bc0c4451a3cfb70566d4be42d81f5d33382ec2f2ea8878c20210a78e0"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/application/validation/PasswordPolicyTest.java",
+     113,
+     120,
+     "07aa33d928c8f15eee3dd0bd327c183aebefa107b236a57f7ecc53edf5d19669"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/application/validation/PasswordPolicyTest.java",
+     138,
+     148,
+     "38ad381b008676bef78dbfbefd0120a17c1ce41968edc12a8849b1695242ce14"
+    ]
+   ],
+   "code_sha256": "a50013dd00d7b06274d496b2ec0be2f65a5aabbfcef956f99ec5608f01df3dd6",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 1.0,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 12
+      }
+     },
+     "restatement": "Trois tests de PasswordPolicyTest fixent le périmètre de la politique de mot de passe. Le nouveau mot de passe (register, reset-password et change-password) doit être tranché de façon identique. oldPassword de change-password n'est jamais contraint. Le login n'applique pas la politique, pour que des mots de passe legacy comme 'abcdef', 'secret' ou 'Secret1' restent acceptés.",
+     "confidence": "high"
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "user.details.md",
+     "row": 10
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  },
+  {
+   "id": "user:tests:annex:83b69fff",
+   "section": "tests",
+   "rank": 6,
+   "text": "- Les tests fixent un cookie jwt Secure false avec Domain localhost en dev, Secure true en prod, et des attributs identiques au login, au refresh et au logout [#e4ee9cf3e7270f58-1] [#9aa07d5841f78773-2] [#002a09e025d8271d-1].",
+   "fact_text": "Les tests fixent un cookie jwt Secure false avec Domain localhost en dev, Secure true en prod, et des attributs identiques au login, au refresh et au logout",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "user/e4ee9cf3e7270f58-1",
+    "user/9aa07d5841f78773-2",
+    "user/002a09e025d8271d-1"
+   ],
+   "files": [
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthControllerDevProfileCookieTest.java",
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthControllerProdProfileCookieTest.java",
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthControllerSecurityTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthControllerDevProfileCookieTest.java",
+     126,
+     145,
+     "b6ac484625985c2b69a65664033e9dbe517602039f2b21f801dea0f1646cbd44"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthControllerProdProfileCookieTest.java",
+     130,
+     148,
+     "ec7bccb6dce0c17b0865aa8352626face511fd0190f9b7ad66ee7f25fe16f8fd"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/AuthControllerSecurityTest.java",
+     387,
+     432,
+     "706ced903ed144cd623a27b55de0a13c7dfe042731db6374d6fb75478453ebc1"
+    ]
+   ],
+   "code_sha256": "6f732011351fef8fca435c894c3aa7bd81763c5c8ac5853557c11faf879b30ed",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 0.857,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 14
+      }
+     },
+     "restatement": "Les tests de cookie jwt vérifient les attributs selon le profil. En profil dev, POST /api/auth/login renvoie 200 avec un cookie jwt, secure à false et domain 'localhost'. En profil prod, le cookie est secure à true. Le test AuthControllerSecurityTest vérifie que login, refresh et logout partagent le même Secure (true) et le même domain ('mytimeline.example'), que logout a HttpOnly, le path '/' et un maxAge de 0.",
+     "confidence": "high"
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "user.details.md",
+     "row": 11
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  },
+  {
+   "id": "user:tests:annex:9e9bd722",
+   "section": "tests",
+   "rank": 8,
+   "text": "- Les tests fixent que les beans de test-support n'existent ni hors profil e2e ni sans profil, et restent câblés avec dev,e2e [#7b56c407d99da20d-1] [#46c490e841cb2581-1] [#9d3a9a46bce07b12-1].",
+   "fact_text": "Les tests fixent que les beans de test-support n'existent ni hors profil e2e ni sans profil, et restent câblés avec dev,e2e",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "user/7b56c407d99da20d-1",
+    "user/46c490e841cb2581-1",
+    "user/9d3a9a46bce07b12-1"
+   ],
+   "files": [
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eTestSupportProfileTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eTestSupportProfileTest.java",
+     49,
+     63,
+     "0a08e1b78a02936471a46e7960a5983474d65b0388994454d7f0fa6d6e1cb63b"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eTestSupportProfileTest.java",
+     66,
+     76,
+     "2db089dde2e4591ce98f8fb07c815c4dcd326ec3f4da311009d3dc256918ac33"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eTestSupportProfileTest.java",
+     109,
+     121,
+     "0451b6c3bbd64a1c60d589ee08320fae0e7c980a62ae6c25f9699ed4bdee134d"
+    ]
+   ],
+   "code_sha256": "bd86dcc21bb8897e7a0ec399c76c4f926143d00dbad86669d3d9e47f3139eb51",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 8
+      }
+     },
+     "restatement": "Ces tests vérifient que les beans de test-support (E2eResetTokenController, E2eResetTokenFinder) et la SecurityFilterChain dédiée sont absents avec les profils prod, dev, test, dev,prod et sans profil actif. Le test positif ajoute le profil e2e à dev (dev,e2e) et vérifie que E2eResetTokenController et E2eResetTokenFinder sont présents en bean unique. Le commentaire indique que /api/test-support/** retombe alors sur anyRequest().authenticated(), soit un 401.",
+     "confidence": "high"
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "user.details.md",
+     "row": 12
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  }
+ ],
+ "comment_facts": [
+  {
+   "id": "integrations/949ac578b33a4870-1",
+   "verdict": "confirmed",
+   "code_says": "La requête JPQL filtre userId, usedAt IS NULL et expiresAt > now, puis trie sur t.expiresAt DESC avec t.id DESC comme second critère, et ne garde qu'un résultat. Le commentaire sur la récence par expiresAt n'est pas vérifiable ici, car l'entité ne fait pas partie des fichiers lus.",
+   "code_line_start": 54,
+   "code_line_end": 58,
+   "code_evidence": "ORDER BY t.expiresAt DESC, t.id DESC",
+   "evidence_check": null,
+   "code_file": "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenFinderJpaAdapter.java",
+   "invalid": false,
+   "cache_digest": "a661a3e7989ca88122fc21a4ecbca260c2332779c64828a7ab8b32c249bdc85e",
+   "reused": true,
+   "reused_from": "2026-11-20T12:20:00Z",
+   "cited_by": [
+    "user:questions:1"
+   ],
+   "structure_rows_removed": []
+  },
+  {
+   "id": "user/b13f9b62a1d0f815-1",
+   "verdict": "confirmed",
+   "code_says": "CustomUserDetails renvoie true pour isAccountNonExpired, isAccountNonLocked, isCredentialsNonExpired et isEnabled, sans aucune logique de statut de compte.",
+   "code_line_start": 42,
+   "code_line_end": 59,
+   "code_evidence": "public boolean isAccountNonExpired() {",
+   "evidence_check": null,
+   "code_file": "backend:src/main/java/com/matimeline/eventmanager/infrastructure/security/CustomUserDetails.java",
+   "invalid": false,
+   "cache_digest": "ebd4f54ce6b6fb8a9aafa366d564e742ce059ad4041e977b09f567d223d357ae",
+   "reused": true,
+   "reused_from": "2026-11-20T12:20:00Z",
+   "cited_by": [
+    "user:alerts:1"
+   ],
+   "structure_rows_removed": []
+  },
+  {
+   "id": "user/95c9f387250b23ad-1",
+   "verdict": "unverifiable",
+   "code_says": "resetPassword encode newPassword en BCrypt sans aucun contrôle de longueur (lignes 136 à 153 de PasswordResetServiceImpl). Le minimum de 6 caractères est dit validé en amont par le DTO, fichier non lu.",
+   "code_line_start": 0,
+   "code_line_end": 0,
+   "code_evidence": "",
+   "evidence_check": null,
+   "code_file": "",
+   "invalid": false,
+   "cache_digest": "bc407c26fa0a81e6c12e6bf9511dc104100bfc77493d26788b41cfcf1d7cc79a",
+   "reused": true,
+   "reused_from": "2026-11-20T12:20:00Z",
+   "cited_by": [
+    "user:alerts:2"
+   ],
+   "structure_rows_removed": []
+  },
+  {
+   "id": "user/c9ac9920eadf46a4-1",
+   "verdict": "unverifiable",
+   "code_says": "Le test resetPassword_shortPassword_returns400 envoie un newPassword de 3 caractères (\"123\") avec un token UUID aléatoire et attend le statut 400. La validation @Valid du DTO et le contrôleur ne sont pas dans le fichier ni dans les implémentations listées.",
+   "code_line_start": 0,
+   "code_line_end": 0,
+   "code_evidence": "",
+   "evidence_check": null,
+   "code_file": "",
+   "invalid": false,
+   "cache_digest": "5fcc6bd017ef00e5f40fe667c0fb951bf23b955be9875f6d75242770ed0e4788",
+   "reused": true,
+   "reused_from": "2026-11-20T12:20:00Z",
+   "cited_by": [
+    "user:alerts:2"
+   ],
+   "structure_rows_removed": []
+  },
+  {
+   "id": "batch/9c0729d39059d8b1-2",
+   "verdict": "unverifiable",
+   "code_says": "Le corps de forgotPassword_unknownEmail_returns200_noEmailSent_throwsNothing stub userRepository.findDomainUserByEmail avec Optional.empty(), appelle POST /api/auth/forgot-password et vérifie seulement status 200 dans assertThatCode. Aucune vérification (verify/never) sur emailService n'est présente.",
+   "code_line_start": 0,
+   "code_line_end": 0,
+   "code_evidence": "",
+   "evidence_check": null,
+   "code_file": "",
+   "invalid": false,
+   "cache_digest": "2b44dd1a854e3903aaa2213d8ddeac8038e4b2e4c79467ce9aabdf35663b7dbf",
+   "reused": true,
+   "reused_from": "2026-11-20T12:20:00Z",
+   "cited_by": [
+    "user:alerts:3"
+   ],
+   "structure_rows_removed": []
+  }
+ ],
+ "facts_validated": [
+  "user/0fc2506546087885-1",
+  "user/2ed092cfa6c08b1d-1",
+  "user/3d8dced783bb55e1-1",
+  "user/a7e439b586fee252-2",
+  "user/4a8f78da327086e4-1",
+  "user/4db21754de87e441-1",
+  "user/4db21754de87e441-2",
+  "user/0ec9a144d275a5ac-1",
+  "user/4b311aa3577f75bf-1",
+  "user/b173896ffc2c5373-1",
+  "user/0ea7f9c25b3e9a7e-1",
+  "user/fd23a1f381383690-1",
+  "user/925ef7191fae0dbc-1",
+  "user/e1bc96480b3ef4c3-1",
+  "user/aabb86633e0d2592-1",
+  "user/1e05bff51f17c048-3",
+  "user/1e05bff51f17c048-4",
+  "user/c086a9fa1e02dbe4-1",
+  "user/ddc2012d69f3cea7-1",
+  "integrations/949ac578b33a4870-1",
+  "integrations/12e77eb7b9e6d0c0-2",
+  "user/61c574942f6d4fe2-1",
+  "backend-core/d835ba7c048e8354-1",
+  "user/b13f9b62a1d0f815-1",
+  "user/95c9f387250b23ad-1",
+  "user/c9ac9920eadf46a4-1",
+  "backend-core/5a9de540919d7828-1",
+  "user/80b68d0409b633b8-1",
+  "batch/9c0729d39059d8b1-2",
+  "backend-core/d4207acb24ab9af6-1",
+  "user/548656e76cebceaa-1",
+  "user/76dc0be40ec09810-1"
+ ],
+ "counts": {
+  "units": 43,
+  "admit": 31,
+  "annex": 12,
+  "drop": 0,
+  "hold": 0,
+  "pending": 0,
+  "consigne_before_unsupported": 0,
+  "consigne_after_dropped": 0,
+  "structure_rows_removed": 0,
+  "framework": 0,
+  "guarded_elsewhere": 0,
+  "resolved": 0,
+  "restricted": 0,
+  "counterexample": 0,
+  "promoted": 0,
+  "kept_for": {
+   "rediscovered": 14
+  },
+  "pointers_removed": 0,
+  "restored_alerts": 0,
+  "budget_cut": 0
+ },
+ "answers": [],
+ "budget_cut": [],
+ "structure_rows_removed": [],
+ "notes": [],
+ "base_sha256_after": "11e5cef4b1de5d0509506bcbd57f241683e97905b17546e5510aca6aa403729a",
+ "bases_touched": {
+  "backend-core": {
+   "fingerprint": "25f44a89e54e4b2fde8775ca41e34886c048c60adccc1939aea23b5565fc353a",
+   "sha256_after": "39bfcc06120267da616569dbbc5fb4625c3a364c7ee046233a677a2ac05aa654"
+  },
+  "batch": {
+   "fingerprint": "ad4a2f961b36d296efbc961d7f112e7cf0080d85aa0b5cfe74900e7bb19a3243",
+   "sha256_after": "9e97af04975c41ce788ad93bf53b2ef7d1625d32f0a7a5a5f85c5fdbae16de10"
+  },
+  "integrations": {
+   "fingerprint": "f7984eacb1b983b17187ea75176f49511bb0644b8c83f802588dac68e31c8537",
+   "sha256_after": "88ad6cc38a54980e577165c9e049a2633584d262d9613dedc80680c6e9b3b7a2"
+  },
+  "user": {
+   "fingerprint": "d80ca607e97586deb1b527cce148f6b5066bb5389cb65d8abc86c170d9a13ab1",
+   "sha256_after": "11e5cef4b1de5d0509506bcbd57f241683e97905b17546e5510aca6aa403729a"
+  }
+ },
+ "lint": {
+  "ok": true,
+  "errors": 0,
+  "warnings": 0
+ }
+}

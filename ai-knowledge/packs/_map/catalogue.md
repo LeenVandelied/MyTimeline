@@ -1,92 +1,152 @@
 # Catalogue des packs (carte du système)
 
-Mode rejeu. 700 fichiers, 700 rattachés (100.0 %), 0 restants. Porte mécanique : 0 erreurs, 8 avertissements.
+Mode rejeu. 700 fichiers, 700 rattachés (100.0 %), 0 restants. Porte mécanique : 0 erreurs, 0 avertissements.
 
 
 ## domain
 
-### timeline : Chronologie, comptes et exports  (390 fichiers, 2632 ko)
-- Un seul groupe candidat de 199 fichiers (997 ko) dont le script a fondu six seeds sur sept dans UserEntity (liens 37/37, 16/16, 9/10, 8/8, 4/4, 2/2), au-dessus de pack_min_kb=60.
-- seeds : UserEntity, CategoryEntity, EventEntity, ExportJobEntity, PasswordResetTokenEntity, ProductEntity, SessionEntity
+### event : Événement  (49 fichiers, 255 ko)
+- Le groupe Event compte 135 fichiers et 590 ko, avec EventController et RecurrencePreviewController sur /api/events. La taille du groupe entier est portée par ce pack pivot, les packs session et export (fondus dans ce groupe) sont à 0.
+- seeds : Event
+- entité pivot : EventEntity
+- controllers : EventController, RecurrencePreviewController
+- services : EventService, RecurrenceExpansionService
+- déclencheurs keywords : event, événement, evenement, recurrence, récurrence, timeline, passwordresettoken
+- déclencheurs routes : /api/events
+- déclencheurs entities : EventEntity, PasswordResetTokenEntity
+- motifs de noms : **/Event*, **/*event*
+- alias : timeline, recurrence
+- hypothèse A4 [confirmed, low, R3 dossier d'écran sans entité, alias timeline rattaché au p] : Pages timeline : event ou autre pack ?
+
+### user : Utilisateur et authentification  (81 fichiers, 397 ko)
+- Le groupe User compte 80 fichiers et 480 ko, avec 3 controllers (/api/auth, /api/me, /api/test-support) et 41 liens entrants depuis Event.
+- seeds : User, PasswordResetToken
 - entité pivot : UserEntity
-- controllers : AuthController, CategoryController, E2eResetTokenController, EventController, ExportController, JwksController, ProductController, RecurrencePreviewController, SessionController, UserController
-- services : AvatarService, BrevoEmailService, CategoryService, CustomUserDetailsService, EmailService, EventService, ExportService, ExportTokenService, JwtService, PasswordResetService, ProductService, RecurrenceExpansionService, SessionService, UserService
-- déclencheurs keywords : user, utilisateur, event, événement, evenement, category, catégorie, categorie, product, produit, session, export, password reset, mot de passe, timeline, chronologie, recurrence, récurrence, avatar
-- déclencheurs routes : /api/auth, /api/categories, /api/events, /api/export, /api/me, /api/sessions, /api/test-support
-- déclencheurs entities : UserEntity, CategoryEntity, EventEntity, ExportJobEntity, PasswordResetTokenEntity, ProductEntity, SessionEntity
-- dossiers purs (>= 80 %, >= 5 fichiers) : mytimeline:backend/, mytimeline:frontend/src/types/, mytimeline:frontend/src/components/events/, mytimeline:frontend/src/components/products/
-- motifs de noms : **/UserEntity*, **/CategoryEntity*, **/EventEntity*, **/ExportJobEntity*, **/PasswordResetTokenEntity*, **/ProductEntity*, **/SessionEntity*, **/*user*, **/*event*, **/*category*, **/*product*, **/*session*, **/*export*, **/*password*, **/*recurrence*, **/*auth*, **/*theme*
-- alias : user, utilisateur, event, événement, evenement, category, catégorie, categorie, product, produit, session, export, password, mot de passe, timeline, chronologie, recurrence, récurrence, auth, theme, thème, conflict, conflit
+- controllers : AuthController, E2eResetTokenController, UserController
+- services : AvatarService, BrevoEmailService, CustomUserDetailsService, EmailService, PasswordResetService, UserService
+- déclencheurs keywords : user, utilisateur, auth, login, register, password, mot de passe, avatar, email, theme, preference
+- déclencheurs routes : /api/auth, /api/me, /api/test-support, api/me, api/me/avatar, api/me/export, me, me/avatar, me/export
+- déclencheurs entities : UserEntity
+- motifs de noms : **/User*, **/*user*, **/PasswordResetToken*, **/*auth*
+- alias : login, register, password, forgot-password, reset-password, auth, role, theme, preference
+- hypothèse A3 [refuted, low, R11 User est un hub, aucun groupe n'y est fondu ; la fusion ] : PasswordResetToken (14 fichiers) : fondu dans Event par le script, dans user ou pack propre ?
+- hypothèse A5 [confirmed, medium, R3 écrans d'authentification sans entité, suivent le pack qu] : Pages login, register, forgot-password, reset-password : user ou session ?
+- hypothèse A8 [confirmed, medium, R9 test sans seed suivant la classe de production la plus pr] : ThemePreference et rôle utilisateur : user ou socle ?
+- hypothèse A12 [open, high, R11 User est importée par 3 seeds sur 6 (Category, Product, ] : User, entité hub : son seed garde-t-il son propre pack, et AvatarService lui revient-il ?
+- hypothèse A13 [open, high, R11 entité hub : importée par 3/6 seeds d'entité, ses arêtes] : L'entité hub User (importée par 3 seeds d'entité) reste-t-elle dans son pack ?
+
+### product : Produit  (18 fichiers, 129 ko)
+- Le groupe Product compte 18 fichiers et 129 ko (au-dessus de pack_min_kb=15) avec un ProductController et un ProductService propres.
+- seeds : Product
+- entité pivot : ProductEntity
+- controllers : ProductController
+- services : ProductService
+- déclencheurs keywords : product, produit, products
+- déclencheurs entities : ProductEntity
+- motifs de noms : **/Product*, **/*product*
+- alias : products, productId
+
+### session : Session et jetons  (23 fichiers, 108 ko)
+- Le seed Session pèse 24 fichiers (fondus par le script dans Event à 4 liens sur 4) avec SessionController, JwksController et JwtService sur /api/sessions. Sa taille est comptée dans le pack event, d'où 0 ici.
+- seeds : Session
+- entité pivot : SessionEntity
+- controllers : JwksController, SessionController
+- services : JwtService, SessionService
+- déclencheurs keywords : session, jwt, jwks, token, jeton
+- déclencheurs routes : /api/sessions
+- déclencheurs entities : SessionEntity
+- motifs de noms : **/Session*, **/*session*
+- hypothèse A10 [confirmed, medium, R7 le script fond Session dans Event (4 liens sur 4), mais S] : Session (24 fichiers) : fondu dans Event comme le fait le script, ou pack propre ?
+
+### category : Catégorie  (20 fichiers, 93 ko)
+- Le groupe Category compte 21 fichiers et 97 ko (au-dessus de pack_min_kb=15) avec un CategoryController sur /api/categories.
+- seeds : Category
+- entité pivot : CategoryEntity
+- controllers : CategoryController
+- services : CategoryService
+- déclencheurs keywords : category, catégorie, categorie, categories
+- déclencheurs routes : /api/categories
+- déclencheurs entities : CategoryEntity
+- motifs de noms : **/Category*, **/*category*
+
+### export : Export de données  (35 fichiers, 107 ko)
+- Le seed ExportJob pèse 37 fichiers (fondus par le script dans Event à 5 liens sur 5) avec ExportController sur /api/export et une machine d'états propre (ExportJob.java, 8 occurrences). Sa taille est comptée dans le pack event, d'où 0 ici.
+- seeds : ExportJob
+- entité pivot : ExportJobEntity
+- controllers : ExportController
+- services : ExportService, ExportTokenService
+- déclencheurs keywords : export, exportjob, zip, csv, markdown, téléchargement
+- déclencheurs routes : /api/export
+- déclencheurs entities : ExportJobEntity
+- dossiers purs (>= 80 %, >= 5 fichiers) : backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/
+- motifs de noms : **/ExportJob*
+- hypothèse A11 [confirmed, medium, R7 le script fond ExportJob dans Event (5 liens sur 5), mais] : ExportJob (37 fichiers) : fondu dans Event comme le fait le script, ou pack propre ?
 
 
 ## transversal
 
-### authorization : Autorisation et limitation de débit  (15 fichiers, 150 ko)
-- Le motif authorization compte 35 fichiers à 3 occurrences ou plus, répartis en 17 dans le domaine et 18 hors groupe (SecurityConfig 19, JwtServiceRs256Test 16).
+### authorization : Autorisation et sécurité  (35 fichiers, 313 ko)
+- Le motif authorization touche 35 fichiers (SecurityConfig 19 occurrences, JwtFilter 11), répartis entre User (14), Event (7) et le socle (14). Taille en ko inconnue, mise à 0.
 - motif : authorization
-- règles de chemin : (Security|Jwt|RateLimit|RateLimiting|CustomUserDetails|ExportToken|CallerResolver|AuthController)
-- traverse : timeline
-- fichiers revendiqués en recouvrement : 25
+- déclencheurs keywords : authorization, autorisation, security, sécurité, rate limit, role, jwt
+- règles de chemin : ^backend:src/.*/(SecurityConfig|JwtFilter|JwtService|UserRateLimitingFilter|CustomUserDetailsService|ExportTokenService)[^/]*\.java$
+- traverse : user, session, export
+- fichiers revendiqués en recouvrement : 35
 
-### state-machine : États et machines à états  (1 fichiers, 0 ko)
-- Le motif state-machine compte 23 fichiers à 3 occurrences ou plus (19 dans le domaine, 4 hors groupe), avec ExportJob 13 et trois foyers sans seed (Role, ThemePreferenceTest, ExportJobTest).
-- motif : state-machine
-- règles de chemin : /(Role|ThemePreference|ExportJob|ExportJobStatus|ExportFormat|RecurrenceUnit)(Test)?\.java$
-- traverse : timeline
-- fichiers revendiqués en recouvrement : 7
-
-### integrations : Intégrations externes et export  (4 fichiers, 12 ko)
-- Le motif integrations compte 85 fichiers à 3 occurrences ou plus (63 dans le domaine, 22 hors groupe), dont ExportRenderersTest 34 et ZipExportRenderer 33.
+### integrations : Intégrations et services externes  (98 fichiers, 767 ko)
+- Le motif integrations touche 97 fichiers (ZipExportRenderer 33 occurrences, apiClient 9), répartis sur Event (39), le socle (26), User (21), Product (6) et Category (5). Taille en ko inconnue, mise à 0.
 - motif : integrations
-- règles de chemin : (Brevo|ExportRenderer|ZipExport|PasswordResetEmailTemplate|EmailService|StorageConfig|LocalStorage)
-- traverse : timeline
-- fichiers revendiqués en recouvrement : 14
+- déclencheurs keywords : integration, intégration, storage, stockage, brevo, renderer, apiclient
+- règles de chemin : ^backend:src/.*/(ZipExportRenderer|MarkdownExportRenderer|JsonExportRenderer|CsvExportRenderer|LocalStorageAdapter|BrevoEmailService|BrevoHealthIndicator)[^/]*\.java$ ; ^frontend:.*/apiClient[^/]*$
+- traverse : user, event, export, session, product, category
+- fichiers revendiqués en recouvrement : 98
 
-### batch : Tâches planifiées et asynchrones  (2 fichiers, 3 ko)
-- Le motif batch compte 14 fichiers à 3 occurrences ou plus (10 dans le domaine, 4 hors groupe), avec PasswordResetTokenPurgeScheduler 6 et ExportPurgeScheduler 5.
+### batch : Tâches planifiées et asynchrones  (9 fichiers, 42 ko)
+- Le motif batch touche 9 fichiers (PasswordResetTokenPurgeScheduler 6 occurrences, ExportPurgeScheduler 5) répartis entre Event (5), User (2) et le socle (2). Taille en ko inconnue, mise à 0.
 - motif : batch
-- règles de chemin : (Scheduler|SchedulingConfig|AsyncExportRunner|AsyncConfig)
-- traverse : timeline
-- fichiers revendiqués en recouvrement : 5
+- déclencheurs keywords : batch, scheduler, scheduled, cron, purge, async
+- règles de chemin : ^backend:src/.*/(PasswordResetTokenPurgeScheduler|ExportPurgeScheduler|SchedulingConfig|AsyncConfig|AsyncExportRunner)[^/]*\.java$
+- traverse : user, export
+- fichiers revendiqués en recouvrement : 9
 
 
 ## technical
 
-### backend-socle : Socle backend  (17 fichiers, 134 ko)
-- 46 fichiers techniques sans seed (43 en infrastructure, dont les configurations, filtres et tests d'intégration), plus 3 en application, 1 d'architecture et 1 de build parmi les non rattachés.
-- règles de chemin : ^mytimeline:backend/(?!src/main/resources/db/)
+### backend-core : Socle backend  (38 fichiers, 318 ko)
+- 36 fichiers techniques backend sans seed (33 en infrastructure, 2 à la racine, 1 de support), plus 2 tests non rattachés (ArchitectureTest, BomDriftTest), migrations exclues. Taille en ko inconnue, mise à 0.
+- dossiers purs (>= 80 %, >= 5 fichiers) : backend:src/main/java/com/matimeline/eventmanager/infrastructure/config/
+- règles de chemin : ^backend:(?!src/main/resources/db/migration/)src/(main|test)/(java|resources)/
 
-### frontend-socle : Socle frontend  (266 fichiers, 1567 ko)
-- La majorité des 440 fichiers non rattachés (419 en ressources) sont des fichiers frontend sans seed, sans aucun motif transversal sauf 2 occurrences d'integrations (e2e-rate-limit-budget.test.ts).
-- dossiers purs (>= 80 %, >= 5 fichiers) : mytimeline:frontend/app/, mytimeline:frontend/src/__tests__/, mytimeline:frontend/src/styles/, mytimeline:frontend/src/components/dashboard/, mytimeline:frontend/src/components/landing/, mytimeline:frontend/src/components/shared/, mytimeline:frontend/src/components/ui/, mytimeline:frontend/src/components/settings/mobile/
-- règles de chemin : ^mytimeline:frontend/
+### frontend-core : Socle frontend  (344 fichiers, 2598 ko)
+- 344 fichiers techniques frontend sans seed hors lib (253 composants, 44 hooks, 12 services, 9 styles), components/ui restant à retirer par configuration. Taille en ko inconnue, mise à 0.
+- dossiers purs (>= 80 %, >= 5 fichiers) : frontend:components/dashboard/, frontend:components/events/, frontend:components/landing/, frontend:components/products/, frontend:components/settings/, frontend:components/shared/, frontend:components/timeline/, frontend:components/ui/, frontend:styles/__tests__/
+- règles de chemin : ^frontend:(?!(src/)?(components/ui|lib)/)
 
-### migrations : Migrations de base de données  (5 fichiers, 12 ko)
-- 16 fichiers non rattachés de la couche db, sans seed ni motif transversal.
-- règles de chemin : ^mytimeline:backend/src/main/resources/db/
+### frontend-app : Routes et pages Next.js  (41 fichiers, 179 ko)
+- 8 fichiers techniques à la racine de l'app router plus 33 fichiers de pages et layouts non rattachés sous [locale], soit 41 fichiers. Taille en ko inconnue, mise à 0.
+- dossiers purs (>= 80 %, >= 5 fichiers) : frontend-app:[locale]/(app)/
+- règles de chemin : ^frontend-app:
+
+### lib-socle : Socle d'interface (frontend)  (35 fichiers, 277 ko)
+- pack technique déclaré par map.tech_packs
+- déclencheurs keywords : lib, socle
+- règles de chemin : ^frontend:lib/
+
+### migrations : Migrations de base  (16 fichiers, 47 ko)
+- pack technique déclaré par map.tech_packs
+- déclencheurs keywords : migrations
+- dossiers purs (>= 80 %, >= 5 fichiers) : backend:src/main/resources/db/
+- règles de chemin : ^backend:src/main/resources/db/migration/
 
 
 ## Hypothèses hors pack (différées, indécidables)
 
-- A1 [undecidable] un seul pack domain timeline, pivot UserEntity : Les six seeds fondus par le script dans UserEntity forment-ils un seul pack, ou faut-il séparer événements, catégories et comptes ?
-- A2 [confirmed] fondu dans timeline : ProductEntity (1 fichier) reste-t-il dans le pack timeline ou forme-t-il un pack à part ?
-- A3 [undecidable] fondu dans timeline : ExportJobEntity (1 fichier) appartient-il au pack timeline ou à un pack d'export séparé ?
-- A4 [confirmed] les composants nommés timeline, event, product, category, auth, theme ou conflict vont à timeline par alias, le reste (ui, layout, styles, lib générique) reste au socle frontend : Les fichiers frontend non rattachés vont-ils au pack timeline (par alias) ou au socle frontend ?
-- A5 [undecidable] oui, pack transversal batch : Le motif batch (14 fichiers) justifie-t-il un pack transversal ?
-- A6 [undecidable] revendiqués par le transversal state-machine via path_rules, sans retirer leur propriétaire : Les foyers state-machine sans seed (Role, ThemePreferenceTest, ExportJobTest) relèvent-ils du transversal ou du domaine ?
-- A7 [undecidable] nombre de fichiers du motif ou de la couche tel que donné, 0 ko tant que la taille n'est pas mesurée : Quelles tailles donner aux packs sans groupe (transversaux et techniques) ?
-- A8 [open] trois packs techniques par règle de chemin : backend-socle, frontend-socle, migrations : Les fichiers sans seed vont-ils aux packs techniques par chemin (backend, frontend, base) ?
+- A6 [confirmed] état courant : Radicaux dashboard et settings, pages correspondantes : quel pack ?
+- A7 [confirmed] non créé : state-machine : state-machine : créer un pack transversal ?
+- A9 [undecidable] état courant : Migrations non rattachées (V1, V2, V3, V5, V7) : quel propriétaire ?
 
 ## Porte mécanique
 
-- avert. hypothèse A1 : decision 'un seul pack domain timeline, pivot UserEntity' n'a aucune des trois formes admises (le slug d'un pack du catalogue, « non créé : <slug> », « état courant ») ; l'explication va dans rule
-- avert. hypothèse A2 : decision 'fondu dans timeline' n'a aucune des trois formes admises (le slug d'un pack du catalogue, « non créé : <slug> », « état courant ») ; l'explication va dans rule
-- avert. hypothèse A3 : decision 'fondu dans timeline' n'a aucune des trois formes admises (le slug d'un pack du catalogue, « non créé : <slug> », « état courant ») ; l'explication va dans rule
-- avert. hypothèse A4 : decision 'les composants nommés timeline, event, product, category, auth, theme ou conflict vont à timeline par alias, le reste (ui, layout, styles, lib générique) reste au socle frontend' n'a aucune des trois formes admises (le slug d'un pack du catalogue, « non créé : <slug> », « état courant ») ; l'explication va dans rule
-- avert. hypothèse A5 : decision 'oui, pack transversal batch' n'a aucune des trois formes admises (le slug d'un pack du catalogue, « non créé : <slug> », « état courant ») ; l'explication va dans rule
-- avert. hypothèse A6 : decision 'revendiqués par le transversal state-machine via path_rules, sans retirer leur propriétaire' n'a aucune des trois formes admises (le slug d'un pack du catalogue, « non créé : <slug> », « état courant ») ; l'explication va dans rule
-- avert. hypothèse A7 : decision "nombre de fichiers du motif ou de la couche tel que donné, 0 ko tant que la taille n'est pas mesurée" n'a aucune des trois formes admises (le slug d'un pack du catalogue, « non créé : <slug> », « état courant ») ; l'explication va dans rule
-- avert. hypothèse A8 : decision 'trois packs techniques par règle de chemin : backend-socle, frontend-socle, migrations' n'a aucune des trois formes admises (le slug d'un pack du catalogue, « non créé : <slug> », « état courant ») ; l'explication va dans rule
 
 ## Fichiers restants (0)
 

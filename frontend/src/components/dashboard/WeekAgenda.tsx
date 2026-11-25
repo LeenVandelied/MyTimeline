@@ -121,9 +121,7 @@ export const WeekAgenda: React.FC<WeekAgendaProps> = ({
             >
               {/* #72 — `.mt-date--long` (DS i18n.css §7) : mono + tabular-nums +
                   `unicode-bidi:isolate` + `nowrap`. Sa `font-size:13px` est la
-                  valeur EXACTE de `--text-2xs` → aucun delta de taille. On ne pose
-                  PAS `.mt-date--short` : elle force `uppercase` + 11px, un
-                  traitement qui relève d'un arbitrage Designer (cf. rapport #72). */}
+                  valeur EXACTE de `--text-2xs` → aucun delta de taille. */}
               {/* #518 — `toLocalIsoDate` REMPLACE `toISOString()`. `dayFmt` rend
                   `{weekday, day}` dans le fuseau du navigateur ; `toISOString()`
                   bascule en UTC et pouvait donc nommer un AUTRE jour que le libellé

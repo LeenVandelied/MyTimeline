@@ -1,31 +1,35 @@
 {
  "scores": {
-  "requests": 8,
-  "simple": 3,
-  "cross": 2,
-  "technical": 3,
+  "requests": 50,
+  "simple": 17,
+  "cross": 18,
+  "technical": 5,
+  "file": 10,
+  "file_expected_selected": 1.0,
+  "single_domain_pack": false,
+  "distinct_entities": 7,
   "simple_expected_selected": 1.0,
   "simple_sole_domain": 1.0,
   "simple_by_variant": {
    "entité": {
-    "n": 1,
+    "n": 6,
     "selected": 1.0,
     "sole": 1.0
    },
    "mots-clés": {
-    "n": 1,
+    "n": 6,
     "selected": 1.0,
     "sole": 1.0
    },
    "route": {
-    "n": 1,
+    "n": 5,
     "selected": 1.0,
     "sole": 1.0
    }
   },
   "cross_both_selected": 1.0,
   "technical_selected": 1.0,
-  "mean_selected_packs": 1.12,
+  "mean_selected_packs": 1.44,
   "mean_selected_domains_simple": 1.0
  },
  "requests": [
@@ -33,11 +37,11 @@
    "kind": "simple",
    "variant": "mots-clés",
    "expected": [
-    "timeline"
+    "category"
    ],
-   "text": "Ajouter un filtre sur user et utilisateur.",
+   "text": "Ajouter un filtre sur category et catégorie.",
    "selected": {
-    "timeline": "mot-clé user"
+    "category": "mot-clé category"
    },
    "ok": true,
    "sole": true
@@ -46,11 +50,11 @@
    "kind": "simple",
    "variant": "route",
    "expected": [
-    "timeline"
+    "category"
    ],
-   "text": "Corriger l'écran de la route /api/auth.",
+   "text": "Corriger l'écran de la route /api/categories.",
    "selected": {
-    "timeline": "motif de nom **/*auth*"
+    "category": "mot-clé category"
    },
    "ok": true,
    "sole": true
@@ -59,11 +63,11 @@
    "kind": "simple",
    "variant": "entité",
    "expected": [
-    "timeline"
+    "category"
    ],
-   "text": "Ajouter un champ à l'entité UserEntity.",
+   "text": "Ajouter un champ à l'entité CategoryEntity.",
    "selected": {
-    "timeline": "mot-clé user"
+    "category": "mot-clé category"
    },
    "ok": true,
    "sole": true
@@ -72,12 +76,13 @@
    "kind": "croisée",
    "variant": "deux domaines",
    "expected": [
-    "timeline",
-    "timeline"
+    "category",
+    "event"
    ],
-   "text": "Afficher user dans l'écran user.",
+   "text": "Afficher category dans l'écran event.",
    "selected": {
-    "timeline": "mot-clé user"
+    "event": "mot-clé event",
+    "category": "mot-clé category"
    },
    "ok": true,
    "sole": false
@@ -86,26 +91,438 @@
    "kind": "croisée",
    "variant": "domaine et transversal",
    "expected": [
-    "timeline",
+    "category",
+    "integrations"
+   ],
+   "text": "Revoir la règle integrations pour category.",
+   "selected": {
+    "category": "mot-clé category",
+    "integrations": "motif integrations (domaine dans crosses)"
+   },
+   "ok": true,
+   "sole": false
+  },
+  {
+   "kind": "simple",
+   "variant": "mots-clés",
+   "expected": [
+    "event"
+   ],
+   "text": "Ajouter un filtre sur event et événement.",
+   "selected": {
+    "event": "mot-clé event"
+   },
+   "ok": true,
+   "sole": true
+  },
+  {
+   "kind": "simple",
+   "variant": "route",
+   "expected": [
+    "event"
+   ],
+   "text": "Corriger l'écran de la route /api/events.",
+   "selected": {
+    "event": "mot-clé event"
+   },
+   "ok": true,
+   "sole": true
+  },
+  {
+   "kind": "simple",
+   "variant": "entité",
+   "expected": [
+    "event"
+   ],
+   "text": "Ajouter un champ à l'entité EventEntity.",
+   "selected": {
+    "event": "mot-clé event"
+   },
+   "ok": true,
+   "sole": true
+  },
+  {
+   "kind": "croisée",
+   "variant": "deux domaines",
+   "expected": [
+    "event",
+    "export"
+   ],
+   "text": "Afficher event dans l'écran export.",
+   "selected": {
+    "event": "mot-clé event",
+    "export": "mot-clé export"
+   },
+   "ok": true,
+   "sole": false
+  },
+  {
+   "kind": "croisée",
+   "variant": "domaine et transversal",
+   "expected": [
+    "event",
+    "integrations"
+   ],
+   "text": "Revoir la règle integrations pour event.",
+   "selected": {
+    "event": "mot-clé event",
+    "integrations": "motif integrations (domaine dans crosses)"
+   },
+   "ok": true,
+   "sole": false
+  },
+  {
+   "kind": "simple",
+   "variant": "mots-clés",
+   "expected": [
+    "export"
+   ],
+   "text": "Ajouter un filtre sur export et exportjob.",
+   "selected": {
+    "export": "mot-clé export"
+   },
+   "ok": true,
+   "sole": true
+  },
+  {
+   "kind": "simple",
+   "variant": "route",
+   "expected": [
+    "export"
+   ],
+   "text": "Corriger l'écran de la route /api/export.",
+   "selected": {
+    "export": "mot-clé export"
+   },
+   "ok": true,
+   "sole": true
+  },
+  {
+   "kind": "simple",
+   "variant": "entité",
+   "expected": [
+    "export"
+   ],
+   "text": "Ajouter un champ à l'entité ExportJobEntity.",
+   "selected": {
+    "export": "mot-clé export"
+   },
+   "ok": true,
+   "sole": true
+  },
+  {
+   "kind": "croisée",
+   "variant": "deux domaines",
+   "expected": [
+    "export",
+    "product"
+   ],
+   "text": "Afficher export dans l'écran product.",
+   "selected": {
+    "product": "mot-clé product",
+    "export": "mot-clé export"
+   },
+   "ok": true,
+   "sole": false
+  },
+  {
+   "kind": "croisée",
+   "variant": "domaine et transversal",
+   "expected": [
+    "export",
     "authorization"
    ],
-   "text": "Revoir la règle authorization pour user.",
+   "text": "Revoir la règle authorization pour export.",
    "selected": {
-    "timeline": "mot-clé user",
+    "user": "motif de nom **/*auth*",
+    "export": "mot-clé export",
     "authorization": "motif authorization (domaine dans crosses)"
    },
    "ok": true,
    "sole": false
   },
   {
-   "kind": "technique",
-   "variant": "couche",
+   "kind": "simple",
+   "variant": "mots-clés",
    "expected": [
-    "backend-socle"
+    "product"
    ],
-   "text": "Mettre à jour la couche infrastructure.",
+   "text": "Ajouter un filtre sur product et produit.",
    "selected": {
-    "backend-socle": "couche mytimeline/infrastructure"
+    "product": "mot-clé product"
+   },
+   "ok": true,
+   "sole": true
+  },
+  {
+   "kind": "simple",
+   "variant": "entité",
+   "expected": [
+    "product"
+   ],
+   "text": "Ajouter un champ à l'entité ProductEntity.",
+   "selected": {
+    "product": "mot-clé product"
+   },
+   "ok": true,
+   "sole": true
+  },
+  {
+   "kind": "croisée",
+   "variant": "deux domaines",
+   "expected": [
+    "product",
+    "session"
+   ],
+   "text": "Afficher product dans l'écran session.",
+   "selected": {
+    "product": "mot-clé product",
+    "session": "mot-clé session"
+   },
+   "ok": true,
+   "sole": false
+  },
+  {
+   "kind": "croisée",
+   "variant": "domaine et transversal",
+   "expected": [
+    "product",
+    "integrations"
+   ],
+   "text": "Revoir la règle integrations pour product.",
+   "selected": {
+    "product": "mot-clé product",
+    "integrations": "motif integrations (domaine dans crosses)"
+   },
+   "ok": true,
+   "sole": false
+  },
+  {
+   "kind": "simple",
+   "variant": "mots-clés",
+   "expected": [
+    "session"
+   ],
+   "text": "Ajouter un filtre sur session et jwt.",
+   "selected": {
+    "session": "mot-clé session"
+   },
+   "ok": true,
+   "sole": true
+  },
+  {
+   "kind": "simple",
+   "variant": "route",
+   "expected": [
+    "session"
+   ],
+   "text": "Corriger l'écran de la route /api/sessions.",
+   "selected": {
+    "session": "mot-clé session"
+   },
+   "ok": true,
+   "sole": true
+  },
+  {
+   "kind": "simple",
+   "variant": "entité",
+   "expected": [
+    "session"
+   ],
+   "text": "Ajouter un champ à l'entité SessionEntity.",
+   "selected": {
+    "session": "mot-clé session"
+   },
+   "ok": true,
+   "sole": true
+  },
+  {
+   "kind": "croisée",
+   "variant": "deux domaines",
+   "expected": [
+    "session",
+    "user"
+   ],
+   "text": "Afficher session dans l'écran user.",
+   "selected": {
+    "user": "mot-clé user",
+    "session": "mot-clé session"
+   },
+   "ok": true,
+   "sole": false
+  },
+  {
+   "kind": "croisée",
+   "variant": "domaine et transversal",
+   "expected": [
+    "session",
+    "authorization"
+   ],
+   "text": "Revoir la règle authorization pour session.",
+   "selected": {
+    "user": "motif de nom **/*auth*",
+    "session": "mot-clé session",
+    "authorization": "motif authorization (domaine dans crosses)"
+   },
+   "ok": true,
+   "sole": false
+  },
+  {
+   "kind": "simple",
+   "variant": "mots-clés",
+   "expected": [
+    "user"
+   ],
+   "text": "Ajouter un filtre sur user et utilisateur.",
+   "selected": {
+    "user": "mot-clé user"
+   },
+   "ok": true,
+   "sole": true
+  },
+  {
+   "kind": "simple",
+   "variant": "route",
+   "expected": [
+    "user"
+   ],
+   "text": "Corriger l'écran de la route /api/auth.",
+   "selected": {
+    "user": "mot-clé auth"
+   },
+   "ok": true,
+   "sole": true
+  },
+  {
+   "kind": "simple",
+   "variant": "entité",
+   "expected": [
+    "user"
+   ],
+   "text": "Ajouter un champ à l'entité UserEntity.",
+   "selected": {
+    "user": "mot-clé user"
+   },
+   "ok": true,
+   "sole": true
+  },
+  {
+   "kind": "croisée",
+   "variant": "deux domaines",
+   "expected": [
+    "user",
+    "category"
+   ],
+   "text": "Afficher user dans l'écran category.",
+   "selected": {
+    "user": "mot-clé user",
+    "category": "mot-clé category"
+   },
+   "ok": true,
+   "sole": false
+  },
+  {
+   "kind": "croisée",
+   "variant": "domaine et transversal",
+   "expected": [
+    "user",
+    "authorization"
+   ],
+   "text": "Revoir la règle authorization pour user.",
+   "selected": {
+    "user": "mot-clé user",
+    "authorization": "motif authorization (domaine dans crosses)"
+   },
+   "ok": true,
+   "sole": false
+  },
+  {
+   "kind": "croisée",
+   "variant": "seeds",
+   "expected": [
+    "category",
+    "event"
+   ],
+   "text": "Lier Category à Event.",
+   "selected": {
+    "event": "mot-clé event",
+    "category": "mot-clé category"
+   },
+   "ok": true,
+   "sole": false
+  },
+  {
+   "kind": "croisée",
+   "variant": "seeds",
+   "expected": [
+    "event",
+    "export"
+   ],
+   "text": "Lier Event à ExportJob.",
+   "selected": {
+    "event": "mot-clé event",
+    "export": "mot-clé export"
+   },
+   "ok": true,
+   "sole": false
+  },
+  {
+   "kind": "croisée",
+   "variant": "seeds",
+   "expected": [
+    "export",
+    "product"
+   ],
+   "text": "Lier ExportJob à Product.",
+   "selected": {
+    "product": "mot-clé product",
+    "export": "mot-clé export"
+   },
+   "ok": true,
+   "sole": false
+  },
+  {
+   "kind": "croisée",
+   "variant": "seeds",
+   "expected": [
+    "product",
+    "session"
+   ],
+   "text": "Lier Product à Session.",
+   "selected": {
+    "product": "mot-clé product",
+    "session": "mot-clé session"
+   },
+   "ok": true,
+   "sole": false
+  },
+  {
+   "kind": "croisée",
+   "variant": "seeds",
+   "expected": [
+    "session",
+    "user"
+   ],
+   "text": "Lier Session à PasswordResetToken.",
+   "selected": {
+    "user": "mot-clé password",
+    "session": "mot-clé session"
+   },
+   "ok": true,
+   "sole": false
+  },
+  {
+   "kind": "croisée",
+   "variant": "seeds",
+   "expected": [
+    "user",
+    "category"
+   ],
+   "text": "Lier PasswordResetToken à Category.",
+   "selected": {
+    "user": "mot-clé password",
+    "session": "mot-clé token",
+    "category": "mot-clé category"
    },
    "ok": true,
    "sole": false
@@ -114,11 +531,50 @@
    "kind": "technique",
    "variant": "couche",
    "expected": [
-    "frontend-socle"
+    "backend-core"
    ],
-   "text": "Mettre à jour la couche resources.",
+   "text": "Mettre à jour la couche infrastructure.",
    "selected": {
-    "frontend-socle": "couche mytimeline/resources"
+    "backend-core": "couche backend/infrastructure"
+   },
+   "ok": true,
+   "sole": false
+  },
+  {
+   "kind": "technique",
+   "variant": "couche",
+   "expected": [
+    "frontend-app"
+   ],
+   "text": "Mettre à jour la couche [locale].",
+   "selected": {
+    "frontend-app": "couche frontend-app/[locale]"
+   },
+   "ok": true,
+   "sole": false
+  },
+  {
+   "kind": "technique",
+   "variant": "couche",
+   "expected": [
+    "frontend-core"
+   ],
+   "text": "Mettre à jour la couche components.",
+   "selected": {
+    "frontend-core": "couche frontend/components/components"
+   },
+   "ok": true,
+   "sole": false
+  },
+  {
+   "kind": "technique",
+   "variant": "couche",
+   "expected": [
+    "lib-socle"
+   ],
+   "text": "Mettre à jour la couche lib.",
+   "selected": {
+    "lib-socle": "couche frontend/lib/lib"
    },
    "ok": true,
    "sole": false
@@ -131,7 +587,168 @@
    ],
    "text": "Mettre à jour la couche db.",
    "selected": {
-    "migrations": "couche mytimeline/db"
+    "migrations": "couche backend/db"
+   },
+   "ok": true,
+   "sole": false
+  },
+  {
+   "kind": "fichier",
+   "variant": "règle 1 bis",
+   "expected": [
+    "backend-core"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/EventmanagerApplication.java"
+   ],
+   "text": "Modifier le fichier backend:src/main/java/com/matimeline/eventmanager/EventmanagerApplication.java.",
+   "selected": {
+    "backend-core": "fichier affecté"
+   },
+   "ok": true,
+   "sole": false
+  },
+  {
+   "kind": "fichier",
+   "variant": "règle 1 bis",
+   "expected": [
+    "backend-core"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/application/dtos/ArchivedProductResponse.java"
+   ],
+   "text": "Modifier le fichier backend:src/main/java/com/matimeline/eventmanager/application/dtos/ArchivedProductResponse.java.",
+   "selected": {
+    "product": "fichier affecté",
+    "backend-core": "path_rules ^backend:(?!src/main/resources/db/migration/)src/(main|test)/(java|resources)/"
+   },
+   "ok": true,
+   "sole": false
+  },
+  {
+   "kind": "fichier",
+   "variant": "règle 1 bis",
+   "expected": [
+    "frontend-app"
+   ],
+   "files": [
+    "frontend-app:[locale]/(app)/dashboard/loading.test.tsx"
+   ],
+   "text": "Modifier le fichier frontend-app:[locale]/(app)/dashboard/loading.test.tsx.",
+   "selected": {
+    "frontend-app": "fichier affecté"
+   },
+   "ok": true,
+   "sole": false
+  },
+  {
+   "kind": "fichier",
+   "variant": "règle 1 bis",
+   "expected": [
+    "frontend-app"
+   ],
+   "files": [
+    "frontend-app:[locale]/(app)/dashboard/loading.tsx"
+   ],
+   "text": "Modifier le fichier frontend-app:[locale]/(app)/dashboard/loading.tsx.",
+   "selected": {
+    "frontend-app": "fichier affecté"
+   },
+   "ok": true,
+   "sole": false
+  },
+  {
+   "kind": "fichier",
+   "variant": "règle 1 bis",
+   "expected": [
+    "frontend-core"
+   ],
+   "files": [
+    "frontend:__tests__/console-error-guard.test.ts"
+   ],
+   "text": "Modifier le fichier frontend:__tests__/console-error-guard.test.ts.",
+   "selected": {
+    "frontend-core": "fichier affecté"
+   },
+   "ok": true,
+   "sole": false
+  },
+  {
+   "kind": "fichier",
+   "variant": "règle 1 bis",
+   "expected": [
+    "frontend-core"
+   ],
+   "files": [
+    "frontend:__tests__/ds-type-scale.test.ts"
+   ],
+   "text": "Modifier le fichier frontend:__tests__/ds-type-scale.test.ts.",
+   "selected": {
+    "frontend-core": "fichier affecté"
+   },
+   "ok": true,
+   "sole": false
+  },
+  {
+   "kind": "fichier",
+   "variant": "règle 1 bis",
+   "expected": [
+    "lib-socle"
+   ],
+   "files": [
+    "frontend:lib/auth-guard-paths.test.ts"
+   ],
+   "text": "Modifier le fichier frontend:lib/auth-guard-paths.test.ts.",
+   "selected": {
+    "lib-socle": "fichier affecté"
+   },
+   "ok": true,
+   "sole": false
+  },
+  {
+   "kind": "fichier",
+   "variant": "règle 1 bis",
+   "expected": [
+    "lib-socle"
+   ],
+   "files": [
+    "frontend:lib/auth-guard-paths.ts"
+   ],
+   "text": "Modifier le fichier frontend:lib/auth-guard-paths.ts.",
+   "selected": {
+    "lib-socle": "fichier affecté"
+   },
+   "ok": true,
+   "sole": false
+  },
+  {
+   "kind": "fichier",
+   "variant": "règle 1 bis",
+   "expected": [
+    "migrations"
+   ],
+   "files": [
+    "backend:src/main/resources/db/migration/V10__create_sessions.sql"
+   ],
+   "text": "Modifier le fichier backend:src/main/resources/db/migration/V10__create_sessions.sql.",
+   "selected": {
+    "migrations": "fichier affecté"
+   },
+   "ok": true,
+   "sole": false
+  },
+  {
+   "kind": "fichier",
+   "variant": "règle 1 bis",
+   "expected": [
+    "migrations"
+   ],
+   "files": [
+    "backend:src/main/resources/db/migration/V11__events_conditional_check_constraints.sql"
+   ],
+   "text": "Modifier le fichier backend:src/main/resources/db/migration/V11__events_conditional_check_constraints.sql.",
+   "selected": {
+    "migrations": "fichier affecté"
    },
    "ok": true,
    "sole": false

@@ -29,6 +29,9 @@ public enum ErrorCode {
     // #290 : code générique niveau STATUT pour les erreurs 400 métier migrées de
     // {"error":<texte>} vers buildBody (le texte humain part dans `message`).
     BAD_REQUEST("bad_request"),
+    // #88 : quota d'événements du palier atteint (HTTP 402). EXCEPTION à la taxonomie par
+    // statut ci-dessus : code métier stable décidé pour #88, à ne pas généraliser sans décision.
+    EVENT_QUOTA_EXCEEDED("event_quota_exceeded"),
     INTERNAL_ERROR("internal_error");
 
     private final String code;

@@ -1,71 +1,88 @@
 {
  "mode": "rejeu",
  "errors": [],
- "warnings": [
-  "hypothèse A1 : decision 'un seul pack domain timeline, pivot UserEntity' n'a aucune des trois formes admises (le slug d'un pack du catalogue, « non créé : <slug> », « état courant ») ; l'explication va dans rule",
-  "hypothèse A2 : decision 'fondu dans timeline' n'a aucune des trois formes admises (le slug d'un pack du catalogue, « non créé : <slug> », « état courant ») ; l'explication va dans rule",
-  "hypothèse A3 : decision 'fondu dans timeline' n'a aucune des trois formes admises (le slug d'un pack du catalogue, « non créé : <slug> », « état courant ») ; l'explication va dans rule",
-  "hypothèse A4 : decision 'les composants nommés timeline, event, product, category, auth, theme ou conflict vont à timeline par alias, le reste (ui, layout, styles, lib générique) reste au socle frontend' n'a aucune des trois formes admises (le slug d'un pack du catalogue, « non créé : <slug> », « état courant ») ; l'explication va dans rule",
-  "hypothèse A5 : decision 'oui, pack transversal batch' n'a aucune des trois formes admises (le slug d'un pack du catalogue, « non créé : <slug> », « état courant ») ; l'explication va dans rule",
-  "hypothèse A6 : decision 'revendiqués par le transversal state-machine via path_rules, sans retirer leur propriétaire' n'a aucune des trois formes admises (le slug d'un pack du catalogue, « non créé : <slug> », « état courant ») ; l'explication va dans rule",
-  "hypothèse A7 : decision \"nombre de fichiers du motif ou de la couche tel que donné, 0 ko tant que la taille n'est pas mesurée\" n'a aucune des trois formes admises (le slug d'un pack du catalogue, « non créé : <slug> », « état courant ») ; l'explication va dans rule",
-  "hypothèse A8 : decision 'trois packs techniques par règle de chemin : backend-socle, frontend-socle, migrations' n'a aucune des trois formes admises (le slug d'un pack du catalogue, « non créé : <slug> », « état courant ») ; l'explication va dans rule"
- ],
+ "warnings": [],
  "invented": {},
  "leftover": [],
  "leftover_rate": 0.0,
  "assigned": 700,
  "total": 700,
  "sizes": {
-  "timeline": {
-   "files": 390,
-   "kb": 2632
-  },
-  "frontend-socle": {
-   "files": 266,
-   "kb": 1567
-  },
-  "authorization": {
-   "files": 15,
-   "kb": 150
-  },
-  "backend-socle": {
-   "files": 17,
-   "kb": 134
+  "frontend-core": {
+   "files": 344,
+   "kb": 2598
   },
   "integrations": {
-   "files": 4,
-   "kb": 12
+   "files": 98,
+   "kb": 767
+  },
+  "user": {
+   "files": 81,
+   "kb": 397
+  },
+  "backend-core": {
+   "files": 38,
+   "kb": 318
+  },
+  "authorization": {
+   "files": 35,
+   "kb": 313
+  },
+  "lib-socle": {
+   "files": 35,
+   "kb": 277
+  },
+  "event": {
+   "files": 49,
+   "kb": 255
+  },
+  "frontend-app": {
+   "files": 41,
+   "kb": 179
+  },
+  "product": {
+   "files": 18,
+   "kb": 129
+  },
+  "session": {
+   "files": 23,
+   "kb": 108
+  },
+  "export": {
+   "files": 35,
+   "kb": 107
+  },
+  "category": {
+   "files": 20,
+   "kb": 93
   },
   "migrations": {
-   "files": 5,
-   "kb": 12
+   "files": 16,
+   "kb": 47
   },
   "batch": {
-   "files": 2,
-   "kb": 3
-  },
-  "state-machine": {
-   "files": 1,
-   "kb": 0
+   "files": 9,
+   "kb": 42
   }
  },
  "small_domain_packs_R7": {},
  "giant_domain_packs_R8": {},
- "median_domain_kb": 2633,
+ "giant_domain_packs_R8_why": {},
+ "median_domain_kb": 119,
  "overlay_claims": {
-  "batch": 5,
-  "integrations": 14,
-  "state-machine": 7,
-  "authorization": 25
+  "batch": 9,
+  "authorization": 35,
+  "integrations": 98
  },
  "by_how": {
-  "seed": 390,
-  "path_rule": 310
+  "seed": 226,
+  "path_rule": 420,
+  "R10": 54
  },
  "assumptions": {
-  "undecidable": 5,
-  "confirmed": 2,
-  "open": 1
+  "refuted": 1,
+  "confirmed": 7,
+  "undecidable": 1,
+  "open": 2
  }
 }

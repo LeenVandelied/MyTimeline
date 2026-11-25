@@ -15,7 +15,10 @@ import java.security.Signature;
 import java.security.spec.RSAPublicKeySpec;
 import java.util.Base64;
 
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -135,6 +138,48 @@ class JwksEndpointIntegrationTest extends AbstractPostgresIntegrationTest {
 
         assertThat(modulus).hasSize(256);
         assertThat(modulus[0] & 0xFF).isGreaterThanOrEqualTo(0x80);
+    }
+
+    /**
+     * #489 — rotation en cours : une clé précédente (publique, générée en mémoire) est
+     * configurée. Contexte Spring dédié pour ne pas toucher aux cas à clé unique ci-dessus.
+     */
+    @Nested
+    class WithPreviousKey {
+
+        private static final String PREVIOUS_PUBLIC_KEY = generatePreviousPublicKey();
+
+        @DynamicPropertySource
+        static void previousKey(DynamicPropertyRegistry registry) {
+            registry.add("jwt.previous-public-key", () -> PREVIOUS_PUBLIC_KEY);
+        }
+
+        @Autowired
+        private MockMvc nestedMockMvc;
+
+        @Test
+        void jwks_withPreviousKey_neverExposesPrivateKeyParameters() throws Exception {
+            MvcResult result = nestedMockMvc.perform(get(JwksController.JWKS_PATH))
+                    .andExpect(status().isOk())
+                    .andReturn();
+            JsonNode keys = MAPPER.readTree(result.getResponse().getContentAsString()).get("keys");
+
+            assertThat(keys.size()).as("clé courante + clé précédente publiées").isEqualTo(2);
+            for (JsonNode key : keys) {
+                assertThat(key.propertyNames())
+                        .containsExactlyInAnyOrder("kty", "use", "alg", "kid", "n", "e");
+            }
+        }
+
+        private static String generatePreviousPublicKey() {
+            try {
+                java.security.KeyPairGenerator generator = java.security.KeyPairGenerator.getInstance("RSA");
+                generator.initialize(2048);
+                return Base64.getEncoder().encodeToString(generator.generateKeyPair().getPublic().getEncoded());
+            } catch (java.security.GeneralSecurityException e) {
+                throw new IllegalStateException(e);
+            }
+        }
     }
 
     // ---------------------------------------------------------------- helpers

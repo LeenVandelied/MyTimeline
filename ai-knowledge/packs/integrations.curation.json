@@ -1,64 +1,64 @@
 {
  "pack": "integrations",
  "schema": 1,
- "curated_at": "2026-11-18T16:25:37Z",
+ "curated_at": "2026-11-20T12:45:00Z",
  "curator": "curate/1",
- "base_sha256": "ae69bce89a10b8531f1efac49a7bc8b64dae3be866c0bffd63f2eb0ff1cf2c63",
- "pack_sha256_before": "d78c0bc1643c75d54bea751faceefc402ed11d6ca698735e65d5504f0481a8d5",
- "pack_sha256_after": "1ffccae5f50a07ab0434ad26f253cf62edffce9e51060d7a062969ababe4dbae",
+ "base_sha256": "88ad6cc38a54980e577165c9e049a2633584d262d9613dedc80680c6e9b3b7a2",
+ "pack_sha256_before": "e4f42392d481721cb36cafea94cd15267ef264df24d4266ad321b7c625200a80",
+ "pack_sha256_after": "39c5bbc2d15e5a89acdc33545c7eaa1ce4ecee59f61cd86bd2a4ec5927472773",
  "criteria_sha256": "48e0e20f086c5b11deecfecdc547ba1d6115faee1597a5aaf682f6c699e92423",
  "models": {
   "measure": "haiku",
   "refute": "sonnet"
  },
- "base_fingerprint": "1da2ba3fba3a63fab498b0c6d1fe8bec8fe84bc51ebc82574d50f573f7de3dda",
+ "base_fingerprint": "f7984eacb1b983b17187ea75176f49511bb0644b8c83f802588dac68e31c8537",
  "bytes": {
-  "before": 7898,
-  "after": 7898,
+  "before": 11046,
+  "after": 10833,
   "by_section": {
    "activate": {
-    "before": 225,
-    "after": 225
+    "before": 412,
+    "after": 412
    },
    "lexicon": {
     "before": 78,
     "after": 78
    },
    "rules": {
-    "before": 1837,
-    "after": 1837
+    "before": 1709,
+    "after": 1496
    },
    "structure": {
-    "before": 82,
-    "after": 82
+    "before": 1253,
+    "after": 1253
    },
    "surface": {
-    "before": 450,
-    "after": 450
+    "before": 1255,
+    "after": 1255
    },
    "files": {
-    "before": 1998,
-    "after": 1998
+    "before": 1970,
+    "after": 1970
    },
    "relations": {
-    "before": 376,
-    "after": 376
+    "before": 631,
+    "after": 631
    },
    "tests": {
-    "before": 1510,
-    "after": 1510
+    "before": 1167,
+    "after": 1167
    },
    "questions": {
-    "before": 91,
-    "after": 91
+    "before": 451,
+    "after": 451
    },
    "alerts": {
-    "before": 78,
-    "after": 78
+    "before": 943,
+    "after": 943
    },
    "coverage": {
-    "before": 752,
-    "after": 752
+    "before": 754,
+    "after": 754
    }
   }
  },
@@ -67,57 +67,291 @@
    "id": "integrations:rules:1",
    "section": "rules",
    "rank": 1,
-   "text": "- Selon la javadoc, le stockage local a un bean par usage sur un répertoire distinct, et chaque injection de StoragePort doit porter un qualifier. [#0041f21f67193426-1] [#0041f21f67193426-3]",
-   "fact_text": "Selon la javadoc, le stockage local a un bean par usage sur un répertoire distinct, et chaque injection de StoragePort doit porter un qualifier",
+   "text": "- Une référence de stockage vide, contenant un séparateur de chemin ou '..' est rejetée, et le chemin résolu doit rester sous le répertoire de base [#68cad5d7a30c3ac4-1] [#68cad5d7a30c3ac4-2]",
+   "fact_text": "Une référence de stockage vide, contenant un séparateur de chemin ou '..' est rejetée, et le chemin résolu doit rester sous le répertoire de base",
    "consigne": null,
    "consigne_dropped": false,
    "cites": [
-    "integrations/0041f21f67193426-1",
-    "integrations/0041f21f67193426-3"
+    "integrations/68cad5d7a30c3ac4-1",
+    "integrations/68cad5d7a30c3ac4-2"
    ],
    "files": [
-    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/config/StorageConfig.java"
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapter.java"
    ],
    "ranges": [
     [
-     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/config/StorageConfig.java",
-     11,
-     11,
-     "18f9a8c3cbe923e7c1af713b3db95e34c1276c17febb1f8041b975864981d835"
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapter.java",
+     86,
+     97,
+     "fb1427fc1e3730a5a8063bde7de34e05970c7c9c8184c83d4461cf534c8e9c0d"
     ],
     [
-     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/config/StorageConfig.java",
-     26,
-     27,
-     "b40cea6ad008172e60aa6b19070896ad05339aada1968c67739f6279f1855bc5"
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapter.java",
+     92,
+     95,
+     "9749d8965f84c851770e0de0284bfbbbb94e5de1839c9d99fbc555da7f3305ea"
     ]
    ],
-   "code_sha256": "f0645ec5ee961d79d29cc97fed29df48c7b066529b364cf89b394fe1adb1951e",
+   "code_sha256": "7f783062edb89dcf9ee7ac40c60b913e0519daccd55884b658c70a767e79729a",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 0.545,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 11
+      }
+     },
+     "restatement": "La méthode `LocalStorageAdapter.resolveWithinBase` rejette avec `IllegalArgumentException` (\"référence de stockage invalide\") toute référence `null`, vide ou blanche, ou contenant `/`, `\\` ou `..`. Elle résout ensuite la référence sous `baseDir` avec `normalize()` et lève \"référence de stockage hors périmètre\" si le chemin résolu ne commence pas par `baseDir`. Le second bloc (L92-95) montre seulement cette dernière vérification.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "integrations.details.md",
+     "row": 9
+    }
+   },
+   "uses": 0
+  },
+  {
+   "id": "integrations:rules:2",
+   "section": "rules",
+   "rank": 2,
+   "text": "- Le nom et le lien sont échappés en HTML dans htmlContent, mais to.name reçoit le nom brut. [#d01536aff913607e-1] [#11d4aa8f36e6fb68-1]",
+   "fact_text": "Le nom et le lien sont échappés en HTML dans htmlContent, mais to.name reçoit le nom brut",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "integrations/d01536aff913607e-1",
+    "integrations/11d4aa8f36e6fb68-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailService.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailService.java",
+     120,
+     127,
+     "2ba5b4ce4a56f286b7ed3c73eddf2319f96bf7429e0adb33c5092a0e2c5fc651"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailService.java",
+     129,
+     133,
+     "9e7503a88e49c75aba7cec22f136a44365e5cff1eca8258a169cd11f4aeff9cf"
+    ]
+   ],
+   "code_sha256": "124c1d8e0eae6e9c9bbfd1de854ff06d505f62ab2c21d6c259adc9320b0a49b3",
    "verdict": "admit",
    "reason": "admitted",
    "final": true,
    "measures": {
     "fidelity": null,
-    "deduce": null,
-    "rediscover": null,
-    "comment": [
-     {
-      "id": "integrations/0041f21f67193426-1",
-      "verdict": "confirmed"
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.333,
+      "values": null,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 3,
+       "values": 0,
+       "terms": 4
+      }
      },
-     {
-      "id": "integrations/0041f21f67193426-3",
-      "verdict": "confirmed"
-     }
-    ],
+     "restatement": "BrevoEmailService.buildPayload échappe le nom et le lien de réinitialisation avec HtmlUtils.htmlEscape avant de les passer au template, dans les quatre langues. Le payload renvoyé contient sender, to (avec le nom assaini), subject du template et htmlContent. Le commentaire précise que l'échappement de l'URL est une défense en profondeur.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 17,
+     "within_budget": false,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailService.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.667,
+      "values": null,
+      "terms": 1.0,
+      "n": {
+       "identifiers": 3,
+       "values": 0,
+       "terms": 4
+      }
+     },
+     "job": "integrations:rediscover:backend_src_main_java_com_matimeline_eventmanager_infrastructure_adapters_LocalStorageAdapter.java:1",
+     "rank_in_lot": 2,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
     "refute": {
      "votes": 3,
      "refuted": 0,
      "refute_unproven": 0,
      "reasons": [
-      "StorageConfig définit avatarStorage et exportStorage. Toutes les injections de StoragePort en main portent un @Qualifier : AsyncExportRunner, AvatarServiceImpl, ExportPurgeScheduler, ExportServiceImpl. La ligne dit « selon la javadoc », donc elle reste fidèle.",
-      "StorageConfig L11 et L26-27 le disent. Les injections de StoragePort trouvées (AvatarServiceImpl, ExportServiceImpl, AsyncExportRunner, ExportPurgeScheduler) portent toutes un @Qualifier. Aucun contre-exemple dans le code principal.",
-      "StorageConfig L11 et L26-27 affirment bien ce que dit la ligne, et la ligne cite la javadoc. Les 4 injections de StoragePort (AvatarServiceImpl, ExportServiceImpl, AsyncExportRunner, ExportPurgeScheduler) portent un @Qualifier."
+      "buildPayload échappe escapedName et escapedResetLink pour htmlContent (L120-127) et passe safeName brut à to.name (L131), comme le commentaire L118 le précise.",
+      "buildPayload échappe escapedName et escapedResetLink pour htmlContent (L120-127) et passe safeName brut à to.name (L131), comme le commentaire L118 le dit.",
+      "buildPayload L120-133 échappe nom et lien dans htmlContent et passe safeName brut à to.name."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "scope",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Read",
+         "target": "BrevoEmailService.java L100-130",
+         "found": "safeName brut dans to.name, valeurs échappées uniquement dans htmlContent."
+        }
+       ],
+       [
+        {
+         "tool": "Read",
+         "target": "BrevoEmailService.java L95-134",
+         "found": "Confirme l'échappement HTML et le nom brut dans to.name."
+        }
+       ],
+       [
+        {
+         "tool": "Read",
+         "target": "BrevoEmailService.java L95-130",
+         "found": "safeName brut dans to.name, escapedName/escapedResetLink dans htmlContent"
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "pattern_pack",
+   "placed": {
+    "pack_line": 31,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "integrations:rules:3",
+   "section": "rules",
+   "rank": 3,
+   "text": "- Le CSV neutralise toute valeur commençant par =, +, -, @, tabulation ou retour par une apostrophe, puis met entre guillemets les champs à virgule, guillemet ou saut de ligne. [#0bcf5a6ce1ee7408-1] [#1323a64f4a7c32e4-1]",
+   "fact_text": "Le CSV neutralise toute valeur commençant par =, +, -, @, tabulation ou retour par une apostrophe, puis met entre guillemets les champs à virgule, guillemet ou saut de ligne",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "integrations/0bcf5a6ce1ee7408-1",
+    "integrations/1323a64f4a7c32e4-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/CsvExportRenderer.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/CsvExportRenderer.java",
+     118,
+     126,
+     "968a5742803ffcacb91ee068d86bbc94ec11c08be9704d32244c4a3117b0ef33"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/CsvExportRenderer.java",
+     97,
+     108,
+     "34e71e2b4cc662a531a94d91078a018425607f6f99fe31be7b222c5a0d7d72a8"
+    ]
+   ],
+   "code_sha256": "ba2e727bcdc1ef0d9a3c3b3515bd79be0a1c505bb7e8a3c9dfc5a1cf4edd7e18",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
+      "terms": 0.818,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 11
+      }
+     },
+     "restatement": "CsvExportRenderer.neutralizeFormula préfixe d'une apostrophe toute valeur commençant par =, +, -, @, tabulation, retour chariot ou saut de ligne. escape convertit null en chaîne vide, applique cette neutralisation, puis entoure de guillemets si la valeur contient une virgule, un guillemet, LF ou CR, en doublant les guillemets internes.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 7,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/CsvExportRenderer.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
+      "terms": 0.818,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 11
+      }
+     },
+     "job": "integrations:rediscover:backend_src_main_java_com_matimeline_eventmanager_infrastructure_adapters_LocalStorageAdapter.java:1",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "escape (L97-108) appelle neutralizeFormula (préfixe apostrophe pour = + - @ tab CR LF) puis met entre guillemets si virgule, guillemet ou saut de ligne. Seul rendu CSV trouvé.",
+      "escape (L97-108) appelle neutralizeFormula (préfixe apostrophe pour = + - @ tab CR LF) puis met entre guillemets si virgule, guillemet ou saut de ligne ; CsvExportRenderer est la seule implémentation CSV.",
+      "Tous les champs passent par escape via row (L86-88), qui appelle neutralizeFormula puis met entre guillemets."
      ],
      "evidence": [
       "",
@@ -137,32 +371,22 @@
        [
         {
          "tool": "Grep",
-         "target": "StoragePort",
-         "found": "4 points d'injection en main, tous avec @Qualifier, plus 2 beans dans StorageConfig."
-        },
-        {
-         "tool": "Grep",
-         "target": "@Qualifier",
-         "found": "Confirme exportStorage et avatarStorage sur chaque constructeur."
+         "target": "neutralizeFormula|text/csv dans backend/src/main",
+         "found": "neutralizeFormula n'existe que dans CsvExportRenderer, appelée depuis escape."
         }
        ],
        [
         {
          "tool": "Grep",
-         "target": "StoragePort dans backend/src/main",
-         "found": "Quatre points d'injection, tous avec @Qualifier(\"avatarStorage\") ou @Qualifier(\"exportStorage\"). Deux beans dans StorageConfig."
+         "target": "neutralizeFormula|CsvExportRenderer|escapeCsv|csvEscape",
+         "found": "Un seul rendu CSV, ZipExportRenderer le réutilise."
         }
        ],
        [
         {
          "tool": "Grep",
-         "target": "StoragePort dans backend/src/main/java",
-         "found": "Quatre points d'injection, tous avec @Qualifier (avatarStorage ou exportStorage)."
-        },
-        {
-         "tool": "Grep",
-         "target": "Qualifier|Primary",
-         "found": "Aucun @Primary, aucune injection de StoragePort sans qualifier."
+         "target": "escape\\(|append\\(|neutralizeFormula in CsvExportRenderer.java",
+         "found": "row() applique escape à chaque champ ; pas de chemin contournant"
         }
        ]
       ],
@@ -171,186 +395,12 @@
       "unproven": 0
      },
      "reused": true,
-     "reused_from": "2026-11-18T16:25:29Z"
+     "reused_from": "2026-11-20T12:20:00Z"
     }
    },
    "contrary": null,
    "check": "scope",
-   "general": "words:chaque",
-   "placed": {
-    "pack_line": 30,
-    "annex_table": null
-   },
-   "uses": 0
-  },
-  {
-   "id": "integrations:rules:2",
-   "section": "rules",
-   "rank": 2,
-   "text": "- Le nom stocké est un UUID plus une extension, jamais dérivé du nom client, et l'extension hors 1 à 5 caractères alphanumériques minuscules lève IllegalArgumentException. [#1a1fec74340ec77e-1] [#6f4983af9414aa47-1]",
-   "fact_text": "Le nom stocké est un UUID plus une extension, jamais dérivé du nom client, et l'extension hors 1 à 5 caractères alphanumériques minuscules lève IllegalArgumentException",
-   "consigne": null,
-   "consigne_dropped": false,
-   "cites": [
-    "integrations/1a1fec74340ec77e-1",
-    "integrations/6f4983af9414aa47-1"
-   ],
-   "files": [
-    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapter.java"
-   ],
-   "ranges": [
-    [
-     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapter.java",
-     44,
-     46,
-     "76bdeec9d5d22c8e339459c386d628fae6039eaa7b0a790d11bdad0d7cdfd801"
-    ],
-    [
-     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapter.java",
-     100,
-     104,
-     "17fb1c6843534f42e320b5bab84abc8303d8a870054fc18302f5758aff6166aa"
-    ]
-   ],
-   "code_sha256": "7b5442ea7d7384e07c82f5557513bc38c6caf032a33f7ce09ee8669e10210635",
-   "verdict": "admit",
-   "reason": "rediscovered",
-   "final": true,
-   "measures": {
-    "fidelity": null,
-    "deduce": {
-     "covered": false,
-     "overlap": {
-      "identifiers": 1.0,
-      "values": 1.0,
-      "terms": 0.375,
-      "n": {
-       "identifiers": 2,
-       "values": 2,
-       "terms": 8
-      }
-     },
-     "restatement": "LocalStorageAdapter.store génère un nom de fichier UUID suffixé par l'extension validée, jamais le nom client. sanitizeExtension n'accepte que [a-z0-9]{1,5} et lève IllegalArgumentException (\"extension de stockage invalide\") sinon.",
-     "confidence": "high",
-     "reused": true,
-     "reused_from": "2026-11-18T16:25:29Z"
-    },
-    "rediscover": {
-     "found": true,
-     "cost": 4,
-     "within_budget": true,
-     "covered": true,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapter.java",
-     "file_ok": true,
-     "overlap": {
-      "identifiers": 1.0,
-      "values": 1.0,
-      "terms": 0.625,
-      "n": {
-       "identifiers": 2,
-       "values": 2,
-       "terms": 8
-      }
-     },
-     "job": "integrations:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_infrastructure_adapters_LocalStorageAdapter.java:1",
-     "rank_in_lot": 2,
-     "reused": true,
-     "reused_from": "2026-11-18T16:25:29Z"
-    },
-    "comment": [],
-    "refute": null
-   },
-   "contrary": null,
-   "check": "scope",
-   "general": "words:jamais",
-   "kept_for": "rediscovered",
-   "placed": {
-    "pack_line": 32,
-    "annex_table": null
-   },
-   "uses": 0
-  },
-  {
-   "id": "integrations:rules:3",
-   "section": "rules",
-   "rank": 3,
-   "text": "- Une référence nulle, vide, avec séparateur ou '..', ou dont le chemin résolu sort du répertoire de base, lève IllegalArgumentException. [#381d4591926b8291-1] [#381d4591926b8291-2]",
-   "fact_text": "Une référence nulle, vide, avec séparateur ou '..', ou dont le chemin résolu sort du répertoire de base, lève IllegalArgumentException",
-   "consigne": null,
-   "consigne_dropped": false,
-   "cites": [
-    "integrations/381d4591926b8291-1",
-    "integrations/381d4591926b8291-2"
-   ],
-   "files": [
-    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapter.java"
-   ],
-   "ranges": [
-    [
-     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapter.java",
-     87,
-     91,
-     "045d306a42921b03ac0b5b4cd503162c4bf4295e974f36f6036f7bb037423485"
-    ],
-    [
-     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapter.java",
-     92,
-     95,
-     "b615183373ba3d45ae38aefa5ea2510b4e8ce34f7aaef728bcb4d59a42a2e12e"
-    ]
-   ],
-   "code_sha256": "efedc00dfa6fc5e6913946ff6d456476e4071fb695207a6936a05cc1b1b11389",
-   "verdict": "admit",
-   "reason": "rediscovered",
-   "final": true,
-   "measures": {
-    "fidelity": null,
-    "deduce": {
-     "covered": false,
-     "overlap": {
-      "identifiers": 1.0,
-      "values": null,
-      "terms": 0.4,
-      "n": {
-       "identifiers": 1,
-       "values": 0,
-       "terms": 10
-      }
-     },
-     "restatement": "resolveWithinBase rejette (IllegalArgumentException \"référence de stockage invalide\") une référence nulle, vide, contenant / , \\ ou .. ; puis normalise baseDir.resolve(reference) et rejette avec \"hors périmètre\" si le chemin ne commence pas par baseDir.",
-     "confidence": "high",
-     "reused": true,
-     "reused_from": "2026-11-18T16:25:29Z"
-    },
-    "rediscover": {
-     "found": true,
-     "cost": 4,
-     "within_budget": true,
-     "covered": true,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapter.java",
-     "file_ok": true,
-     "overlap": {
-      "identifiers": 1.0,
-      "values": null,
-      "terms": 0.6,
-      "n": {
-       "identifiers": 1,
-       "values": 0,
-       "terms": 10
-      }
-     },
-     "job": "integrations:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_infrastructure_adapters_LocalStorageAdapter.java:1",
-     "rank_in_lot": 3,
-     "reused": true,
-     "reused_from": "2026-11-18T16:25:29Z"
-    },
-    "comment": [],
-    "refute": null
-   },
-   "contrary": null,
-   "check": "scope",
-   "general": "pattern_pack",
-   "kept_for": "rediscovered",
+   "general": "words:toute",
    "placed": {
     "pack_line": 33,
     "annex_table": null
@@ -361,32 +411,33 @@
    "id": "integrations:rules:4",
    "section": "rules",
    "rank": 4,
-   "text": "- Le CSV préfixe d'une apostrophe tout champ commençant par un signe de formule, puis échappe selon RFC 4180. [#64f39489a8c24fb5-1] [#8b52ae90d30c1625-1]",
-   "fact_text": "Le CSV préfixe d'une apostrophe tout champ commençant par un signe de formule, puis échappe selon RFC 4180",
+   "text": "- Le ZIP réutilise les rendus JSON, Markdown et CSV, et les noms de fichiers commencent par mytimeline-export- sans identifiant utilisateur. [#19b3fc4ec346a739-1] [#0fde468ee74ce390-1]",
+   "fact_text": "Le ZIP réutilise les rendus JSON, Markdown et CSV, et les noms de fichiers commencent par mytimeline-export- sans identifiant utilisateur",
    "consigne": null,
    "consigne_dropped": false,
    "cites": [
-    "integrations/64f39489a8c24fb5-1",
-    "integrations/8b52ae90d30c1625-1"
+    "integrations/19b3fc4ec346a739-1",
+    "integrations/0fde468ee74ce390-1"
    ],
    "files": [
-    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/CsvExportRenderer.java"
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/ZipExportRenderer.java",
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/export/ExportRenderersTest.java"
    ],
    "ranges": [
     [
-     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/CsvExportRenderer.java",
-     118,
-     128,
-     "cea2e5e40a7fed4e6cce19d11b12bf7f45636a01a29824bb6d5aa7366cab3ecb"
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/ZipExportRenderer.java",
+     43,
+     54,
+     "5eb20f34e977179f4e57d56cfa7c58f23735f12bdc912146a929f3795cf334d4"
     ],
     [
-     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/CsvExportRenderer.java",
-     81,
-     108,
-     "15777c4bb7ed448563b53e6a19f5180bc2420da61adabdfe6b488620a7409684"
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/export/ExportRenderersTest.java",
+     186,
+     190,
+     "27fea0308ac4420d132d173745cf97e2b0cf0bcf7ce25254a3690e76e6d7f992"
     ]
    ],
-   "code_sha256": "c11764723ee32f57ac517340f3d0e1687da4d1356b6e0705db8f0e9cf1f6b0f8",
+   "code_sha256": "fcccaca01cbe5285124c05d09f341448c034b3cd634528724712355e002d5367",
    "verdict": "admit",
    "reason": "admitted",
    "final": true,
@@ -395,40 +446,41 @@
     "deduce": {
      "covered": false,
      "overlap": {
-      "identifiers": 0.5,
-      "values": 1.0,
-      "terms": 0.571,
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.1,
       "n": {
-       "identifiers": 2,
-       "values": 1,
-       "terms": 7
+       "identifiers": 3,
+       "values": 0,
+       "terms": 10
       }
      },
-     "restatement": "CsvExportRenderer neutralise l'injection de formule : une valeur commençant par =, +, -, @, tabulation, retour chariot ou saut de ligne reçoit un préfixe apostrophe. escape applique cette neutralisation puis l'échappement RFC 4180 (guillemets si virgule, guillemet, LF ou CR, guillemets doublés), et row assemble une ligne terminée par \\n.",
+     "restatement": "ZipExportRenderer.render écrit en mémoire trois entrées dans une archive ZIP : data.json, data.md et data.csv, produites par leurs renderers respectifs. Une IOException est enveloppée dans UncheckedIOException. Le résultat porte le type de contenu ZIP et un nom de fichier fourni par ExportFilenames.forFormat à partir de generatedAt.",
      "confidence": "high",
+     "files_read_missing": true,
      "reused": true,
-     "reused_from": "2026-11-18T16:25:29Z"
+     "reused_from": "2026-11-20T12:20:00Z"
     },
     "rediscover": {
      "found": true,
-     "cost": 5,
-     "within_budget": true,
+     "cost": 22,
+     "within_budget": false,
      "covered": false,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/CsvExportRenderer.java",
-     "file_ok": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/ExportFilenames.java",
+     "file_ok": false,
      "overlap": {
-      "identifiers": 0.5,
-      "values": 1.0,
-      "terms": 0.571,
+      "identifiers": 0.333,
+      "values": null,
+      "terms": 0.6,
       "n": {
-       "identifiers": 2,
-       "values": 1,
-       "terms": 7
+       "identifiers": 3,
+       "values": 0,
+       "terms": 10
       }
      },
-     "job": "integrations:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_infrastructure_adapters_LocalStorageAdapter.java:1",
+     "job": "integrations:rediscover:backend_src_main_java_com_matimeline_eventmanager_infrastructure_adapters_LocalStorageAdapter.java:1",
      "reused": true,
-     "reused_from": "2026-11-18T16:25:29Z"
+     "reused_from": "2026-11-20T12:20:00Z"
     },
     "comment": [],
     "refute": {
@@ -436,9 +488,9 @@
      "refuted": 0,
      "refute_unproven": 0,
      "reasons": [
-      "CsvExportRenderer.escape appelle neutralizeFormula sur chaque champ de row() puis échappe RFC 4180 ; tous les champs passent par row. Le préfixe s'applique aussi à tab, CR et LF, ce qui élargit la règle sans la contredire.",
-      "CsvExportRenderer.escape appelle neutralizeFormula (préfixe apostrophe sur = + - @ tab CR LF) puis échappe RFC 4180. Toutes les valeurs passent par row() puis escape(). Pas de contre-exemple dans la portée.",
-      "CsvExportRenderer.escape L97-108 applique neutralizeFormula (L118-128, apostrophe) puis RFC 4180 sur chaque champ via row. ZipExportRenderer réutilise CsvExportRenderer. Pas de contre-exemple."
+      "ZipExportRenderer.render réutilise les trois rendus JSON, Markdown et CSV (L46-48). ExportFilenames.forFormat préfixe mytimeline-export- et ajoute la date, sans identifiant utilisateur.",
+      "ZipExportRenderer.render réutilise les rendus JSON, Markdown, CSV (L46-48) et ExportFilenames.forFormat utilise le préfixe mytimeline-export- sans identifiant utilisateur (date seulement).",
+      "Le rendu ZIP réutilise bien les 3 rendus, mais le nom de téléchargement d'un job d'export est mytimeline-export.<ext> sans tiret final."
      ],
      "evidence": [
       "",
@@ -457,39 +509,49 @@
       "searches": [
        [
         {
-         "tool": "Read",
-         "target": "CsvExportRenderer.java",
-         "found": "Toutes les sections construisent leurs lignes via row(), qui appelle escape, qui appelle neutralizeFormula : aucun contre-exemple."
-        }
-       ],
-       [
+         "tool": "Grep",
+         "target": "mytimeline-export-",
+         "found": "Défini une seule fois dans ExportFilenames (PREFIX), sans userId."
+        },
         {
          "tool": "Read",
-         "target": "CsvExportRenderer.java",
-         "found": "Tous les champs de données passent par row() puis escape() puis neutralizeFormula. Seuls les en-têtes et marqueurs de section sont en dur."
+         "target": "ExportFilenames.java",
+         "found": "PREFIX + date yyyyMMdd + extension, aucun identifiant."
         }
        ],
        [
         {
          "tool": "Grep",
-         "target": "neutralizeFormula|RFC 4180|csv",
-         "found": "Le CSV n'est produit que par CsvExportRenderer, repris par ZipExportRenderer (data.csv)."
+         "target": "mytimeline-export-|forFormat",
+         "found": "Tous les rendus passent par ExportFilenames.forFormat, PREFIX = mytimeline-export-."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "mytimeline-export in backend/src/main",
+         "found": "ExportFilenames PREFIX avec tiret ; ExportServiceImpl L110 utilise 'mytimeline-export.' + extension"
+        },
+        {
+         "tool": "Read",
+         "target": "ExportServiceImpl.java L95-120",
+         "found": "download() renvoie le nom mytimeline-export.<ext>"
         }
        ]
       ],
       "untraced": 0,
       "over_budget": 0,
-      "unproven": 0
+      "unproven": 1
      },
      "reused": true,
-     "reused_from": "2026-11-18T16:25:29Z"
+     "reused_from": "2026-11-20T12:20:00Z"
     }
    },
    "contrary": null,
    "check": "scope",
-   "general": "words:tout",
+   "general": "pattern_pack",
    "placed": {
-    "pack_line": 35,
+    "pack_line": 34,
     "annex_table": null
    },
    "uses": 0
@@ -498,32 +560,25 @@
    "id": "integrations:rules:5",
    "section": "rules",
    "rank": 5,
-   "text": "- Le ZIP est construit en mémoire et réutilise les rendus JSON, Markdown et CSV sous data.json, data.md et data.csv. [#35a51e5f0043333c-1] [#35a51e5f0043333c-3]",
-   "fact_text": "Le ZIP est construit en mémoire et réutilise les rendus JSON, Markdown et CSV sous data.json, data.md et data.csv",
+   "text": "- Un seul intercepteur de réponse gère réseau, 401 et toasts 400, 403, 500, voir `frontend:services/apiClient.ts:180-285`. [#ebe8f14e30148918-1]",
+   "fact_text": "Un seul intercepteur de réponse gère réseau, 401 et toasts 400, 403, 500, voir apiClient.ts",
    "consigne": null,
    "consigne_dropped": false,
    "cites": [
-    "integrations/35a51e5f0043333c-1",
-    "integrations/35a51e5f0043333c-3"
+    "integrations/ebe8f14e30148918-1"
    ],
    "files": [
-    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/ZipExportRenderer.java"
+    "frontend:services/apiClient.ts"
    ],
    "ranges": [
     [
-     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/ZipExportRenderer.java",
-     44,
-     54,
-     "ae32e7df22c52eca7a1bbcd07656b2458da411d95c89b28372cc73d78f0bce2c"
-    ],
-    [
-     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/ZipExportRenderer.java",
-     46,
-     48,
-     "e5da3626ac12a521e29efe8b19afc10a16fc418cd2e3cf37fd86bd920a627e1c"
+     "frontend:services/apiClient.ts",
+     180,
+     285,
+     "58069a1fb92806406834a3ee22d573345aa048cfc8bcf945cec349cd33f29ba9"
     ]
    ],
-   "code_sha256": "77d53685062bf3feb4978c685fa25db5e222e053ac8471cf8fae1213776403ed",
+   "code_sha256": "58069a1fb92806406834a3ee22d573345aa048cfc8bcf945cec349cd33f29ba9",
    "verdict": "admit",
    "reason": "rediscovered",
    "final": true,
@@ -532,41 +587,41 @@
     "deduce": {
      "covered": false,
      "overlap": {
-      "identifiers": 1.0,
-      "values": null,
-      "terms": 0.2,
+      "identifiers": 0.0,
+      "values": 1.0,
+      "terms": 0.8,
       "n": {
-       "identifiers": 6,
-       "values": 0,
+       "identifiers": 1,
+       "values": 4,
        "terms": 5
       }
      },
-     "restatement": "ZipExportRenderer.render produit une archive ZIP contenant trois entrées data.json, data.md et data.csv, générées par les renderers JSON, Markdown et CSV ; une IOException est convertie en UncheckedIOException. Le type de contenu et le nom de fichier viennent de ExportFormat.ZIP et ExportFilenames.",
+     "restatement": "L'intercepteur de réponse classe d'abord les erreurs réseau : ECONNABORTED déclenche reportTimeout, et un statut supérieur ou égal à 500 déclenche reportServerError, sauf un 500 déclaré traité inline par la requête. Les requêtes d'auth inline sont rejetées sans effet global. Ensuite, un 400 affiche un toast de validation sauf en validation inline, un 401 affiche un toast de session expirée et redirige vers le login (verrou isRedirecting), un 403 journalise via console.error (url, method, data) puis affiche un toast sauf opt-out, et un 500 affiche un toast sauf opt-out. Dans tous les cas l'erreur est rejetée.",
      "confidence": "high",
      "reused": true,
-     "reused_from": "2026-11-18T16:25:29Z"
+     "reused_from": "2026-11-20T12:20:00Z"
     },
     "rediscover": {
      "found": true,
-     "cost": 10,
+     "cost": 4,
      "within_budget": true,
      "covered": true,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/export/ZipExportRenderer.java",
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/services/apiClient.ts",
      "file_ok": true,
      "overlap": {
-      "identifiers": 0.833,
-      "values": null,
+      "identifiers": 1.0,
+      "values": 1.0,
       "terms": 1.0,
       "n": {
-       "identifiers": 6,
-       "values": 0,
+       "identifiers": 1,
+       "values": 4,
        "terms": 5
       }
      },
-     "job": "integrations:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_infrastructure_adapters_LocalStorageAdapter.java:1",
-     "rank_in_lot": 4,
+     "job": "integrations:rediscover:backend_src_main_java_com_matimeline_eventmanager_infrastructure_adapters_LocalStorageAdapter.java:1",
+     "rank_in_lot": 1,
      "reused": true,
-     "reused_from": "2026-11-18T16:25:29Z"
+     "reused_from": "2026-11-20T12:20:00Z"
     },
     "comment": [],
     "refute": null
@@ -585,32 +640,39 @@
    "id": "integrations:rules:6",
    "section": "rules",
    "rank": 6,
-   "text": "- Sans clé API, l'envoi est ignoré sans appel HTTP et un warning est journalisé. [#60b20fc9921c8347-1] [#1e979c5fd365d269-1]",
-   "fact_text": "Sans clé API, l'envoi est ignoré sans appel HTTP et un warning est journalisé",
+   "text": "- Un 401 hors des cinq routes auth inline affiche la session expirée puis redirige après 1 500 ms. La correspondance se fait par égalité ou suffixe du pathname. [#ebe8f14e30148918-3] [#17e17e177c3c1115-1] [#371afdf6b26a2509-1]",
+   "fact_text": "Un 401 hors des cinq routes auth inline affiche la session expirée puis redirige après 1 500 ms. La correspondance se fait par égalité ou suffixe du pathname",
    "consigne": null,
    "consigne_dropped": false,
    "cites": [
-    "integrations/60b20fc9921c8347-1",
-    "integrations/1e979c5fd365d269-1"
+    "integrations/ebe8f14e30148918-3",
+    "integrations/17e17e177c3c1115-1",
+    "integrations/371afdf6b26a2509-1"
    ],
    "files": [
-    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailService.java"
+    "frontend:services/apiClient.ts"
    ],
    "ranges": [
     [
-     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailService.java",
-     79,
-     84,
-     "d18b1986bab028368dc25b1fee52885481c885f11a0f5d1a301d43f608396ff0"
+     "frontend:services/apiClient.ts",
+     223,
+     232,
+     "6db20eab6ecd897868f3320a7035483ef2dbf0cded394cf96e9e8900558ac075"
     ],
     [
-     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailService.java",
-     82,
-     82,
-     "22e3150a44f3b695478e8ac751a99c01669f2010e8704d51622e4363af6885a8"
+     "frontend:services/apiClient.ts",
+     114,
+     120,
+     "ddecc030fb8405100f1b1ad648041a148aa435ada84392dff6cb7452279b3950"
+    ],
+    [
+     "frontend:services/apiClient.ts",
+     139,
+     145,
+     "4a74042df725d8dfd29ba00c82dddd0fcef50da0fe6cf7872a49bbb1a3e414e6"
     ]
    ],
-   "code_sha256": "99a98ded5379bb498779e0f9936eb4b66dd2d161434751fe4e40df673acc6d53",
+   "code_sha256": "aa2d7658f1e0b3ebfcc1a60872d8a030057f9cd564143a43977083e68388459f",
    "verdict": "admit",
    "reason": "admitted",
    "final": true,
@@ -619,40 +681,40 @@
     "deduce": {
      "covered": false,
      "overlap": {
-      "identifiers": 0.5,
-      "values": null,
-      "terms": 0.4,
+      "identifiers": null,
+      "values": 0.333,
+      "terms": 0.083,
       "n": {
-       "identifiers": 2,
-       "values": 0,
-       "terms": 5
+       "identifiers": 0,
+       "values": 3,
+       "terms": 12
       }
      },
-     "restatement": "BrevoEmailService.sendPasswordResetEmail : si apiKey est null ou blanc, la méthode journalise un warn et retourne sans appel HTTP (no-op), le flux métier continuant.",
+     "restatement": "Pour un statut 401, si isRedirecting n'est pas déjà posé, la fonction le passe à true, affiche le toast sessionExpired, puis après un setTimeout de 1500 ms affecte window.location.href avec loginUrlForCurrentLocale() et remet isRedirecting à false.",
      "confidence": "high",
      "reused": true,
-     "reused_from": "2026-11-18T16:25:29Z"
+     "reused_from": "2026-11-20T12:20:00Z"
     },
     "rediscover": {
      "found": true,
-     "cost": 3,
+     "cost": 4,
      "within_budget": true,
      "covered": false,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailService.java",
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/services/apiClient.ts",
      "file_ok": true,
      "overlap": {
-      "identifiers": 1.0,
-      "values": null,
-      "terms": 0.4,
+      "identifiers": null,
+      "values": 0.333,
+      "terms": 0.583,
       "n": {
-       "identifiers": 2,
-       "values": 0,
-       "terms": 5
+       "identifiers": 0,
+       "values": 3,
+       "terms": 12
       }
      },
-     "job": "integrations:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_infrastructure_adapters_LocalStorageAdapter.java:1",
+     "job": "integrations:rediscover:backend_src_main_java_com_matimeline_eventmanager_infrastructure_adapters_LocalStorageAdapter.java:1",
      "reused": true,
-     "reused_from": "2026-11-18T16:25:29Z"
+     "reused_from": "2026-11-20T12:20:00Z"
     },
     "comment": [],
     "refute": {
@@ -660,12 +722,12 @@
      "refuted": 0,
      "refute_unproven": 0,
      "reasons": [
-      "BrevoEmailService.sendPasswordResetEmail L79-84 retourne avant tout appel restClient si apiKey est null ou blanche, avec log.warn.",
-      "BrevoEmailService.sendPasswordResetEmail L79-84 : clé nulle ou blanche, log.warn puis return avant tout appel restClient.",
-      "BrevoEmailService.sendPasswordResetEmail L79-84 : clé absente ou blanche, log.warn puis return avant restClient. Seule implémentation d'EmailService trouvée."
+      "apiClient.ts L213-232 et L139-145 confirment : hors INLINE_AUTH_ENDPOINTS (5 routes), un 401 affiche le toast sessionExpired puis redirige après 1500 ms, correspondance par égalité ou endsWith. Aucune autre instance axios dans frontend/src.",
+      "apiClient.ts L223-231 : le 401 hors INLINE_AUTH_ENDPOINTS (5 routes) toast sessionExpired puis redirige après 1500 ms ; isInlineAuthRequest L142-144 compare par égalité ou endsWith. Fidèle.",
+      "apiClient.ts L223-232 et L139-145 confirment le toast session expirée, le setTimeout de 1500 ms et la correspondance par égalité ou suffixe. Aucun autre axios.create dans frontend/src, donc pas de contre-exemple."
      ],
      "evidence": [
-      "",
+      "pathname === endpoint || pathname.endsWith(endpoint)",
       "",
       ""
      ],
@@ -679,13 +741,25 @@
       "supporters": 0,
       "budget": 30,
       "searches": [
-       [],
-       [],
        [
         {
          "tool": "Grep",
-         "target": "implements EmailService|api.key|isBlank",
-         "found": "Une seule implémentation (BrevoEmailService) ; BrevoHealthIndicator teste aussi la clé mais n'envoie rien."
+         "target": "axios.create|status === 401|timeout dans frontend/src",
+         "found": "une seule instance axios.create (apiClient.ts) et un seul traitement du 401, pas de contre-exemple"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "axios.create|XMLHttpRequest|fetch( dans frontend/src/services",
+         "found": "Seul apiClient.ts crée une instance axios, aucun autre client HTTP contournant l'intercepteur."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "axios.create|new FormData|timeout dans frontend/src hors tests",
+         "found": "Une seule instance axios (apiClient.ts L17), donc le motif vaut pour tous les services."
         }
        ]
       ],
@@ -694,14 +768,14 @@
       "unproven": 0
      },
      "reused": true,
-     "reused_from": "2026-11-18T16:25:29Z"
+     "reused_from": "2026-11-20T12:20:00Z"
     }
    },
    "contrary": null,
    "check": "scope",
    "general": "pattern_pack",
    "placed": {
-    "pack_line": 38,
+    "pack_line": 37,
     "annex_table": null
    },
    "uses": 0
@@ -710,25 +784,47 @@
    "id": "integrations:rules:7",
    "section": "rules",
    "rank": 7,
-   "text": "- Une RestClientException à l'envoi est journalisée et n'est pas propagée à l'appelant. [#60b20fc9921c8347-3]",
-   "fact_text": "Une RestClientException à l'envoi est journalisée et n'est pas propagée à l'appelant",
+   "text": "- Le toast 400 saute /me/change-password, et les toasts 403 et 500 sautent les statuts déclarés dans inlineHandledStatuses. [#0ef3c42e524af8fe-1] [#ebe8f14e30148918-4] [#ebe8f14e30148918-7] [#327d68bab6520eaf-1]",
+   "fact_text": "Le toast 400 saute /me/change-password, et les toasts 403 et 500 sautent les statuts déclarés dans inlineHandledStatuses",
    "consigne": null,
    "consigne_dropped": false,
    "cites": [
-    "integrations/60b20fc9921c8347-3"
+    "integrations/0ef3c42e524af8fe-1",
+    "integrations/ebe8f14e30148918-4",
+    "integrations/ebe8f14e30148918-7",
+    "integrations/327d68bab6520eaf-1"
    ],
    "files": [
-    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailService.java"
+    "frontend:services/apiClient.ts",
+    "frontend:services/inlineErrorHandling.ts"
    ],
    "ranges": [
     [
-     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailService.java",
-     99,
-     105,
-     "2eec9841be04805d136ea166b5a4d9d52d25c6952e636ef56a5e12a7a183d7f1"
+     "frontend:services/apiClient.ts",
+     170,
+     178,
+     "e7dcad9f205eea82d2013ee5533a842ba6ed96ffa0a35bedd5a0809dbe57993c"
+    ],
+    [
+     "frontend:services/apiClient.ts",
+     233,
+     272,
+     "8e4c1cc96a5efe8915ad9e435f1bf17d6718d14f6fd0d14225e42c2a69e5308f"
+    ],
+    [
+     "frontend:services/apiClient.ts",
+     273,
+     281,
+     "30d0542b3d0523ab10f4eaa0ad762d51adcf6635b08930604af3bbda50e76933"
+    ],
+    [
+     "frontend:services/inlineErrorHandling.ts",
+     35,
+     43,
+     "abc6ad326a0b023ccd3ce8cbcc9a177088441c22c28081ce26c2d62471d594c5"
     ]
    ],
-   "code_sha256": "2eec9841be04805d136ea166b5a4d9d52d25c6952e636ef56a5e12a7a183d7f1",
+   "code_sha256": "63484a853d5d0feee2aa3094f6e0bb5f0cc42c1d455f593c2452e9c4e08ec1c0",
    "verdict": "admit",
    "reason": "rediscovered",
    "final": true,
@@ -737,41 +833,41 @@
     "deduce": {
      "covered": false,
      "overlap": {
-      "identifiers": 1.0,
-      "values": null,
-      "terms": 0.25,
+      "identifiers": 0.0,
+      "values": 0.333,
+      "terms": 0.286,
       "n": {
        "identifiers": 1,
-       "values": 0,
-       "terms": 4
+       "values": 3,
+       "terms": 7
       }
      },
-     "restatement": "En cas de RestClientException à l'envoi, sendPasswordResetEmail journalise uniquement le nom simple de la classe d'exception, sans token ni clé, et ne propage pas l'exception, pour que la réponse 200 ne dépende pas de Brevo (BR-AUT-012).",
+     "restatement": "INLINE_AUTH_ENDPOINTS liste /auth/login, /auth/register, /auth/forgot-password, /auth/reset-password et /auth/me. isInlineAuthRequest renvoie true si le chemin de l'URL est égal à l'un de ces endpoints ou se termine par lui, et renvoie false si l'URL n'est pas une chaîne. INLINE_VALIDATION_ENDPOINTS ne contient que /me/change-password, avec la même logique de correspondance via isInlineValidationRequest, et le bloc 403 de l'intercepteur est aussi présent dans l'extrait.",
      "confidence": "high",
      "reused": true,
-     "reused_from": "2026-11-18T16:25:29Z"
+     "reused_from": "2026-11-20T12:20:00Z"
     },
     "rediscover": {
      "found": true,
      "cost": 3,
      "within_budget": true,
      "covered": true,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailService.java",
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/services/apiClient.ts",
      "file_ok": true,
      "overlap": {
       "identifiers": 1.0,
-      "values": null,
-      "terms": 1.0,
+      "values": 1.0,
+      "terms": 0.571,
       "n": {
        "identifiers": 1,
-       "values": 0,
-       "terms": 4
+       "values": 3,
+       "terms": 7
       }
      },
-     "job": "integrations:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_infrastructure_adapters_LocalStorageAdapter.java:1",
-     "rank_in_lot": 1,
+     "job": "integrations:rediscover:frontend_services_apiClient.ts:2",
+     "rank_in_lot": 2,
      "reused": true,
-     "reused_from": "2026-11-18T16:25:29Z"
+     "reused_from": "2026-11-20T12:20:00Z"
     },
     "comment": [],
     "refute": null
@@ -781,7 +877,7 @@
    "general": "pattern_pack",
    "kept_for": "rediscovered",
    "placed": {
-    "pack_line": 39,
+    "pack_line": 38,
     "annex_table": null
    },
    "uses": 0
@@ -790,32 +886,32 @@
    "id": "integrations:rules:8",
    "section": "rules",
    "rank": 8,
-   "text": "- La locale ignore casse et région, et retombe sur le français. [#424bd631166a816d-1] [#2a75f7941ba689a8-1]",
-   "fact_text": "La locale ignore casse et région, et retombe sur le français",
+   "text": "- Le timeout par défaut est de 15 000 ms, mais un corps FormData passe à 0 et perd son Content-Type. [#99da2bca3c86383d-1] [#708cf9ff39788961-1]",
+   "fact_text": "Le timeout par défaut est de 15 000 ms, mais un corps FormData passe à 0 et perd son Content-Type",
    "consigne": null,
    "consigne_dropped": false,
    "cites": [
-    "integrations/424bd631166a816d-1",
-    "integrations/2a75f7941ba689a8-1"
+    "integrations/99da2bca3c86383d-1",
+    "integrations/708cf9ff39788961-1"
    ],
    "files": [
-    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/PasswordResetEmailTemplate.java"
+    "frontend:services/apiClient.ts"
    ],
    "ranges": [
     [
-     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/PasswordResetEmailTemplate.java",
-     85,
-     96,
-     "95e8b76a96eaf611fd231bab34c68accc7d3b340f33e78e88da5e33c3ba45b4f"
+     "frontend:services/apiClient.ts",
+     15,
+     15,
+     "8d68c4b177efe1081afa555b7038aa702e9a64dcd3e276444eb151f763c200b0"
     ],
     [
-     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/PasswordResetEmailTemplate.java",
-     66,
-     66,
-     "bc5a4a1e303911f249f4d6ea3396cf1dc8929de0bce4656add10c463b250a38e"
+     "frontend:services/apiClient.ts",
+     54,
+     61,
+     "37858b30259ac6f07ef7930b2264f39aa92ff9cfad1650d2757588b788d2141c"
     ]
    ],
-   "code_sha256": "b31815e66175391823419f6184beb6d55a854f76eb23f9dd4bdc6dcb984467c6",
+   "code_sha256": "9c79690265fcc1fc2ee2cfda9374da0dd320617b16f9d7872c94349eb2066024",
    "verdict": "admit",
    "reason": "admitted",
    "final": true,
@@ -824,40 +920,40 @@
     "deduce": {
      "covered": false,
      "overlap": {
-      "identifiers": null,
-      "values": null,
-      "terms": 0.167,
+      "identifiers": 1.0,
+      "values": 0.333,
+      "terms": 0.571,
       "n": {
-       "identifiers": 0,
-       "values": 0,
-       "terms": 6
+       "identifiers": 1,
+       "values": 3,
+       "terms": 7
       }
      },
-     "restatement": "PasswordResetEmailTemplate.resolve renvoie DEFAULT si la locale est null ou blanche, sinon compare le tag de langue (normalisé en minuscules) aux templates et renvoie DEFAULT si aucun ne correspond. DEFAULT vaut FR.",
+     "restatement": "DEFAULT_TIMEOUT_MS vaut 15000 ms. L'intercepteur de requête détecte un corps FormData, fixe alors config.timeout à 0 et supprime l'en-tête Content-Type, pour laisser le navigateur poser le boundary multipart.",
      "confidence": "high",
      "reused": true,
-     "reused_from": "2026-11-18T16:25:29Z"
+     "reused_from": "2026-11-20T12:20:00Z"
     },
     "rediscover": {
      "found": true,
-     "cost": 7,
-     "within_budget": false,
+     "cost": 2,
+     "within_budget": true,
      "covered": false,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/PasswordResetEmailTemplate.java",
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/services/apiClient.ts",
      "file_ok": true,
      "overlap": {
-      "identifiers": null,
-      "values": null,
-      "terms": 0.333,
+      "identifiers": 1.0,
+      "values": 0.333,
+      "terms": 0.714,
       "n": {
-       "identifiers": 0,
-       "values": 0,
-       "terms": 6
+       "identifiers": 1,
+       "values": 3,
+       "terms": 7
       }
      },
-     "job": "integrations:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_infrastructure_adapters_LocalStorageAdapter.java:1",
+     "job": "integrations:rediscover:frontend_services_apiClient.ts:2",
      "reused": true,
-     "reused_from": "2026-11-18T16:25:29Z"
+     "reused_from": "2026-11-20T12:20:00Z"
     },
     "comment": [],
     "refute": {
@@ -865,12 +961,12 @@
      "refuted": 0,
      "refute_unproven": 0,
      "reasons": [
-      "PasswordResetEmailTemplate.resolve (L85-96) applique toLowerCase(Locale.ROOT), language() coupe sur '-' ou '_', et retombe sur DEFAULT = FR.",
-      "PasswordResetEmailTemplate.resolve L85-96 et language() L99-105 : toLowerCase(Locale.ROOT), coupe au '-' ou '_', repli sur DEFAULT = FR.",
-      "PasswordResetEmailTemplate.resolve L85-96 : trim, toLowerCase(Locale.ROOT), extraction de la langue puis repli sur DEFAULT = FR. Conforme à la ligne."
+      "apiClient.ts L15 et L54-61 : timeout par défaut 15_000, FormData met timeout à 0 et supprime Content-Type. Une seule instance axios, aucun autre réglage de timeout dans les services.",
+      "DEFAULT_TIMEOUT_MS = 15_000 (L15) ; l'intercepteur de requête L55-58 met timeout à 0 et supprime Content-Type pour un FormData. Fidèle.",
+      "DEFAULT_TIMEOUT_MS = 15_000 (L15). L'intercepteur de requête met timeout = 0 et supprime Content-Type pour un FormData (L55-58). Le seul new FormData est dans userService.ts et passe par apiClient."
      ],
      "evidence": [
-      "",
+      "config.timeout = 0\n    config.headers.delete('Content-Type')",
       "",
       ""
      ],
@@ -884,13 +980,25 @@
       "supporters": 0,
       "budget": 30,
       "searches": [
-       [],
-       [],
        [
         {
          "tool": "Grep",
-         "target": "language\\(|Locale dans les templates",
-         "found": "Un seul point de résolution de locale (resolve), avec language(tag) en L99."
+         "target": "axios.create|timeout dans frontend/src",
+         "found": "timeout défini seulement dans apiClient.ts, pas de contre-exemple"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "axios.create dans frontend/src/services",
+         "found": "Une seule instance, donc l'intercepteur s'applique partout."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "axios.create|new FormData|timeout dans frontend/src hors tests",
+         "found": "Une seule instance axios et un seul FormData (userService.ts L106), pas de contre-exemple."
         }
        ]
       ],
@@ -899,14 +1007,14 @@
       "unproven": 0
      },
      "reused": true,
-     "reused_from": "2026-11-18T16:25:29Z"
+     "reused_from": "2026-11-20T12:20:00Z"
     }
    },
    "contrary": null,
    "check": "scope",
    "general": "pattern_pack",
    "placed": {
-    "pack_line": 40,
+    "pack_line": 39,
     "annex_table": null
    },
    "uses": 0
@@ -915,39 +1023,25 @@
    "id": "integrations:rules:9",
    "section": "rules",
    "rank": 9,
-   "text": "- Dans E2eResetTokenFinderJpaAdapter.findLatestUsableToken, la récence est portée par expiresAt DESC (proxy valable tant que la TTL est constante) et t.id DESC ne sert qu'à départager [#0c3b8b5d276d059a-1] [#timeline/0ff8f26bcd36d07e-1] [#timeline/a77b308ca87756a8-1] `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenFinderJpaAdapter.java:54-58`.",
-   "fact_text": "Dans E2eResetTokenFinderJpaAdapter.findLatestUsableToken, la récence est portée par expiresAt DESC (proxy valable tant que la TTL est constante) et t.id DESC ne sert qu'à départager E2eResetTokenFinderJpaAdapter.java",
+   "text": "- Le token est rafraîchi toutes les 6 heures côté navigateur, erreurs ignorées. [#9bce6d27ef674db6-1]",
+   "fact_text": "Le token est rafraîchi toutes les 6 heures côté navigateur, erreurs ignorées",
    "consigne": null,
    "consigne_dropped": false,
    "cites": [
-    "integrations/0c3b8b5d276d059a-1",
-    "timeline/0ff8f26bcd36d07e-1",
-    "timeline/a77b308ca87756a8-1"
+    "integrations/9bce6d27ef674db6-1"
    ],
    "files": [
-    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenFinderJpaAdapter.java"
+    "frontend:services/apiClient.ts"
    ],
    "ranges": [
     [
-     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenFinderJpaAdapter.java",
-     54,
-     58,
-     "115d103f767063250a7baed8a7dfa5dfab1a844aa94c9cce97d0e7a8f4326897"
-    ],
-    [
-     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenFinderJpaAdapter.java",
-     54,
-     58,
-     "115d103f767063250a7baed8a7dfa5dfab1a844aa94c9cce97d0e7a8f4326897"
-    ],
-    [
-     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenFinderJpaAdapter.java",
-     56,
-     57,
-     "360efd1f0a7b83052b7003a54b91f4bdc453cc048b98acd175eada23127142d3"
+     "frontend:services/apiClient.ts",
+     77,
+     92,
+     "dd84ff2f92650a1ddce9d35ed8c7e2551025a9443306290d4eb2e46d6a67d514"
     ]
    ],
-   "code_sha256": "0a3ed44998d6cfacca43565647f9571f121410d70969bb1801a5824e2fc5c8f7",
+   "code_sha256": "dd84ff2f92650a1ddce9d35ed8c7e2551025a9443306290d4eb2e46d6a67d514",
    "verdict": "admit",
    "reason": "rediscovered",
    "final": true,
@@ -956,38 +1050,41 @@
     "deduce": {
      "covered": false,
      "overlap": {
-      "identifiers": 0.667,
-      "values": null,
-      "terms": 0.0,
+      "identifiers": null,
+      "values": 1.0,
+      "terms": 0.286,
       "n": {
-       "identifiers": 6,
-       "values": 0,
-       "terms": 8
+       "identifiers": 0,
+       "values": 1,
+       "terms": 7
       }
      },
-     "restatement": "La méthode E2eResetTokenFinderJpaAdapter.findLatestUsableToken construit une requête JPQL sur PasswordResetTokenEntity qui ne retourne que le champ token pour un userId donné, avec usedAt IS NULL et expiresAt > :now. Le résultat est trié par expiresAt DESC puis id DESC, donc le token non utilisé et non expiré le plus récent est choisi. L'extrait est un adaptateur de support de tests (package testsupport), et les blocs répétés ne montrent rien de plus.",
+     "restatement": "Si window est défini, setupPeriodicRefresh lance un setInterval de 6 heures (6 * 60 * 60 * 1000 ms) qui appelle refreshToken. Une erreur est capturée et journalisée au niveau console.debug, sans remonter.",
      "confidence": "high",
-     "files_read_missing": true
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
     },
     "rediscover": {
      "found": true,
      "cost": 2,
      "within_budget": true,
      "covered": true,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/.claude/worktrees/packs-0-10-bfb23b/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenFinderJpaAdapter.java",
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/services/apiClient.ts",
      "file_ok": true,
      "overlap": {
-      "identifiers": 1.0,
-      "values": null,
-      "terms": 1.0,
+      "identifiers": null,
+      "values": 1.0,
+      "terms": 0.571,
       "n": {
-       "identifiers": 6,
-       "values": 0,
-       "terms": 8
+       "identifiers": 0,
+       "values": 1,
+       "terms": 7
       }
      },
-     "job": "integrations:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_infrastructure_adapters_testsupport_E2eResetTokenFinderJpaAdapter.java:1",
-     "rank_in_lot": 1
+     "job": "integrations:rediscover:frontend_services_apiClient.ts:2",
+     "rank_in_lot": 1,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
     },
     "comment": [],
     "refute": null
@@ -997,7 +1094,7 @@
    "general": "pattern_pack",
    "kept_for": "rediscovered",
    "placed": {
-    "pack_line": 42,
+    "pack_line": 40,
     "annex_table": null
    },
    "uses": 0
@@ -1006,25 +1103,25 @@
    "id": "integrations:surface:1",
    "section": "surface",
    "rank": 1,
-   "text": "- La requête de recherche du dernier jeton utilisable se trouve dans `mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenFinderJpaAdapter.java:54-58`, elle vise l'entité PasswordResetTokenEntity par son nom simple et ne projette que la colonne du jeton [#0c3b8b5d276d059a-1]",
-   "fact_text": "La requête de recherche du dernier jeton utilisable se trouve dans E2eResetTokenFinderJpaAdapter.java, elle vise l'entité PasswordResetTokenEntity par son nom simple et ne projette que la colonne du jeton",
+   "text": "- La route de test-support `/api/test-support/password-reset-token` s'appelle en GET avec un paramètre email, selon `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenEndpointIntegrationTest.java:47` [#8e6a9b9608499d60-1]",
+   "fact_text": "La route de test-support `/api/test-support/password-reset-token` s'appelle en GET avec un paramètre email, selon E2eResetTokenEndpointIntegrationTest.java",
    "consigne": null,
    "consigne_dropped": false,
    "cites": [
-    "integrations/0c3b8b5d276d059a-1"
+    "integrations/8e6a9b9608499d60-1"
    ],
    "files": [
-    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenFinderJpaAdapter.java"
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenEndpointIntegrationTest.java"
    ],
    "ranges": [
     [
-     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenFinderJpaAdapter.java",
-     54,
-     58,
-     "115d103f767063250a7baed8a7dfa5dfab1a844aa94c9cce97d0e7a8f4326897"
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenEndpointIntegrationTest.java",
+     47,
+     47,
+     "8c1b6800aaa930174b121554946b7507caddee2750dec42c9114f67f628f7f4c"
     ]
    ],
-   "code_sha256": "115d103f767063250a7baed8a7dfa5dfab1a844aa94c9cce97d0e7a8f4326897",
+   "code_sha256": "8c1b6800aaa930174b121554946b7507caddee2750dec42c9114f67f628f7f4c",
    "verdict": "admit",
    "reason": "admitted",
    "final": true,
@@ -1033,40 +1130,40 @@
     "deduce": {
      "covered": false,
      "overlap": {
-      "identifiers": 1.0,
-      "values": null,
-      "terms": 0.091,
+      "identifiers": 0.0,
+      "values": 1.0,
+      "terms": 0.556,
       "n": {
        "identifiers": 2,
-       "values": 0,
-       "terms": 11
+       "values": 1,
+       "terms": 9
       }
      },
-     "restatement": "E2eResetTokenFinderJpaAdapter.findLatestUsableToken construit une requête JPQL qui sélectionne le token de PasswordResetTokenEntity pour un userId, non encore utilisé (usedAt IS NULL), non expiré (expiresAt > now), trié par expiresAt puis id décroissants. C'est un adaptateur de test (package testsupport), il ne fait que lire le token.",
+     "restatement": "Extrait réduit à une constante privée ENDPOINT valant \"/api/test-support/password-reset-token\", utilisée par un test d'intégration. Il ne montre aucun comportement en lui-même, seulement le chemin d'un endpoint de support de test pour récupérer un jeton de réinitialisation.",
      "confidence": "high",
      "reused": true,
-     "reused_from": "2026-11-18T16:25:29Z"
+     "reused_from": "2026-11-20T12:20:00Z"
     },
     "rediscover": {
      "found": true,
-     "cost": 9,
+     "cost": 14,
      "within_budget": false,
      "covered": false,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenFinderJpaAdapter.java",
-     "file_ok": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenController.java",
+     "file_ok": false,
      "overlap": {
-      "identifiers": 1.0,
-      "values": null,
-      "terms": 0.091,
+      "identifiers": 0.5,
+      "values": 1.0,
+      "terms": 0.889,
       "n": {
        "identifiers": 2,
-       "values": 0,
-       "terms": 11
+       "values": 1,
+       "terms": 9
       }
      },
-     "job": "integrations:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_infrastructure_adapters_LocalStorageAdapter.java:1",
+     "job": "integrations:rediscover:backend_src_main_java_com_matimeline_eventmanager_infrastructure_adapters_LocalStorageAdapter.java:1",
      "reused": true,
-     "reused_from": "2026-11-18T16:25:29Z"
+     "reused_from": "2026-11-20T12:20:00Z"
     },
     "comment": [],
     "refute": {
@@ -1074,9 +1171,9 @@
      "refuted": 0,
      "refute_unproven": 0,
      "reasons": [
-      "Le JPQL L54-58 utilise PasswordResetTokenEntity.class.getSimpleName() et ne sélectionne que t.token, ce qui correspond au constat.",
-      "Le JPQL (L54-58) utilise PasswordResetTokenEntity.class.getSimpleName() et projette seulement t.token.",
-      "findLatestUsableToken L54 construit 'SELECT t.token FROM ' + PasswordResetTokenEntity.class.getSimpleName(): nom simple, seule la colonne token projetée."
+      "E2eResetTokenEndpointIntegrationTest L71 : get(ENDPOINT).param(\"email\", ...).",
+      "L47 confirme le chemin ENDPOINT. La méthode GET et le paramètre email ne sont pas visibles dans l'extrait, et le fichier n'est pas dans ma liste. Au doute, je ne réfute pas.",
+      "L'extrait confirme le chemin (ENDPOINT L47) mais ne montre ni la méthode ni le paramètre. Aucune preuve contraire, donc pas de réfutation."
      ],
      "evidence": [
       "",
@@ -1086,12 +1183,304 @@
      "consigne_verdict": "n/a",
      "question_verdict": "n/a",
      "reused": true,
-     "reused_from": "2026-11-18T16:25:29Z"
+     "reused_from": "2026-11-20T12:20:00Z"
     }
    },
    "contrary": null,
    "placed": {
-    "pack_line": 51,
+    "pack_line": 60,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "integrations:surface:2",
+   "section": "surface",
+   "rank": 2,
+   "text": "- Le finder lit en lecture seule et ne projette que la colonne token. Il ne retient que les jetons de l'utilisateur non utilisés et non expirés, le plus tardif en expiration d'abord, puis le plus grand id [#12e77eb7b9e6d0c0-1] [#12e77eb7b9e6d0c0-2]",
+   "fact_text": "Le finder lit en lecture seule et ne projette que la colonne token. Il ne retient que les jetons de l'utilisateur non utilisés et non expirés, le plus tardif en expiration d'abord, puis le plus grand id",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "integrations/12e77eb7b9e6d0c0-1",
+    "integrations/12e77eb7b9e6d0c0-2"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenFinderJpaAdapter.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenFinderJpaAdapter.java",
+     37,
+     38,
+     "e0e55374b4390be279e996d80d047240456fe48cd7f40f13221dadf820d5c959"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenFinderJpaAdapter.java",
+     54,
+     58,
+     "56fc9524b79dd3cc3f883fd80790fee52519a9e19f1c7e359d9ec95b1bc0ef59"
+    ]
+   ],
+   "code_sha256": "36d0fcf23cd2d5b90e0ae51dc339b4c6acb59d741207280edd67b3bfa24235ac",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 0.143,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 14
+      }
+     },
+     "restatement": "E2eResetTokenFinderJpaAdapter.findLatestUsableToken, adaptateur de support de tests en lecture seule, retourne un Optional<UUID>. La requête JPQL sélectionne le token de PasswordResetTokenEntity pour l'userId donné, avec usedAt NULL et expiresAt postérieur à now, triée par expiresAt décroissant puis id décroissant.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 23,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/testsupport/E2eResetTokenFinderJpaAdapter.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 0.143,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 14
+      }
+     },
+     "job": "integrations:rediscover:backend_src_main_java_com_matimeline_eventmanager_infrastructure_adapters_LocalStorageAdapter.java:1",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "JPQL L54-58 et readOnly L37 confirment le constat.",
+      "JPQL L54-58 et @Transactional(readOnly = true) L37 confirment projection t.token, usedAt IS NULL, expiresAt > :now, ORDER BY expiresAt DESC, id DESC.",
+      "findLatestUsableToken est en readOnly (L37), le JPQL (L54-58) projette t.token, filtre usedAt IS NULL et expiresAt > :now, ordre expiresAt DESC, id DESC."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 61,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "integrations:surface:3",
+   "section": "surface",
+   "rank": 3,
+   "text": "- L'endpoint JWKS est joignable sans cookie ni Bearer, répond en JSON avec un cache de 300 secondes et n'expose qu'une clé RSA de signature RS256, vérifié par `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/JwksEndpointIntegrationTest.java:68-81` [#f3b5f265303d01f1-1]",
+   "fact_text": "L'endpoint JWKS est joignable sans cookie ni Bearer, répond en JSON avec un cache de 300 secondes et n'expose qu'une clé RSA de signature RS256, vérifié par JwksEndpointIntegrationTest.java",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "integrations/f3b5f265303d01f1-1"
+   ],
+   "files": [
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/JwksEndpointIntegrationTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/JwksEndpointIntegrationTest.java",
+     68,
+     81,
+     "39411859afc087eba8fd50b908fc7b7e6cc64082ae3053fa951d5a7d835bbcfb"
+    ]
+   ],
+   "code_sha256": "39411859afc087eba8fd50b908fc7b7e6cc64082ae3053fa951d5a7d835bbcfb",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.8,
+      "values": 1.0,
+      "terms": 0.1,
+      "n": {
+       "identifiers": 5,
+       "values": 1,
+       "terms": 10
+      }
+     },
+     "restatement": "Le test JwksEndpointIntegrationTest appelle GET JwksController.JWKS_PATH sans authentification. Il attend un 200 JSON avec Cache-Control contenant max-age=300, un seul jeu de clés, kty RSA, use sig, alg RS256, et des kid, n et e non vides.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 9,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/JwksController.java",
+     "file_ok": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 0.4,
+      "n": {
+       "identifiers": 5,
+       "values": 1,
+       "terms": 10
+      }
+     },
+     "job": "integrations:rediscover:backend_src_main_java_com_matimeline_eventmanager_infrastructure_adapters_LocalStorageAdapter.java:1",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Test L68-81 confirme anonyme, JSON, max-age=300, une clé RSA sig RS256.",
+      "Le test L68-81 appelle JWKS_PATH sans authentification, vérifie JSON, max-age=300, une seule clé RSA/sig/RS256.",
+      "Le test jwks_isReachableAnonymously_andExposesOneRs256SigningKey (L68-81) vérifie 200, JSON, max-age=300, une seule clé RSA/sig/RS256."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 63,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "integrations:surface:4",
+   "section": "surface",
+   "rank": 4,
+   "text": "- Le test de restauration lit la colonne archived de la table products après la requête HTTP, voir `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductRestoreIntegrationTest.java:112-117` [#92f4076df0c73295-1]",
+   "fact_text": "Le test de restauration lit la colonne archived de la table products après la requête HTTP, voir ProductRestoreIntegrationTest.java",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "integrations/92f4076df0c73295-1"
+   ],
+   "files": [
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductRestoreIntegrationTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductRestoreIntegrationTest.java",
+     112,
+     117,
+     "69f2be13bb987dda251f004f30050679bccf1584dd72846b157cc28c415bed7b"
+    ]
+   ],
+   "code_sha256": "69f2be13bb987dda251f004f30050679bccf1584dd72846b157cc28c415bed7b",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": null,
+      "terms": 0.571,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "restatement": "ProductRestoreIntegrationTest.isArchivedInDb exécute une requête SQL native SELECT archived FROM products WHERE id = :id et retourne la valeur en Boolean. Le retour vers boolean primitif provoquerait une NullPointerException si la colonne valait NULL, ce que l'extrait ne permet pas de confirmer davantage.",
+     "confidence": "medium",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 13,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductRestoreIntegrationTest.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": null,
+      "terms": 0.857,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "job": "integrations:rediscover:backend_src_main_java_com_matimeline_eventmanager_infrastructure_adapters_LocalStorageAdapter.java:1",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "isArchivedInDb L112-117 lit archived dans products via requête native.",
+      "isArchivedInDb L112-117 lit la colonne archived de products via requête native.",
+      "isArchivedInDb (L112-117) lit SELECT archived FROM products via requête native."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 65,
     "annex_table": null
    },
    "uses": 0
@@ -1100,83 +1489,107 @@
    "id": "integrations:tests:1",
    "section": "tests",
    "rank": 1,
-   "text": "- Les tests fixent que les rendus JSON et Markdown de l'export ne contiennent jamais le hash du mot de passe [#2ee6e70558a01924-1] [#b6c46816605b971d-1].",
-   "fact_text": "Les tests fixent que les rendus JSON et Markdown de l'export ne contiennent jamais le hash du mot de passe",
+   "text": "- Les tests fixent que le JWKS n'expose que kty, use, alg, kid, n et e, que le modulus fait 256 octets sans octet de signe, et qu'un jeton RS256 émis par le backend se vérifie avec cette clé. [#1a4b52a04a5ce838-1] [#b4948134aa5100d5-1] [#1122fa951f33f39c-1]",
+   "fact_text": "Les tests fixent que le JWKS n'expose que kty, use, alg, kid, n et e, que le modulus fait 256 octets sans octet de signe, et qu'un jeton RS256 émis par le backend se vérifie avec cette clé",
    "consigne": null,
    "consigne_dropped": false,
    "cites": [
-    "integrations/2ee6e70558a01924-1",
-    "integrations/b6c46816605b971d-1"
+    "integrations/1a4b52a04a5ce838-1",
+    "integrations/b4948134aa5100d5-1",
+    "integrations/1122fa951f33f39c-1"
    ],
    "files": [
-    "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/export/ExportRenderersTest.java"
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/JwksEndpointIntegrationTest.java"
    ],
    "ranges": [
     [
-     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/export/ExportRenderersTest.java",
-     56,
-     67,
-     "88eb5c2bbb43a0c632c5789abe72531ac777a937f639a6187287c6e05cb55a20"
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/JwksEndpointIntegrationTest.java",
+     88,
+     94,
+     "80517b349790613459b80854ad57fc2449d65ac1ad963a2947a2c464ed8b2509"
     ],
     [
-     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/export/ExportRenderersTest.java",
-     69,
-     80,
-     "0b4f77c639c3f7065098b0006442cb2229d6b056e79b5f3afa1e76bd9c1dccff"
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/JwksEndpointIntegrationTest.java",
+     132,
+     138,
+     "581f0053773f12a48880dd58857446183aaea69ecb44542647e33de788849015"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/JwksEndpointIntegrationTest.java",
+     100,
+     112,
+     "1bb853c4d1214c0d4837b24cef583f4193d59f0845a3f1fe41a4f9111ab0aa2f"
     ]
    ],
-   "code_sha256": "f7ca94341559669668f6d4c103d8bf1967210e192c5a0ca670323d768c659522",
+   "code_sha256": "5615125391e84e34d04bd833c0aa8d1847e4b8d44fbc04d02d7678af0581750b",
    "verdict": "admit",
-   "reason": "rediscovered",
+   "reason": "admitted",
    "final": true,
    "measures": {
     "fidelity": null,
     "deduce": {
      "covered": false,
      "overlap": {
-      "identifiers": 1.0,
-      "values": null,
-      "terms": 0.375,
+      "identifiers": 0.5,
+      "values": 1.0,
+      "terms": 0.5,
       "n": {
-       "identifiers": 1,
-       "values": 0,
-       "terms": 8
+       "identifiers": 2,
+       "values": 1,
+       "terms": 10
       }
      },
-     "restatement": "Le test json_containsDataButNotPasswordHash vérifie que JsonExportRenderer produit un contenu application/json contenant l'email, le nom de produit et l'événement avec virgule, mais jamais le hash du mot de passe ni la sous-chaîne \"password\" (insensible à la casse).",
+     "restatement": "Le test principal vérifie que la clé JWKS publiée ne contient exactement que kty, use, alg, kid, n et e, donc aucun paramètre privé. Les autres tests contrôlent que le module fait 256 octets avec le bit de poids fort à 1, et qu'un jeton émis par JwtService se vérifie avec la clé publiée alors qu'un jeton à signature altérée ne se vérifie pas.",
      "confidence": "high",
+     "files_read_missing": true,
      "reused": true,
-     "reused_from": "2026-11-18T16:25:29Z"
+     "reused_from": "2026-11-20T12:20:00Z"
     },
     "rediscover": {
      "found": true,
-     "cost": 11,
-     "within_budget": true,
-     "covered": true,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/export/ExportRenderersTest.java",
+     "cost": 16,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/JwksEndpointIntegrationTest.java",
      "file_ok": true,
      "overlap": {
-      "identifiers": 1.0,
-      "values": null,
-      "terms": 0.5,
+      "identifiers": 0.5,
+      "values": 1.0,
+      "terms": 0.6,
       "n": {
-       "identifiers": 1,
-       "values": 0,
-       "terms": 8
+       "identifiers": 2,
+       "values": 1,
+       "terms": 10
       }
      },
-     "job": "integrations:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_infrastructure_adapters_LocalStorageAdapter.java:1",
-     "rank_in_lot": 5,
+     "job": "integrations:rediscover:backend_src_main_java_com_matimeline_eventmanager_infrastructure_adapters_LocalStorageAdapter.java:1",
      "reused": true,
-     "reused_from": "2026-11-18T16:25:29Z"
+     "reused_from": "2026-11-20T12:20:00Z"
     },
     "comment": [],
-    "refute": null
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "L88-94, L132-138, L100-112 fixent les propriétés, le modulus de 256 octets avec premier octet >= 0x80 et la vérification RS256.",
+      "L92-93 fixent exactement kty, use, alg, kid, n, e. L136-137 fixent 256 octets avec premier octet >= 0x80. L101-107 vérifient un jeton RS256 émis.",
+      "L92-93 containsExactlyInAnyOrder des six champs, L136-137 modulus de 256 octets au premier octet >= 0x80, L101-107 vérification d'un jeton émis par JwtService."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
    },
    "contrary": null,
-   "kept_for": "rediscovered",
    "placed": {
-    "pack_line": 84,
+    "pack_line": 106,
     "annex_table": null
    },
    "uses": 0
@@ -1185,32 +1598,39 @@
    "id": "integrations:tests:2",
    "section": "tests",
    "rank": 2,
-   "text": "- Les tests fixent que les champs CSV commençant par @, = ou - ou par un saut de ligne reçoivent une apostrophe en tête, puis des guillemets si nécessaire [#f31607d729555ad2-1] [#271360493da3f939-1].",
-   "fact_text": "Les tests fixent que les champs CSV commençant par @, = ou - ou par un saut de ligne reçoivent une apostrophe en tête, puis des guillemets si nécessaire",
+   "text": "- Le health Brevo est DOWN sans clé, cite BREVO_API_KEY et ne divulgue jamais la clé. [#dc542e72e594e1dd-1] [#8803c3c2db66a608-1] [#d0b0e4666b224c10-1]",
+   "fact_text": "Le health Brevo est DOWN sans clé, cite BREVO_API_KEY et ne divulgue jamais la clé",
    "consigne": null,
    "consigne_dropped": false,
    "cites": [
-    "integrations/f31607d729555ad2-1",
-    "integrations/271360493da3f939-1"
+    "integrations/dc542e72e594e1dd-1",
+    "integrations/8803c3c2db66a608-1",
+    "integrations/d0b0e4666b224c10-1"
    ],
    "files": [
-    "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/export/ExportRenderersTest.java"
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoHealthIndicatorTest.java"
    ],
    "ranges": [
     [
-     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/export/ExportRenderersTest.java",
-     103,
-     136,
-     "93c63409371a625895b347e9868e93bb21967a6aca7873db232f1a675a8ff902"
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoHealthIndicatorTest.java",
+     18,
+     24,
+     "3e2bf579f0c6d29c4e8ccd171dffec3832689c9bd53d8b6bbde8b863b147531b"
     ],
     [
-     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/export/ExportRenderersTest.java",
-     144,
-     163,
-     "1c0c9c88f210b3dab20f85a81b054c824fc0188e5bef802c615c5ac33b5a531f"
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoHealthIndicatorTest.java",
+     31,
+     31,
+     "170896bcf135106407581831ac73a927b56783035c126fa51caa62f21baa238d"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoHealthIndicatorTest.java",
+     42,
+     48,
+     "371c89a9be79108183d1f6fefcbb096b6981c7ee3d4b22404d2d1531a32467d4"
     ]
    ],
-   "code_sha256": "fa2da8ad11c43ad73b9158699d764d316addcc6870aabc1092055ad0bfeb5167",
+   "code_sha256": "523324877b34596f04c97467b89e77d42e67b2f56855ab57267c91c0b2c017e0",
    "verdict": "admit",
    "reason": "admitted",
    "final": true,
@@ -1219,40 +1639,40 @@
     "deduce": {
      "covered": false,
      "overlap": {
-      "identifiers": 0.0,
+      "identifiers": 1.0,
       "values": null,
-      "terms": 0.545,
+      "terms": 0.25,
       "n": {
-       "identifiers": 1,
+       "identifiers": 2,
        "values": 0,
-       "terms": 11
+       "terms": 4
       }
      },
-     "restatement": "Le test csv_neutralizesFormulaInjectionOnUserControlledFields montre que CsvExportRenderer préfixe d'une apostrophe les champs commençant par '=', '@' ou '-' (ex. '@cmd, '=1+1, '-2+3). Un titre commençant par '=' et contenant une virgule reçoit l'apostrophe puis est entouré de guillemets RFC 4180. Aucune ligne ne doit commencer par '=' ou '@'.",
+     "restatement": "BrevoHealthIndicator renvoie le statut Status.DOWN quand la clé API est null, avec un détail « reason » qui mentionne BREVO_API_KEY lorsque la clé est vide ou blanche. Le test vérifie aussi que la valeur de la clé n'apparaît dans aucune valeur des détails du health check.",
      "confidence": "high",
      "reused": true,
-     "reused_from": "2026-11-18T16:25:29Z"
+     "reused_from": "2026-11-20T12:20:00Z"
     },
     "rediscover": {
      "found": true,
-     "cost": 11,
+     "cost": 8,
      "within_budget": false,
      "covered": false,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/export/ExportRenderersTest.java",
-     "file_ok": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoHealthIndicator.java",
+     "file_ok": false,
      "overlap": {
-      "identifiers": 0.0,
+      "identifiers": 1.0,
       "values": null,
-      "terms": 0.727,
+      "terms": 0.25,
       "n": {
-       "identifiers": 1,
+       "identifiers": 2,
        "values": 0,
-       "terms": 11
+       "terms": 4
       }
      },
-     "job": "integrations:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_infrastructure_adapters_LocalStorageAdapter.java:1",
+     "job": "integrations:rediscover:backend_src_main_java_com_matimeline_eventmanager_infrastructure_adapters_LocalStorageAdapter.java:1",
      "reused": true,
-     "reused_from": "2026-11-18T16:25:29Z"
+     "reused_from": "2026-11-20T12:20:00Z"
     },
     "comment": [],
     "refute": {
@@ -1260,9 +1680,9 @@
      "refuted": 0,
      "refute_unproven": 0,
      "reasons": [
-      "Les tests L103-163 vérifient l'apostrophe pour @, = et -, puis les guillemets RFC 4180 quand le champ contient une virgule, ainsi que le cas du saut de ligne en tête.",
-      "Les tests CSV (L103-163) vérifient l'apostrophe pour @, =, - et saut de ligne initial, puis les guillemets RFC 4180.",
-      "ExportRenderersTest L125-130 vérifie l'apostrophe pour @, =, - puis guillemets, et L161 pour le saut de ligne en tête."
+      "BrevoHealthIndicatorTest L18-48 : DOWN, raison citant BREVO_API_KEY, pas de fuite du secret.",
+      "BrevoHealthIndicatorTest L18-24 DOWN avec clé nulle, L31 reason contient BREVO_API_KEY, L42-48 la clé n'apparaît pas dans les détails.",
+      "BrevoHealthIndicatorTest : DOWN avec clé null (L20-22), raison contenant BREVO_API_KEY (L31), aucune fuite de la valeur (L42-47)."
      ],
      "evidence": [
       "",
@@ -1272,12 +1692,12 @@
      "consigne_verdict": "n/a",
      "question_verdict": "n/a",
      "reused": true,
-     "reused_from": "2026-11-18T16:25:29Z"
+     "reused_from": "2026-11-20T12:20:00Z"
     }
    },
    "contrary": null,
    "placed": {
-    "pack_line": 85,
+    "pack_line": 107,
     "annex_table": null
    },
    "uses": 0
@@ -1286,83 +1706,106 @@
    "id": "integrations:tests:3",
    "section": "tests",
    "rank": 3,
-   "text": "- Les tests fixent que le ZIP contient data.json, data.md et data.csv, et que le nom de fichier commence par mytimeline-export- sans identifiant utilisateur [#dfb8aa6061657764-1] [#4ee17d496acc51ca-1].",
-   "fact_text": "Les tests fixent que le ZIP contient data.json, data.md et data.csv, et que le nom de fichier commence par mytimeline-export- sans identifiant utilisateur",
+   "text": "- Les tests fixent que l'export JSON omet le hash du mot de passe et que le CSV préfixe d'une apostrophe les champs commençant par @, = ou - ou un saut de ligne. [#ee835f4d91e2a8c5-1] [#37c0d7455e6beb36-1] [#3c6450bbae77f0ab-1]",
+   "fact_text": "Les tests fixent que l'export JSON omet le hash du mot de passe et que le CSV préfixe d'une apostrophe les champs commençant par @, = ou - ou un saut de ligne",
    "consigne": null,
    "consigne_dropped": false,
    "cites": [
-    "integrations/dfb8aa6061657764-1",
-    "integrations/4ee17d496acc51ca-1"
+    "integrations/ee835f4d91e2a8c5-1",
+    "integrations/37c0d7455e6beb36-1",
+    "integrations/3c6450bbae77f0ab-1"
    ],
    "files": [
-    "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/export/ExportRenderersTest.java"
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/export/ExportRenderersTest.java"
    ],
    "ranges": [
     [
-     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/export/ExportRenderersTest.java",
-     165,
-     182,
-     "1f46e7149e29073af0fe9e5506e65151adafd876f4db1ed7085226ee48b18677"
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/export/ExportRenderersTest.java",
+     56,
+     67,
+     "3b91a3e228c1d659adb89973f7a1e406d8bdf624ba269b77a47e7068e159adcf"
     ],
     [
-     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/export/ExportRenderersTest.java",
-     184,
-     191,
-     "fc4f52012b2b06285a362b31467eb3c511d4582764b366a6955f0f8d9d09f3e7"
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/export/ExportRenderersTest.java",
+     125,
+     127,
+     "bed00ed113c37ca8fbdf8d6a7d8f1b0d4ada1484acfdb438606aa67765b03d54"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/export/ExportRenderersTest.java",
+     145,
+     163,
+     "00fa9088e0612edc7333914c223fb8ed9cc1357eda14816cd06d665f1aa2c015"
     ]
    ],
-   "code_sha256": "aa0e542e013b9de1a7e0e2677703cc3e8d5a43fdf295d659c13de1dbd38d6ce5",
+   "code_sha256": "455091c691f9ae63dc1f359c305a1a28c27cc10dc0e597e67d5fc7362a5ec19f",
    "verdict": "admit",
-   "reason": "rediscovered",
+   "reason": "admitted",
    "final": true,
    "measures": {
     "fidelity": null,
     "deduce": {
      "covered": false,
      "overlap": {
-      "identifiers": 1.0,
+      "identifiers": 0.5,
       "values": null,
-      "terms": 0.111,
+      "terms": 0.75,
       "n": {
-       "identifiers": 4,
+       "identifiers": 2,
        "values": 0,
-       "terms": 9
+       "terms": 12
       }
      },
-     "restatement": "Le test zip_bundlesThreeRepresentations vérifie que ZipExportRenderer produit une archive application/zip contenant exactement les entrées data.json, data.md et data.csv, en s'appuyant sur les trois renderers passés au constructeur.",
+     "restatement": "Le premier test vérifie que JsonExportRenderer produit un type application/json contenant l'e-mail, le produit et l'événement, mais jamais le hash du mot de passe ni la chaîne « password ». Le second test montre que CsvExportRenderer neutralise les champs commençant par @, = ou - en les précédant d'une apostrophe, et qu'un nom de catégorie commençant par un saut de ligne est préfixé d'une apostrophe puis entouré de guillemets RFC 4180.",
      "confidence": "high",
      "reused": true,
-     "reused_from": "2026-11-18T16:25:29Z"
+     "reused_from": "2026-11-20T12:20:00Z"
     },
     "rediscover": {
      "found": true,
-     "cost": 2,
-     "within_budget": true,
-     "covered": true,
-     "file": "C:\\Users\\ldelaforcade\\Documents\\Personnel\\My Timeline\\MyTimeline\\.claude\\worktrees\\packs-0-10-bfb23b\\backend\\src\\test\\java\\com\\matimeline\\eventmanager\\infrastructure\\adapters\\export\\ExportRenderersTest.java",
+     "cost": 21,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/export/ExportRenderersTest.java",
      "file_ok": true,
      "overlap": {
-      "identifiers": 1.0,
+      "identifiers": 0.5,
       "values": null,
-      "terms": 1.0,
+      "terms": 0.583,
       "n": {
-       "identifiers": 4,
+       "identifiers": 2,
        "values": 0,
-       "terms": 9
+       "terms": 12
       }
      },
-     "job": "integrations:rediscover:mytimeline_backend_src_test_java_com_matimeline_eventmanager_infrastructure_adapters_export_ExportRenderersTest.java:2",
-     "rank_in_lot": 1,
+     "job": "integrations:rediscover:backend_src_main_java_com_matimeline_eventmanager_infrastructure_adapters_LocalStorageAdapter.java:1",
      "reused": true,
-     "reused_from": "2026-11-18T16:25:29Z"
+     "reused_from": "2026-11-20T12:20:00Z"
     },
     "comment": [],
-    "refute": null
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "ExportRenderersTest L56-67 et L125-163 confirment l'omission du hash et le préfixe apostrophe pour @, =, - et saut de ligne.",
+      "ExportRenderersTest L65-66 hash absent du JSON, L125-127 apostrophe pour @, =, -, L161 pour saut de ligne en tête.",
+      "ExportRenderersTest L65-66 le JSON omet le hash, L125-127 et L161 le CSV préfixe d'une apostrophe pour @, =, - et saut de ligne initial."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
    },
    "contrary": null,
-   "kept_for": "rediscovered",
    "placed": {
-    "pack_line": 86,
+    "pack_line": 108,
     "annex_table": null
    },
    "uses": 0
@@ -1371,32 +1814,46 @@
    "id": "integrations:tests:4",
    "section": "tests",
    "rank": 4,
-   "text": "- Les tests fixent que le stockage local rejette par une IllegalArgumentException les références de type path traversal en load et delete [#6370768e2f4f6dde-1] [#e4b07cd063572333-1].",
-   "fact_text": "Les tests fixent que le stockage local rejette par une IllegalArgumentException les références de type path traversal en load et delete",
+   "text": "- Les tests fixent que forgot-password renvoie 200 pour un email inconnu et que reset-password renvoie 400 pour token inconnu, non UUID ou mot de passe trop court. [#20c09aee2ec1f179-1] [#230eadc9415bea9f-1] [#d72c7a45f2930324-1] [#ed6ce70fde4bb79a-1]",
+   "fact_text": "Les tests fixent que forgot-password renvoie 200 pour un email inconnu et que reset-password renvoie 400 pour token inconnu, non UUID ou mot de passe trop court",
    "consigne": null,
    "consigne_dropped": false,
    "cites": [
-    "integrations/6370768e2f4f6dde-1",
-    "integrations/e4b07cd063572333-1"
+    "integrations/20c09aee2ec1f179-1",
+    "integrations/230eadc9415bea9f-1",
+    "integrations/d72c7a45f2930324-1",
+    "integrations/ed6ce70fde4bb79a-1"
    ],
    "files": [
-    "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapterTest.java"
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/PasswordResetEndpointsIntegrationTest.java"
    ],
    "ranges": [
     [
-     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapterTest.java",
-     67,
-     70,
-     "64ec9f0d609fa8d9d5858654282427c090191f83f10f38142364ebdeb84d85bc"
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/PasswordResetEndpointsIntegrationTest.java",
+     39,
+     47,
+     "58c010e4d32267037cb0b352c9c441b27c3cb0428bcf1f2e547ad593f418dc8f"
     ],
     [
-     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapterTest.java",
-     73,
-     76,
-     "f63e43f0b5016d6d5231df8a4ad3d00e2cdc42db7eb1ef2db49669f369ad0575"
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/PasswordResetEndpointsIntegrationTest.java",
+     66,
+     77,
+     "3fabfa9e0826e8d8c3d89b1a6f09fdf29fdb075cd201eeee59df4911e8514366"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/PasswordResetEndpointsIntegrationTest.java",
+     82,
+     90,
+     "c0caa6f58f08d87f072e1fe9fd60741f4dc72bd41f13208b08e2214ca26f1044"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/PasswordResetEndpointsIntegrationTest.java",
+     95,
+     103,
+     "0d2c53ebba18c69b71bc435ea98204bd6105e6dc38e397d4a1a9a5a0b15b4c18"
     ]
    ],
-   "code_sha256": "1c9e5cd9396a708f7bb011a99d2413de357ae52080b87bd8489bbd74e6180051",
+   "code_sha256": "dc260502125c6a6ddb7ff916c1254d5174c4330add7270eb3c87b615fe079703",
    "verdict": "admit",
    "reason": "admitted",
    "final": true,
@@ -1405,40 +1862,42 @@
     "deduce": {
      "covered": false,
      "overlap": {
-      "identifiers": 1.0,
-      "values": null,
-      "terms": 0.273,
+      "identifiers": 0.0,
+      "values": 1.0,
+      "terms": 0.818,
       "n": {
        "identifiers": 1,
-       "values": 0,
+       "values": 2,
        "terms": 11
       }
      },
-     "restatement": "Les tests load_rejectsPathTraversalReference et delete_rejectsPathTraversalReference vérifient que load(\"../../etc/passwd\") et delete(\"../secret\") lèvent IllegalArgumentException.",
+     "restatement": "Les tests de réinitialisation de mot de passe attendent un 200 pour forgot-password avec un email inconnu (anti-énumération). Ils attendent un 400 pour reset-password avec un token inconnu, avec error égal à bad_request et message égal à « invalid or expired token », un 400 pour un token mal formé, et un 400 pour un mot de passe trop court (« 123 »).",
      "confidence": "high",
+     "files_read_missing": true,
      "reused": true,
-     "reused_from": "2026-11-18T16:25:29Z"
+     "reused_from": "2026-11-20T12:20:00Z"
     },
     "rediscover": {
      "found": true,
-     "cost": 15,
+     "cost": 19,
      "within_budget": false,
-     "covered": false,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapterTest.java",
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/PasswordResetEndpointsIntegrationTest.java",
      "file_ok": true,
      "overlap": {
       "identifiers": 1.0,
-      "values": null,
-      "terms": 0.182,
+      "values": 1.0,
+      "terms": 0.727,
       "n": {
        "identifiers": 1,
-       "values": 0,
+       "values": 2,
        "terms": 11
       }
      },
-     "job": "integrations:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_infrastructure_adapters_LocalStorageAdapter.java:1",
+     "job": "integrations:rediscover:backend_src_main_java_com_matimeline_eventmanager_infrastructure_adapters_LocalStorageAdapter.java:1",
+     "rank_in_lot": 3,
      "reused": true,
-     "reused_from": "2026-11-18T16:25:29Z"
+     "reused_from": "2026-11-20T12:20:00Z"
     },
     "comment": [],
     "refute": {
@@ -1446,9 +1905,9 @@
      "refuted": 0,
      "refute_unproven": 0,
      "reasons": [
-      "Les tests L67-76 attendent une IllegalArgumentException pour load(\"../../etc/passwd\") et delete(\"../secret\").",
-      "load_rejectsPathTraversalReference et delete_rejectsPathTraversalReference attendent IllegalArgumentException (L67-76).",
-      "load_rejectsPathTraversalReference (L67-70) et delete_rejectsPathTraversalReference (L73-76) attendent IllegalArgumentException."
+      "Tests L39-103 : 200 pour email inconnu, 400 pour token inconnu, non UUID, mot de passe court.",
+      "Tests L39-47 (200 email inconnu), L66-77 (400 token inconnu), L82-90 (non UUID), L95-103 (mot de passe court) concordent.",
+      "Les tests L39-47 (200), L66-77, L82-90 et L95-103 (400 pour token inconnu, non UUID, mot de passe '123') correspondent."
      ],
      "evidence": [
       "",
@@ -1458,12 +1917,12 @@
      "consigne_verdict": "n/a",
      "question_verdict": "n/a",
      "reused": true,
-     "reused_from": "2026-11-18T16:25:29Z"
+     "reused_from": "2026-11-20T12:20:00Z"
     }
    },
    "contrary": null,
    "placed": {
-    "pack_line": 87,
+    "pack_line": 109,
     "annex_table": null
    },
    "uses": 0
@@ -1472,32 +1931,39 @@
    "id": "integrations:tests:5",
    "section": "tests",
    "rank": 5,
-   "text": "- Les tests fixent que delete est idempotent et que store puis load conserve l'extension sur un répertoire temporaire [#a1f67c5fae1badd3-1] [#92ce5b0e34535e58-1].",
-   "fact_text": "Les tests fixent que delete est idempotent et que store puis load conserve l'extension sur un répertoire temporaire",
+   "text": "- Les tests front remplacent l'adaptateur d'apiClient par un 403 et vérifient que l'intercepteur journalise sans toast, avec un témoin sans opt-out qui produit un toast. [#778f32aa13a579b0-1] [#1faea9b005c2fedd-1] [#1faea9b005c2fedd-2]",
+   "fact_text": "Les tests front remplacent l'adaptateur d'apiClient par un 403 et vérifient que l'intercepteur journalise sans toast, avec un témoin sans opt-out qui produit un toast",
    "consigne": null,
    "consigne_dropped": false,
    "cites": [
-    "integrations/a1f67c5fae1badd3-1",
-    "integrations/92ce5b0e34535e58-1"
+    "integrations/778f32aa13a579b0-1",
+    "integrations/1faea9b005c2fedd-1",
+    "integrations/1faea9b005c2fedd-2"
    ],
    "files": [
-    "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapterTest.java"
+    "frontend:components/categories/CategoryDrawer.forbidden.test.tsx"
    ],
    "ranges": [
     [
-     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapterTest.java",
-     50,
-     57,
-     "4da4b30226d5a8df19e368a67aa100d5e91ace7e1f87931a1b41e6ead6fecd30"
+     "frontend:components/categories/CategoryDrawer.forbidden.test.tsx",
+     85,
+     99,
+     "bd3b6fcb05b8a79d2166ea8c8c3b4289b1074eb329031d96ffb901e66f06506a"
     ],
     [
-     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapterTest.java",
-     32,
-     42,
-     "acff202cb7406c8b1243c1f32564363ed1a307d1d5bc1469683334e94a4ccbbe"
+     "frontend:components/categories/CategoryDrawer.forbidden.test.tsx",
+     101,
+     116,
+     "74e9ab49b43274ee829037eb4af75df50afb4e9eb9e0d17d1a1663f248e6537f"
+    ],
+    [
+     "frontend:components/categories/CategoryDrawer.forbidden.test.tsx",
+     131,
+     134,
+     "ece2d3482e923d2cd2a4868acf9ea8caa6ed6ab63a410e1a6d70b28df380d2c0"
     ]
    ],
-   "code_sha256": "7aa4f22d63c64c7d34c035c83c82f3176d05f8efe50dfc67a7e7bdcfa61b25bf",
+   "code_sha256": "0eb127f9f8243497425aa55cff41f41d6cabb6589593106b98a7913307d727a8",
    "verdict": "admit",
    "reason": "admitted",
    "final": true,
@@ -1506,401 +1972,517 @@
     "deduce": {
      "covered": false,
      "overlap": {
-      "identifiers": null,
-      "values": null,
+      "identifiers": 0.0,
+      "values": 1.0,
       "terms": 0.3,
-      "n": {
-       "identifiers": 0,
-       "values": 0,
-       "terms": 10
-      }
-     },
-     "restatement": "delete_removesFile_andIsIdempotent stocke un fichier, vérifie qu'il est chargeable, le supprime puis vérifie que load renvoie vide ; un second delete sur la même référence ne lève aucune exception (no-op idempotent).",
-     "confidence": "high",
-     "reused": true,
-     "reused_from": "2026-11-18T16:25:29Z"
-    },
-    "rediscover": {
-     "found": true,
-     "cost": 15,
-     "within_budget": false,
-     "covered": false,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapterTest.java",
-     "file_ok": true,
-     "overlap": {
-      "identifiers": null,
-      "values": null,
-      "terms": 0.3,
-      "n": {
-       "identifiers": 0,
-       "values": 0,
-       "terms": 10
-      }
-     },
-     "job": "integrations:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_infrastructure_adapters_LocalStorageAdapter.java:1",
-     "reused": true,
-     "reused_from": "2026-11-18T16:25:29Z"
-    },
-    "comment": [],
-    "refute": {
-     "votes": 3,
-     "refuted": 0,
-     "refute_unproven": 0,
-     "reasons": [
-      "delete_removesFile_andIsIdempotent (L50-57) vérifie le second appel sans exception, et store_thenLoad_roundTrips (L32-42) vérifie l'extension. Le répertoire temporaire n'apparaît pas dans l'extrait, mais ce point n'est pas contredit.",
-      "delete_removesFile_andIsIdempotent (L50-57) et store_thenLoad_roundTrips (extension .jpg conservée) confirment la ligne ; le répertoire temporaire n'est pas contredit.",
-      "delete_removesFile_andIsIdempotent (L50-57) double delete sans exception, store_thenLoad_roundTrips (L32-42) vérifie l'extension .jpg; le répertoire temporaire n'est pas visible dans l'extrait mais plausible, pas de preuve contraire."
-     ],
-     "evidence": [
-      "",
-      "",
-      ""
-     ],
-     "consigne_verdict": "n/a",
-     "question_verdict": "n/a",
-     "reused": true,
-     "reused_from": "2026-11-18T16:25:29Z"
-    }
-   },
-   "contrary": null,
-   "placed": {
-    "pack_line": 88,
-    "annex_table": null
-   },
-   "uses": 0
-  },
-  {
-   "id": "integrations:tests:6",
-   "section": "tests",
-   "rank": 6,
-   "text": "- Les tests fixent que toute locale absente, inconnue ou hostile retombe sur le français, et que la casse et le sous-tag de région sont ignorés [#adb4712c956147b0-1] [#d97eba2cdca557f1-3] [#3de9961cfcdacd70-1].",
-   "fact_text": "Les tests fixent que toute locale absente, inconnue ou hostile retombe sur le français, et que la casse et le sous-tag de région sont ignorés",
-   "consigne": null,
-   "consigne_dropped": false,
-   "cites": [
-    "integrations/adb4712c956147b0-1",
-    "integrations/d97eba2cdca557f1-3",
-    "integrations/3de9961cfcdacd70-1"
-   ],
-   "files": [
-    "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/email/PasswordResetEmailTemplateTest.java",
-    "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailServiceLocaleTest.java"
-   ],
-   "ranges": [
-    [
-     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/email/PasswordResetEmailTemplateTest.java",
-     29,
-     34,
-     "cf86525256de20f6b23ed65e31677a8b5a4c6fb8b2ea7f5b8cca13c7ad660f47"
-    ],
-    [
-     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/email/PasswordResetEmailTemplateTest.java",
-     36,
-     40,
-     "1be811f03f085edde8d6b1f9ccd251b844036b22a010826018936859971ca6e2"
-    ],
-    [
-     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailServiceLocaleTest.java",
-     83,
-     94,
-     "621d2fb49fad932b7d9353b6c02af7283995ba9358cf8e39b0474d569ee36eb6"
-    ]
-   ],
-   "code_sha256": "1824c4b8012d02f577800ed9e0b0c232d7071db52a6636f87989b74ceb7bf35f",
-   "verdict": "admit",
-   "reason": "admitted",
-   "final": true,
-   "measures": {
-    "fidelity": null,
-    "deduce": {
-     "covered": false,
-     "overlap": {
-      "identifiers": null,
-      "values": null,
-      "terms": 0.364,
-      "n": {
-       "identifiers": 0,
-       "values": 0,
-       "terms": 11
-      }
-     },
-     "restatement": "PasswordResetEmailTemplate.resolve retourne le gabarit FR pour une locale null, vide, blanche ou non supportée (zz, xx-YY, \"fr;DROP\", 42, french). Le test de BrevoEmailServiceLocaleTest vérifie aussi que l'objet sujet et contenu envoyé est en français (\"Réinitialisation de votre mot de passe MyTimeline\", \"Réinitialiser mon mot de passe\") pour une locale inconnue.",
-     "confidence": "high",
-     "reused": true,
-     "reused_from": "2026-11-18T16:25:29Z"
-    },
-    "rediscover": {
-     "found": true,
-     "cost": 16,
-     "within_budget": false,
-     "covered": false,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/email/PasswordResetEmailTemplateTest.java",
-     "file_ok": true,
-     "overlap": {
-      "identifiers": null,
-      "values": null,
-      "terms": 0.364,
-      "n": {
-       "identifiers": 0,
-       "values": 0,
-       "terms": 11
-      }
-     },
-     "job": "integrations:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_infrastructure_adapters_LocalStorageAdapter.java:1",
-     "reused": true,
-     "reused_from": "2026-11-18T16:25:29Z"
-    },
-    "comment": [],
-    "refute": {
-     "votes": 3,
-     "refuted": 0,
-     "refute_unproven": 0,
-     "reasons": [
-      "Les tests L29-40 couvrent null, vide, valeurs inconnues ou hostiles (\"fr;DROP\") avec repli sur FR, ainsi que la casse et les sous-tags de région.",
-      "Les tests paramétrés couvrent null, vide, zz, fr;DROP, etc. vers FR, et casse et sous-tag ignorés (L29-40).",
-      "PasswordResetEmailTemplateTest L29-40 couvre null, vide, inconnu, hostile vers FR, et casse/région ignorées; BrevoEmailServiceLocaleTest L83-94 confirme le français."
-     ],
-     "evidence": [
-      "",
-      "",
-      ""
-     ],
-     "consigne_verdict": "n/a",
-     "question_verdict": "n/a",
-     "reused": true,
-     "reused_from": "2026-11-18T16:25:29Z"
-    }
-   },
-   "contrary": null,
-   "placed": {
-    "pack_line": 89,
-    "annex_table": null
-   },
-   "uses": 0
-  },
-  {
-   "id": "integrations:tests:7",
-   "section": "tests",
-   "rank": 7,
-   "text": "- Les tests fixent que sans clé d'API Brevo aucun appel HTTP n'est émis, le test comptant les corps capturés [#52720a500310ccdf-1].",
-   "fact_text": "Les tests fixent que sans clé d'API Brevo aucun appel HTTP n'est émis, le test comptant les corps capturés",
-   "consigne": null,
-   "consigne_dropped": false,
-   "cites": [
-    "integrations/52720a500310ccdf-1"
-   ],
-   "files": [
-    "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailServiceLocaleTest.java"
-   ],
-   "ranges": [
-    [
-     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailServiceLocaleTest.java",
-     121,
-     127,
-     "34684e7ad2d8200f6e299e0e26c6f440f8f5faa0b0627c641c4bebf79ae800df"
-    ]
-   ],
-   "code_sha256": "34684e7ad2d8200f6e299e0e26c6f440f8f5faa0b0627c641c4bebf79ae800df",
-   "verdict": "admit",
-   "reason": "admitted",
-   "final": true,
-   "measures": {
-    "fidelity": null,
-    "deduce": {
-     "covered": false,
-     "overlap": {
-      "identifiers": 1.0,
-      "values": null,
-      "terms": 0.25,
-      "n": {
-       "identifiers": 2,
-       "values": 0,
-       "terms": 8
-      }
-     },
-     "restatement": "Le test sendPasswordResetEmail_withoutApiKey_staysNoOp_andSendsNothing vérifie que, sans clé API (chaîne vide \"\"), BrevoEmailService.sendPasswordResetEmail ne fait aucun appel HTTP quelle que soit la langue : la liste capturedBodies reste vide. C'est un NO-OP en dev/test.",
-     "confidence": "high",
-     "reused": true,
-     "reused_from": "2026-11-18T16:25:29Z"
-    },
-    "rediscover": {
-     "found": true,
-     "cost": 12,
-     "within_budget": false,
-     "covered": false,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailServiceLocaleTest.java",
-     "file_ok": true,
-     "overlap": {
-      "identifiers": 0.5,
-      "values": null,
-      "terms": 0.375,
-      "n": {
-       "identifiers": 2,
-       "values": 0,
-       "terms": 8
-      }
-     },
-     "job": "integrations:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_infrastructure_adapters_LocalStorageAdapter.java:1",
-     "reused": true,
-     "reused_from": "2026-11-18T16:25:29Z"
-    },
-    "comment": [],
-    "refute": {
-     "votes": 3,
-     "refuted": 0,
-     "refute_unproven": 0,
-     "reasons": [
-      "Le test L121-127 appelle serviceWith(\"\") et vérifie que capturedBodies est vide.",
-      "Le test avec clé vide (L122-127) vérifie assertThat(capturedBodies).isEmpty().",
-      "sendPasswordResetEmail_withoutApiKey_staysNoOp_andSendsNothing (L121-127) utilise serviceWith(\"\") et assert capturedBodies vide."
-     ],
-     "evidence": [
-      "",
-      "",
-      ""
-     ],
-     "consigne_verdict": "n/a",
-     "question_verdict": "n/a",
-     "reused": true,
-     "reused_from": "2026-11-18T16:25:29Z"
-    }
-   },
-   "contrary": null,
-   "placed": {
-    "pack_line": 90,
-    "annex_table": null
-   },
-   "uses": 0
-  },
-  {
-   "id": "integrations:tests:8",
-   "section": "tests",
-   "rank": 8,
-   "text": "- Les tests fixent que l'indicateur de santé Brevo est DOWN pour une clé nulle ou blanche, UP sinon, sans jamais exposer la clé [#bebc0555404acb33-1] [#e671c9d0e878ab41-2] [#096f7886865e90ea-1] [#e671c9d0e878ab41-4].",
-   "fact_text": "Les tests fixent que l'indicateur de santé Brevo est DOWN pour une clé nulle ou blanche, UP sinon, sans jamais exposer la clé",
-   "consigne": null,
-   "consigne_dropped": false,
-   "cites": [
-    "integrations/bebc0555404acb33-1",
-    "integrations/e671c9d0e878ab41-2",
-    "integrations/096f7886865e90ea-1",
-    "integrations/e671c9d0e878ab41-4"
-   ],
-   "files": [
-    "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoHealthIndicatorTest.java"
-   ],
-   "ranges": [
-    [
-     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoHealthIndicatorTest.java",
-     18,
-     24,
-     "9c0f2db6316b4ddab857402af54b1fdf494cfe30ed917cc9a395e12ca0977862"
-    ],
-    [
-     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoHealthIndicatorTest.java",
-     26,
-     32,
-     "16ee20d5e912de1beecd661dd8542c18d4bfd17e36fd20fdf5b832051b5c7d76"
-    ],
-    [
-     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoHealthIndicatorTest.java",
-     34,
-     39,
-     "651b1efb25068edd40670ec1f5227518be2eddc66dc9dbf2804514a03154fd89"
-    ],
-    [
-     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoHealthIndicatorTest.java",
-     41,
-     48,
-     "6f4a0e25d502e7586e9afd7e7847377abc27ef1ffaaa4b1dc3a63ff4e8621ea4"
-    ]
-   ],
-   "code_sha256": "6e6af6e40908bd839ef6baaa5d5ff49eb30d2c19311267f6e060bc0e678aff8e",
-   "verdict": "admit",
-   "reason": "rediscovered",
-   "final": true,
-   "measures": {
-    "fidelity": null,
-    "deduce": {
-     "covered": false,
-     "overlap": {
-      "identifiers": 1.0,
-      "values": null,
-      "terms": 0.25,
       "n": {
        "identifiers": 1,
-       "values": 0,
-       "terms": 8
+       "values": 1,
+       "terms": 10
       }
      },
-     "restatement": "BrevoHealthIndicator renvoie le statut DOWN lorsque la clé API est null (détail \"reason\" présent) ou blanche (\"   \"), et la raison mentionne la variable BREVO_API_KEY. Avec une clé non vide, le statut est UP.",
+     "restatement": "Pour un POST /categories en création qui renvoie un 403, le test attend que le message inline errors.forbidden s'affiche, que console.error soit appelé avec 'Erreur 403 - Accès refusé:' et des métadonnées d'url, et qu'aucun toast d'erreur ni de succès ne soit déclenché. Un témoin sans opt-out sur le même 403 doit déclencher exactement un toast d'erreur.",
      "confidence": "high",
      "reused": true,
-     "reused_from": "2026-11-18T16:25:29Z"
+     "reused_from": "2026-11-20T12:20:00Z"
     },
     "rediscover": {
      "found": true,
-     "cost": 13,
-     "within_budget": true,
+     "cost": 10,
+     "within_budget": false,
      "covered": true,
-     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoHealthIndicatorTest.java",
-     "file_ok": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/services/apiClient.test.ts",
+     "file_ok": false,
      "overlap": {
       "identifiers": 1.0,
-      "values": null,
-      "terms": 0.5,
+      "values": 1.0,
+      "terms": 0.6,
       "n": {
        "identifiers": 1,
-       "values": 0,
-       "terms": 8
+       "values": 1,
+       "terms": 10
       }
      },
-     "job": "integrations:rediscover:mytimeline_backend_src_main_java_com_matimeline_eventmanager_infrastructure_adapters_LocalStorageAdapter.java:1",
-     "rank_in_lot": 6,
+     "job": "integrations:rediscover:backend_src_main_java_com_matimeline_eventmanager_infrastructure_adapters_LocalStorageAdapter.java:1",
      "reused": true,
-     "reused_from": "2026-11-18T16:25:29Z"
+     "reused_from": "2026-11-20T12:20:00Z"
     },
     "comment": [],
-    "refute": null
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "CategoryDrawer.forbidden.test.tsx L91 remplace l'adaptateur par un 403, L114 sans toast, L131-134 témoin avec toast.",
+      "CategoryDrawer.forbidden.test L91 remplace l'adaptateur par forbiddenAdapter, L110-114 log sans toast, L131-134 témoin sans opt-out avec toast.",
+      "CategoryDrawer.forbidden.test : adaptateur remplacé (L91), log console.error sans toast (L110-114), témoin sans opt-out avec toast (L131-134)."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
    },
    "contrary": null,
-   "kept_for": "rediscovered",
    "placed": {
-    "pack_line": 91,
+    "pack_line": 110,
     "annex_table": null
    },
    "uses": 0
   },
   {
-   "id": "integrations:rules:annex:c0b3f3d5",
-   "section": "rules",
-   "rank": 2,
-   "text": "- Selon la javadoc, les clés de stockage sont fail-fast sans défaut en prod, et exportStorage n'a pas de défaut dans @Value. [#0041f21f67193426-2] [#3a8615964c21dcf2-1]",
-   "fact_text": "Selon la javadoc, les clés de stockage sont fail-fast sans défaut en prod, et exportStorage n'a pas de défaut dans @Value",
+   "id": "integrations:questions:1",
+   "section": "questions",
+   "rank": 1,
+   "text": "- Le 404 (et non 403) pour la restauration d'un produit archivé d'un autre utilisateur est-il bien appliqué par le code de production ? Selon la javadoc du test, c'est voulu par anti-énumération, mais aucun fait de code ne le confirme dans ce lot, voir `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductRestoreIntegrationTest.java:208-225` [#be58d90301a09953-1].",
+   "fact_text": "Le 404 (et non 403) pour la restauration d'un produit archivé d'un autre utilisateur est-il bien appliqué par le code de production ? Selon la javadoc du test, c'est voulu par anti-énumération, mais aucun fait de code ne le confirme dans ce lot, voir ProductRestoreIntegrationTest.java",
    "consigne": null,
    "consigne_dropped": false,
    "cites": [
-    "integrations/0041f21f67193426-2",
-    "integrations/3a8615964c21dcf2-1"
+    "integrations/be58d90301a09953-1"
    ],
    "files": [
-    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/config/StorageConfig.java"
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductRestoreIntegrationTest.java"
    ],
    "ranges": [
     [
-     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/config/StorageConfig.java",
-     21,
-     21,
-     "abac2c21901bdcf7342fb9ff0c3b20d6df3caa8ee289c1a11d99b51c86f8f93d"
-    ],
-    [
-     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/config/StorageConfig.java",
-     44,
-     45,
-     "8e5e9d15fcda549b8e8732918f7e24ba443794bb362eca3116c977a4af69d6c2"
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductRestoreIntegrationTest.java",
+     208,
+     225,
+     "398cc8cd22574dd011621c3e30da3553292d76fc02974f5a94f95acff46a0298"
     ]
    ],
-   "code_sha256": "ead3c2ffd24b055eb4b19b83740676bed94b9c75c897ed3a510ff4547cb7eaf4",
+   "code_sha256": "398cc8cd22574dd011621c3e30da3553292d76fc02974f5a94f95acff46a0298",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [
+     {
+      "id": "integrations/be58d90301a09953-1",
+      "verdict": "confirmed"
+     }
+    ],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Le code de production tranche : restoreArchivedByIdAndUserId filtre sur id, user_id et archived dans le WHERE, et restoreProduct lève ProductNotFoundException si 0 ligne, donc 404 pour le produit d'un autre.",
+      "Le code de production tranche : restoreProduct lance ProductNotFoundException si l'UPDATE natif (id + user_id + archived) touche 0 ligne.",
+      "ProductServiceImpl.restoreProduct lève ProductNotFoundException si l'UPDATE filtré sur id et user_id touche 0 ligne, donc 404 pour le produit d'un autre."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "resolved",
+     "searched": true,
+     "search": {
+      "check": "answer",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 3,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "restore dans Product*.java du backend/src/main",
+         "found": "ProductController.restoreProduct, ProductServiceImpl.restoreProduct, ProductRepositoryJpaImpl.restoreArchivedByIdAndUserId."
+        },
+        {
+         "tool": "Read",
+         "target": "ProductServiceImpl.java L190-200",
+         "found": "404 via ProductNotFoundException si 0 ligne."
+        },
+        {
+         "tool": "Read",
+         "target": "ProductRepositoryJpaImpl.java L245-259",
+         "found": "UPDATE natif avec WHERE id AND user_id AND archived = true."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "restoreProduct|/restore",
+         "found": "Contrôleur ProductController L118-130 appelle ProductServiceImpl.restoreProduct L195."
+        },
+        {
+         "tool": "Read",
+         "target": "ProductServiceImpl.java L185-220",
+         "found": "Ownership porté par le WHERE de l'UPDATE, 0 ligne = ProductNotFoundException."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "restore in backend/src/main *Product*.java",
+         "found": "ProductController L118 endpoint, service L195, repo restoreArchivedByIdAndUserId"
+        },
+        {
+         "tool": "Read",
+         "target": "ProductServiceImpl.java L185-205",
+         "found": "0 ligne => ProductNotFoundException"
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0,
+      "contradicted": 3
+     },
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "answer",
+   "placed": {
+    "pack_line": 114,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "integrations:alerts:1",
+   "section": "alerts",
+   "rank": 1,
+   "text": "- getProducts renvoie response.data sans validation Zod, alors que getCategories valide sa réponse, donc une réponse mal formée du backend passe sans erreur côté produit. Ajouter un schéma Zod comme dans categoryService, voir `frontend:services/productService.ts:6-16` [#bdb861ee54c6c577-1].",
+   "fact_text": "getProducts renvoie response.data sans validation Zod, alors que getCategories valide sa réponse, donc une réponse mal formée du backend passe sans erreur côté produit. Ajouter un schéma Zod comme dans categoryService, voir productService.ts",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "integrations/bdb861ee54c6c577-1"
+   ],
+   "files": [
+    "frontend:services/productService.ts"
+   ],
+   "ranges": [
+    [
+     "frontend:services/productService.ts",
+     6,
+     16,
+     "3e975974a6374b3dac02a4268f37e9e8176601d26dd26b5e1ecb379be4243d78"
+    ]
+   ],
+   "code_sha256": "3e975974a6374b3dac02a4268f37e9e8176601d26dd26b5e1ecb379be4243d78",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "getProducts (L6-16) renvoie response.data sans schéma. Son seul appelant, useProductsWithEvents, passe le résultat directement à useQuery sans validation.",
+      "getProducts L9 renvoie response.data sans schéma Zod ; son seul appelant useProductsWithEvents.ts L26 l'utilise directement comme queryFn sans validation.",
+      "getProducts renvoie response.data sans parse (productService.ts L9). Son seul appelant, useProductsWithEvents (L26), ne valide pas non plus. productSchema existe dans types/product.ts mais n'est pas appliqué à cette réponse."
+     ],
+     "evidence": [
+      "const response = await apiClient.get(`/users/${userId}/products`)",
+      "",
+      ""
+     ],
+     "consigne_verdict": "supported",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "guards",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "restoreProduct|getProducts\\( dans frontend/src",
+         "found": "un seul appelant, useProductsWithEvents.ts L26"
+        },
+        {
+         "tool": "Read",
+         "target": "frontend/src/hooks/useProductsWithEvents.ts",
+         "found": "queryFn: () => getProducts(...), aucune validation Zod"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "getProducts\\b dans frontend/src",
+         "found": "Seul appelant réel useProductsWithEvents.ts L26 : queryFn: () => getProducts(userId as string), pas de validation."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "getProducts\\(|productSchema dans frontend/src",
+         "found": "Un seul appelant, useProductsWithEvents. productSchema n'est utilisé que dans les types et leurs tests."
+        },
+        {
+         "tool": "Read",
+         "target": "frontend/src/hooks/useProductsWithEvents.ts",
+         "found": "queryFn renvoie getProducts directement, sans validation."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "guards",
+   "placed": {
+    "pack_line": 118,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "integrations:alerts:2",
+   "section": "alerts",
+   "rank": 2,
+   "text": "- restoreProduct n'accepte pas de paramètre options, contrairement aux autres mutations produit, donc un 403 ne peut pas y être déclaré comme traité inline. Ajouter le paramètre avant de gérer cette erreur dans l'interface, voir `frontend:services/productService.ts:124-131` [#145742ba350d6f89-1].",
+   "fact_text": "restoreProduct n'accepte pas de paramètre options, contrairement aux autres mutations produit, donc un 403 ne peut pas y être déclaré comme traité inline. Ajouter le paramètre avant de gérer cette erreur dans l'interface, voir productService.ts",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "integrations/145742ba350d6f89-1"
+   ],
+   "files": [
+    "frontend:services/productService.ts"
+   ],
+   "ranges": [
+    [
+     "frontend:services/productService.ts",
+     124,
+     131,
+     "672d178b341b9e6654be6542c6f275561f81e16a7811348bcefd4a015f437097"
+    ]
+   ],
+   "code_sha256": "672d178b341b9e6654be6542c6f275561f81e16a7811348bcefd4a015f437097",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "restoreProduct (L124) n'a que userId et productId et appelle post sans config. Son seul appelant, useRestoreProduct L52, ne passe aucune option.",
+      "restoreProduct L124 n'a que (userId, productId) et appelle apiClient.post sans config ; useRestoreProduct.ts L52 l'appelle sans option, donc aucun 403 déclaré inline.",
+      "restoreProduct n'a que userId et productId (productService.ts L124) et n'envoie aucune config à apiClient.post (L126). useRestoreProduct l'appelle sans options (L52). Aucune garde trouvée."
+     ],
+     "evidence": [
+      "export const restoreProduct = async (userId: string, productId: string): Promise<void> =>",
+      "",
+      ""
+     ],
+     "consigne_verdict": "supported",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "guards",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "restoreProduct dans frontend/src",
+         "found": "seul appelant useRestoreProduct.ts L52, sans options"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "restoreProduct\\b dans frontend/src",
+         "found": "Appelé uniquement par useRestoreProduct.ts L52 avec deux arguments."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "restoreProduct dans frontend/src",
+         "found": "Appelé sans options dans useRestoreProduct.ts L52, signature à deux paramètres."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "guards",
+   "placed": {
+    "pack_line": 119,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "integrations:alerts:3",
+   "section": "alerts",
+   "rank": 3,
+   "text": "- Le mock de apiClient dans le test d'erreurs inline ne fournit que post et patch, donc le passage de l'option vers delete (deleteProduct, deleteCategory) n'est testé nulle part. Compléter le mock avant de modifier ce transport, voir `frontend:services/inlineErrorHandling.test.ts:18-23` [#e882b29be28028b9-1].",
+   "fact_text": "Le mock de apiClient dans le test d'erreurs inline ne fournit que post et patch, donc le passage de l'option vers delete (deleteProduct, deleteCategory) n'est testé nulle part. Compléter le mock avant de modifier ce transport, voir inlineErrorHandling.test.ts",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "integrations/e882b29be28028b9-1"
+   ],
+   "files": [
+    "frontend:services/inlineErrorHandling.test.ts"
+   ],
+   "ranges": [
+    [
+     "frontend:services/inlineErrorHandling.test.ts",
+     18,
+     23,
+     "dae7b8c6fac3a60648fca368fd027657e7de48d236a31b21c13aecedc296aab4"
+    ]
+   ],
+   "code_sha256": "dae7b8c6fac3a60648fca368fd027657e7de48d236a31b21c13aecedc296aab4",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Le mock de inlineErrorHandling.test.ts L18-23 ne fournit que post et patch. useArchiveProduct.test.tsx vérifie le passage de l'option mais avec deleteProduct mocké, donc le transport vers apiClient.delete n'est pas testé.",
+      "Le mock L18-23 ne définit que post et patch ; les autres tests (useArchiveProduct, useDeleteCategory, ProductDetailView) mockent le service entier, donc le passage des options vers apiClient.delete n'est testé nulle part.",
+      "Le mock de apiClient (inlineErrorHandling.test.ts L18-23) ne définit que post et patch. Les tests des hooks et de ProductDetailView mockent deleteProduct lui-même, donc aucun test ne vérifie le passage de options à apiClient.delete. Aucune garde trouvée."
+     ],
+     "evidence": [
+      "post: (...a: unknown[]) => postMock(...a),\n    patch:",
+      "",
+      ""
+     ],
+     "consigne_verdict": "supported",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "guards",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 30,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "deleteProduct|deleteCategory dans *.test.*",
+         "found": "seul useArchiveProduct.test.tsx, qui mocke le service entier ; rien n'atteint apiClient.delete"
+        },
+        {
+         "tool": "Grep",
+         "target": "\\.delete\\( dans services",
+         "found": "productService L97 et categoryService L110 transmettent l'option à apiClient.delete"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "deleteProduct|deleteCategory dans *.test.* de frontend/src",
+         "found": "Tous les tests mockent deleteProduct/deleteCategory au niveau service, aucun ne vérifie apiClient.delete."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "delete dans frontend/src/services/*.test.ts",
+         "found": "Seul userService.test.ts mocke delete (deleteAvatar). Rien pour deleteProduct ni deleteCategory vers apiClient.delete."
+        },
+        {
+         "tool": "Grep",
+         "target": "getProducts|productSchema|restoreProduct|deleteProduct dans frontend/src",
+         "found": "Les tests de useArchiveProduct et de ProductDetailView mockent deleteProduct, pas apiClient.delete."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "guards",
+   "placed": {
+    "pack_line": 120,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "integrations:rules:annex:bb6ef6c1",
+   "section": "rules",
+   "rank": 1,
+   "text": "- Le stockage local ne reprend jamais le nom de fichier du client. Il génère un UUID plus une extension de 1 à 5 caractères a-z0-9, sinon IllegalArgumentException. [#a3b8181473ac234b-1] [#eb4a963db93f2f39-1]",
+   "fact_text": "Le stockage local ne reprend jamais le nom de fichier du client. Il génère un UUID plus une extension de 1 à 5 caractères a-z0-9, sinon IllegalArgumentException",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "integrations/a3b8181473ac234b-1",
+    "integrations/eb4a963db93f2f39-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapter.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapter.java",
+     43,
+     57,
+     "8a83cdcb352afb21255d71c27e16629d7ad548ef8fd5dbacce0b34b331df11b9"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapter.java",
+     100,
+     105,
+     "bd335eab1cb9934021010e9fbb83090626e9567e4a35a384b040ae2bead4f39e"
+    ]
+   ],
+   "code_sha256": "d2c729f1765aaf3278810ecf066588de5cff5d64db3edaeb8da56d8cb1aa4329",
    "verdict": "annex",
    "reason": "deducible",
    "final": true,
@@ -1910,29 +2492,25 @@
      "covered": true,
      "overlap": {
       "identifiers": 1.0,
-      "values": null,
-      "terms": 0.5,
+      "values": 1.0,
+      "terms": 0.625,
       "n": {
-       "identifiers": 1,
-       "values": 0,
+       "identifiers": 2,
+       "values": 3,
        "terms": 8
       }
      },
-     "restatement": "StorageConfig exige que chaque clé de configuration suive la convention fail-fast : aucune valeur par défaut en prod, le boot échoue si une clé manque. Le bean exportStorage crée un LocalStorageAdapter avec app.storage.export-path. Le commentaire seul est visible pour la première ligne.",
-     "confidence": "medium"
+     "restatement": "LocalStorageAdapter.store génère une référence UUID suffixée par l'extension, jamais le nom de fichier du client, puis écrit le contenu après création du dossier et résolution sécurisée du chemin. Une IOException est enveloppée dans UncheckedIOException avec le message « stockage indisponible ». sanitizeExtension rejette une extension null ou ne respectant pas [a-z0-9]{1,5} avec IllegalArgumentException.",
+     "confidence": "high",
+     "files_read_missing": true
     },
     "rediscover": null,
-    "comment": [
-     {
-      "id": "integrations/0041f21f67193426-2",
-      "verdict": "confirmed"
-     }
-    ],
+    "comment": [],
     "refute": null
    },
    "contrary": null,
    "check": "scope",
-   "general": "pattern_pack",
+   "general": "words:jamais",
    "placed": {
     "pack_line": null,
     "annex_table": {
@@ -1941,38 +2519,38 @@
     }
    },
    "uses": 0,
-   "carried_from": "2026-11-18T16:25:29Z"
+   "carried_from": "2026-11-20T12:20:00Z"
   },
   {
-   "id": "integrations:rules:annex:36511812",
+   "id": "integrations:rules:annex:e805efcb",
    "section": "rules",
-   "rank": 5,
-   "text": "- Le registre choisit à chaque appel le premier renderer dont supports(format) est vrai, sinon il lève ExportFormatNotSupportedException. [#9864d2d7bcca1ab3-1] [#24e00cc82b89be48-1]",
-   "fact_text": "Le registre choisit à chaque appel le premier renderer dont supports(format) est vrai, sinon il lève ExportFormatNotSupportedException",
+   "rank": 3,
+   "text": "- Sans clé API (brevo.api.key vide par défaut), l'envoi journalise un avertissement et ne fait aucun appel HTTP. [#25504d1bcaa2eac3-1] [#34158f5b5cd49dab-2]",
+   "fact_text": "Sans clé API (brevo.api.key vide par défaut), l'envoi journalise un avertissement et ne fait aucun appel HTTP",
    "consigne": null,
    "consigne_dropped": false,
    "cites": [
-    "integrations/9864d2d7bcca1ab3-1",
-    "integrations/24e00cc82b89be48-1"
+    "integrations/25504d1bcaa2eac3-1",
+    "integrations/34158f5b5cd49dab-2"
    ],
    "files": [
-    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportRendererRegistry.java"
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailService.java"
    ],
    "ranges": [
     [
-     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportRendererRegistry.java",
-     32,
-     38,
-     "b4a1b5a9428f20e1c36af81f1f5b9ec7ad7e2822b667481917c28cefbb789d76"
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailService.java",
+     76,
+     84,
+     "22e82a2ced04b8ecf77b853cdb57de5a6b51863843afb5aba55afe925ff29586"
     ],
     [
-     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/application/services/ExportRendererRegistry.java",
-     36,
-     36,
-     "2d9234fb04befbcaa16f5a836cd0525be975379fdc5f5dec3001a327ea381426"
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailService.java",
+     63,
+     68,
+     "090fc91f69f0874573e0ccea78854ac19e1a0e584e79243b9e7cd76c02172563"
     ]
    ],
-   "code_sha256": "ea635bf7a3abf8f2d91fcb730226d9e3565f0ceff915772a98dfffa8390031b9",
+   "code_sha256": "8574469f61c8cbdcd200b98e59450f7242c66b0c5b503bd7bac8d84efc3283e6",
    "verdict": "annex",
    "reason": "deducible",
    "final": true,
@@ -1983,15 +2561,16 @@
      "overlap": {
       "identifiers": 1.0,
       "values": null,
-      "terms": 0.556,
+      "terms": 0.667,
       "n": {
-       "identifiers": 1,
+       "identifiers": 3,
        "values": 0,
-       "terms": 9
+       "terms": 6
       }
      },
-     "restatement": "ExportRendererRegistry.render parcourt les renderers, prend le premier qui supporte le format, et lève ExportFormatNotSupportedException (avec format.name()) si aucun ne correspond ; sinon il appelle render(data) sur ce renderer.",
-     "confidence": "high"
+     "restatement": "BrevoEmailService.sendPasswordResetEmail ne fait aucun appel HTTP si apiKey est null ou vide : il journalise un warn et retourne (no-op). Le constructeur lit la clé via brevo.api.key (valeur par défaut vide), l'expéditeur via brevo.sender.email (défaut no-reply@mytimeline.app), brevo.sender.name (défaut MyTimeline) et app.frontend.reset-url-base (défaut http://localhost:3000/reset-password).",
+     "confidence": "high",
+     "files_read_missing": true
     },
     "rediscover": null,
     "comment": [],
@@ -1999,7 +2578,7 @@
    },
    "contrary": null,
    "check": "scope",
-   "general": "words:chaque,a chaque",
+   "general": "words:aucun",
    "placed": {
     "pack_line": null,
     "annex_table": {
@@ -2008,46 +2587,31 @@
     }
    },
    "uses": 0,
-   "carried_from": "2026-11-18T16:25:29Z"
+   "carried_from": "2026-11-20T12:20:00Z"
   },
   {
-   "id": "integrations:rules:annex:a5ff9235",
+   "id": "integrations:rules:annex:357f1939",
    "section": "rules",
-   "rank": 10,
-   "text": "- Nom et lien sont échappés HTML dans le payload, et le template ne les échappe pas une seconde fois. [#1c9019c73cd45014-1] [#1c9019c73cd45014-3] [#4629fb93ffcd3c8e-1]",
-   "fact_text": "Nom et lien sont échappés HTML dans le payload, et le template ne les échappe pas une seconde fois",
+   "rank": 4,
+   "text": "- Une RestClientException est interceptée, seul le nom de la classe est journalisé, et l'erreur n'est pas propagée au contrôleur. [#825c5740d504fe2d-2]",
+   "fact_text": "Une RestClientException est interceptée, seul le nom de la classe est journalisé, et l'erreur n'est pas propagée au contrôleur",
    "consigne": null,
    "consigne_dropped": false,
    "cites": [
-    "integrations/1c9019c73cd45014-1",
-    "integrations/1c9019c73cd45014-3",
-    "integrations/4629fb93ffcd3c8e-1"
+    "integrations/825c5740d504fe2d-2"
    ],
    "files": [
-    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailService.java",
-    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/PasswordResetEmailTemplate.java"
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailService.java"
    ],
    "ranges": [
     [
-     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailService.java",
-     120,
-     120,
-     "47286cefbac7d3f9d94433e277b226b18564802c32f7dfd15d9e3a9633be0fb2"
-    ],
-    [
-     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailService.java",
-     124,
-     124,
-     "e8718f1e831a9f6b23339997c049d83f6b72d3670f6df0477410fdcbb64b6662"
-    ],
-    [
-     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/PasswordResetEmailTemplate.java",
-     123,
-     125,
-     "cf1d53df5ad3fac77d058cbc8735f845cc146000ac6360e5c268553e6aae641e"
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailService.java",
+     99,
+     105,
+     "0f1d352d7517f79ee399e24cb7bce9db26f1265f5b9d4dc6cd731ee9d1ba70eb"
     ]
    ],
-   "code_sha256": "1708af70afcde9a2adb19836a8d3d6701ae3ca7a1ae3c57357cc4a4bd1f6d658",
+   "code_sha256": "0f1d352d7517f79ee399e24cb7bce9db26f1265f5b9d4dc6cd731ee9d1ba70eb",
    "verdict": "annex",
    "reason": "deducible",
    "final": true,
@@ -2058,15 +2622,16 @@
      "overlap": {
       "identifiers": 1.0,
       "values": null,
-      "terms": 0.571,
+      "terms": 0.833,
       "n": {
        "identifiers": 1,
        "values": 0,
-       "terms": 7
+       "terms": 6
       }
      },
-     "restatement": "buildPayload échappe le nom (safeName) et le lien de réinitialisation (resetLink) avec HtmlUtils.htmlEscape avant de les passer au template HTML.",
-     "confidence": "high"
+     "restatement": "Dans sendPasswordResetEmail, une RestClientException est interceptée et seul le nom simple de la classe d'exception est journalisé, sans token ni clé. L'exception n'est pas propagée au contrôleur, afin que la réponse ne dépende pas de Brevo (BR-AUT-012).",
+     "confidence": "high",
+     "files_read_missing": true
     },
     "rediscover": null,
     "comment": [],
@@ -2083,31 +2648,46 @@
     }
    },
    "uses": 0,
-   "carried_from": "2026-11-18T16:25:29Z"
+   "carried_from": "2026-11-20T12:20:00Z"
   },
   {
-   "id": "integrations:rules:annex:fb7aa74a",
+   "id": "integrations:rules:annex:4e54d032",
    "section": "rules",
-   "rank": 12,
-   "text": "- L'indicateur de santé Brevo n'est actif qu'en profil prod. [#0f6cc63a210dd110-1]",
-   "fact_text": "L'indicateur de santé Brevo n'est actif qu'en profil prod",
+   "rank": 6,
+   "text": "- Selon la javadoc, la clé n'est jamais journalisée, même en fragment, et le health n'en reporte que la présence. L'indicateur n'existe qu'en profil prod. [#37058764e7c3f146-1] [#4b57f02866d02453-1] [#178a2c7117dea14c-1]",
+   "fact_text": "Selon la javadoc, la clé n'est jamais journalisée, même en fragment, et le health n'en reporte que la présence. L'indicateur n'existe qu'en profil prod",
    "consigne": null,
    "consigne_dropped": false,
    "cites": [
-    "integrations/0f6cc63a210dd110-1"
+    "integrations/37058764e7c3f146-1",
+    "integrations/4b57f02866d02453-1",
+    "integrations/178a2c7117dea14c-1"
    ],
    "files": [
-    "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoHealthIndicator.java"
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailService.java",
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoHealthIndicator.java"
    ],
    "ranges": [
     [
-     "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoHealthIndicator.java",
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailService.java",
      25,
      27,
-     "8636331c7ed96e9fa7c3378e94c6911130b1e2256c1327baf9f9a274ce7f451c"
+     "41c534ceae98d27eabfa7a6f6e27edf0e0f2e242d922f9df674f7c7cf09d4f19"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoHealthIndicator.java",
+     21,
+     22,
+     "9d82628c5503cbb4e757ad791893b92c4e9ec7f9424617894ded38a206eb50d4"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoHealthIndicator.java",
+     26,
+     27,
+     "e14027ea9441063cc19ebca424678bc76a68ee439392ced4464bed8ba28081f0"
     ]
    ],
-   "code_sha256": "8636331c7ed96e9fa7c3378e94c6911130b1e2256c1327baf9f9a274ce7f451c",
+   "code_sha256": "e3a646073fe2aaf523da906b47f1bbc9a8029534ac61d52747c13b9fdcda1f22",
    "verdict": "annex",
    "reason": "deducible",
    "final": true,
@@ -2122,11 +2702,89 @@
       "n": {
        "identifiers": 0,
        "values": 0,
-       "terms": 6
+       "terms": 10
       }
      },
-     "restatement": "BrevoHealthIndicator est un @Component actif uniquement sous le profil prod, implémentant HealthIndicator. L'extrait ne montre pas le corps de la méthode health.",
-     "confidence": "high"
+     "restatement": "Les commentaires indiquent que la clé Brevo vient uniquement de BREVO_API_KEY via brevo.api.key, et qu'elle n'est jamais journalisée, ni en entier ni en fragment. BrevoHealthIndicator, actif seulement sous le profil prod, ne doit exposer que la présence ou l'absence de la clé, sans fail-fast au démarrage. Ce sont des commentaires, le code exécutable n'est pas dans l'extrait.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": null,
+    "comment": [
+     {
+      "id": "integrations/37058764e7c3f146-1",
+      "verdict": "confirmed"
+     },
+     {
+      "id": "integrations/4b57f02866d02453-1",
+      "verdict": "confirmed"
+     }
+    ],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "words:jamais",
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "integrations.details.md",
+     "row": 4
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  },
+  {
+   "id": "integrations:rules:annex:ced829d8",
+   "section": "rules",
+   "rank": 7,
+   "text": "- Le renderer est choisi par supports parmi la liste injectée, et un format sans renderer lève ExportFormatNotSupportedException. [#93753e4c74dda84a-1] [#2159cc39fc42ef57-1]",
+   "fact_text": "Le renderer est choisi par supports parmi la liste injectée, et un format sans renderer lève ExportFormatNotSupportedException",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "integrations/93753e4c74dda84a-1",
+    "integrations/2159cc39fc42ef57-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/application/services/ExportRendererRegistry.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/services/ExportRendererRegistry.java",
+     32,
+     38,
+     "b996a853769865bbc15d09d19d02fcd9d304265f19495ddeb404096ff109df68"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/services/ExportRendererRegistry.java",
+     32,
+     37,
+     "72746527e0a9a6e3133c78931194478b902899a3703c558bd319a245665bcfcb"
+    ]
+   ],
+   "code_sha256": "e6cb080c5f08e11aa5fe477937745f2dab472b54fb67480482b995fedc4c7996",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.714,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 7
+      }
+     },
+     "restatement": "ExportRendererRegistry.render parcourt la liste des renderers, prend le premier qui supporte le format demandé, et lève ExportFormatNotSupportedException avec le nom du format si aucun ne correspond. Il appelle ensuite render(data) sur le renderer trouvé. Le second bloc est le même extrait, tronqué avant l'accolade fermante.",
+     "confidence": "high",
+     "files_read_missing": true
     },
     "rediscover": null,
     "comment": [],
@@ -2139,100 +2797,56 @@
     "pack_line": null,
     "annex_table": {
      "part": "integrations.details.md",
-     "row": 4
-    }
-   },
-   "uses": 0,
-   "carried_from": "2026-11-18T16:25:29Z"
-  },
-  {
-   "id": "integrations:tests:annex:b60faf47",
-   "section": "tests",
-   "rank": 3,
-   "text": "- Les tests fixent que le CSV contient les sections PROFILE, CATEGORIES, PRODUCTS et EVENTS, avec la colonne themePreference au profil [#e208db06d82742f5-1] [#271360493da3f939-2].",
-   "fact_text": "Les tests fixent que le CSV contient les sections PROFILE, CATEGORIES, PRODUCTS et EVENTS, avec la colonne themePreference au profil",
-   "consigne": null,
-   "consigne_dropped": false,
-   "cites": [
-    "integrations/e208db06d82742f5-1",
-    "integrations/271360493da3f939-2"
-   ],
-   "files": [
-    "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/export/ExportRenderersTest.java"
-   ],
-   "ranges": [
-    [
-     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/export/ExportRenderersTest.java",
-     83,
-     95,
-     "2eb941b1e1da85bcfcba53095bdc2bddabad3f20704588c0e33238cd95b58c77"
-    ],
-    [
-     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/export/ExportRenderersTest.java",
-     221,
-     227,
-     "4c9049a4be33f18526b96a4e82e4847c17ac6de00648da4671c6f1d161c4cd9b"
-    ]
-   ],
-   "code_sha256": "1f28e43b470e7eac90de9d424eb5086075aa181fcf9bea0f6c20e5561a5e971c",
-   "verdict": "annex",
-   "reason": "deducible",
-   "final": true,
-   "measures": {
-    "fidelity": null,
-    "deduce": {
-     "covered": true,
-     "overlap": {
-      "identifiers": 0.833,
-      "values": null,
-      "terms": 0.5,
-      "n": {
-       "identifiers": 6,
-       "values": 0,
-       "terms": 6
-      }
-     },
-     "restatement": "Le test csv_hasSectionsAndEscapesCommas vérifie que le CSV contient les sections # PROFILE, # CATEGORIES, # PRODUCTS, # EVENTS, que le titre contenant une virgule est entouré de guillemets, et que le hash du mot de passe n'apparaît pas. Le type MIME est text/csv.",
-     "confidence": "high"
-    },
-    "rediscover": null,
-    "comment": [],
-    "refute": null
-   },
-   "contrary": null,
-   "placed": {
-    "pack_line": null,
-    "annex_table": {
-     "part": "integrations.details.md",
      "row": 5
     }
    },
    "uses": 0,
-   "carried_from": "2026-11-18T16:25:29Z"
+   "carried_from": "2026-11-20T12:20:00Z"
   },
   {
-   "id": "integrations:tests:annex:4a3ea3c8",
+   "id": "integrations:tests:annex:b1383383",
    "section": "tests",
-   "rank": 10,
-   "text": "- Pour prouver une contrainte CHECK, un test passe par un UPDATE natif dans une transaction et attend une exception de la base [#787bb1a4209c63cf-1].",
-   "fact_text": "Pour prouver une contrainte CHECK, un test passe par un UPDATE natif dans une transaction et attend une exception de la base",
+   "rank": 1,
+   "text": "- Les tests fixent que le stockage local rejette par IllegalArgumentException une extension ou une référence avec chemin relatif, que la référence n'a aucun séparateur et qu'un second delete est sans effet. [#6088a4bc8a147988-1] [#43b2edbc9209445c-1] [#ec871153fc886e17-1] [#b194bc3ae8e99e9d-1]",
+   "fact_text": "Les tests fixent que le stockage local rejette par IllegalArgumentException une extension ou une référence avec chemin relatif, que la référence n'a aucun séparateur et qu'un second delete est sans effet",
    "consigne": null,
    "consigne_dropped": false,
    "cites": [
-    "integrations/787bb1a4209c63cf-1"
+    "integrations/6088a4bc8a147988-1",
+    "integrations/43b2edbc9209445c-1",
+    "integrations/ec871153fc886e17-1",
+    "integrations/b194bc3ae8e99e9d-1"
    ],
    "files": [
-    "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ThemePreferenceIntegrationTest.java"
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapterTest.java"
    ],
    "ranges": [
     [
-     "mytimeline:backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ThemePreferenceIntegrationTest.java",
-     230,
-     240,
-     "a5f7c9dd63565c387bfe9323e9533a17477f812520fa427b86b6cc8d449b2797"
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapterTest.java",
+     60,
+     64,
+     "4fb76822e220d298f43762fbda6c2ed8523a131ba2c7b65dd1743ae1c0a8fb35"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapterTest.java",
+     66,
+     76,
+     "2aef9d2f77ef810aa5219d8209c3dc76dcfb4092a8e42fe11673554aea3cde44"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapterTest.java",
+     32,
+     42,
+     "2474e34532b6a1405f6c3041b9bb26187fe4257e8464c213a6b3510efdd46088"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/LocalStorageAdapterTest.java",
+     50,
+     57,
+     "b54d9f5c0ee1390753fef2bee080adf52238fca8a0811e37e540fffddb1ff5fe"
     ]
    ],
-   "code_sha256": "a5f7c9dd63565c387bfe9323e9533a17477f812520fa427b86b6cc8d449b2797",
+   "code_sha256": "598359ffd998f3684fa0bf7b760a35268de6a86d48f51eaa7a1a0f8cb23f8e8a",
    "verdict": "annex",
    "reason": "deducible",
    "final": true,
@@ -2243,15 +2857,16 @@
      "overlap": {
       "identifiers": 1.0,
       "values": null,
-      "terms": 0.556,
+      "terms": 0.538,
       "n": {
-       "identifiers": 2,
+       "identifiers": 1,
        "values": 0,
-       "terms": 9
+       "terms": 13
       }
      },
-     "restatement": "checkConstraint_rejectsOutOfSetValue_atDatabaseLevel tente un UPDATE users SET theme_preference = 'LIGHT' dans une transaction et attend une exception (assertThrows Exception), la contrainte CHECK en base refusant toute valeur hors {light,dark,system} ; la valeur doit rester null après l'échec.",
-     "confidence": "high"
+     "restatement": "Les tests de LocalStorageAdapterTest attendent une IllegalArgumentException pour une extension « ../etc » à store, et pour les références « ../../etc/passwd » à load et « ../secret » à delete. Le test aller-retour vérifie que la référence finit par .jpg, ne contient pas de séparateur, et que load restitue le même contenu. Un second delete est sans effet.",
+     "confidence": "high",
+     "files_read_missing": true
     },
     "rediscover": null,
     "comment": [],
@@ -2266,72 +2881,215 @@
     }
    },
    "uses": 0,
-   "carried_from": "2026-11-18T16:25:29Z"
+   "carried_from": "2026-11-20T12:20:00Z"
+  },
+  {
+   "id": "integrations:tests:annex:5be03735",
+   "section": "tests",
+   "rank": 3,
+   "text": "- Les tests fixent que l'email Brevo retombe en français pour une locale nulle ou inconnue, échappe le nom en HTML, ne lève jamais d'exception et n'envoie rien sans clé API. [#3ed12223e1cbaea3-1] [#d1466f3125d055e6-1] [#d1ec0fa0c1cb7fa1-1] [#09a37a45eae01aae-1]",
+   "fact_text": "Les tests fixent que l'email Brevo retombe en français pour une locale nulle ou inconnue, échappe le nom en HTML, ne lève jamais d'exception et n'envoie rien sans clé API",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "integrations/3ed12223e1cbaea3-1",
+    "integrations/d1466f3125d055e6-1",
+    "integrations/d1ec0fa0c1cb7fa1-1",
+    "integrations/09a37a45eae01aae-1"
+   ],
+   "files": [
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailServiceLocaleTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailServiceLocaleTest.java",
+     83,
+     94,
+     "3b68adf2e6d48b39f3adeb3e17cc2044d7242b0f907cffd0e7b49feefe8ba781"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailServiceLocaleTest.java",
+     98,
+     108,
+     "25df573a6bb49cedc7d9cb4abf2a61c322a7e9d21809d72e3440b687881d5655"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailServiceLocaleTest.java",
+     113,
+     119,
+     "4f2c04efade4e3e08485402f99182061a0ad1610cfde43a073bdd6bc7a6623f3"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/email/BrevoEmailServiceLocaleTest.java",
+     121,
+     127,
+     "a344719a4fc54f0d474601123043616a8c63b6422a895106cfc51c1c6d08b5a3"
+    ]
+   ],
+   "code_sha256": "a6addb1b5180e75b5138ce39099e6f337af43354998409ddf9a76b84d2139dcd",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.615,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 13
+      }
+     },
+     "restatement": "Le test vérifie que sendPasswordResetEmail retombe sur le français pour une locale absente, vide, blanche ou inconnue (\"zz\", \"klingon\"), avec l'objet « Réinitialisation de votre mot de passe MyTimeline » et le bouton « Réinitialiser mon mot de passe ». Il vérifie aussi que le nom du destinataire est échappé dans le corps HTML (&lt;img ...&gt;), que la méthode ne lève jamais d'exception, et que sans clé API (chaîne vide) aucun appel HTTP n'est émis.",
+     "confidence": "high"
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "integrations.details.md",
+     "row": 7
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  },
+  {
+   "id": "integrations:tests:annex:3cf879dc",
+   "section": "tests",
+   "rank": 8,
+   "text": "- Les tests fixent que le timeout est 0 pour un FormData et reste positif pour un corps JSON. [#55f5e5ec1f18de4b-2] [#8cb6008ae671bb41-1]",
+   "fact_text": "Les tests fixent que le timeout est 0 pour un FormData et reste positif pour un corps JSON",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "integrations/55f5e5ec1f18de4b-2",
+    "integrations/8cb6008ae671bb41-1"
+   ],
+   "files": [
+    "frontend:services/apiClient.multipart.test.ts"
+   ],
+   "ranges": [
+    [
+     "frontend:services/apiClient.multipart.test.ts",
+     85,
+     92,
+     "c7838a02bf36efc31693c794d690247008c16ae20136c9dea5135b506b16399d"
+    ],
+    [
+     "frontend:services/apiClient.multipart.test.ts",
+     94,
+     101,
+     "85c13bb7c8ec2e0483453e36c2e56cc7d3d29df5bb33caf788af34b2c537caf3"
+    ]
+   ],
+   "code_sha256": "121d897f88cef940dca4674609c272ed374a29bacc111686346ae163e6b8cad1",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 0.833,
+      "n": {
+       "identifiers": 2,
+       "values": 1,
+       "terms": 6
+      }
+     },
+     "restatement": "Pour un post avec FormData (upload d'avatar), le test vérifie que config.timeout vaut 0. Pour un corps JSON, il vérifie que le Content-Type reste application/json, que data vaut la chaîne JSON.stringify du corps, et que le timeout reste strictement positif.",
+     "confidence": "high"
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "integrations.details.md",
+     "row": 8
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
   }
  ],
  "comment_facts": [
   {
-   "id": "integrations/0041f21f67193426-1",
+   "id": "integrations/be58d90301a09953-1",
    "verdict": "confirmed",
-   "code_says": "StorageConfig déclare deux beans distincts, avatarStorage (lu depuis app.storage.avatar-path) et exportStorage (lu depuis app.storage.export-path), chacun construit avec new LocalStorageAdapter sur son propre chemin.",
-   "code_line_start": 34,
-   "code_line_end": 44,
-   "code_evidence": "@Value(\"${app.storage.avatar-path}\") String avatarPath",
+   "code_says": "Le test restore_otherUsersArchivedProduct_returns404_andStaysArchived envoie une restauration par le caller sur un produit archivé d'un autre utilisateur. Il attend status().isNotFound() (404) puis vérifie en base que archived reste à true via isArchivedInDb.",
+   "code_line_start": 213,
+   "code_line_end": 225,
+   "code_evidence": "assertThat(isArchivedInDb(foreign.getId())).isTrue();",
    "evidence_check": null,
-   "code_file": "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/config/StorageConfig.java",
+   "code_file": "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/ProductRestoreIntegrationTest.java",
    "invalid": false,
-   "cache_digest": "b62a1dcbe3220cac6e12e6ddd6d4f2754e0a9170bcb187ffebf809bff2359eeb",
+   "cache_digest": "69707b1fe3f4a4bad22afa42aace37a51f5e59c5c0877e3292944ae22040add9",
    "reused": true,
-   "reused_from": "2026-11-18T16:25:29Z",
+   "reused_from": "2026-11-20T12:20:00Z",
    "cited_by": [
-    "integrations:rules:1"
-   ],
-   "structure_rows_removed": []
-  },
-  {
-   "id": "integrations/0041f21f67193426-3",
-   "verdict": "confirmed",
-   "code_says": "Deux méthodes annotées @Bean de type de retour StoragePort, avatarStorage et exportStorage, coexistent dans la classe. La obligation de qualifier chaque injection avec @Qualifier n'est pas vérifiable dans ce fichier, car elle porte sur les points d'injection hors de ce fichier.",
-   "code_line_start": 33,
-   "code_line_end": 46,
-   "code_evidence": "StoragePort exportStorage(@Value(\"${app.storage.export-path}\") String exportPath) {",
-   "evidence_check": null,
-   "code_file": "mytimeline:backend/src/main/java/com/matimeline/eventmanager/infrastructure/config/StorageConfig.java",
-   "invalid": false,
-   "cache_digest": "847deea10f912488929eee4cf1a422f8d9301d5b01413399f63dced06481e1e4",
-   "reused": true,
-   "reused_from": "2026-11-18T16:25:29Z",
-   "cited_by": [
-    "integrations:rules:1"
+    "integrations:questions:1"
    ],
    "structure_rows_removed": []
   }
  ],
  "facts_validated": [
-  "integrations/0041f21f67193426-1",
-  "integrations/0041f21f67193426-3",
-  "integrations/64f39489a8c24fb5-1",
-  "integrations/8b52ae90d30c1625-1",
-  "integrations/60b20fc9921c8347-1",
-  "integrations/1e979c5fd365d269-1",
-  "integrations/424bd631166a816d-1",
-  "integrations/2a75f7941ba689a8-1",
-  "integrations/0c3b8b5d276d059a-1",
-  "integrations/f31607d729555ad2-1",
-  "integrations/271360493da3f939-1",
-  "integrations/6370768e2f4f6dde-1",
-  "integrations/e4b07cd063572333-1",
-  "integrations/a1f67c5fae1badd3-1",
-  "integrations/92ce5b0e34535e58-1",
-  "integrations/adb4712c956147b0-1",
-  "integrations/d97eba2cdca557f1-3",
-  "integrations/3de9961cfcdacd70-1",
-  "integrations/52720a500310ccdf-1"
+  "integrations/d01536aff913607e-1",
+  "integrations/11d4aa8f36e6fb68-1",
+  "integrations/0bcf5a6ce1ee7408-1",
+  "integrations/1323a64f4a7c32e4-1",
+  "integrations/19b3fc4ec346a739-1",
+  "integrations/0fde468ee74ce390-1",
+  "integrations/ebe8f14e30148918-3",
+  "integrations/17e17e177c3c1115-1",
+  "integrations/371afdf6b26a2509-1",
+  "integrations/99da2bca3c86383d-1",
+  "integrations/708cf9ff39788961-1",
+  "integrations/8e6a9b9608499d60-1",
+  "integrations/12e77eb7b9e6d0c0-1",
+  "integrations/12e77eb7b9e6d0c0-2",
+  "integrations/f3b5f265303d01f1-1",
+  "integrations/92f4076df0c73295-1",
+  "integrations/1a4b52a04a5ce838-1",
+  "integrations/b4948134aa5100d5-1",
+  "integrations/1122fa951f33f39c-1",
+  "integrations/dc542e72e594e1dd-1",
+  "integrations/8803c3c2db66a608-1",
+  "integrations/d0b0e4666b224c10-1",
+  "integrations/ee835f4d91e2a8c5-1",
+  "integrations/37c0d7455e6beb36-1",
+  "integrations/3c6450bbae77f0ab-1",
+  "integrations/20c09aee2ec1f179-1",
+  "integrations/230eadc9415bea9f-1",
+  "integrations/d72c7a45f2930324-1",
+  "integrations/ed6ce70fde4bb79a-1",
+  "integrations/778f32aa13a579b0-1",
+  "integrations/1faea9b005c2fedd-1",
+  "integrations/1faea9b005c2fedd-2",
+  "integrations/be58d90301a09953-1",
+  "integrations/bdb861ee54c6c577-1",
+  "integrations/145742ba350d6f89-1",
+  "integrations/e882b29be28028b9-1"
  ],
  "counts": {
-  "units": 24,
-  "admit": 18,
-  "annex": 6,
+  "units": 30,
+  "admit": 21,
+  "annex": 9,
   "drop": 0,
   "hold": 0,
   "pending": 0,
@@ -2345,7 +3103,7 @@
   "counterexample": 0,
   "promoted": 0,
   "kept_for": {
-   "rediscovered": 8
+   "rediscovered": 3
   },
   "pointers_removed": 0,
   "restored_alerts": 0,
@@ -2355,16 +3113,16 @@
  "budget_cut": [],
  "structure_rows_removed": [],
  "notes": [],
- "base_sha256_after": "ae69bce89a10b8531f1efac49a7bc8b64dae3be866c0bffd63f2eb0ff1cf2c63",
+ "base_sha256_after": "88ad6cc38a54980e577165c9e049a2633584d262d9613dedc80680c6e9b3b7a2",
  "bases_touched": {
   "integrations": {
-   "fingerprint": "1da2ba3fba3a63fab498b0c6d1fe8bec8fe84bc51ebc82574d50f573f7de3dda",
-   "sha256_after": "ae69bce89a10b8531f1efac49a7bc8b64dae3be866c0bffd63f2eb0ff1cf2c63"
+   "fingerprint": "f7984eacb1b983b17187ea75176f49511bb0644b8c83f802588dac68e31c8537",
+   "sha256_after": "88ad6cc38a54980e577165c9e049a2633584d262d9613dedc80680c6e9b3b7a2"
   }
  },
  "lint": {
   "ok": true,
   "errors": 0,
-  "warnings": 0
+  "warnings": 1
  }
 }

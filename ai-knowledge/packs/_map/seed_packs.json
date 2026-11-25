@@ -1,9 +1,9 @@
 {
- "CategoryEntity": "timeline",
- "EventEntity": "timeline",
- "ExportJobEntity": "timeline",
- "PasswordResetTokenEntity": "timeline",
- "ProductEntity": "timeline",
- "SessionEntity": "timeline",
- "UserEntity": "timeline"
+ "Category": "category",
+ "Event": "event",
+ "ExportJob": "export",
+ "PasswordResetToken": "user",
+ "Product": "product",
+ "Session": "session",
+ "User": "user"
 }

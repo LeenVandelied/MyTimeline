@@ -415,6 +415,17 @@ async function captureRegion(
   }
 }
 
+/**
+ * Lecteur de pixel sur le VIEWPORT entier (une capture, mêmes gardes que
+ * `readStrip` : `captureRegion`). Sert aux mesures de superposition « avant /
+ * après ouverture » sur une grille de points (#456).
+ */
+export async function readViewport(page: Page): Promise<(x: number, y: number) => Rgb> {
+  const viewport = page.viewportSize()
+  if (viewport == null) throw new Error('viewport inconnu')
+  return captureRegion(page, { x: 0, y: 0, width: viewport.width, height: viewport.height }, 0)
+}
+
 /** Positions CSS à échantillonner le long d'un côté, garde d'extrémité appliquée. */
 function samplePositions(box: Box, opts: StripOptions): Array<{ x: number; y: number }> {
   const horizontal = opts.side === 'top' || opts.side === 'bottom'

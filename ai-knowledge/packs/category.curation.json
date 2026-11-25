@@ -1,0 +1,2906 @@
+{
+ "pack": "category",
+ "schema": 1,
+ "curated_at": "2026-11-20T12:45:00Z",
+ "curator": "curate/1",
+ "base_sha256": "cd195350ee93ad65bb0718114e374d87cbcb8236ea661ab9fd377b098a1fc309",
+ "pack_sha256_before": "9d4d23089bfab4e653b0b1396db46748ba03d1372e41aa053012248d59046432",
+ "pack_sha256_after": "4412089bd5800727218732ee3bf567eceede6f0ddbe7178fb0236e80badc7d99",
+ "criteria_sha256": "48e0e20f086c5b11deecfecdc547ba1d6115faee1597a5aaf682f6c699e92423",
+ "models": {
+  "measure": "haiku",
+  "refute": "sonnet"
+ },
+ "base_fingerprint": "0038a945be6b6a3174b87e0c5aeca3ff8eabacde39d10fe34276d403a17d8866",
+ "bytes": {
+  "before": 11431,
+  "after": 11431,
+  "by_section": {
+   "activate": {
+    "before": 227,
+    "after": 227
+   },
+   "lexicon": {
+    "before": 789,
+    "after": 789
+   },
+   "rules": {
+    "before": 2453,
+    "after": 2453
+   },
+   "structure": {
+    "before": 1780,
+    "after": 1780
+   },
+   "surface": {
+    "before": 1564,
+    "after": 1564
+   },
+   "files": {
+    "before": 1966,
+    "after": 1966
+   },
+   "relations": {
+    "before": 291,
+    "after": 291
+   },
+   "tests": {
+    "before": 862,
+    "after": 862
+   },
+   "questions": {
+    "before": 91,
+    "after": 91
+   },
+   "alerts": {
+    "before": 418,
+    "after": 418
+   },
+   "coverage": {
+    "before": 612,
+    "after": 612
+   }
+  }
+ },
+ "units": [
+  {
+   "id": "category:lexicon:1",
+   "section": "lexicon",
+   "rank": 1,
+   "text": "| system | Booléen exposé par la projection HTTP de la catégorie, que le modèle de domaine ne porte pas parmi ses champs (id, name, color, description, ownerId). Voir `backend:src/main/java/com/matimeline/eventmanager/application/dtos/CategoryResponse.java:30-45`. | [#c900077dbf944eb3-1] [#054a3aaf703706f1-1] |",
+   "fact_text": "system : Booléen exposé par la projection HTTP de la catégorie, que le modèle de domaine ne porte pas parmi ses champs (id, name, color, description, ownerId). Voir CategoryResponse.java",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "category/c900077dbf944eb3-1",
+    "category/054a3aaf703706f1-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/application/dtos/CategoryResponse.java",
+    "backend:src/main/java/com/matimeline/eventmanager/domain/models/Category.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/dtos/CategoryResponse.java",
+     30,
+     45,
+     "d07694e9d3e4d2217b9a06d72c28f8166f8971b9ea7924b3cea7527803ed99e5"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/domain/models/Category.java",
+     5,
+     12,
+     "bf72651aa8b1bf1f6a3a4ed659be23bcb91016bf6731bda9d5b1a1426f7918f7"
+    ]
+   ],
+   "code_sha256": "e74bf89df8acc86897ba3d0195d82fcad7d5dc6b96d9541a2c56a1a3ffbaff14",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "CategoryResponse a bien le champ boolean system (L37) absent du domaine Category (id, name, color, description, ownerId).",
+      "CategoryResponse.system (L37) existe, Category n'a pas ce champ (L6-12).",
+      "CategoryResponse L37 porte `boolean system`, absent de Category (id, name, color, description, ownerId)."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 29,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "category:lexicon:2",
+   "section": "lexicon",
+   "rank": 2,
+   "text": "| ownerId | Propriétaire de la catégorie, présent dans le modèle de domaine mais jamais exposé dans la réponse HTTP. | [#054a3aaf703706f1-1] [#c900077dbf944eb3-1] |",
+   "fact_text": "ownerId : Propriétaire de la catégorie, présent dans le modèle de domaine mais jamais exposé dans la réponse HTTP",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "category/054a3aaf703706f1-1",
+    "category/c900077dbf944eb3-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/domain/models/Category.java",
+    "backend:src/main/java/com/matimeline/eventmanager/application/dtos/CategoryResponse.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/domain/models/Category.java",
+     5,
+     12,
+     "bf72651aa8b1bf1f6a3a4ed659be23bcb91016bf6731bda9d5b1a1426f7918f7"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/dtos/CategoryResponse.java",
+     30,
+     45,
+     "d07694e9d3e4d2217b9a06d72c28f8166f8971b9ea7924b3cea7527803ed99e5"
+    ]
+   ],
+   "code_sha256": "8149b1844e9f4a6efb79b7741aef251eac478450172a8412e9fd1c84883e0e0a",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "ownerId est dans Category (L12) mais absent de CategoryResponse. Le test L160 vérifie jsonPath ownerId doesNotExist.",
+      "ownerId est dans Category (L12) et absent de CategoryResponse. Le test L160 vérifie que ownerId n'est pas exposé.",
+      "Category porte ownerId (L12) et CategoryResponse n'a aucun champ ownerId. Le test L160 vérifie qu'il n'apparaît pas dans le JSON."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 30,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "category:lexicon:3",
+   "section": "lexicon",
+   "rank": 3,
+   "text": "| owner | Relation LAZY vers l'utilisateur, jointe sur owner_id, et nullable en base. Voir `backend:src/main/java/com/matimeline/eventmanager/infrastructure/entities/CategoryEntity.java:28-30`. | [#9f17359f6dd43cea-1] |",
+   "fact_text": "owner : Relation LAZY vers l'utilisateur, jointe sur owner_id, et nullable en base. Voir CategoryEntity.java",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "category/9f17359f6dd43cea-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/entities/CategoryEntity.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/entities/CategoryEntity.java",
+     28,
+     30,
+     "9396044b830e9976c62dba16449a9e3a3a42bf33d7affeac303774de878085d0"
+    ]
+   ],
+   "code_sha256": "9396044b830e9976c62dba16449a9e3a3a42bf33d7affeac303774de878085d0",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "CategoryEntity.owner est ManyToOne LAZY avec JoinColumn owner_id (L28-30), nullable par défaut.",
+      "CategoryEntity L28-30 : ManyToOne LAZY, JoinColumn owner_id sans nullable=false, donc nullable.",
+      "CategoryEntity L28-30 : ManyToOne LAZY, JoinColumn owner_id sans nullable=false."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 31,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "category:rules:1",
+   "section": "rules",
+   "rank": 1,
+   "text": "- La création d'une catégorie est refusée avec CategoryNameConflictException si le propriétaire en possède déjà une du même nom exact, le contrôle portant sur le couple propriétaire et nom. `backend:src/main/java/com/matimeline/eventmanager/application/services/CategoryServiceImpl.java:41-43` [#342e2f7788a4475a-2] [#ac68e69d979093aa-1]",
+   "fact_text": "La création d'une catégorie est refusée avec CategoryNameConflictException si le propriétaire en possède déjà une du même nom exact, le contrôle portant sur le couple propriétaire et nom. CategoryServiceImpl.java",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "category/342e2f7788a4475a-2",
+    "category/ac68e69d979093aa-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/application/services/CategoryServiceImpl.java",
+    "backend:src/test/java/com/matimeline/eventmanager/application/services/CategoryServiceImplTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/services/CategoryServiceImpl.java",
+     41,
+     43,
+     "657dce6c596259dec883e7173283c5c909590632cf4a82035aef9045c6a61a19"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/application/services/CategoryServiceImplTest.java",
+     58,
+     58,
+     "8dcd7c33d3aa8c6210f224619a424af619534813a66c0a19344bc38a91b2894b"
+    ]
+   ],
+   "code_sha256": "d64be022a54846fe3773abc7e34671d6790418dc00fd9397d7cc45ee7c320f3c",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": null,
+      "terms": 0.222,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 9
+      }
+     },
+     "restatement": "`createCategory` lève `CategoryNameConflictException(name)` si `findByOwnerAndName(ownerId, name)` renvoie une catégorie existante pour cet owner. Quand le nom est libre, le test vérifie que la création persiste.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 2,
+     "within_budget": true,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/application/services/CategoryServiceImpl.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": null,
+      "terms": 0.444,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 9
+      }
+     },
+     "job": "category:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_CategoryResponse.java:1",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "createCategory L41-43 appelle findByOwnerAndName(ownerId, name) et lève CategoryNameConflictException si présent.",
+      "createCategory L41-43 lève CategoryNameConflictException si findByOwnerAndName(ownerId, name) renvoie un résultat.",
+      "createCategory L41-43 lève CategoryNameConflictException si findByOwnerAndName(ownerId, name) renvoie un résultat."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 36,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "category:rules:2",
+   "section": "rules",
+   "rank": 2,
+   "text": "- Lors d'un renommage, le contrôle de conflit n'a lieu que si le nouveau nom diffère de l'actuel, sinon la catégorie est sauvegardée sans recherche. `backend:src/main/java/com/matimeline/eventmanager/application/services/CategoryServiceImpl.java:63-71` [#cdf300d7c27817be-1] [#1bdbbb2b2b4b24fe-2]",
+   "fact_text": "Lors d'un renommage, le contrôle de conflit n'a lieu que si le nouveau nom diffère de l'actuel, sinon la catégorie est sauvegardée sans recherche. CategoryServiceImpl.java",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "category/cdf300d7c27817be-1",
+    "category/1bdbbb2b2b4b24fe-2"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/application/services/CategoryServiceImpl.java",
+    "backend:src/test/java/com/matimeline/eventmanager/application/services/CategoryServiceImplTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/services/CategoryServiceImpl.java",
+     63,
+     71,
+     "0b746dd930162dc06ecc3baa60e3436d52c1949820036147ea4ea782c2fcbec8"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/application/services/CategoryServiceImplTest.java",
+     147,
+     158,
+     "8ec58b4348ce0c4732f4aba8bf9251516a9c7876547804f716ec3a36190c6350"
+    ]
+   ],
+   "code_sha256": "cd1ede89d529d807147560b1c82e6887e945bbfea4dcf38183dc4af3867c5230",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
+      "terms": 0.6,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 10
+      }
+     },
+     "restatement": "`updateCategory` ne vérifie les conflits de nom que si le nouveau nom diffère de l'actuel. Il lève `CategoryNameConflictException` si une autre catégorie (id différent) du même owner porte déjà ce nom. Le test confirme qu'un renommage vers le même nom ne fait aucun appel à `findByOwnerAndName` et sauvegarde l'entité.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 2,
+     "within_budget": true,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/application/services/CategoryServiceImpl.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 10
+      }
+     },
+     "job": "category:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_CategoryResponse.java:1",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "updateCategory L65 ne contrôle que si le nom diffère. Le test L147-158 confirme la sauvegarde sans recherche.",
+      "updateCategory L65 ne fait la recherche que si le nom diffère, le test L157 confirme le saut du contrôle.",
+      "updateCategory L65 ne recherche un conflit que si le nom diffère ; le test L147-158 confirme le save sans recherche."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 37,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "category:rules:3",
+   "section": "rules",
+   "rank": 3,
+   "text": "- La mise à jour d'une catégorie inconnue lève CategoryNotFoundException. [#583475e7062a5eb3-1]",
+   "fact_text": "La mise à jour d'une catégorie inconnue lève CategoryNotFoundException",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "category/583475e7062a5eb3-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/application/services/CategoryServiceImpl.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/services/CategoryServiceImpl.java",
+     58,
+     61,
+     "6719254262958a673354b9aa8768f13c0c63abd2ea86b10b4e43e2d745edc497"
+    ]
+   ],
+   "code_sha256": "6719254262958a673354b9aa8768f13c0c63abd2ea86b10b4e43e2d745edc497",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.4,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 5
+      }
+     },
+     "restatement": "`updateCategory` commence par `findDomainCategoryById(id)` et lève `CategoryNotFoundException(id)` si la catégorie n'existe pas.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 2,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/application/services/CategoryServiceImpl.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 1.0,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 5
+      }
+     },
+     "job": "category:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_CategoryResponse.java:1",
+     "rank_in_lot": 1,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 38,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "category:rules:4",
+   "section": "rules",
+   "rank": 4,
+   "text": "- Un PATCH avec un nom vide renvoie 400 sans appeler updateCategory. [#integrations/e87412abb703d86b-1]",
+   "fact_text": "Un PATCH avec un nom vide renvoie 400 sans appeler updateCategory",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "integrations/e87412abb703d86b-1"
+   ],
+   "files": [
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryControllerTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryControllerTest.java",
+     297,
+     307,
+     "d9b7eba51c0b678824f06494911f01f0599dce003f7f1b71c8b3a4cf12c559fa"
+    ]
+   ],
+   "code_sha256": "d9b7eba51c0b678824f06494911f01f0599dce003f7f1b71c8b3a4cf12c559fa",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 0.333,
+      "n": {
+       "identifiers": 2,
+       "values": 1,
+       "terms": 3
+      }
+     },
+     "restatement": "Le test patchCategory_emptyName_returns400 montre qu'un PATCH /api/categories/{id} avec un corps {\"name\":\"\"} renvoie HTTP 400 et n'appelle jamais categoryService.updateCategory.",
+     "confidence": "high",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 9,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/application/dtos/CategoryRequest.java",
+     "file_ok": false,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": 1.0,
+      "terms": 0.333,
+      "n": {
+       "identifiers": 2,
+       "values": 1,
+       "terms": 3
+      }
+     },
+     "job": "category:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_CategoryResponse.java:1",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Le test patchCategory_emptyName_returns400 attend 400 et verify never updateCategory (L304-306).",
+      "Le test patchCategory_emptyName_returns400 attend un 400 et verify never sur updateCategory (L304-306).",
+      "Le test patchCategory_emptyName_returns400 (L297-307) attend 400 et verify never updateCategory."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 39,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "category:rules:5",
+   "section": "rules",
+   "rank": 5,
+   "text": "- Si des produits référencent la catégorie et qu'aucune cible n'est fournie, la suppression est refusée par CategoryInUseException qui porte le nombre de produits, sans rien réassigner ni supprimer. `backend:src/main/java/com/matimeline/eventmanager/application/services/CategoryServiceImpl.java:125-130` [#00f0d055b04edef3-1] [#ec943046dcf5e0f7-3]",
+   "fact_text": "Si des produits référencent la catégorie et qu'aucune cible n'est fournie, la suppression est refusée par CategoryInUseException qui porte le nombre de produits, sans rien réassigner ni supprimer. CategoryServiceImpl.java",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "category/00f0d055b04edef3-1",
+    "category/ec943046dcf5e0f7-3"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/application/services/CategoryServiceImpl.java",
+    "backend:src/test/java/com/matimeline/eventmanager/application/services/CategoryServiceImplTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/services/CategoryServiceImpl.java",
+     125,
+     130,
+     "1eb57a06e8db11a53b22c0fd85d3e2483475a026a2f3094da02bd56187d07e8e"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/application/services/CategoryServiceImplTest.java",
+     185,
+     197,
+     "36d2ea2feeced6e8584d7064a0f1e76857a6584780481ca2f0fc300a6fde8f6d"
+    ]
+   ],
+   "code_sha256": "8cc845515fcf2e846e2dd734f15d3c1edeaabd4c59ae883afba94c4e861d3584",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": null,
+      "terms": 0.091,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 11
+      }
+     },
+     "restatement": "Si `referencing` est supérieur à 0 et que `reassignToCategoryId` est null, `deleteCategory` lève `CategoryInUseException(referencing)`. Le test vérifie qu'aucune suppression ni réassignation n'a lieu, et le commentaire indique un 409.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 2,
+     "within_budget": true,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/application/services/CategoryServiceImpl.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": null,
+      "terms": 0.182,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 11
+      }
+     },
+     "job": "category:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_CategoryResponse.java:1",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "CategoryServiceImpl.deleteCategory lignes 125-130 lève CategoryInUseException(referencing) si des produits référencent et reassignToCategoryId est null, avant toute réassignation ou suppression. Aucun contre-exemple dans la portée.",
+      "CategoryServiceImpl.deleteCategory L123-130 lance CategoryInUseException(referencing) si referencing>0 et cible null, avant tout updateCategoryForProducts/deleteById ; le test L185-197 le vérifie. Seul appelant de deleteCategory : CategoryController.",
+      "CategoryServiceImpl.deleteCategory L125-130 lève CategoryInUseException(referencing) sans cible avant tout updateCategoryForProducts ou deleteById, et le test vérifie never()."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "scope",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 24,
+      "searches": [
+       [
+        {
+         "tool": "Read",
+         "target": "CategoryServiceImpl.java",
+         "found": "deleteCategory lève CategoryInUseException avant updateCategoryForProducts et deleteById"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "deleteCategory\\( dans backend/src/main",
+         "found": "Un seul appelant (CategoryController L153) vers l'impl du service ; pas d'autre chemin de suppression sans cible."
+        }
+       ],
+       [
+        {
+         "tool": "Read",
+         "target": "CategoryServiceImpl.java",
+         "found": "deleteCategory lève l'exception avant toute réassignation ou suppression, aucun contre-exemple"
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "words:aucune",
+   "placed": {
+    "pack_line": 41,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "category:rules:6",
+   "section": "rules",
+   "rank": 6,
+   "text": "- La cible doit exister (sinon CategoryNotFoundException), puis les produits sont réassignés en bulk et la catégorie supprimée dans la même transaction. `backend:src/main/java/com/matimeline/eventmanager/application/services/CategoryServiceImpl.java:142-148` [#fbc822d2b906665b-1]",
+   "fact_text": "La cible doit exister (sinon CategoryNotFoundException), puis les produits sont réassignés en bulk et la catégorie supprimée dans la même transaction. CategoryServiceImpl.java",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "category/fbc822d2b906665b-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/application/services/CategoryServiceImpl.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/services/CategoryServiceImpl.java",
+     142,
+     148,
+     "cc1d28aea364fb55e599269db3d3da0b35ed6daa439340aefabb0b1369b982ca"
+    ]
+   ],
+   "code_sha256": "cc1d28aea364fb55e599269db3d3da0b35ed6daa439340aefabb0b1369b982ca",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": null,
+      "terms": 0.125,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 8
+      }
+     },
+     "restatement": "Si la cible de réassignation est absente, `deleteCategory` lève `CategoryNotFoundException(reassignToCategoryId)`. Sinon il appelle `updateCategoryForProducts(id, reassignToCategoryId)` puis `categoryRepository.deleteById(id)`.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 2,
+     "within_budget": true,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/application/services/CategoryServiceImpl.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": null,
+      "terms": 0.25,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 8
+      }
+     },
+     "job": "category:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_CategoryResponse.java:1",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "deleteCategory L142-148 vérifie existsById, lève CategoryNotFoundException, réassigne via updateCategoryForProducts puis deleteById. La transaction n'est pas visible dans l'extrait mais rien ne la contredit.",
+      "L142-148 vérifie la cible, réassigne puis supprime. La transaction commune n'est pas visible dans l'extrait, mais rien ne la contredit.",
+      "L142-148 : existsById sinon CategoryNotFoundException, updateCategoryForProducts, puis deleteById. La transaction commune n'est pas visible dans l'extrait mais rien ne la contredit."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 42,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "category:rules:7",
+   "section": "rules",
+   "rank": 7,
+   "text": "- Une catégorie est dite système quand son ownerId est null, et les compteurs restent null dans la projection sans comptage. `backend:src/main/java/com/matimeline/eventmanager/application/dtos/CategoryResponse.java:47-57` [#aed0f568191a3034-1]",
+   "fact_text": "Une catégorie est dite système quand son ownerId est null, et les compteurs restent null dans la projection sans comptage. CategoryResponse.java",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "category/aed0f568191a3034-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/application/dtos/CategoryResponse.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/dtos/CategoryResponse.java",
+     47,
+     57,
+     "dd40f369e1063ca4d8d5f7243370e1778b1447434fc7f00eac3b6a67a0d7fc9e"
+    ]
+   ],
+   "code_sha256": "dd40f369e1063ca4d8d5f7243370e1778b1447434fc7f00eac3b6a67a0d7fc9e",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.375,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 8
+      }
+     },
+     "restatement": "`CategoryResponse.fromDomain(Category)` construit la réponse sans compteurs : `system` vaut `true` si `ownerId` est null, et `activeCount` et `archivedCount` sont fixés à null, donc absents du JSON pour POST, GET {id} et PATCH.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 3,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/domain/models/Category.java",
+     "file_ok": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 8
+      }
+     },
+     "job": "category:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_CategoryResponse.java:1",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "fromDomain(category) calcule system = ownerId == null (L54) et passe null pour les deux compteurs (L55-56).",
+      "fromDomain L54 calcule system = ownerId == null, et les compteurs sont null (L55-56).",
+      "fromDomain L54 calcule system par ownerId == null et passe null aux deux compteurs (L55-56)."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 44,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "category:rules:8",
+   "section": "rules",
+   "rank": 8,
+   "text": "- Avec compteurs, une valeur absente est remplacée par CategoryProductCounts.EMPTY, et le total est la somme des actifs et des archivés. `backend:src/main/java/com/matimeline/eventmanager/application/dtos/CategoryResponse.java:60-69` [#ebeca9da61b1c1c7-1] [#b5c50c99e560704c-1]",
+   "fact_text": "Avec compteurs, une valeur absente est remplacée par CategoryProductCounts.EMPTY, et le total est la somme des actifs et des archivés. CategoryResponse.java",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "category/ebeca9da61b1c1c7-1",
+    "category/b5c50c99e560704c-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/application/dtos/CategoryResponse.java",
+    "backend:src/main/java/com/matimeline/eventmanager/domain/models/CategoryProductCounts.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/dtos/CategoryResponse.java",
+     60,
+     69,
+     "cbf5dad3a45cd3d2aa9c3d71cb9c7c3b55d94bf1d35b61806bb800a90538dd24"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/domain/models/CategoryProductCounts.java",
+     20,
+     31,
+     "a18354dd307b672e92978730089c62701fcb09a49a6c9ee3bb6d5a5b36195a81"
+    ]
+   ],
+   "code_sha256": "172b57fd08377252396905272a503be8a7926d53c787e77f0e1f6616cf099f39",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.125,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 8
+      }
+     },
+     "restatement": "`CategoryResponse.fromDomain(Category, CategoryProductCounts)` remplace un argument `counts` null par `CategoryProductCounts.EMPTY`, puis convertit `active` et `archived` en int avec `Math.toIntExact`, ce qui lève une exception si la valeur dépasse l'int.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 4,
+     "within_budget": true,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryController.java",
+     "file_ok": false,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": null,
+      "terms": 0.25,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 8
+      }
+     },
+     "job": "category:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_CategoryResponse.java:1",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "L61 remplace counts null par EMPTY. Le total actifs+archivés est défini dans CategoryProductCounts.total (L29-30), raccourci fidèle.",
+      "L61 remplace null par EMPTY, et CategoryProductCounts.total() renvoie active + archived (L29-30).",
+      "L61 remplace null par EMPTY ; total() = active + archived (CategoryProductCounts L29-30), même si la somme est dans le record et non dans la réponse."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 45,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "category:rules:9",
+   "section": "rules",
+   "rank": 9,
+   "text": "- Un update d'id inconnu lève CategoryNotFoundException dans CategoryServiceImpl.updateCategory avant CategoryRepositoryJpaImpl.save, donc aucune création implicite [#583475e7062a5eb3-1] `backend:src/main/java/com/matimeline/eventmanager/application/services/CategoryServiceImpl.java:58-61`.",
+   "fact_text": "Un update d'id inconnu lève CategoryNotFoundException dans CategoryServiceImpl.updateCategory avant CategoryRepositoryJpaImpl.save, donc aucune création implicite CategoryServiceImpl.java",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "category/583475e7062a5eb3-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/application/services/CategoryServiceImpl.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/services/CategoryServiceImpl.java",
+     58,
+     61,
+     "6719254262958a673354b9aa8768f13c0c63abd2ea86b10b4e43e2d745edc497"
+    ]
+   ],
+   "code_sha256": "6719254262958a673354b9aa8768f13c0c63abd2ea86b10b4e43e2d745edc497",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.75,
+      "values": null,
+      "terms": 0.2,
+      "n": {
+       "identifiers": 4,
+       "values": 0,
+       "terms": 5
+      }
+     },
+     "restatement": "La méthode CategoryServiceImpl.updateCategory(id, name, color, description) commence par la règle BR-CAT-003 : elle charge la catégorie via categoryRepository.findDomainCategoryById(id) et, si rien n'est trouvé, lève CategoryNotFoundException(id). L'extrait s'arrête là, donc la suite de la mise à jour n'est pas visible.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 4,
+     "within_budget": true,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/application/services/ProductServiceImpl.java",
+     "file_ok": false,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
+      "terms": 0.4,
+      "n": {
+       "identifiers": 4,
+       "values": 0,
+       "terms": 5
+      }
+     },
+     "job": "category:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_services_CategoryServiceImpl.java:1"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "CategoryServiceImpl.updateCategory (l.58-61) fait findDomainCategoryById(id).orElseThrow(CategoryNotFoundException) avant le save de la l.80. Les seuls save du dépôt Category sont l.50 (création) et l.80 (après la vérification), donc aucune création implicite.",
+      "CategoryServiceImpl.updateCategory (L60-61) lève CategoryNotFoundException via orElseThrow avant categoryRepository.save (L80). Le chemin update ne crée rien. Le orElse(null) du repo (L98) n'est atteint qu'après ce contrôle.",
+      "CategoryServiceImpl.updateCategory (l.60-61) lève CategoryNotFoundException via orElseThrow avant le save de la l.80, et save n'est appelé que sur l'entité existante. Aucun contre-exemple trouvé."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "scope",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 6,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "CategoryNotFoundException|.save( dans CategoryServiceImpl.java",
+         "found": "orElseThrow l.61, save l.50 (create) et l.80 (update après vérification)"
+        },
+        {
+         "tool": "Grep",
+         "target": "categoryRepository.save|updateCategory( dans backend/src/main/java",
+         "found": "seuls appels de save : l.50 et l.80 du service ; updateCategory appelé par CategoryController l.116 uniquement"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "save|CategoryNotFoundException dans CategoryServiceImpl.java",
+         "found": "save aux L50 (create) et L80 (update), exception L61"
+        },
+        {
+         "tool": "Grep",
+         "target": "save/findById dans CategoryRepositoryJpaImpl.java",
+         "found": "save L91 avec findById(...).orElse(null) L98 puis super.save L113, mais appelé après le contrôle d'existence du service"
+        },
+        {
+         "tool": "Read",
+         "target": "CategoryServiceImpl.java L55-85",
+         "found": "findDomainCategoryById(...).orElseThrow puis save(existing) uniquement"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "categoryRepository\\.save|CategoryNotFoundException (backend/src/main/java)",
+         "found": "save appelé seulement l.50 (création) et l.80 (update après findDomainCategoryById/orElseThrow)."
+        },
+        {
+         "tool": "Read",
+         "target": "CategoryServiceImpl.java L55-85",
+         "found": "findDomainCategoryById(id).orElseThrow avant tout save dans updateCategory."
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     }
+    }
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "words:aucune",
+   "placed": {
+    "pack_line": 47,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "category:surface:1",
+   "section": "surface",
+   "rank": 1,
+   "text": "- Le point d'entrée HTTP est `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryController.java:47-51`, chaque route résolvant l'appelant et répondant 401 s'il est absent [#integrations/3cbc6ad692a65eaa-1] [#6fc50f0b113733e6-1], et le client front est `frontend:services/categoryService.ts:59-71` [#d4a7bea8ee8ef950-1].",
+   "fact_text": "Le point d'entrée HTTP est CategoryController.java, chaque route résolvant l'appelant et répondant 401 s'il est absent, et le client front est categoryService.ts",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "integrations/3cbc6ad692a65eaa-1",
+    "category/6fc50f0b113733e6-1",
+    "category/d4a7bea8ee8ef950-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryController.java",
+    "frontend:services/categoryService.ts"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryController.java",
+     47,
+     51,
+     "afa4796632845f3e9366137507e1a5d27912593c8103ce6cee5fe29b200c2187"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryController.java",
+     49,
+     52,
+     "d5d71ae7c2bdcfebaf4c618ba69239ab6ab0585f3113a4dfe8ed41a22ed60dc9"
+    ],
+    [
+     "frontend:services/categoryService.ts",
+     59,
+     71,
+     "b3de947b6a0b062fa7581964f7af1e542eea61f32a65a8bd45502a08f87d0f40"
+    ]
+   ],
+   "code_sha256": "8f924cd60cb83ff86a6ee1b0e22acdebccdc349221f7d4e986722eac7808b41c",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": 1.0,
+      "terms": 0.0,
+      "n": {
+       "identifiers": 3,
+       "values": 1,
+       "terms": 9
+      }
+     },
+     "restatement": "`createCategory` du contrôleur renvoie `HttpStatus.UNAUTHORIZED` (401) sans corps si `callerResolver.currentUser()` ne retourne aucun utilisateur. Le corps de la méthode est tronqué, donc la suite n'est pas visible.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 4,
+     "within_budget": true,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryController.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.667,
+      "values": 1.0,
+      "terms": 0.333,
+      "n": {
+       "identifiers": 3,
+       "values": 1,
+       "terms": 9
+      }
+     },
+     "job": "category:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_CategoryResponse.java:1",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "CategoryController: les 5 routes (POST, GET, GET/{id}, PATCH, DELETE) appellent callerResolver.currentUser() et renvoient 401 si absent. Aucun contre-exemple.",
+      "Les cinq routes de CategoryController (POST, GET, GET/{id}, PATCH, DELETE) appellent callerResolver.currentUser() et renvoient UNAUTHORIZED si vide. Aucun autre contrôleur ne mappe /api/categories.",
+      "CategoryController: les cinq routes (create, list, get, patch, delete) appellent callerResolver.currentUser() et renvoient UNAUTHORIZED si vide ; categoryService.ts existe côté front."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "scope",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 24,
+      "searches": [
+       [
+        {
+         "tool": "Read",
+         "target": "CategoryController.java",
+         "found": "les cinq routes renvoient UNAUTHORIZED si callerOpt est vide"
+        }
+       ],
+       [
+        {
+         "tool": "Read",
+         "target": "CategoryController.java",
+         "found": "Les 5 routes renvoient 401 si l'appelant est absent."
+        },
+        {
+         "tool": "Grep",
+         "target": "api/categories dans backend/src/main",
+         "found": "Seul CategoryController porte @RequestMapping(\"/api/categories\")."
+        }
+       ],
+       [
+        {
+         "tool": "Read",
+         "target": "CategoryController.java",
+         "found": "les 5 handlers vérifient callerOpt.isEmpty() et renvoient 401, pas de contre-exemple"
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "words:chaque",
+   "placed": {
+    "pack_line": 70,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "category:surface:2",
+   "section": "surface",
+   "rank": 2,
+   "text": "- Le listing GET /api/categories renvoie les catégories du caller plus les catégories système (sans propriétaire), chacune avec ses compteurs de produits, le filtrage étant fait par le service et non par le contrôleur [#0170a42b57affd2f-1] [#e058eec72b9dbdf2-1] [#419bb430c6dff34f-1].",
+   "fact_text": "Le listing GET /api/categories renvoie les catégories du caller plus les catégories système (sans propriétaire), chacune avec ses compteurs de produits, le filtrage étant fait par le service et non par le contrôleur",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "category/0170a42b57affd2f-1",
+    "category/e058eec72b9dbdf2-1",
+    "category/419bb430c6dff34f-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryController.java",
+    "backend:src/main/java/com/matimeline/eventmanager/application/services/CategoryServiceImpl.java",
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryControllerTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryController.java",
+     59,
+     80,
+     "4b96fb465f4c4a52ec4b7e5dc1e902ff08bf79ffb0c35aa5fd457ee77aeb1316"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/services/CategoryServiceImpl.java",
+     86,
+     91,
+     "11457f938c2e24c0b1ae367707cb070c1c502728b32b0082c2ae6a2a05477148"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryControllerTest.java",
+     142,
+     166,
+     "d37a117d83a078f4bb5eb223a1f1b4314f10f988e2923818ee19b794836408b2"
+    ]
+   ],
+   "code_sha256": "25caa2f574e66c404f3739ca6936bbc3b205bb2fe278f1e9d08c0f653e81bdab",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 12
+      }
+     },
+     "restatement": "`getAllCategories` renvoie 401 sans caller. Sinon il récupère les compteurs de l'appelant via `getProductCountsForOwner`, puis mappe `getCategoriesForOwner(caller.getId())` en `CategoryResponse` avec `CategoryProductCounts.EMPTY` pour les catégories absentes de la map. `getCategoriesForOwner` appelle `findByOwnerIdOrSystem(callerId)`, donc le listing contient les catégories de l'appelant et les système.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 4,
+     "within_budget": true,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryController.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
+      "terms": 0.333,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 12
+      }
+     },
+     "job": "category:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_CategoryResponse.java:1",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Le contrôleur L72-78 joint les compteurs et délègue à getCategoriesForOwner, qui appelle findByOwnerIdOrSystem (L90).",
+      "Le contrôleur L72-78 joint les compteurs, le service getCategoriesForOwner filtre via findByOwnerIdOrSystem.",
+      "Le contrôleur appelle categoryService.getCategoriesForOwner (L74), qui délègue à findByOwnerIdOrSystem (L90), et joint les compteurs."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 71,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "category:surface:3",
+   "section": "surface",
+   "rank": 3,
+   "text": "- La lecture et la modification n'appliquent pas la même règle d'appartenance, car la lecture accepte les catégories système via `backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryController.java:167-169` [#45903f846bdb1978-1], alors que la modification exige que l'owner soit l'appelant [#integrations/8e9c429e14d99314-1].",
+   "fact_text": "La lecture et la modification n'appliquent pas la même règle d'appartenance, car la lecture accepte les catégories système via CategoryController.java, alors que la modification exige que l'owner soit l'appelant",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "category/45903f846bdb1978-1",
+    "integrations/8e9c429e14d99314-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryController.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryController.java",
+     167,
+     169,
+     "ca74324106095c029ad013c916880ba1c86d602cf2cc7b830756cb800ff8d113"
+    ],
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryController.java",
+     111,
+     114,
+     "64e42d5141194702bf39626922dfb7d6d131423818b14404f458cc851848e3ea"
+    ]
+   ],
+   "code_sha256": "05778a5279514b9a818f41c2d254760e034e6c8bdfed997d7ac99bcdf8998053",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
+      "terms": 0.364,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 11
+      }
+     },
+     "restatement": "`isVisibleTo` rend une catégorie visible si son `ownerId` est null (système) ou égal à `callerId`. Dans `updateCategory`, si `isOwnedBy` renvoie faux, le contrôleur répond 403 FORBIDDEN. Le corps de `isOwnedBy` n'est pas dans l'extrait, donc la règle exacte d'appartenance reste à confirmer.",
+     "confidence": "medium",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 4,
+     "within_budget": true,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryController.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
+      "terms": 0.273,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 11
+      }
+     },
+     "job": "category:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_CategoryResponse.java:1",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "isVisibleTo accepte owner null ou égal au caller (L168). updateCategory exige isOwnedBy et renvoie 403 sinon (L111-114).",
+      "isVisibleTo accepte ownerId null ou égal au caller (L168), alors que updateCategory renvoie 403 si isOwnedBy est faux (L112).",
+      "isVisibleTo accepte owner null ou égal à l'appelant (L168). updateCategory renvoie 403 si !isOwnedBy (L112)."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 72,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "category:surface:4",
+   "section": "surface",
+   "rank": 4,
+   "text": "- Les compteurs de produits viennent d'une requête dédiée scopée au caller, qui n'est pas reconstruite à partir d'un comptage par catégorie [#0f363444e8ef529b-1].",
+   "fact_text": "Les compteurs de produits viennent d'une requête dédiée scopée au caller, qui n'est pas reconstruite à partir d'un comptage par catégorie",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "category/0f363444e8ef529b-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/application/services/CategoryServiceImpl.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/services/CategoryServiceImpl.java",
+     93,
+     101,
+     "60eaa571a72743ada2132ab4594e293a57c9f7006a8e132db566e6b1477f04e8"
+    ]
+   ],
+   "code_sha256": "60eaa571a72743ada2132ab4594e293a57c9f7006a8e132db566e6b1477f04e8",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 0.182,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 11
+      }
+     },
+     "restatement": "`getProductCountsForOwner` délègue directement à `productRepository.countByCategoryForUser(callerId)`. Le commentaire interdit de recalculer ce compteur avec `countByCategoryId`, car ce dernier compte les produits de tous les utilisateurs et exposerait le nombre de produits d'autrui.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 2,
+     "within_budget": true,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/application/services/CategoryServiceImpl.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 0.364,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 11
+      }
+     },
+     "job": "category:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_CategoryResponse.java:1",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "getProductCountsForOwner délègue à productRepository.countByCategoryForUser(callerId) (L100), le commentaire L97 interdit de reconstruire depuis countByCategoryId.",
+      "getProductCountsForOwner L95-100 délègue à countByCategoryForUser(callerId), et le commentaire interdit de le reconstruire depuis countByCategoryId.",
+      "getProductCountsForOwner délègue à countByCategoryForUser (L100) et le commentaire L97 interdit de reconstruire depuis countByCategoryId."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 73,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "category:surface:5",
+   "section": "surface",
+   "rank": 5,
+   "text": "- Le save d'un id existant recopie nom, couleur, description et owner sur l'entité gérée, owner compris [#7b6ce2f6cec0ab25-2].",
+   "fact_text": "Le save d'un id existant recopie nom, couleur, description et owner sur l'entité gérée, owner compris",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "category/7b6ce2f6cec0ab25-2"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/CategoryRepositoryJpaImpl.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/CategoryRepositoryJpaImpl.java",
+     97,
+     107,
+     "c876943a13d80225ee9e608fe8da7c33aeb5ac7142a4e128ada372fee27a9b58"
+    ]
+   ],
+   "code_sha256": "c876943a13d80225ee9e608fe8da7c33aeb5ac7142a4e128ada372fee27a9b58",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 0.333,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 9
+      }
+     },
+     "restatement": "`CategoryRepositoryJpaImpl.save` recharge l'entité avec `super.findById` quand l'id est non null. Si elle existe, il copie name, color, description et owner depuis le domaine, puis sauvegarde et reconvertit en domaine. Le cas où l'entité n'existe pas n'est pas visible dans l'extrait.",
+     "confidence": "high",
+     "files_read_missing": true,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 5,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/main/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/jpa/CategoryRepositoryJpaImpl.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": null,
+      "values": null,
+      "terms": 0.556,
+      "n": {
+       "identifiers": 0,
+       "values": 0,
+       "terms": 9
+      }
+     },
+     "job": "category:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_CategoryResponse.java:1",
+     "rank_in_lot": 2,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 74,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "category:surface:6",
+   "section": "surface",
+   "rank": 6,
+   "text": "- Côté front, la création propage l'erreur axios pour un affichage inline et valide la réponse par schéma, comme la mise à jour PATCH partielle [#d4a7bea8ee8ef950-1] [#5324d5474548a79d-1].",
+   "fact_text": "Côté front, la création propage l'erreur axios pour un affichage inline et valide la réponse par schéma, comme la mise à jour PATCH partielle",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "category/d4a7bea8ee8ef950-1",
+    "category/5324d5474548a79d-1"
+   ],
+   "files": [
+    "frontend:services/categoryService.ts"
+   ],
+   "ranges": [
+    [
+     "frontend:services/categoryService.ts",
+     59,
+     71,
+     "b3de947b6a0b062fa7581964f7af1e542eea61f32a65a8bd45502a08f87d0f40"
+    ],
+    [
+     "frontend:services/categoryService.ts",
+     80,
+     92,
+     "15a13f553c090b8ef528ff2ec9a0d134f807d4bde2426ed1cdce63bda6cd712c"
+    ]
+   ],
+   "code_sha256": "2dc3c3168a273a1d7a7889a5d9755a40060d4a8d6c42763435b288658b80a642",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.214,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 14
+      }
+     },
+     "restatement": "Le service frontend createCategory envoie un POST sur /categories avec des options optionnelles d'erreur inline, parse la réponse avec categorySchema, journalise l'erreur via logUnexpected puis la relance. updateCategory fait de même avec un PATCH sur `/categories/${id}`.",
+     "confidence": "high",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 4,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/frontend/src/services/categoryService.ts",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.571,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 14
+      }
+     },
+     "job": "category:rediscover:backend_src_test_java_com_matimeline_eventmanager_infrastructure_adapters_repositories_CategoryDeleteReassignIntegrationTest.java:2",
+     "rank_in_lot": 1,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 75,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "category:tests:1",
+   "section": "tests",
+   "rank": 1,
+   "text": "- Les tests fixent qu'avec une cible, les produits actifs et archivés migrent avant la suppression, qu'un produit archivé reste archivé, et qu'une erreur de deleteById après réassignation remonte. [#3840d7f06f853e2d-2] [#c8aa8d37f01818e5-2] [#6e7fcbb795f82f39-1] [#8b47d0a54f642844-1]",
+   "fact_text": "Les tests fixent qu'avec une cible, les produits actifs et archivés migrent avant la suppression, qu'un produit archivé reste archivé, et qu'une erreur de deleteById après réassignation remonte",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "category/3840d7f06f853e2d-2",
+    "category/c8aa8d37f01818e5-2",
+    "category/6e7fcbb795f82f39-1",
+    "category/8b47d0a54f642844-1"
+   ],
+   "files": [
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/CategoryDeleteReassignIntegrationTest.java",
+    "backend:src/test/java/com/matimeline/eventmanager/application/services/CategoryServiceImplTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/CategoryDeleteReassignIntegrationTest.java",
+     146,
+     179,
+     "ef939459e2fe6bbe46e919483f501d95cf0d4f28b0d8da30b3d64ac10793d3a3"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/CategoryDeleteReassignIntegrationTest.java",
+     214,
+     234,
+     "650011b96da3625d79d7e9b861d13ce55208c20e4c85caba3737416827d48b63"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/application/services/CategoryServiceImplTest.java",
+     199,
+     213,
+     "8372056e6661ca7ecd657f3f45e53c9dcf097ca8d20c8ae8e65c03b1dd14ee23"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/application/services/CategoryServiceImplTest.java",
+     253,
+     266,
+     "d3daf8015fc6707ec3a1d120e372e9d0459de3a3af0581fa777e756428e66251"
+    ]
+   ],
+   "code_sha256": "0523dcb25913746d3588411a661766bbd67f4ec0eca7a936e67e682b8fd89d70",
+   "verdict": "admit",
+   "reason": "rediscovered",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.0,
+      "values": null,
+      "terms": 0.462,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 13
+      }
+     },
+     "restatement": "Le test deleteCategory_withReassign_movesAllProducts montre qu'avec une cible, deleteCategory déplace tous les produits de la source vers la cible, actifs et archivés, puis supprime la source. Après l'opération, countByCategoryId de la source vaut 0 et celui de la cible vaut 2. Le second test vérifie qu'un produit archivé seul est déplacé vers la cible en gardant archived = true.",
+     "confidence": "high",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 8,
+     "within_budget": true,
+     "covered": true,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/CategoryDeleteReassignIntegrationTest.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.846,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 13
+      }
+     },
+     "job": "category:rediscover:backend_src_test_java_com_matimeline_eventmanager_infrastructure_adapters_repositories_CategoryDeleteReassignIntegrationTest.java:2",
+     "rank_in_lot": 2,
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "kept_for": "rediscovered",
+   "placed": {
+    "pack_line": 107,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "category:tests:2",
+   "section": "tests",
+   "rank": 2,
+   "text": "- Côté API, un DELETE utilisé sans cible renvoie 409 avec le nombre de produits, et une cible égale à la catégorie renvoie 409 avec un message dédié. [#a24d15a2d893c519-2] [#a24d15a2d893c519-4]",
+   "fact_text": "Côté API, un DELETE utilisé sans cible renvoie 409 avec le nombre de produits, et une cible égale à la catégorie renvoie 409 avec un message dédié",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "category/a24d15a2d893c519-2",
+    "category/a24d15a2d893c519-4"
+   ],
+   "files": [
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryControllerTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryControllerTest.java",
+     389,
+     404,
+     "70a970a992c386a2624b96f2c7645a84415a1ce5f831ae34f3c07f8d9cb2be76"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryControllerTest.java",
+     421,
+     441,
+     "5b2af4565d2e3c5a9cf789330920e5d99980ebc8466b1cb368441924c397317e"
+    ]
+   ],
+   "code_sha256": "6a52e70d5ebda9be291b73b5060ef7b1a49adf8c4ea1668bb06e246e9d203a90",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": 1.0,
+      "terms": 0.6,
+      "n": {
+       "identifiers": 2,
+       "values": 1,
+       "terms": 10
+      }
+     },
+     "restatement": "Un DELETE sans reassignToCategoryId sur une catégorie référencée renvoie HTTP 409 avec error « conflict » et un message dynamique reprenant le nombre de produits (« La catégorie est utilisée par 3 produits. Fournissez reassignToCategoryId. »). Un DELETE où reassignToCategoryId vaut l'id de la catégorie elle-même renvoie HTTP 409 avec un message dédié en anglais, issu de CategoryReassignTargetInvalidException.",
+     "confidence": "high",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 16,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryControllerTest.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.5,
+      "values": 1.0,
+      "terms": 0.7,
+      "n": {
+       "identifiers": 2,
+       "values": 1,
+       "terms": 10
+      }
+     },
+     "job": "category:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_CategoryResponse.java:1",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Les tests L389-441 vérifient 409 avec 'utilisée par 3 produits' et 409 avec message dédié pour cible == source.",
+      "Les deux tests attendent 409, avec 3 produits dans le message pour le premier et un message dédié pour la cible égale à la source.",
+      "Les tests L389-441 montrent 409 avec « utilisée par 3 produits » sans cible, et 409 avec message dédié si cible == source."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 108,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "category:tests:3",
+   "section": "tests",
+   "rank": 3,
+   "text": "- Les compteurs séparent produits actifs et archivés, valent 0 si la catégorie est absente de la map, et ne comptent que les produits de l'appelant sur une catégorie système partagée, contrairement à countByCategoryId. [#86005ad7688e238a-4] [integrations/fe41b39f745c9020-1] [integrations/d290b87af4c36960-1] [#e90c8521a757ba43-1]",
+   "fact_text": "Les compteurs séparent produits actifs et archivés, valent 0 si la catégorie est absente de la map, et ne comptent que les produits de l'appelant sur une catégorie système partagée, contrairement à countByCategoryId. [integrations/fe41b39f745c9020-1] [integrations/d290b87af4c36960-1]",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "category/86005ad7688e238a-4",
+    "category/e90c8521a757ba43-1"
+   ],
+   "files": [
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryControllerTest.java",
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/CategoryDeleteReassignIntegrationTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryControllerTest.java",
+     175,
+     199,
+     "4a070524139fd67916ca7b6ed971e9e25786d0531fe42a0cd1bcd1f5e73b3bb7"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/CategoryDeleteReassignIntegrationTest.java",
+     312,
+     327,
+     "17f49528446c90db4ad5af31f871351c81eba0f4897cb002388e91b45af3bdc2"
+    ]
+   ],
+   "code_sha256": "3471570e7730274f43b9f64b3f046237a7e01b226ae66a75d7b30991cfbafba2",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": false,
+     "overlap": {
+      "identifiers": 0.333,
+      "values": 0.5,
+      "terms": 0.143,
+      "n": {
+       "identifiers": 3,
+       "values": 2,
+       "terms": 14
+      }
+     },
+     "restatement": "Le test getAllCategories_exposesActiveAndArchivedProductCounts montre que GET /api/categories renvoie pour chaque catégorie productCount et archivedProductCount, issus de getProductCountsForOwner, avec 0 par défaut quand la catégorie n'a pas d'entrée dans la map. Le bloc du dépôt test countByCategoryForUser_isNotCountByCategoryId indique que countByCategoryForUser ne compte que les produits de l'utilisateur, alors que countByCategoryId compte tous les produits (2 dans le test). Le libellé du symbole ne correspond pas au nom réel du test, d'où une confiance moyenne.",
+     "confidence": "medium",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "rediscover": {
+     "found": true,
+     "cost": 13,
+     "within_budget": false,
+     "covered": false,
+     "file": "C:/Users/ldelaforcade/Documents/Personnel/My Timeline/MyTimeline/backend/src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/CategoryDeleteReassignIntegrationTest.java",
+     "file_ok": true,
+     "overlap": {
+      "identifiers": 0.333,
+      "values": 1.0,
+      "terms": 0.143,
+      "n": {
+       "identifiers": 3,
+       "values": 2,
+       "terms": 14
+      }
+     },
+     "job": "category:rediscover:backend_src_main_java_com_matimeline_eventmanager_application_dtos_CategoryResponse.java:1",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    },
+    "comment": [],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Test L175-199 : actifs/archivés séparés et 0 si absent de la map. Test L313-327 : forMe.total()==1 contre countByCategoryId==2 sur une catégorie système partagée.",
+      "Les tests L185-196 montrent actifs/archivés séparés et 0 pour une catégorie absente. Le test L313-327 distingue countByCategoryForUser (1) de countByCategoryId (2).",
+      "Test L175-199 : actifs et archivés séparés, 0 par défaut (EMPTY). Test d'intégration L313-326 : forMe.total() vaut 1 contre 2 pour countByCategoryId."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "n/a",
+     "question_verdict": "n/a",
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": 109,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "category:alerts:1",
+   "section": "alerts",
+   "rank": 1,
+   "text": "- Pour la catégorie d'un autre utilisateur, les tests attendent 404 sur le GET et 403 sur PATCH et DELETE. Unifier les codes d'un côté casse les tests de l'autre, donc conserver cet écart ou modifier les deux ensemble [#8ecde30c288f4e1a-2] [#4709057d35de99a0-1] `backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryControllerTest.java:265-335`.",
+   "fact_text": "Pour la catégorie d'un autre utilisateur, les tests attendent 404 sur le GET et 403 sur PATCH et DELETE. Unifier les codes d'un côté casse les tests de l'autre, donc conserver cet écart ou modifier les deux ensemble CategoryControllerTest.java",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "category/8ecde30c288f4e1a-2",
+    "category/4709057d35de99a0-1"
+   ],
+   "files": [
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryControllerTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryControllerTest.java",
+     265,
+     335,
+     "60afb55ffb6197948555b9cc27d7d563d8c66336ed5afd3418995a2a081a8b7b"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryControllerTest.java",
+     256,
+     266,
+     "d108f65ff46e8c84cfe7e476f142fe4da47fb1bf1158ccc9c12d877a1720278b"
+    ]
+   ],
+   "code_sha256": "98545432d8ba8196d56f1a6204ae1080fc195be9dd497ea2ed8c9caf81b81084",
+   "verdict": "admit",
+   "reason": "admitted",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": null,
+    "rediscover": null,
+    "comment": [
+     {
+      "id": "category/4709057d35de99a0-1",
+      "verdict": "confirmed"
+     }
+    ],
+    "refute": {
+     "votes": 3,
+     "refuted": 0,
+     "refute_unproven": 0,
+     "reasons": [
+      "Le contrôleur donne 404 sur GET (isVisibleTo) et 403 sur PATCH/DELETE (isOwnedBy), et les tests (lignes 257-265, 325-335, 460-468) fixent cet écart. Rien ne garantit l'invariant contraire.",
+      "Le contrôleur renvoie bien 404 sur GET d'une catégorie d'autrui (isVisibleTo, L92-95) et 403 sur PATCH et DELETE (isOwnedBy, L112 et L135). CategoryControllerTest l'attend : L257 (404), L325 (403), L460 (403). Aucun garde-fou ne supprime l'écart, il est voulu et testé.",
+      "CategoryControllerTest[secret retiré] (L257), patchCategory_ownedByAnotherUser_returns403 (L325) et deleteCategory_ownedByAnotherUser_returns403 (L460) confirment l'écart, qui correspond au contrôleur (isVisibleTo vs isOwnedBy)."
+     ],
+     "evidence": [
+      "",
+      "",
+      ""
+     ],
+     "consigne_verdict": "supported",
+     "question_verdict": "n/a",
+     "searched": true,
+     "search": {
+      "check": "guards",
+      "outcome": null,
+      "votes": 3,
+      "supporters": 0,
+      "budget": 24,
+      "searches": [
+       [
+        {
+         "tool": "Grep",
+         "target": "isForbidden|isNotFound dans CategoryControllerTest",
+         "found": "GET autrui 404, PATCH autrui 403, DELETE autrui 403"
+        },
+        {
+         "tool": "Read",
+         "target": "CategoryController.java",
+         "found": "GET filtre isVisibleTo puis 404, PATCH/DELETE renvoient FORBIDDEN"
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "ownedByAnotherUser|isForbidden dans CategoryControllerTest",
+         "found": "GET autrui -> 404 (L257), PATCH -> 403 (L325), DELETE -> 403 (L460)."
+        }
+       ],
+       [
+        {
+         "tool": "Grep",
+         "target": "isForbidden|isNotFound dans CategoryControllerTest.java",
+         "found": "404 sur GET autrui, 403 sur PATCH et DELETE autrui"
+        },
+        {
+         "tool": "Read",
+         "target": "CategoryController.java",
+         "found": "GET filtre par isVisibleTo puis 404, PATCH et DELETE renvoient 403 si non propriétaire"
+        }
+       ]
+      ],
+      "untraced": 0,
+      "over_budget": 0,
+      "unproven": 0
+     },
+     "reused": true,
+     "reused_from": "2026-11-20T12:20:00Z"
+    }
+   },
+   "contrary": null,
+   "check": "guards",
+   "placed": {
+    "pack_line": 117,
+    "annex_table": null
+   },
+   "uses": 0
+  },
+  {
+   "id": "category:rules:annex:5076debe",
+   "section": "rules",
+   "rank": 5,
+   "text": "- Supprimer une catégorie inexistante lève CategoryNotFoundException. [#3e67bbffd9fd5f2d-1]",
+   "fact_text": "Supprimer une catégorie inexistante lève CategoryNotFoundException",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "category/3e67bbffd9fd5f2d-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/application/services/CategoryServiceImpl.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/services/CategoryServiceImpl.java",
+     115,
+     123,
+     "dae84bb7f37ea9ecea6fc5daeb7f4ce4a61ca86c79a1dec54680c8845391be24"
+    ]
+   ],
+   "code_sha256": "dae84bb7f37ea9ecea6fc5daeb7f4ce4a61ca86c79a1dec54680c8845391be24",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 4
+      }
+     },
+     "restatement": "`deleteCategory` lève `CategoryNotFoundException(id)` si `existsById(id)` est faux. Ensuite, il calcule le nombre de produits référençant la catégorie avec `productRepository.countByCategoryId(id)`.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "category.details.md",
+     "row": 1
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  },
+  {
+   "id": "category:rules:annex:26b1c200",
+   "section": "rules",
+   "rank": 7,
+   "text": "- Une cible de réassignation égale à la catégorie supprimée lève CategoryReassignTargetInvalidException avant toute réassignation. [#3e67bbffd9fd5f2d-3] [#ec943046dcf5e0f7-6]",
+   "fact_text": "Une cible de réassignation égale à la catégorie supprimée lève CategoryReassignTargetInvalidException avant toute réassignation",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "category/3e67bbffd9fd5f2d-3",
+    "category/ec943046dcf5e0f7-6"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/application/services/CategoryServiceImpl.java",
+    "backend:src/test/java/com/matimeline/eventmanager/application/services/CategoryServiceImplTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/application/services/CategoryServiceImpl.java",
+     136,
+     138,
+     "bc84d37ae681b051f072053139e2243351ff3bde372103db645a4683dd404f53"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/application/services/CategoryServiceImplTest.java",
+     221,
+     232,
+     "8af30d140ca533ea483f9408e02847e8a22871b085118025ac0dfe5a6ce9d9ac"
+    ]
+   ],
+   "code_sha256": "04de545631eb35e47d61f5305d5c1a539a5feb11431a007eda63f2871bf03fea",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.833,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 6
+      }
+     },
+     "restatement": "`deleteCategory` lève `CategoryReassignTargetInvalidException` si la cible de réassignation est identique à la catégorie supprimée. Le test vérifie qu'il n'y a ni réassignation ni suppression.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "words:toute",
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "category.details.md",
+     "row": 2
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  },
+  {
+   "id": "category:surface:annex:9a71485c",
+   "section": "surface",
+   "rank": 4,
+   "text": "- Une catégorie système (ownerId nul) ne peut donc pas être modifiée, la réponse est 403, ce que le test PATCH fixe [#integrations/8575936ac40164fc-1] [#integrations/7e1dd26487b95a33-1].",
+   "fact_text": "Une catégorie système (ownerId nul) ne peut donc pas être modifiée, la réponse est 403, ce que le test PATCH fixe",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "integrations/8575936ac40164fc-1",
+    "integrations/7e1dd26487b95a33-1"
+   ],
+   "files": [
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryControllerTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryControllerTest.java",
+     340,
+     354,
+     "acdb5c3f6b1011a62fd493c9eacf62681cf04d905e5927514cecd3fa28a53424"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryControllerTest.java",
+     324,
+     338,
+     "d3cca4d92fb4abfd9b3fd96520474c45fabfcfeb4ce3468329158072128113ae"
+    ]
+   ],
+   "code_sha256": "6516d8d816b02a047bad663c1b97abb57b7c7e3b2229dab5ecdcb3f80f7d6944",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 2,
+       "values": 1,
+       "terms": 6
+      }
+     },
+     "restatement": "Deux tests de PATCH /api/categories/{id} renvoient HTTP 403 et n'appellent pas updateCategory : quand la catégorie appartient à un autre utilisateur (ownerId différent), et quand c'est une catégorie système avec owner null (name « Système »).",
+     "confidence": "high"
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "category.details.md",
+     "row": 3
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  },
+  {
+   "id": "category:surface:annex:10e02cf8",
+   "section": "surface",
+   "rank": 5,
+   "text": "- La suppression avec réassignation contrôle aussi la catégorie de destination, qui doit appartenir à l'appelant, sinon 403 ou 404 et aucun appel à deleteCategory [#integrations/c7bb5008d3494cfa-1] [#1bcba06ae8e16148-1].",
+   "fact_text": "La suppression avec réassignation contrôle aussi la catégorie de destination, qui doit appartenir à l'appelant, sinon 403 ou 404 et aucun appel à deleteCategory",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "integrations/c7bb5008d3494cfa-1",
+    "category/1bcba06ae8e16148-1"
+   ],
+   "files": [
+    "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryController.java",
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryControllerTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/main/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryController.java",
+     135,
+     148,
+     "45e629a82f1e36c4b672a479163ec4dfb7c88401805fc9a379076709137d346d"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryControllerTest.java",
+     443,
+     457,
+     "0fdaa4655d41c51fb3c8de036d07a4ee2a332a81b27e2e038eed175a907c4269"
+    ]
+   ],
+   "code_sha256": "d1ea2cfad6a40c3aee79ae4da4807a2e23942737270c5e92d64ea0362edcc780",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 1,
+       "values": 2,
+       "terms": 8
+      }
+     },
+     "restatement": "`deleteCategory` du contrôleur renvoie 403 si la catégorie n'appartient pas à l'appelant. Si `reassignToCategoryId` est fourni, il renvoie 404 si la cible est introuvable et 403 si la cible n'appartient pas à l'appelant. Le service n'est appelé qu'après ces contrôles, comme le montre le test qui vérifie `deleteCategory` jamais appelé.",
+     "confidence": "high",
+     "files_read_missing": true
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "check": "scope",
+   "general": "words:aucun",
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "category.details.md",
+     "row": 4
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  },
+  {
+   "id": "category:tests:annex:79c67ca0",
+   "section": "tests",
+   "rank": 1,
+   "text": "- Les tests fixent qu'une suppression sans cible lève CategoryInUseException dès qu'un produit référence la catégorie, y compris un seul produit archivé, et que la catégorie reste en base. [#3840d7f06f853e2d-1] [#3840d7f06f853e2d-3]",
+   "fact_text": "Les tests fixent qu'une suppression sans cible lève CategoryInUseException dès qu'un produit référence la catégorie, y compris un seul produit archivé, et que la catégorie reste en base",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "category/3840d7f06f853e2d-1",
+    "category/3840d7f06f853e2d-3"
+   ],
+   "files": [
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/CategoryDeleteReassignIntegrationTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/CategoryDeleteReassignIntegrationTest.java",
+     127,
+     140,
+     "64068fe304d2f172a101ed916538953cfdb07eb45f47a9f0d848e5be264534d5"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/repositories/CategoryDeleteReassignIntegrationTest.java",
+     189,
+     207,
+     "6fcdc0da95277e057a2313d3375f3353466ba8c6d63eaa3ca2d49404ebe57469"
+    ]
+   ],
+   "code_sha256": "ccacfa7beb36537613935b5f9a46a76004db004d6a24178c292a62db565f2c92",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.75,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 12
+      }
+     },
+     "restatement": "Le test deleteCategory_referencedWithoutReassign_throws409 montre que, si la catégorie a un produit et que la cible est null, deleteCategory lève CategoryInUseException et la catégorie reste en base. Le second test applique la même règle quand seul un produit archivé référence la catégorie : l'exception est levée, la catégorie est conservée et le produit archivé reste lié via category_id.",
+     "confidence": "high"
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "category.details.md",
+     "row": 5
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  },
+  {
+   "id": "category:tests:annex:d0fb592b",
+   "section": "tests",
+   "rank": 3,
+   "text": "- Les tests fixent qu'une catégorie sans produit est supprimée directement, et qu'une catégorie ou une cible inconnue lève CategoryNotFoundException sans réassignation ni suppression. [#a6a65602e20c2d2b-1] [#b48ebdf09428120e-1] [#ec943046dcf5e0f7-7]",
+   "fact_text": "Les tests fixent qu'une catégorie sans produit est supprimée directement, et qu'une catégorie ou une cible inconnue lève CategoryNotFoundException sans réassignation ni suppression",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "category/a6a65602e20c2d2b-1",
+    "category/b48ebdf09428120e-1",
+    "category/ec943046dcf5e0f7-7"
+   ],
+   "files": [
+    "backend:src/test/java/com/matimeline/eventmanager/application/services/CategoryServiceImplTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/application/services/CategoryServiceImplTest.java",
+     173,
+     183,
+     "35a1ec77a835d8a7a9a5882fa8c08a1b4ab587273ea9e002b5d55e21b2a738b1"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/application/services/CategoryServiceImplTest.java",
+     162,
+     171,
+     "e35374129feb75070519595beeabd31de4899ce23ec45d9a13a610a1814bfb09"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/application/services/CategoryServiceImplTest.java",
+     234,
+     246,
+     "7d516b9f6a1a1d50821763492a688a0a50692dac6618baf5393356c613c19b27"
+    ]
+   ],
+   "code_sha256": "d058ec3c54d533f5de7b4fa85a6a6f79e010219acc13d69484d3e0f94b69f080",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.6,
+      "n": {
+       "identifiers": 1,
+       "values": 0,
+       "terms": 10
+      }
+     },
+     "restatement": "Le test deleteCategory_noProducts_deletesDirectly montre que, si existsById renvoie true et countByCategoryId renvoie 0, deleteCategory appelle deleteById sans appeler updateCategoryForProducts. Les deux autres blocs vérifient qu'une catégorie inconnue lève CategoryNotFoundException, et qu'une cible de réassignation inconnue lève la même exception sans réassigner ni supprimer.",
+     "confidence": "high"
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "category.details.md",
+     "row": 6
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  },
+  {
+   "id": "category:tests:annex:215fd2b4",
+   "section": "tests",
+   "rank": 5,
+   "text": "- Les tests fixent qu'un nom déjà pris par le owner ou par une autre catégorie lève CategoryNameConflictException sans sauvegarde, et qu'une DataIntegrityViolationException au save (création ou renommage) est convertie en conflit. [#12d114f406d44998-1] [#211f471289f276c9-1] [#6514cb4f443c9f5a-1] [#a287475958e00035-1]",
+   "fact_text": "Les tests fixent qu'un nom déjà pris par le owner ou par une autre catégorie lève CategoryNameConflictException sans sauvegarde, et qu'une DataIntegrityViolationException au save (création ou renommage) est convertie en conflit",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "category/12d114f406d44998-1",
+    "category/211f471289f276c9-1",
+    "category/6514cb4f443c9f5a-1",
+    "category/a287475958e00035-1"
+   ],
+   "files": [
+    "backend:src/test/java/com/matimeline/eventmanager/application/services/CategoryServiceImplTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/application/services/CategoryServiceImplTest.java",
+     68,
+     77,
+     "6ca491c9c47cd01774e61cf781a94b8f17cf7aa8c816aad05feaee6690e4680d"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/application/services/CategoryServiceImplTest.java",
+     133,
+     145,
+     "6cd53e0ac66c97aa13d2c31b27c8485e3bad28b054518995fd0c5935be9eed25"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/application/services/CategoryServiceImplTest.java",
+     79,
+     93,
+     "6f80226b609178bdca8ce49199d5ac98be62b276d4fb906b07f0e1b3d97e7473"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/application/services/CategoryServiceImplTest.java",
+     96,
+     106,
+     "9c89c5fc606229b3d3dc4d9927a3947c23f754cc4a83ae7b2e5dffa127af2723"
+    ]
+   ],
+   "code_sha256": "aeb293e662a07a50a039b2fd6204a10b7280667d2f3391d2335bc820d4c9def0",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": null,
+      "terms": 0.5,
+      "n": {
+       "identifiers": 2,
+       "values": 0,
+       "terms": 12
+      }
+     },
+     "restatement": "Le test createCategory_nameTakenByOwner vérifie que si findByOwnerAndName trouve déjà le nom, createCategory lève CategoryNameConflictException sans appeler save. updateCategory_renameToNameTakenBySibling applique la même règle au renommage. Les deux tests uniqueRace montrent qu'une DataIntegrityViolationException levée par save est convertie en CategoryNameConflictException, en création comme en mise à jour.",
+     "confidence": "high"
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "category.details.md",
+     "row": 7
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  },
+  {
+   "id": "category:tests:annex:2b1172f4",
+   "section": "tests",
+   "rank": 6,
+   "text": "- Un POST ou un PATCH en doublon renvoie 409 avec error à conflict, un nom vide renvoie 400 sans appel au service. [#2c1f8c2b2134e263-3] [#61d291963ad8f848-1] [#f176de32cdeed4d9-1] [#67d7538d6cd2b940-1]",
+   "fact_text": "Un POST ou un PATCH en doublon renvoie 409 avec error à conflict, un nom vide renvoie 400 sans appel au service",
+   "consigne": null,
+   "consigne_dropped": false,
+   "cites": [
+    "category/2c1f8c2b2134e263-3",
+    "category/61d291963ad8f848-1",
+    "category/f176de32cdeed4d9-1",
+    "category/67d7538d6cd2b940-1"
+   ],
+   "files": [
+    "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryControllerTest.java"
+   ],
+   "ranges": [
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryControllerTest.java",
+     116,
+     130,
+     "284c763259d9f341c474f7507ab85c39f4f150b8afa17d7f10e9ca5b597c914b"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryControllerTest.java",
+     356,
+     372,
+     "1d612e235f3335ea6746de26631318fe37ccd32dedc115090f7141fb8c4de420"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryControllerTest.java",
+     86,
+     96,
+     "563faed59395b2faf104cbf84dce96a270cddeb872a1f59de795c45cdd9eac0a"
+    ],
+    [
+     "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryControllerTest.java",
+     297,
+     307,
+     "d9b7eba51c0b678824f06494911f01f0599dce003f7f1b71c8b3a4cf12c559fa"
+    ]
+   ],
+   "code_sha256": "4a5b5bec6a5d4d60a3f5fb3e36c47f1c7124beae7b7196d482f533987d5085f6",
+   "verdict": "annex",
+   "reason": "deducible",
+   "final": true,
+   "measures": {
+    "fidelity": null,
+    "deduce": {
+     "covered": true,
+     "overlap": {
+      "identifiers": 1.0,
+      "values": 1.0,
+      "terms": 0.714,
+      "n": {
+       "identifiers": 2,
+       "values": 2,
+       "terms": 7
+      }
+     },
+     "restatement": "Un POST ou un PATCH dont le nom est déjà utilisé par l'utilisateur renvoie HTTP 409 avec error « conflict » et le message fixe « category name already used », via CategoryNameConflictException. Un POST ou un PATCH avec un nom vide renvoie HTTP 400 sans appeler le service (le test du POST n'a pas de stub JWT, car la validation @NotBlank échoue avant le corps).",
+     "confidence": "high"
+    },
+    "rediscover": null,
+    "comment": [],
+    "refute": null
+   },
+   "contrary": null,
+   "placed": {
+    "pack_line": null,
+    "annex_table": {
+     "part": "category.details.md",
+     "row": 8
+    }
+   },
+   "uses": 0,
+   "carried_from": "2026-11-20T12:20:00Z"
+  }
+ ],
+ "comment_facts": [
+  {
+   "id": "category/4709057d35de99a0-1",
+   "verdict": "confirmed",
+   "code_says": "Le test crée une catégorie \"Foreign\" dont le propriétaire est un UUID aléatoire, distinct du caller, puis attend un statut HTTP 404 sur le GET.",
+   "code_line_start": 256,
+   "code_line_end": 266,
+   "code_evidence": ".andExpect(status().isNotFound());",
+   "evidence_check": null,
+   "code_file": "backend:src/test/java/com/matimeline/eventmanager/infrastructure/adapters/controllers/CategoryControllerTest.java",
+   "invalid": false,
+   "cache_digest": "d882c491bdd85a4253296973b30056e7dbe936c17e22faf5e0e3953d39563ff1",
+   "reused": true,
+   "reused_from": "2026-11-20T12:20:00Z",
+   "cited_by": [
+    "category:alerts:1"
+   ],
+   "structure_rows_removed": []
+  }
+ ],
+ "facts_validated": [
+  "category/c900077dbf944eb3-1",
+  "category/054a3aaf703706f1-1",
+  "category/9f17359f6dd43cea-1",
+  "category/342e2f7788a4475a-2",
+  "category/ac68e69d979093aa-1",
+  "category/cdf300d7c27817be-1",
+  "category/1bdbbb2b2b4b24fe-2",
+  "integrations/e87412abb703d86b-1",
+  "category/00f0d055b04edef3-1",
+  "category/ec943046dcf5e0f7-3",
+  "category/fbc822d2b906665b-1",
+  "category/aed0f568191a3034-1",
+  "category/ebeca9da61b1c1c7-1",
+  "category/b5c50c99e560704c-1",
+  "category/583475e7062a5eb3-1",
+  "integrations/3cbc6ad692a65eaa-1",
+  "category/6fc50f0b113733e6-1",
+  "category/d4a7bea8ee8ef950-1",
+  "category/0170a42b57affd2f-1",
+  "category/e058eec72b9dbdf2-1",
+  "category/419bb430c6dff34f-1",
+  "category/45903f846bdb1978-1",
+  "integrations/8e9c429e14d99314-1",
+  "category/0f363444e8ef529b-1",
+  "category/a24d15a2d893c519-2",
+  "category/a24d15a2d893c519-4",
+  "category/86005ad7688e238a-4",
+  "category/e90c8521a757ba43-1",
+  "category/8ecde30c288f4e1a-2",
+  "category/4709057d35de99a0-1"
+ ],
+ "counts": {
+  "units": 30,
+  "admit": 22,
+  "annex": 8,
+  "drop": 0,
+  "hold": 0,
+  "pending": 0,
+  "consigne_before_unsupported": 0,
+  "consigne_after_dropped": 0,
+  "structure_rows_removed": 0,
+  "framework": 0,
+  "guarded_elsewhere": 0,
+  "resolved": 0,
+  "restricted": 0,
+  "counterexample": 0,
+  "promoted": 0,
+  "kept_for": {
+   "rediscovered": 4
+  },
+  "pointers_removed": 0,
+  "restored_alerts": 0,
+  "budget_cut": 0
+ },
+ "answers": [],
+ "budget_cut": [],
+ "structure_rows_removed": [],
+ "notes": [],
+ "base_sha256_after": "cd195350ee93ad65bb0718114e374d87cbcb8236ea661ab9fd377b098a1fc309",
+ "bases_touched": {
+  "category": {
+   "fingerprint": "0038a945be6b6a3174b87e0c5aeca3ff8eabacde39d10fe34276d403a17d8866",
+   "sha256_after": "cd195350ee93ad65bb0718114e374d87cbcb8236ea661ab9fd377b098a1fc309"
+  },
+  "integrations": {
+   "fingerprint": "f7984eacb1b983b17187ea75176f49511bb0644b8c83f802588dac68e31c8537",
+   "sha256_after": "88ad6cc38a54980e577165c9e049a2633584d262d9613dedc80680c6e9b3b7a2"
+  }
+ },
+ "lint": {
+  "ok": true,
+  "errors": 0,
+  "warnings": 0
+ }
+}
