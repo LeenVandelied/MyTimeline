@@ -33,6 +33,25 @@
 /* next-themes pilote la classe sur <html> ; on garde data-theme en miroir. */
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* #643 — Paliers de largeur : déclarés UNE fois ici, ils font les variantes `sm:`,
+   `md:`, `lg:` et se lisent dans une feuille par `--theme(--breakpoint-*)`. Valeurs
+   des défauts Tailwind, toutes en px (`xl` et `2xl` compris, pour un thème d'une seule
+   unité : identiques aux défauts en rem à 16 px). `lib/breakpoints.ts` les reprend pour `matchMedia` (égalité
+   vérifiée par `styles/__tests__/breakpoints.test.ts`). `xs` (360 px) ne sert qu'à la
+   variante `max-xs:` : le plafond qu'il ajoute à `container` est neutralisé plus bas. */
+@theme {
+  --breakpoint-xs: 360px;
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1536px;
+}
+
+/* #643 — Variantes de hauteur (`dashboard-landscape:`), construites depuis les seuils
+   nommés de `lib/breakpoints.ts`. */
+@plugin './viewport-variants.ts';
+
 /* ---------------------------------------------------------------------------
    Exposition à Tailwind 4 via @theme.
    Les valeurs pointent vers les variables runtime du DS → les utilitaires
@@ -237,8 +256,19 @@ html[data-density='comfortable'] {
      `2xl` (1536) hérité est écrasé : le seuil 1340 le suit dans la source et
      le couvre.
    - Réservée aux sections de la landing (`components/landing/`). `container`
-     reste inchangé pour le reste de l'app (footer applicatif, pages légales) :
-     ne PAS redéfinir `container` globalement. */
+     garde ses paliers pour le reste de l'app (footer applicatif, pages légales) :
+     ne PAS le redéfinir globalement. Seule exception, l'extension #643 ci-dessous,
+     qui annule le plafond du palier `xs` sans rien changer au rendu. */
+/* #643 — Tailwind donne à `container` un `max-width` par palier `--breakpoint-*` : `xs`
+   le plafonnerait à 360 px entre 360 et 639 px. Cette règle, émise APRÈS celle de
+   Tailwind (même sélecteur, même couche), l'annule sur cette plage : `container` et
+   `container-landing` (qui l'applique) restent pleine largeur sous `sm`, comme avant. */
+@utility container {
+  @media (width >= --theme(--breakpoint-xs)) and (width < --theme(--breakpoint-sm)) {
+    max-width: none;
+  }
+}
+
 /* #800 — Gouttière latérale de la landing : 16 px sous `md` (`--space-4`, l'en-tête
    à 320 px n'a que 288 px utiles), 40 px dès `md` (maquette). 40 px n'existe pas dans
    l'échelle `--space-*` du DS : token propre à la landing, pas de pas ajouté à l'échelle

@@ -25,6 +25,10 @@
  * à chaque tour, et le raccord deviendrait visible.
  */
 
+/* #643 — Feuille chargée hors de `globals.css` : `@reference` lui donne le thème (paliers
+   `--breakpoint-*`) sans rien émettre. */
+@reference './globals.css';
+
 .hero-timeline {
   --hero-timeline-duration: 52s;
   --hero-timeline-block: 820px;
@@ -39,7 +43,7 @@
   user-select: none;
 }
 
-@media (min-width: 48rem) {
+@media (width >= --theme(--breakpoint-md)) {
   .hero-timeline {
     --hero-timeline-lane: 46px;
   }

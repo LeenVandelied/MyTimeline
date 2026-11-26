@@ -4,6 +4,7 @@ import { useLocale, useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
+import { BREAKPOINT_MD_PX } from '@/lib/breakpoints'
 import { Button } from '@/components/ui/button'
 import { AppFooter } from '@/components/ui/footer-app'
 import { SettingsShell } from '@/components/settings/SettingsShell'
@@ -38,7 +39,7 @@ export default function SettingsPage() {
   // convention que le dashboard (#85). Le hook rend `false` en SSR -> desktop
   // au premier paint, puis bascule mobile après hydratation (pas de double
   // montage des sections).
-  const isMobile = useMediaQuery('(max-width: 767px)')
+  const isMobile = useMediaQuery(`(max-width: ${BREAKPOINT_MD_PX - 1}px)`)
 
   return (
     <div className="bg-bg text-ink flex min-h-screen flex-col">

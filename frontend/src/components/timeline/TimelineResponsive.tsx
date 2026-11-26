@@ -2,6 +2,11 @@
 
 import React from 'react'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
+import {
+  BREAKPOINT_SM_PX,
+  MINIMAP_HIDE_MAX_HEIGHT_PX,
+  MOBILE_LANDSCAPE_MAX_HEIGHT_PX,
+} from '@/lib/breakpoints'
 import { TimelineView, type TimelineViewProps } from './TimelineView'
 import { TimelineMobilePortrait } from './TimelineMobilePortrait'
 import { TimelineMobileLandscape } from './TimelineMobileLandscape'
@@ -16,15 +21,12 @@ import type { PositionedEvent } from './zoom'
  * ISOLE le conditionnel de rendu HORS de `TimelineView` (desktop, inchangé →
  * aucune régression). Le choix se fait ici via `matchMedia`.
  *
- * Breakpoints AD HOC (aucun token `--bp-*` dans le DS Graphite, réserve
- * ui-design #3 ; [MEMORY:decision] #63) :
- *  - MOBILE (portrait) : `max-width:640px` ET `orientation:portrait`.
- *  - MOBILE PAYSAGE (#64) : `orientation:landscape` ET `max-height:600px`. Le
- *    seuil de HAUTEUR (pas seulement l'orientation) distingue un mobile/petite
- *    tablette retourné(e) d'un iPad Pro paysage (~1024px de haut → reste desktop,
- *    largeur ≈ desktop). Réserve ui-design : tenir compte de la hauteur absolue.
- *  - MINIMAP masquable d'office (#64) : `max-height:400px` → trop peu de vertical
- *    pour la garder (critère d'acceptation). Documenté ici, pas de token.
+ * Seuils (#643) tirés de `@/lib/breakpoints`, qui documente chacun :
+ *  - MOBILE (portrait) : `max-width` au palier `sm` (640 px), INCLUS, ET
+ *    `orientation:portrait` (le palier `sm:` de Tailwind commence, lui, à 640 px).
+ *  - MOBILE PAYSAGE (#64) : `orientation:landscape` ET hauteur au plus
+ *    `MOBILE_LANDSCAPE_MAX_HEIGHT_PX`.
+ *  - MINIMAP masquée d'office (#64) : hauteur au plus `MINIMAP_HIDE_MAX_HEIGHT_PX`.
  *
  * TRANSITION SANS PERTE D'ÉTAT (point clé #64) : `useTimelineMobileState`
  * (zoom + scroll + positions), `useTimelineMobileSelection` (event sélectionné /
@@ -39,9 +41,9 @@ import type { PositionedEvent } from './zoom'
  * SSR-safe : `useMediaQuery` rend `false` au 1er rendu → variante desktop par
  * défaut (pas de hydration mismatch), bascule après hydratation.
  */
-const MOBILE_PORTRAIT_QUERY = '(max-width: 640px) and (orientation: portrait)'
-const MOBILE_LANDSCAPE_QUERY = '(orientation: landscape) and (max-height: 600px)'
-const MINIMAP_HIDE_QUERY = '(max-height: 400px)'
+const MOBILE_PORTRAIT_QUERY = `(max-width: ${BREAKPOINT_SM_PX}px) and (orientation: portrait)`
+const MOBILE_LANDSCAPE_QUERY = `(orientation: landscape) and (max-height: ${MOBILE_LANDSCAPE_MAX_HEIGHT_PX}px)`
+const MINIMAP_HIDE_QUERY = `(max-height: ${MINIMAP_HIDE_MAX_HEIGHT_PX}px)`
 
 export interface TimelineResponsiveProps extends TimelineViewProps {
   onEditEvent?: (event: PositionedEvent) => void

@@ -10,6 +10,7 @@ import { CalendarDays, Menu } from 'lucide-react'
 import { safeErrorMessage } from '@/lib/safe-error'
 import { useDashboardData } from '@/hooks/useDashboardData'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
+import { BREAKPOINT_MD_PX, DASHBOARD_LANDSCAPE_QUERY } from '@/lib/breakpoints'
 import {
   GreetingHeader,
   DensityRibbon,
@@ -30,7 +31,7 @@ import {
  * par le hamburger. Le rendu DESKTOP #80 est INCHANGÉ : les composants #80 sont
  * réutilisés (variantes / props), aucune donnée n'est chargée hors `useDashboardData`.
  *
- * #85 — Variante mobile PAYSAGE (`(orientation: landscape) and (max-height: 500px)`,
+ * #85 — Variante mobile PAYSAGE (`DASHBOARD_LANDSCAPE_QUERY` de `@/lib/breakpoints`,
  * sans condition de largeur — cf. `isLandscape` plus bas ; #758 a mesuré ce profil
  * à 667, 740 et 844 px de large) : rail vertical persistant 64px (`CompactRail`) au bord gauche +
  * contenu en 2 colonnes (CSS Grid) à droite. Le hamburger portrait est masqué
@@ -73,10 +74,10 @@ export default function Dashboard() {
   const { logout } = useAuth()
   const router = useRouter()
   const { events, products, kpis } = useDashboardData(user?.id)
-  const isMobile = useMediaQuery('(max-width: 767px)')
+  const isMobile = useMediaQuery(`(max-width: ${BREAKPOINT_MD_PX - 1}px)`)
   // #85 — Paysage mobile : hauteur contrainte impose le rail vertical plutôt que
   // le hamburger portrait. Prioritaire sur `isMobile` dans le switch ternaire.
-  const isLandscape = useMediaQuery('(orientation: landscape) and (max-height: 500px)')
+  const isLandscape = useMediaQuery(DASHBOARD_LANDSCAPE_QUERY)
   const [drawerOpen, setDrawerOpen] = useState(false)
   // #85 — Réf sur la colonne produits paysage (scroll ciblé sans querySelector DOM).
   const landscapeProductsRef = useRef<HTMLDivElement>(null)

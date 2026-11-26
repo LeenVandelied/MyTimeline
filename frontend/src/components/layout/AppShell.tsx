@@ -62,10 +62,11 @@ import {
  * DEC-S40-001 CORRIGÉE (le commentaire précédent était FAUX, vérifié au #298) : il
  * affirmait que la tablette « bascule en mode mobile CompactRail/MobileDrawer ». Ni
  * l'un ni l'autre ne couvrait 768–1024 px —
- *  · `CompactRail` est monté sur `useMediaQuery('(orientation: landscape) and
- *    (max-height: 500px)')` (`dashboard/page.tsx:63`) : un critère de HAUTEUR, pas un
+ *  · `CompactRail` est monté sur `DASHBOARD_LANDSCAPE_QUERY` (`@/lib/breakpoints`, paysage
+ *    jusqu'à 500 px de haut, `dashboard/page.tsx`) : un critère de HAUTEUR, pas un
  *    palier de largeur tablette ;
- *  · `MobileDrawer` suit `isMobile` = `'(max-width: 767px)'` (`dashboard/page.tsx:60`).
+ *  · `MobileDrawer` suit `isMobile`, sous le palier `md` (`BREAKPOINT_MD_PX - 1`, soit
+ *    767 px, `dashboard/page.tsx`).
  * Il y avait donc un TROU : entre 768 et 1023 px, aucune nav n'était rendue par le
  * shell ni par l'écran (hors dashboard, qui garde sa propre chrome `lg:hidden`).
  * #298 comble ce trou par l'état icon-only.
@@ -80,7 +81,7 @@ import {
  * appelle le MÊME `setShowCreate(true)` que le bouton de la sidebar : un SEUL état,
  * donc un SEUL `NewEventDrawer` monté (un second état monterait un second drawer).
  * Le drawer bascule seul en bottom sheet `.mt-sheet` sous 1024 px (`NewEventDrawer` :
- * `useMediaQuery('(max-width: 1023px)')`) — rien à lui passer.
+ * `max-width` à `BREAKPOINT_LG_PX - 1` de `@/lib/breakpoints`) — rien à lui passer.
  *
  * INVARIANT #455, RÉÉCRIT POUR LES 3 ÉTATS DE #298. Le miroir doit rester EXACT,
  * sinon un palier se retrouve avec zéro déclencheur (le défaut d'origine) ou deux.

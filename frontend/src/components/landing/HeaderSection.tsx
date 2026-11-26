@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl'
 import { Menu } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
+import { BREAKPOINT_LG_PX } from '@/lib/breakpoints'
 import { LanguageSelector } from '@/components/ui/language-selector'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { LandingMobileMenu } from './LandingMobileMenu'
@@ -81,14 +82,14 @@ interface HeaderSectionProps {
  * aveugle à ce défaut, un logo sur deux lignes le satisfait).
  */
 /**
- * Point de bascule `lg` de Tailwind — le panneau mobile est en `lg:hidden`.
- * Codé ici parce qu'un `matchMedia` ne peut pas lire une classe utilitaire ; si
- * le thème redéfinit `--breakpoint-lg`, les deux doivent bouger ensemble.
+ * Point de bascule `lg` du thème — le panneau mobile est en `lg:hidden`. Un
+ * `matchMedia` ne lit pas le thème : la valeur vient de `@/lib/breakpoints`, égale au
+ * token `--breakpoint-lg` (#643).
  * ⚠ Trois choses ne bougent QUE de concert (#334, #347) : cette requête, le
  * `lg:hidden` du burger plus bas, et celui de `LandingMobileMenu`. Désynchronisées,
  * le focus-trap tourne sur un panneau masqué et avale l'Escape de toute la page.
  */
-const LG_BREAKPOINT_QUERY = '(min-width: 64rem)'
+const LG_BREAKPOINT_QUERY = `(min-width: ${BREAKPOINT_LG_PX}px)`
 
 export function HeaderSection({ locale }: HeaderSectionProps) {
   const t = useTranslations()
@@ -226,7 +227,7 @@ export function HeaderSection({ locale }: HeaderSectionProps) {
               `pl-4`), soit −8,5 px sur chacun des deux écarts du `justify-between`.
               Relevé du budget APRÈS ce filet : tableau « RELEVÉ ACTUEL » du bloc
               #642 ci-dessous. */}
-          <div className="lg:border-rule flex items-center gap-2 max-[360px]:gap-1 lg:gap-4 lg:border-l lg:pl-4">
+          <div className="lg:border-rule max-xs:gap-1 flex items-center gap-2 lg:gap-4 lg:border-l lg:pl-4">
             {/* Bascule dans `LandingMobileMenu` sous `lg` — cf. #334, seuil remonté par #347. */}
             <div className="hidden items-center gap-4 lg:flex">
               {/* #642 (DEC-S82-009) — BASCULE DE THÈME HORS CONNEXION.
@@ -294,7 +295,8 @@ export function HeaderSection({ locale }: HeaderSectionProps) {
             tactile sous `lg` (donc aussi sur le palier tablette, où l'on touche encore),
             `lg:h-9` restaure la hauteur desktop d'origine.
 
-            #347 (suivi) — PALIER PETIT TÉLÉPHONE, `max-[360px]`. À 320 px le header
+            #347 (suivi) — PALIER PETIT TÉLÉPHONE, `max-xs:` (token `--breakpoint-xs`, 360 px,
+            #643). À 320 px le header
             n'a que 288 px utiles (gouttière de 16 px de part et d'autre, portée par
             `container-landing`, #800 : 40 px dès `md`) et empile trois blocs
             INCOMPRESSIBLES : logo 122 px (`whitespace-nowrap`, #334), ce CTA, `gap-2`
@@ -352,7 +354,7 @@ export function HeaderSection({ locale }: HeaderSectionProps) {
             `documentElement.scrollWidth === clientWidth === 320`.
 
             ⚠ CE PALIER S'ARRÊTE À 359 px, PAS À 360. Tailwind v4 compile
-            `max-[360px]` en `width < 360`, donc à 360 px le CTA a déjà repris ses
+            `max-xs:` en `width < 360px`, donc à 360 px le CTA a déjà repris ses
             métriques pleines : le groupe passe de 153 à 183 px en `de` et la marge
             retombe de 52 px (à 359) à 23 px (à 360). C'est le SECOND creux local de
             la plage mobile, et il reste au-dessus du plancher. Mesuré dans la même
@@ -371,7 +373,7 @@ export function HeaderSection({ locale }: HeaderSectionProps) {
             `text-md` (21 px, boîte 122 px). */}
             <Button
               asChild
-              className="bg-accent hover:bg-accent-hover text-accent-ink h-11 transition-all max-[360px]:px-2 max-[360px]:text-xs lg:h-9"
+              className="bg-accent hover:bg-accent-hover text-accent-ink max-xs:px-2 max-xs:text-xs h-11 transition-all lg:h-9"
             >
               <Link href={`/${locale}/register`} data-testid="landing-header-cta-register">
                 {t('common.landing.buttons.register')}

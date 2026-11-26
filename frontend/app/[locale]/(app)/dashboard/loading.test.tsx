@@ -4,6 +4,17 @@ import { resolve } from 'node:path'
 import { render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
+import {
+  loadThresholds,
+  stripComments,
+  thresholdIdentifiers,
+} from '@/__tests__/support/mediaQuerySource'
+import {
+  BREAKPOINT_MD_PX,
+  DASHBOARD_LANDSCAPE_QUERY,
+  DASHBOARD_LANDSCAPE_VARIANT,
+} from '@/lib/breakpoints'
+
 import DashboardLoading from './loading'
 
 /**
@@ -228,29 +239,46 @@ describe('DashboardLoading portrait et paysage (#811)', () => {
     expect((track as HTMLElement).children.length).toBeGreaterThanOrEqual(2)
   })
 
-  it('each layout carries the visibility classes matching the page breakpoints', () => {
-    // Les deux requêtes sont LUES dans `page.tsx` (aucun seuil inventé). #643 les centralisera.
-    const pageSource = readFileSync(resolve(__dirname, 'page.tsx'), 'utf8')
-    const queries = Array.from(pageSource.matchAll(/useMediaQuery\('([^']+)'\)/g)).map((m) => m[1])
+  it('each layout carries the visibility classes matching the page breakpoints', async () => {
+    // Les requêtes sont LUES dans `page.tsx` (aucun seuil inventé), puis résolues avec les
+    // valeurs de `@/lib/breakpoints` d'où la page les tire (#643).
+    const pageFile = 'app/[locale]/(app)/dashboard/page.tsx'
+    const pageSource = stripComments(readFileSync(resolve(__dirname, 'page.tsx'), 'utf8'), {
+      lineComments: true,
+    })
+    const ids = thresholdIdentifiers(pageFile, pageSource)
+    const thresholds = (await loadThresholds()) ?? {}
+    // Identifiant du module, seul ou décalé de 1 ; toute autre expression reste telle quelle.
+    const valueOf = (expr: string): string => {
+      const m = /^\s*([A-Za-z_$][\w$]*)\s*(?:([+-])\s*1\s*)?$/.exec(expr)
+      const value = m && ids.has(m[1]) ? thresholds[ids.get(m[1])!] : undefined
+      if (typeof value === 'string') return value
+      if (typeof value !== 'number') return expr
+      return String(value + (m![2] === '-' ? -1 : m![2] === '+' ? 1 : 0))
+    }
+    const queries = Array.from(
+      pageSource.matchAll(/useMediaQuery\(\s*(`[^`]*`|'[^']*'|[A-Za-z_$][\w$]*)\s*\)/g),
+    ).map(([, arg]) =>
+      /^[`']/.test(arg)
+        ? arg.slice(1, -1).replace(/\$\{([^}]*)\}/g, (_m, e: string) => valueOf(e))
+        : valueOf(arg),
+    )
     const landscapeQuery = queries.find((q) => q.includes('orientation'))
     const portraitQuery = queries.find((q) => q.startsWith('(max-width'))
-    expect(landscapeQuery, 'requête paysage de page.tsx').toBeDefined()
-    expect(portraitQuery, 'requête portrait de page.tsx').toBeDefined()
+    expect(landscapeQuery, 'requête paysage de page.tsx').toBe(DASHBOARD_LANDSCAPE_QUERY)
+    const portraitMaxPx = Number(/max-width:\s*(\d+)px/.exec(portraitQuery ?? '')?.[1])
+    expect(portraitMaxPx, 'largeur max portrait lue dans page.tsx').toBe(BREAKPOINT_MD_PX - 1)
 
     // Une classe Tailwind écrit ses espaces en `_` : on compare sans espaces ni `_`.
     const squash = (s: string) => s.replace(/[\s_]+/g, '')
-    const landscapeVariant = `[@media${squash(landscapeQuery as string)}]`
-    const portraitVariant = `[@media${squash(portraitQuery as string)}]`
-    const portraitMaxPx = Number(/max-width:\s*(\d+)px/.exec(portraitQuery as string)?.[1])
-    expect(Number.isFinite(portraitMaxPx), 'largeur max portrait lue dans page.tsx').toBe(true)
+    // Le paysage est la variante `dashboard-landscape:`, construite depuis `DASHBOARD_LANDSCAPE_QUERY`.
+    const landscapeVariant = DASHBOARD_LANDSCAPE_VARIANT
+    const portraitVariant = `[@media(max-width:${portraitMaxPx}px)]`
     const desktopMinVariant = `[@media(min-width:${portraitMaxPx + 1}px)]`
-
-    // `md:` / `max-md:` ne sont admis que si le `md` de Tailwind (768 px par défaut, aucun
-    // palier redéfini dans le dépôt) coïncide avec le seuil lu : 767 px + 1 = 768 px.
-    const TAILWIND_MD_PX = 768
-    const mdMatchesPage = portraitMaxPx + 1 === TAILWIND_MD_PX
-    const belowVariants = [portraitVariant, ...(mdMatchesPage ? ['max-md'] : [])]
-    const fromVariants = [desktopMinVariant, ...(mdMatchesPage ? ['md'] : [])]
+    // `md:` / `max-md:` coïncident avec le seuil lu : la page bascule à `BREAKPOINT_MD_PX - 1`
+    // (vérifié ci-dessus) et le token `--breakpoint-md` égale `BREAKPOINT_MD_PX` (T2 de #643).
+    const belowVariants = [portraitVariant, 'max-md']
+    const fromVariants = [desktopMinVariant, 'md']
 
     const { container } = render(<DashboardLoading />)
     const root = container.firstElementChild as HTMLElement

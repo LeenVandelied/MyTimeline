@@ -637,13 +637,13 @@
    `display:none` le retire aussi de l'arbre d'accessibilité et de l'ordre de
    tabulation quand il est fermé. Ombre `md` + filet : panneau flottant rempli
    (tier décoratif, cf. en-tête du fichier). */
-@media (max-width:1023.98px){
+@media (width < --theme(--breakpoint-lg)){
   .mt-tlv-side{position:absolute; grid-area:scroll; top:0; left:0; bottom:0; z-index:var(--z-popover); max-width:100%; overflow-y:auto; box-shadow:var(--shadow-md);}
   .mt-tlv-side[data-open="false"]{display:none;}
 }
 /* ≥ 1024 px : colonne permanente sur toute la hauteur (barre d'outils comprise,
    comme la maquette), et le bouton « Filtres » n'a plus d'objet. */
-@media (min-width:1024px){
+@media (width >= --theme(--breakpoint-lg)){
   .mt-tlv--screen{grid-template-columns:248px minmax(0,1fr); grid-template-areas:"side toolbar" "side scroll";}
   .mt-tlv--screen > .mt-tlv-side{grid-area:side;}
   .mt-tlv-side-toggle{display:none;}
@@ -938,8 +938,8 @@
    touch (`.mt-drawer--landscape`) + toggle minimap masquable.
    Réutilise 100% des `.mt-tlm*` #63 ; SEULE la densité (hauteurs de ligne) et le
    conteneur de détail (drawer latéral vs bottom sheet) changent. Aucun token
-   nouveau. Breakpoints pilotés côté JS (orientation + hauteur, cf.
-   TimelineResponsive) — pas de token `--bp-*` (réserve ui-design #3).
+   nouveau. Bascule pilotée côté JS (orientation + hauteur, cf.
+   TimelineResponsive) : seuils de hauteur nommés de `@/lib/breakpoints` (#643).
    ============================================================================ */
 
 /* Lanes DENSES : dérive --lane-height/--ruler-height LOCALEMENT (scope au

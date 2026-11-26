@@ -26,9 +26,10 @@ import { cn } from '@/lib/utils'
  * #811 — le squelette suit aussi les mises en page MOBILES de `page.tsx` : portrait
  * (`dashboard-loading-portrait`) et paysage (`dashboard-loading-landscape`). Le fallback
  * est rendu avant que la taille d'écran soit connue : la bascule est donc purement CSS,
- * avec les requêtes de `page.tsx` recopiées (#643 les centralisera) — paysage de faible
- * hauteur d'abord, puis portrait sous 768 px (variantes `max-md:` / `md:` du thème, sans
- * trou entre 767 et 768 px), puis bureau. Aucun crochet de média.
+ * sur les seuils de `page.tsx` tirés de `@/lib/breakpoints` (#643) — paysage de faible
+ * hauteur d'abord (variante `dashboard-landscape:`, construite depuis
+ * `DASHBOARD_LANDSCAPE_QUERY`), puis portrait sous 768 px (variantes `max-md:` / `md:` du
+ * thème, sans trou entre 767 et 768 px), puis bureau. Aucun crochet de média.
  * Les trois mises en page n'ont aucun `display` en conflit sauf le paysage (`hidden` puis
  * `flex`) : les autres ne font qu'ajouter `hidden` sous une requête.
  *
@@ -124,10 +125,7 @@ export default function DashboardLoading() {
   return (
     <div className="bg-bg text-ink flex min-h-screen flex-col">
       {/* Relais d'annonce des tailles où la région `status` bureau est masquée. */}
-      <p
-        aria-live="polite"
-        className="sr-only hidden max-md:block [@media(orientation:landscape)_and_(max-height:500px)]:block"
-      >
+      <p aria-live="polite" className="dashboard-landscape:block sr-only hidden max-md:block">
         {t('loading.default')}
       </p>
       {/* Bascule des mises en page : requêtes de `page.tsx` (`isLandscape`, `isMobile`) en
@@ -136,7 +134,7 @@ export default function DashboardLoading() {
         className={cn(
           'mx-auto w-full max-w-7xl flex-1 space-y-6 px-4 py-6 sm:px-6 lg:px-8',
           'max-md:hidden',
-          '[@media(orientation:landscape)_and_(max-height:500px)]:hidden',
+          'dashboard-landscape:hidden',
         )}
         data-testid="dashboard-loading-layout"
       >
@@ -191,7 +189,7 @@ export default function DashboardLoading() {
         className={cn(
           'mx-auto w-full max-w-7xl flex-1 space-y-6 px-4 py-6',
           'md:hidden',
-          '[@media(orientation:landscape)_and_(max-height:500px)]:hidden',
+          'dashboard-landscape:hidden',
         )}
         aria-hidden="true"
         data-testid="dashboard-loading-portrait"
@@ -211,10 +209,7 @@ export default function DashboardLoading() {
 
       {/* Paysage de faible hauteur — `dashboard-landscape` : rail 64 px + deux colonnes. */}
       <div
-        className={cn(
-          'hidden flex-1 overflow-hidden',
-          '[@media(orientation:landscape)_and_(max-height:500px)]:flex',
-        )}
+        className={cn('hidden flex-1 overflow-hidden', 'dashboard-landscape:flex')}
         aria-hidden="true"
         data-testid="dashboard-loading-landscape"
       >

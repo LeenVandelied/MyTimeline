@@ -1,6 +1,7 @@
 /**
- * Cibles tactiles 44 px en mobile (< 768 px, bascule `max-md:` alignée sur
- * `useMediaQuery('(max-width: 767px)')`). `h-11` = `--space-11` = 44 px (WCAG 2.5.5).
+ * Cibles tactiles 44 px en mobile (< 768 px, bascule `max-md:` du token `--breakpoint-md`,
+ * alignée sur les `max-width` à `BREAKPOINT_MD_PX - 1` de `@/lib/breakpoints`). `h-11` =
+ * `--space-11` = 44 px (WCAG 2.5.5).
  *
  * HISTORIQUE : #738 (Sprint 99, DEC-S99-001) les a posées sur les seuls écrans de
  * réglages (`components/settings/touchTarget.ts`, qui ré-exporte désormais d'ici) ;
