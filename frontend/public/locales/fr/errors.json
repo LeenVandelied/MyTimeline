@@ -1,28 +1,21 @@
 {
   "auth": {
-    "register": "Erreur lors de l'inscription",
-    "login": "Erreur lors de la connexion",
-    "logout": "Erreur lors de la déconnexion",
     "sessionExpired": "Votre session a expiré. Veuillez vous reconnecter",
     "forbidden": "Accès refusé : vous n'avez pas l'autorisation d'effectuer cette action."
   },
   "validation": {
     "error": "Erreur de validation, veuillez vérifier vos données."
   },
-  "network": {
-    "offline": "Vous êtes hors ligne. Veuillez vérifier votre connexion",
-    "timeout": "Délai d'attente dépassé. Veuillez réessayer"
-  },
   "server": {
-    "error": "Erreur serveur. Veuillez réessayer plus tard",
-    "maintenance": "Le serveur est en maintenance. Veuillez réessayer plus tard"
+    "error": "Erreur serveur. Veuillez réessayer plus tard"
   },
   "notFound": {
     "eyebrow": "Erreur 404",
     "title": "Cette page n'a pas de date dans l'almanach.",
     "description": "La page que vous cherchez a expiré, déménagé, ou n'a jamais existé. Revenez à l'accueil — c'est toujours une valeur sûre.",
     "week": "Semaine {week}",
-    "backHome": "Retour à l'accueil"
+    "backHome": "Retour à l'accueil",
+    "backToToday": "Revenir à aujourd'hui"
   },
   "forbidden": {
     "title": "Accès refusé",

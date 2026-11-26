@@ -5,12 +5,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.springframework.stereotype.Repository;
-
 import com.matimeline.eventmanager.domain.models.CategoryProductCounts;
 import com.matimeline.eventmanager.domain.models.Product;
 
-@Repository
 public interface ProductRepository {
     Optional<Product> findDomainProductById(UUID id);
     List<Product> findAllProducts();
@@ -102,4 +99,15 @@ public interface ProductRepository {
      * l'appelant, anti-énumération).
      */
     int restoreArchivedByIdAndUserId(UUID productId, UUID userId);
+
+    /**
+     * #718 : fiche d'un produit ARCHIVÉ, avec TOUS ses événements (actifs et archivés).
+     * Vide si le produit est inconnu, actif ou d'un autre utilisateur (indistinguables,
+     * BR-PRO-011).
+     *
+     * <p>SQL NATIF avec {@code user_id = :userId AND archived = true} posés à la main
+     * ({@code @SQLRestriction} cache l'archivé à Hibernate). Les événements sont lus eux
+     * aussi en natif, jamais par la relation de l'entité filtrée.
+     */
+    Optional<Product> findArchivedDetailByIdAndUserId(UUID productId, UUID userId);
 }

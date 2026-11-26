@@ -5,6 +5,7 @@ import { sessionState } from './support/session'
 import { ensureAuthenticated } from './support/auth'
 import { neutralizeDevToolingPointerEvents } from './support/dev-tooling'
 import { getUserId, seedCategory, seedProduct, unique } from './support/products'
+import { ZOOM_STEPS_TO_MAX } from './support/timeline-zoom'
 
 /**
  * #672 — L'E2E manquant de la vague 1 du sprint 94 (l'exclusivité Playwright était
@@ -43,8 +44,8 @@ import { getUserId, seedCategory, seedProduct, unique } from './support/products
 const DESKTOP = { width: 1280, height: 900 }
 const CLICK_BUDGET = 15_000
 const FIRST_NAV_BUDGET = 60_000
-/** Nombre de niveaux de zoom (`ZOOM_LEVELS`) : autant de `=` atteignent la borne `day`. */
-const ZOOM_LEVEL_COUNT = 5
+/** #593 — zoom continu : autant de `=` atteignent la borne fine (heure) depuis toute échelle. */
+const ZOOM_LEVEL_COUNT = ZOOM_STEPS_TO_MAX
 
 /** L'élément en plein écran, décrit par son `data-testid` (ou `null`). */
 function fullscreenTestId(page: Page): Promise<string | null> {
@@ -126,7 +127,7 @@ test.describe('#672 — raccourcis de la frise sous le panneau de création du s
       timeout: CLICK_BUDGET,
     })
 
-    // #597 — F RECADRE. Point de départ où tout cadrage DÉPLACE la vue : zoom `day`
+    // #597 — F RECADRE. Point de départ où tout cadrage DÉPLACE la vue : zoom le plus fin
     // (borne fine) et défilement au bord droit. Le produit semé porte un événement
     // (aujourd'hui) : `rangeEnd` ≥ dernier événement + 30 j, donc le cadrage — centré
     // ou aligné à gauche — vise un `scrollLeft` < maximum, à tout niveau.

@@ -1,9 +1,10 @@
 'use client'
 
 import * as React from 'react'
-import { useTranslations } from 'next-intl'
+import Link from 'next/link'
+import { useTranslations, useLocale } from 'next-intl'
 import toast from 'react-hot-toast'
-import { ArchiveRestore } from 'lucide-react'
+import { ArchiveRestore, X } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -26,16 +27,29 @@ import { RestoreProductDialog } from './RestoreProductDialog'
  * Revue Designer S93 : structure du tableau de `ProductsListView`, colonnes réduites à
  * Produit (pastille + nom + catégorie en mention) et Actions ; bouton `outline` `sm` +
  * `ArchiveRestore` (calque du désarchivage d'événement de `ProductDetailView`) ; état vide
- * `EmptyState` sans CTA ni frise. Les lignes ne sont PAS des liens : le détail d'un produit
- * archivé est introuvable (404) tant qu'il n'est pas restauré.
+ * `EmptyState` sans CTA ni frise. #718 : le nom de chaque ligne est un lien vers la fiche en
+ * lecture seule `/<locale>/products/{id}` ; Désarchiver reste en place.
  *
  * Désarchiver → `RestoreProductDialog` (confirmation non destructive) → `useRestoreProduct`
  * (ligne retirée EN PLACE, listes produits/catégories invalidées) → toast au succès seulement ;
  * un rejet reste inline dans le dialog.
  */
-export function ArchivedProductsView() {
+export interface ArchivedProductsViewProps {
+  /** #719 — filtre par catégorie, tenu par la page (les vues sont remontées à chaque onglet). */
+  categoryId?: string
+  /** Nom réel de la catégorie filtrée, lu par la page : survit à la restauration du dernier archivé. */
+  categoryName?: string
+  onClearCategoryFilter?: () => void
+}
+
+export function ArchivedProductsView({
+  categoryId,
+  categoryName,
+  onClearCategoryFilter,
+}: ArchivedProductsViewProps = {}) {
   const t = useTranslations('products.archived')
   const tToast = useTranslations('common.toast')
+  const locale = useLocale()
   const { user } = useAuth()
   const userId = user?.id
 
@@ -57,14 +71,56 @@ export function ArchivedProductsView() {
     toast.success(tToast('productRestored'))
   }
 
-  const products = query.data ?? []
+  const headingRef = React.useRef<HTMLHeadingElement>(null)
+  const clearFilter = () => {
+    onClearCategoryFilter?.()
+    headingRef.current?.focus()
+  }
+
+  const allProducts = query.data ?? []
+  // #719 — filtre à l'écran : la liste complète arrive déjà avec la catégorie de chaque produit.
+  const products = categoryId
+    ? allProducts.filter((product) => product.category.id === categoryId)
+    : allProducts
+  const filterName =
+    categoryName ?? allProducts.find((product) => product.category.id === categoryId)?.category.name
 
   return (
     <div className="flex flex-col gap-6" data-testid="products-archived-view">
       <div>
-        <h1 className="text-ink text-xl font-semibold tracking-tight">{t('tableLabel')}</h1>
+        {/* tabIndex -1 : point de chute stable du focus quand le filtre est retiré (la
+            pastille et sa croix se démontent). */}
+        <h1
+          ref={headingRef}
+          tabIndex={-1}
+          className="text-ink text-xl font-semibold tracking-tight"
+        >
+          {t('tableLabel')}
+        </h1>
         <p className="text-ink-muted text-sm">{t('emptyDescription')}</p>
       </div>
+
+      {categoryId && (
+        <div
+          className="border-rule bg-surface text-ink inline-flex w-fit items-center gap-1 rounded-full border py-1 pr-1 pl-3 text-sm"
+          data-testid="products-archived-filter"
+        >
+          <span>{t('filter.label')}</span>
+          <span className="font-medium">{filterName ?? t('filter.unknown')}</span>
+          <button
+            type="button"
+            className={cn(
+              'text-ink-muted hover:text-ink inline-flex size-6 items-center justify-center rounded-full',
+              TOUCH_TARGET_HITBOX,
+            )}
+            aria-label={t('filter.clear')}
+            onClick={clearFilter}
+            data-testid="products-archived-filter-clear"
+          >
+            <X className="size-4" aria-hidden="true" />
+          </button>
+        </div>
+      )}
 
       {query.isLoading ? (
         <LoadingSkeleton
@@ -80,7 +136,7 @@ export function ArchivedProductsView() {
         </p>
       ) : products.length === 0 ? (
         <EmptyState
-          title={t('empty')}
+          title={categoryId ? t('filter.empty') : t('empty')}
           className="border-rule rounded-lg border px-4"
           testId="products-archived-empty"
         />
@@ -118,7 +174,12 @@ export function ArchivedProductsView() {
                           aria-hidden="true"
                         />
                         <div className="flex min-w-0 flex-col">
-                          <span className="text-ink truncate font-medium">{product.name}</span>
+                          <Link
+                            href={`/${locale}/products/${product.id}`}
+                            className="text-ink truncate font-medium hover:underline"
+                          >
+                            {product.name}
+                          </Link>
                           <span
                             className="text-ink-muted truncate font-mono text-xs"
                             data-testid={`products-archived-row-category-${product.id}`}

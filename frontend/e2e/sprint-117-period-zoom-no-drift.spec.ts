@@ -4,6 +4,7 @@ import { ensureAuthenticated } from './support/auth'
 import { PROD } from './support/accounts'
 import { sessionState } from './support/session'
 import { LANE_GUTTER_PX } from './support/timeline-lanes'
+import { INITIAL_PX_PER_DAY, scaleAfterSteps, scaleReadout } from './support/timeline-zoom'
 
 /**
  * Sprint 117 #805 — `[` / `]` ENCHAÎNÉS à `+` / `-` sans attendre : la frise ne dérive
@@ -41,10 +42,17 @@ test.use({ storageState: sessionState(PROD) })
 const PRODUCTS_LIST_RE = /\/api\/users\/[^/]+\/products(\?.*)?$/
 const PRODUCT_ID = '80580580-0000-4000-8000-000000000805'
 
-/** Échelles px/jour (`DAY_WIDTH_PX`, `zoom.ts`). */
-const DW = { week: 34, month: 12, quarter: 5 } as const
-/** Pas de `[` / `]` par niveau (`PERIOD_STEP_DAYS`). */
-const STEP = { week: 14, month: 30 } as const
+/**
+ * Échelles px/jour traversées. #593 — zoom continu : un cran avant depuis le mois donne
+ * 18 px/j, trois crans 40,5 px/j, un cran arrière 8 px/j (`scaleAfterSteps`).
+ */
+const DW = { in1: scaleAfterSteps(1), month: INITIAL_PX_PER_DAY, out1: scaleAfterSteps(-1) }
+/**
+ * Pas de `[` / `]` (`periodStepDaysForScale`) : celui du palier-seuil de l'échelle, le
+ * mois (30 j) de 12 à 34 px/j, donc aussi à 18 px/j ; la semaine (14 j) de 34 à 96 px/j,
+ * donc à 40,5 px/j.
+ */
+const STEP = { month: 30, week: 14 } as const
 /** Aujourd'hui dans l'étendue : J−600 − 30 j de marge. */
 const TODAY_DAY = 630
 
@@ -102,7 +110,7 @@ async function gotoTimeline(page: Page): Promise<void> {
   await page.goto('/fr/timeline', { waitUntil: 'domcontentloaded' })
   await expect(page.getByTestId('timeline-view')).toHaveAttribute('data-layout', 'screen')
   await expect(page.getByTestId('timeline-group-head')).toHaveCount(1)
-  await expect(page.getByTestId('timeline-zoom-level')).toHaveText('Mois')
+  await expect(page.getByTestId('timeline-zoom-level')).toHaveText(scaleReadout(DW.month))
   // Centrage initial sur aujourd'hui posé (#449) : sans lui, la 1re touche partirait de 0.
   await expect.poll(async () => (await settledScroll(page)).scrollLeft).toBeGreaterThan(0)
 }
@@ -161,19 +169,25 @@ const SEQUENCES: ReadonlyArray<{
   day: number
   dayWidth: number
 }> = [
-  // ] (mois +30) → jour 30 ; + → semaine.
-  { keys: [']', '+'], level: 'Semaine', day: STEP.month, dayWidth: DW.week },
-  // ] → jour 30 ; - → trimestre.
-  { keys: [']', '-'], level: 'Trimestre', day: STEP.month, dayWidth: DW.quarter },
-  // ] ] → 60 ; + (semaine) ; ] → 60 + 14 = 74 ; - → mois.
+  // ] (mois +30) → jour 30 ; + → 18 px/j.
+  { keys: [']', '+'], level: scaleReadout(DW.in1), day: STEP.month, dayWidth: DW.in1 },
+  // ] → jour 30 ; - → 8 px/j.
+  { keys: [']', '-'], level: scaleReadout(DW.out1), day: STEP.month, dayWidth: DW.out1 },
+  // ] ] → 60 ; + + + (40,5 px/j : le pas passe à 14 j) ; ] → 74 ; - - - → mois.
+  // Le `]` frappé après les crans prend le pas du NOUVEAU palier (#805).
   {
-    keys: [']', ']', '+', ']', '-'],
-    level: 'Mois',
+    keys: [']', ']', '+', '+', '+', ']', '-', '-', '-'],
+    level: scaleReadout(DW.month),
     day: 2 * STEP.month + STEP.week,
     dayWidth: DW.month,
   },
-  // ] ] ] → 90 ; [ → 60 ; + → semaine.
-  { keys: [']', ']', ']', '[', '+'], level: 'Semaine', day: 2 * STEP.month, dayWidth: DW.week },
+  // ] ] ] → 90 ; [ → 60 ; + → 18 px/j.
+  {
+    keys: [']', ']', ']', '[', '+'],
+    level: scaleReadout(DW.in1),
+    day: 2 * STEP.month,
+    dayWidth: DW.in1,
+  },
 ]
 
 test.describe('#805 — [ / ] enchaînés à + / - : pas de dérive du défilement', () => {
@@ -188,32 +202,33 @@ test.describe('#805 — [ / ] enchaînés à + / - : pas de dérive du défileme
   test('période posée et attendue, puis « ] + » d’une traite', async ({ page }) => {
     await gotoTimeline(page)
     await pressAll(page, [']', ']', ']', ']'])
-    await expectAnchored(page, ']×4', 'Mois', 4 * STEP.month, DW.month)
+    await expectAnchored(page, ']×4', scaleReadout(DW.month), 4 * STEP.month, DW.month)
     await pressAll(page, [']', '+'])
-    await expectAnchored(page, ']×4 puis ] +', 'Semaine', 5 * STEP.month, DW.week)
+    await expectAnchored(page, ']×4 puis ] +', scaleReadout(DW.in1), 5 * STEP.month, DW.in1)
   })
 
   test('non-régression : [ ] + - T pris isolément, chacun attendu', async ({ page }) => {
     await gotoTimeline(page)
     await page.keyboard.press(']')
-    await expectAnchored(page, ']', 'Mois', STEP.month, DW.month)
+    await expectAnchored(page, ']', scaleReadout(DW.month), STEP.month, DW.month)
     await page.keyboard.press(']')
-    await expectAnchored(page, '] ]', 'Mois', 2 * STEP.month, DW.month)
+    await expectAnchored(page, '] ]', scaleReadout(DW.month), 2 * STEP.month, DW.month)
     await page.keyboard.press('[')
-    await expectAnchored(page, '[', 'Mois', STEP.month, DW.month)
+    await expectAnchored(page, '[', scaleReadout(DW.month), STEP.month, DW.month)
     await page.keyboard.press('+')
-    await expectAnchored(page, '+', 'Semaine', STEP.month, DW.week)
+    await expectAnchored(page, '+', scaleReadout(DW.in1), STEP.month, DW.in1)
     await page.keyboard.press('-')
-    await expectAnchored(page, '-', 'Mois', STEP.month, DW.month)
+    await expectAnchored(page, '-', scaleReadout(DW.month), STEP.month, DW.month)
     // T : `GO_TO_TODAY` pose `offsetDays` = jour d'aujourd'hui, repère PISTE (#392).
     await page.keyboard.press('t')
-    await expectAnchored(page, 'T', 'Mois', TODAY_DAY, DW.month)
+    await expectAnchored(page, 'T', scaleReadout(DW.month), TODAY_DAY, DW.month)
     // `- T +` d'une traite. `offsetDays` vaut DÉJÀ aujourd'hui : l'effet #392 ne rejoue
-    // rien et `T` se réduit à `scrollToToday`, qui CENTRE aujourd'hui (repère RAIL) au
-    // niveau Trimestre. Le `+` qui suit doit re-projeter CETTE position (jour ancré =
-    // scrollLeft / 5), pas l'ancre d'avant `T` — ce que faisait l'écriture smooth.
+    // rien et `T` se réduit à `scrollToToday`, qui CENTRE aujourd'hui (repère RAIL) à
+    // l'échelle dézoomée (8 px/j, #593). Le `+` qui suit doit re-projeter CETTE position
+    // (jour ancré = scrollLeft / 8), pas l'ancre d'avant `T` — ce que faisait l'écriture
+    // smooth.
     await pressAll(page, ['-', 't', '+'])
-    await expect(page.getByTestId('timeline-zoom-level')).toHaveText('Mois')
+    await expect(page.getByTestId('timeline-zoom-level')).toHaveText(scaleReadout(DW.month))
     const after = await settledScroll(page)
     // Le centrage au Trimestre est BORNÉ par la fin de la piste : l'étendue suit les
     // dates relatives des événements, et selon le jour d'exécution le centre
@@ -223,7 +238,7 @@ test.describe('#805 — [ / ] enchaînés à + / - : pas de dérive du défileme
     // La borne est relue APRÈS la mesure (retour au Trimestre) pour laisser la
     // séquence `- T +` frappée d'une traite.
     await page.keyboard.press('-')
-    await expect(page.getByTestId('timeline-zoom-level')).toHaveText('Trimestre')
+    await expect(page.getByTestId('timeline-zoom-level')).toHaveText(scaleReadout(DW.out1))
     const { maxScroll: maxQuarter } = await settledScroll(page)
     const expected = await page.getByTestId('timeline-scroll').evaluate(
       (el, d) => {
@@ -235,7 +250,7 @@ test.describe('#805 — [ / ] enchaînés à + / - : pas de dérive du défileme
       },
       {
         day: TODAY_DAY,
-        quarter: DW.quarter,
+        quarter: DW.out1,
         month: DW.month,
         gutter: LANE_GUTTER_PX,
         maxQuarter,
@@ -243,13 +258,13 @@ test.describe('#805 — [ / ] enchaînés à + / - : pas de dérive du défileme
     )
     // Trace dans le rapport les jours où la borne s'applique : le CENTRAGE n'y est
     // plus prouvé (seule la re-projection l'est), il ne doit pas l'être en silence.
-    if (Math.abs(expected - (maxQuarter / DW.quarter) * DW.month) < 1e-6) {
+    if (Math.abs(expected - (maxQuarter / DW.out1) * DW.month) < 1e-6) {
       test.info().annotations.push({
         type: 'oracle-borné',
         description: `centrage Trimestre borné par maxScroll ${maxQuarter} px`,
       })
     }
-    // Avant zoom : scrollLeft entier ⇒ ±1 px × 12/5 après re-projection.
+    // Avant zoom : scrollLeft entier ⇒ ±1 px × 12/8 après re-projection.
     expect(
       Math.abs(after.scrollLeft - expected),
       `- T + : attendu ${expected} px (aujourd'hui centré au Trimestre, re-projeté), lu ${after.scrollLeft} px`,

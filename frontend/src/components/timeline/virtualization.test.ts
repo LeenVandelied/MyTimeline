@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import type { Resource } from './lib'
-import type { PositionedEvent } from './zoom'
+import type { FullCalendarEvent } from '@/types/event'
+import {
+  addDays,
+  DAY_WIDTH_PX,
+  indexEventsByResource,
+  scaleEventPositions,
+  type PositionedEvent,
+} from './zoom'
 import {
   DEFAULT_METRICS,
   UNBOUNDED_BAND,
@@ -13,6 +20,7 @@ import {
   windowLanes,
   uniformLaneOffsets,
   laneOffsets,
+  OVERSCAN_X_PX,
 } from './virtualization'
 
 /**
@@ -238,5 +246,44 @@ describe('#709 fenêtrage vertical à hauteurs VARIABLES (empilage en rangées)'
     expect(model.laneHeights.get('a1')).toBe(L + 34)
     expect(model.laneOffsetsByCategory.A).toEqual([0, L + 34, 2 * L + 34])
     expect(model.totalHeight).toBe(R + 2 * H + 3 * L + 34)
+  })
+})
+
+/**
+ * #593 — Zoom continu : la bande visible reste juste à une échelle qui n'est aucun des
+ * anciens paliers. Géométrie réelle (`indexEventsByResource` puis `scaleEventPositions`).
+ */
+describe('#593 fenêtrage à échelle intermédiaire', () => {
+  it('visible band is correct at intermediate pxPerDay values', () => {
+    const pxPerDay = 20
+    expect(pxPerDay).toBeGreaterThan(DAY_WIDTH_PX.month)
+    expect(pxPerDay).toBeLessThan(DAY_WIDTH_PX.week)
+
+    const rangeStart = new Date(2026, 0, 1)
+    const iso = (n: number) => {
+      const d = addDays(rangeStart, n)
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+    }
+    const bar = (id: string, day: number): FullCalendarEvent => ({
+      id,
+      title: id,
+      start: iso(day),
+      end: iso(day + 1),
+      allDay: true,
+      resourceId: 'r1',
+      color: '#123456',
+      extendedProps: { productId: 'r1', productName: 'P', category: 'C', type: 'duration' },
+    })
+    // Jours 100 / 180 / 220 / 300 → 2000 / 3600 / 4400 / 6000 px à 20 px/jour.
+    const indexed = indexEventsByResource(
+      [bar('before', 100), bar('overscan', 180), bar('visible', 220), bar('after', 300)],
+      rangeStart,
+      rangeStart,
+    )
+    const lane = scaleEventPositions(indexed, pxPerDay).get('r1')!
+
+    // Frise défilée à 4000 px, 1000 px visibles, marge de rendu de part et d'autre.
+    const band = expandBand({ start: 4000, end: 5000 }, OVERSCAN_X_PX)
+    expect(windowEvents(lane, band).map((w) => w.event.id)).toEqual(['overscan', 'visible'])
   })
 })

@@ -25,6 +25,17 @@ import {
   eventKind,
   eventTrackExtent,
   type ZoomState,
+  continuousZoomReducer,
+  cursorDayFromScroll,
+  FIT_MIN_PX_PER_DAY,
+  formatHoursPerPx,
+  MAX_PX_PER_DAY,
+  MIN_PX_PER_DAY,
+  scrollLeftForCursorDay,
+  tickUnitForScale,
+  ZOOM_STEP,
+  type ContinuousZoomState,
+  buildRulerTicksForScale,
 } from './zoom'
 
 /**
@@ -361,10 +372,12 @@ describe('#597 recadrage (FIT)', () => {
 
   it('étendue COURTE : niveau le plus fin (`day`), centrée', () => {
     // Largeur utile 1000 − 40 − 135 = 825 px ; 5 j → 165 px/j idéal → `day` (96).
+    // #593 — la position se calcule à l'échelle continue retenue (165 px/j).
     const fit = computeFit({ startDay: 100, endDay: 105 }, 1000)
     expect(fit?.level).toBe('day')
-    const lead = LEAD + (825 - 5 * DAY_WIDTH_PX.day) / 2
-    expect(fit?.offsetDays).toBeCloseTo(100 - lead / DAY_WIDTH_PX.day, 10)
+    const px = fit?.pxPerDay ?? 0
+    const lead = LEAD + (825 - 5 * px) / 2
+    expect(fit?.offsetDays).toBeCloseTo(100 - lead / px, 10)
   })
 
   it('étendue d’un seul jour (un ponctuel) : `day`, emprise pin + libellé centrée', () => {
@@ -372,7 +385,7 @@ describe('#597 recadrage (FIT)', () => {
     expect(fit?.level).toBe('day')
     // #804 — la date tombe à 40 + 825 / 2 = 452,5 px : l'EMPRISE [date − 5, date + 100]
     // est centrée (même air de part et d'autre), plus la date seule.
-    const datePx = (50 - (fit?.offsetDays ?? 0)) * DAY_WIDTH_PX.day
+    const datePx = (50 - (fit?.offsetDays ?? 0)) * (fit?.pxPerDay ?? 0)
     expect(datePx).toBeCloseTo(LEAD + (1000 - LEAD - TRAIL) / 2, 10)
     expect(datePx - PIN_HALF_WIDTH_PX).toBeCloseTo(1000 - (datePx + PIN_FOOTPRINT_PX.desktop), 10)
   })
@@ -383,8 +396,9 @@ describe('#597 recadrage (FIT)', () => {
     expect(fit?.level).toBe('month')
     expect(60 * DAY_WIDTH_PX.month).toBeLessThanOrEqual(825)
     expect(60 * DAY_WIDTH_PX.week).toBeGreaterThan(825)
-    const lead = LEAD + (825 - 60 * DAY_WIDTH_PX.month) / 2
-    expect(fit?.offsetDays).toBeCloseTo(200 - lead / DAY_WIDTH_PX.month, 10)
+    const px = fit?.pxPerDay ?? 0
+    const lead = LEAD + (825 - 60 * px) / 2
+    expect(fit?.offsetDays).toBeCloseTo(200 - lead / px, 10)
   })
 
   it('étendue LONGUE : `year`, et alignée à gauche (marge comprise) si elle déborde encore', () => {
@@ -395,20 +409,23 @@ describe('#597 recadrage (FIT)', () => {
     // Deux ans tiennent en `year` dans un viewport large : centrés, pas alignés.
     const twoYears = computeFit({ startDay: 400, endDay: 1130 }, 1800)
     expect(twoYears?.level).toBe('year')
-    const lead = LEAD + (1800 - LEAD - TRAIL - 730 * DAY_WIDTH_PX.year) / 2
-    expect(twoYears?.offsetDays).toBeCloseTo(400 - lead / DAY_WIDTH_PX.year, 10)
+    const px = twoYears?.pxPerDay ?? 0
+    const lead = LEAD + (1800 - LEAD - TRAIL - 730 * px) / 2
+    expect(twoYears?.offsetDays).toBeCloseTo(400 - lead / px, 10)
   })
 
   it('décalage borné à 0 (l’étendue commence au bord de la piste)', () => {
-    const fit = computeFit({ startDay: 1, endDay: 3 }, 1000)
+    // #593 — à l'échelle continue (384 px/j ici), la marge ne vaut qu'une fraction de
+    // jour : l'étendue part du jour 0 pour que le bornage reste exercé.
+    const fit = computeFit({ startDay: 0, endDay: 2 }, 1000)
     expect(fit?.offsetDays).toBe(0)
   })
 })
 
 /**
  * #804 — Après `F`, le libellé d'un pin en BOUT d'étendue reste dans la piste. On rejoue
- * le cadrage de bout en bout sur les DONNÉES (étendue → `computeFit` → échelle du niveau
- * retenu) et on relève l'emprise réelle de chaque événement (`eventTrackExtent` : pin à
+ * le cadrage de bout en bout sur les DONNÉES (étendue → `computeFit` → échelle continue
+ * retenue) et on relève l'emprise réelle de chaque événement (`eventTrackExtent` : pin à
  * `date − 5`, libellé jusqu'à `date + PIN_FOOTPRINT_PX`) dans le repère du viewport
  * (0 = bord droit de la gouttière, `width` = bord droit du conteneur).
  * ⚠ Géométrie pure : la mesure en pixels RÉELS (police, troncature CSS) relève de l'E2E.
@@ -442,7 +459,7 @@ describe('#804 recadrage : emprise pin + libellé en bout d’étendue', () => {
     const extent = displayedEventDayExtent(indexed, ['r1', 'r2'])
     const fit = margins ? computeFit(extent, width, margins) : computeFit(extent, width)
     if (!fit) throw new Error('cadrage nul')
-    const dw = DAY_WIDTH_PX[fit.level]
+    const dw = fit.pxPerDay
     const scrollPx = fit.offsetDays * dw
     const extents = new Map<string, { start: number; end: number }>()
     for (const list of scaleEventPositions(indexed, dw, undefined, footprint).values()) {
@@ -551,5 +568,162 @@ describe('#804 recadrage : emprise pin + libellé en bout d’étendue', () => {
     }
     const { extents } = framed(events, W, widened, reserve)
     expect(extents.get('last')!.end).toBeLessThanOrEqual(W - FIT_EDGE_AIR_PX + EPS)
+  })
+})
+
+/**
+ * #593 — Zoom CONTINU de la frise desktop : échelle `pxPerDay` bornée, crans à facteur
+ * constant, ancrage sous le curseur, lecture « 1 px = X h », règle par seuils et
+ * recadrage à l'échelle exacte.
+ */
+describe('#593 zoom continu', () => {
+  const FORMER_LEVEL_WIDTHS = Object.values(DAY_WIDTH_PX)
+
+  it('ZOOM_IN and ZOOM_OUT scale pxPerDay by a constant factor and are inverse of each other', () => {
+    expect(ZOOM_STEP).toBeGreaterThan(1)
+    for (const pxPerDay of [20, 50]) {
+      const start: ContinuousZoomState = { pxPerDay, offsetDays: 7 }
+      const zoomedIn = continuousZoomReducer(start, { type: 'ZOOM_IN' })
+      // Facteur constant, quelle que soit l'échelle de départ, et hors des anciens paliers.
+      expect(zoomedIn.pxPerDay / pxPerDay).toBeCloseTo(ZOOM_STEP, 10)
+      expect(FORMER_LEVEL_WIDTHS).not.toContain(zoomedIn.pxPerDay)
+      const back = continuousZoomReducer(zoomedIn, { type: 'ZOOM_OUT' })
+      expect(back.pxPerDay).toBeCloseTo(pxPerDay, 10)
+    }
+  })
+
+  it('zoom keeps intermediate scales between two former levels', () => {
+    const atMonth: ContinuousZoomState = { pxPerDay: DAY_WIDTH_PX.month, offsetDays: 0 }
+    const next = continuousZoomReducer(atMonth, { type: 'ZOOM_IN' })
+    expect(next.pxPerDay).toBeGreaterThan(DAY_WIDTH_PX.month)
+    expect(next.pxPerDay).toBeLessThan(DAY_WIDTH_PX.week)
+  })
+
+  it('scale is clamped between hour floor and quarter ceiling', () => {
+    expect(MIN_PX_PER_DAY).toBe(5)
+    expect(MAX_PX_PER_DAY).toBe(384)
+    let s: ContinuousZoomState = { pxPerDay: DAY_WIDTH_PX.month, offsetDays: 0 }
+    for (let i = 0; i < 100; i++) s = continuousZoomReducer(s, { type: 'ZOOM_IN' })
+    expect(s.pxPerDay).toBe(MAX_PX_PER_DAY)
+    for (let i = 0; i < 100; i++) s = continuousZoomReducer(s, { type: 'ZOOM_OUT' })
+    expect(s.pxPerDay).toBe(MIN_PX_PER_DAY)
+    // Molette : un facteur démesuré s'arrête aussi aux bornes.
+    const mid: ContinuousZoomState = { pxPerDay: 20, offsetDays: 0 }
+    expect(continuousZoomReducer(mid, { type: 'ZOOM_BY', factor: 1000 }).pxPerDay).toBe(
+      MAX_PX_PER_DAY,
+    )
+    expect(continuousZoomReducer(mid, { type: 'ZOOM_BY', factor: 1 / 1000 }).pxPerDay).toBe(
+      MIN_PX_PER_DAY,
+    )
+  })
+
+  it('anchored scroll keeps the day under the cursor at the new scale', () => {
+    const gutter = 176
+    const cursorX = 500
+    const scrollLeft = 1000
+    // Jour sous le curseur, à la main : position dans la piste ÷ échelle.
+    const expectedDay = (scrollLeft + cursorX - gutter) / 12
+    const day = cursorDayFromScroll(scrollLeft, cursorX, 12, gutter)
+    expect(day).toBeCloseTo(expectedDay, 10)
+
+    const newScroll = scrollLeftForCursorDay(day, cursorX, 18, gutter)
+    // À 18 px/jour, le même jour se retrouve sous le même point de l'écran.
+    expect((newScroll + cursorX - gutter) / 18).toBeCloseTo(expectedDay, 10)
+  })
+
+  it('formats density as 1 px = X h from pxPerDay', () => {
+    expect(formatHoursPerPx(96, 'fr-FR')).toBe('0,25')
+    expect(formatHoursPerPx(24, 'fr-FR')).toBe('1')
+    expect(formatHoursPerPx(96, 'en-US')).toBe('0.25')
+    expect(formatHoursPerPx(24, 'en-US')).toBe('1')
+  })
+
+  it('ruler ticks unit follows pxPerDay thresholds including hour ticks', () => {
+    expect(tickUnitForScale(MAX_PX_PER_DAY)).toBe('hour')
+    // Entre les anciens paliers semaine (34) et jour (96) : graduations par jour.
+    expect(tickUnitForScale(50)).toBe('day')
+    expect(tickUnitForScale(MIN_PX_PER_DAY)).toBe('month')
+  })
+
+  it('computeFit returns the ideal continuous scale clamped to bounds', () => {
+    const { leadPx: LEAD, trailPx: TRAIL } = FIT_MARGINS_PX.desktop
+    // 60 j dans 1000 − 40 − 135 = 825 px : 13,75 px/jour, entre mois (12) et semaine (34).
+    const fit = computeFit({ startDay: 200, endDay: 260 }, 1000)
+    expect(fit?.pxPerDay).toBeCloseTo(825 / 60, 10)
+    // L'étendue tient juste et reste centrée : même air utile des deux côtés.
+    const px = fit?.pxPerDay ?? 0
+    const startPx = (200 - (fit?.offsetDays ?? 0)) * px
+    const endPx = (260 - (fit?.offsetDays ?? 0)) * px
+    expect(startPx - LEAD).toBeCloseTo(1000 - TRAIL - endPx, 6)
+
+    // Hors limites : la plus fine (heure) et la plus large du recadrage (ancien `year`).
+    expect(computeFit({ startDay: 50, endDay: 50 }, 1000)?.pxPerDay).toBe(MAX_PX_PER_DAY)
+    expect(computeFit({ startDay: 400, endDay: 1400 }, 1200)?.pxPerDay).toBe(FIT_MIN_PX_PER_DAY)
+  })
+})
+
+/**
+ * #593 (revue) — Pas de [ / ] à l'échelle continue, bornage dans le sens du geste,
+ * graduations horaires restreintes à la bande rendue.
+ */
+describe('#593 zoom continu — corrections après revue', () => {
+  it('NEXT_PERIOD et PREV_PERIOD suivent le palier seuil, un jour dans la zone horaire', () => {
+    // 18 : mois (30 j) ; 40,5 : semaine (14 j) ; 96 : jour (7 j) ; 384 : heure (1 j).
+    const cases: Array<[number, number]> = [
+      [18, 30],
+      [40.5, 14],
+      [96, 7],
+      [384, 1],
+    ]
+    for (const [pxPerDay, step] of cases) {
+      const start: ContinuousZoomState = { pxPerDay, offsetDays: 100 }
+      const next = continuousZoomReducer(start, { type: 'NEXT_PERIOD' })
+      expect(next, `${pxPerDay} px/jour`).toEqual({ pxPerDay, offsetDays: 100 + step })
+      expect(continuousZoomReducer(next, { type: 'PREV_PERIOD' })).toEqual(start)
+    }
+  })
+
+  it('sous MIN_PX_PER_DAY après un recadrage, le zoom avant progresse par son facteur', () => {
+    const fitted = continuousZoomReducer(
+      { pxPerDay: DAY_WIDTH_PX.month, offsetDays: 0 },
+      {
+        type: 'FIT',
+        pxPerDay: FIT_MIN_PX_PER_DAY,
+        offsetDays: 12,
+      },
+    )
+    expect(fitted.pxPerDay).toBe(2.2)
+    // Pas de saut à la borne trimestre (5) : 2,2 × 1,01.
+    const nudged = continuousZoomReducer(fitted, { type: 'ZOOM_BY', factor: 1.01 })
+    expect(nudged.pxPerDay).toBeCloseTo(2.222, 10)
+    expect(nudged.offsetDays).toBe(12)
+    expect(continuousZoomReducer(fitted, { type: 'ZOOM_IN' }).pxPerDay).toBeCloseTo(3.3, 10)
+    // Zoom arrière : on est déjà sous la borne, l'état ne bouge pas (même objet).
+    expect(continuousZoomReducer(fitted, { type: 'ZOOM_OUT' })).toBe(fitted)
+    expect(continuousZoomReducer(fitted, { type: 'ZOOM_BY', factor: 0.9 })).toBe(fitted)
+  })
+
+  it('graduations horaires générées pour les seuls jours demandés', () => {
+    const rangeStart = new Date(2026, 0, 1)
+    const all = buildRulerTicksForScale(rangeStart, 40, MAX_PX_PER_DAY, 'fr-FR')
+    const band = buildRulerTicksForScale(rangeStart, 40, MAX_PX_PER_DAY, 'fr-FR', {
+      startDay: 10,
+      endDay: 13,
+    })
+    const perDay = all.length / 40
+    expect(band).toHaveLength(3 * perDay)
+    // Mêmes graduations, au même endroit, que celles de la règle entière.
+    expect(band).toEqual(all.slice(10 * perDay, 13 * perDay))
+    expect(band[0].leftPx).toBe(10 * MAX_PX_PER_DAY)
+    // Bornes hors étendue rabattues ; les unités non horaires ignorent la fenêtre.
+    expect(
+      buildRulerTicksForScale(rangeStart, 40, MAX_PX_PER_DAY, 'fr-FR', {
+        startDay: -Infinity,
+        endDay: Infinity,
+      }),
+    ).toEqual(all)
+    expect(
+      buildRulerTicksForScale(rangeStart, 40, 50, 'fr-FR', { startDay: 10, endDay: 13 }),
+    ).toHaveLength(40)
   })
 })

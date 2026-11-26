@@ -30,6 +30,14 @@ const baseResponse = {
 }
 
 describe('eventSchema (EventResponse v3)', () => {
+  it('#718 — accepte isRecurring null (événement créé via un produit) et le propage en undefined', () => {
+    const parsed = eventSchema.parse({ ...baseResponse, isRecurring: null })
+    expect(parsed.isRecurring).toBeNull()
+    expect(
+      mapToFullCalendarEvent(parsed, 'P', 'C', baseResponse.productId).extendedProps.isRecurring,
+    ).toBeUndefined()
+  })
+
   it('parse le contrat complet (color unique, recurrenceUnit MAJUSCULE, isAllDay, archived)', () => {
     const parsed = eventSchema.parse(baseResponse)
     expect(parsed.color).toBe('#123456')

@@ -1,10 +1,5 @@
 {
   "title": "Tableau de bord",
-  "welcome": "Bienvenue sur votre tableau de bord",
-  "lastConnection": "Dernière connexion",
-  "email": "Email",
-  "role": "Rôle",
-  "products": "Produits",
   "greeting": {
     "eyebrow": "Aperçu",
     "morning": "Bonjour {name}, voici ta matinée",
@@ -19,7 +14,6 @@
     "today": "Auj.",
     "window": "Fenêtre · {range}",
     "viewport": "Fenêtre d’aperçu de {days} jours",
-    "empty": "Aucun événement sur la période",
     "openTimeline": "Ouvrir la frise"
   },
   "week": {
@@ -77,17 +71,6 @@
     "emptyCta": "Aller aux produits",
     "noUpcoming": "Aucune échéance"
   },
-  "stats": {
-    "title": "Statistiques",
-    "totalEvents": "Total des événements",
-    "upcomingEvents": "Événements à venir",
-    "completedEvents": "Événements terminés"
-  },
-  "actions": {
-    "createEvent": "Créer un événement",
-    "viewCalendar": "Voir le calendrier",
-    "manageProfile": "Gérer le profil"
-  },
   "timeline": {
     "zoom": {
       "label": "Niveau de zoom",
@@ -97,7 +80,11 @@
       "week": "Semaine",
       "month": "Mois",
       "quarter": "Trimestre",
-      "year": "Année"
+      "year": "Année",
+      "scale": "1 px = {hours} h"
+    },
+    "footer": {
+      "counter": "{events, plural, one {# événement} other {# événements}} · {products, plural, one {# produit} other {# produits}}"
     },
     "minimap": {
       "label": "Vue d’ensemble de la timeline",

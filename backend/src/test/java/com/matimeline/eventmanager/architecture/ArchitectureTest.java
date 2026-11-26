@@ -33,7 +33,6 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
  *
  * <p>Violations connues actuellement gelées :
  * <ul>
- *   <li>{@code @Repository} (stéréotype Spring) posé sur les ports {@code domain.ports.repositories}.
  *   <li>Ports {@code domain.ports.services.*Service} important des DTOs {@code application.dtos}.
  *   <li>Mappers {@code application.mappers} dépendant des entités {@code infrastructure.entities}.
  * </ul>
@@ -61,7 +60,8 @@ class ArchitectureTest {
      * Règle 1 — Le domaine ne dépend d'aucun framework technique.
      *
      * <p>Interdit {@code org.springframework..} et {@code jakarta..}, SAUF {@code jakarta.validation..}
-     * (toléré sur les DTOs/commandes du domaine). Gèle {@code @Repository} sur {@code ProductRepository}.
+     * (toléré sur les DTOs/commandes du domaine). Plus aucune violation gelée : l'ancien
+     * {@code @Repository} de {@code ProductRepository} est retiré (#718).
      */
     @Test
     void domainShouldNotDependOnSpringOrJakarta() {

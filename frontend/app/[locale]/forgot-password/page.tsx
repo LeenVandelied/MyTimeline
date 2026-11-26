@@ -20,6 +20,7 @@ import { forgotPassword } from '@/services/authService'
 import { createForgotPasswordSchema, type ForgotPasswordData } from '@/lib/schemas/auth'
 import { LanguageSelector } from '@/components/ui/language-selector'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
+import { AuthSplitLayout } from '@/components/auth/AuthSplitLayout'
 import { AppFooter } from '@/components/ui/footer-app'
 import { useTranslations } from 'next-intl'
 
@@ -56,10 +57,10 @@ export default function ForgotPasswordPage({ params }: { params: Promise<{ local
       {/* #642 (DEC-S82-009) — la bascule de thème rejoint le sélecteur de langue
           dans le coin haut-droit, sur les 4 pages d'auth à l'identique. Deux
           boutons à icône seule de 36 px, `gap-1` : le bloc passe de 36 à 76 px
-          de large dans un coin libre, sans croiser la carte (`max-w-md` centrée)
+          de large dans un coin libre, sans croiser la carte (`auth-form-card`)
           — `e2e/sprint-77-theme-visual.spec.ts` capture la CARTE
-          (`div.bg-surface.border-rule.max-w-md.rounded-lg`), pas ce coin, ses
-          10 références restent donc valides.
+          (`[data-testid="auth-form-card"]`), pas ce coin : ce déplacement
+          ne change donc aucune capture.
 
           #656 — `relative` CI-DESSUS N'EST PAS DÉCORATIF. Sans lui, le bloc
           conteneur de cet `absolute` est le BLOC CONTENEUR INITIAL (aucun ancêtre
@@ -77,91 +78,87 @@ export default function ForgotPasswordPage({ params }: { params: Promise<{ local
         <LanguageSelector />
       </div>
 
-      <div className="flex flex-grow items-center justify-center">
-        <div className="bg-surface border-rule w-full max-w-md rounded-lg border p-6 shadow-xs">
-          <h2 className="mb-2 text-center text-2xl font-bold">
-            {t('common.forgotPassword.title')}
-          </h2>
-          <p className="text-ink-muted mb-6 text-center text-sm">
-            {t('common.forgotPassword.description')}
+      <AuthSplitLayout>
+        <h2 className="mb-2 text-center text-2xl font-bold">{t('common.forgotPassword.title')}</h2>
+        <p className="text-ink-muted mb-6 text-center text-sm">
+          {t('common.forgotPassword.description')}
+        </p>
+
+        {submitted ? (
+          <p
+            role="status"
+            data-testid="forgot-neutral"
+            className="text-success text-center text-sm font-medium"
+          >
+            {t('common.forgotPassword.neutralMessage')}
           </p>
-
-          {submitted ? (
-            <p
-              role="status"
-              data-testid="forgot-neutral"
-              className="text-success text-center text-sm font-medium"
+        ) : (
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="space-y-6"
+              noValidate
+              data-testid="forgot-form"
             >
-              {t('common.forgotPassword.neutralMessage')}
-            </p>
-          ) : (
-            <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(onSubmit)}
-                className="space-y-6"
-                noValidate
-                data-testid="forgot-form"
-              >
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t('common.forgotPassword.email')}</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="email"
-                          autoComplete="email"
-                          data-testid="forgot-email"
-                          placeholder={t('common.forgotPassword.emailPlaceholder')}
-                          {...field}
-                          className="bg-surface-2 border-rule-emphasis"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {serverError && (
-                  <p
-                    role="alert"
-                    data-testid="forgot-error"
-                    className="text-danger text-sm font-medium"
-                  >
-                    {serverError}
-                  </p>
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('common.forgotPassword.email')}</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="email"
+                        autoComplete="email"
+                        data-testid="forgot-email"
+                        placeholder={t('common.forgotPassword.emailPlaceholder')}
+                        {...field}
+                        className="bg-surface-2 border-rule-emphasis"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
                 )}
+              />
 
-                <Button
-                  type="submit"
-                  className="bg-accent text-accent-ink hover:bg-accent-hover w-full"
-                  disabled={loading}
-                  aria-busy={loading}
-                  data-testid="forgot-submit"
+              {serverError && (
+                <p
+                  role="alert"
+                  data-testid="forgot-error"
+                  className="text-danger text-sm font-medium"
                 >
-                  {loading ? (
-                    <>
-                      <Spinner label={t('common.spinner.loading')} />
-                      {t('common.forgotPassword.loading')}
-                    </>
-                  ) : (
-                    t('common.forgotPassword.submit')
-                  )}
-                </Button>
-              </form>
-            </Form>
-          )}
+                  {serverError}
+                </p>
+              )}
 
-          <div className="mt-6 text-center">
-            <p className="text-ink-muted">
-              <Link href={`/${locale}/login`} className="text-accent hover:text-accent-hover">
-                &larr; {t('common.forgotPassword.backToLogin')}
-              </Link>
-            </p>
-          </div>
+              <Button
+                type="submit"
+                className="bg-accent text-accent-ink hover:bg-accent-hover w-full"
+                disabled={loading}
+                aria-busy={loading}
+                data-testid="forgot-submit"
+              >
+                {loading ? (
+                  <>
+                    <Spinner label={t('common.spinner.loading')} />
+                    {t('common.forgotPassword.loading')}
+                  </>
+                ) : (
+                  t('common.forgotPassword.submit')
+                )}
+              </Button>
+            </form>
+          </Form>
+        )}
+
+        <div className="mt-6 text-center">
+          <p className="text-ink-muted">
+            <Link href={`/${locale}/login`} className="text-accent hover:text-accent-hover">
+              &larr; {t('common.forgotPassword.backToLogin')}
+            </Link>
+          </p>
         </div>
-      </div>
+      </AuthSplitLayout>
 
       <AppFooter />
     </div>

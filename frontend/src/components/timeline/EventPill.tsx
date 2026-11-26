@@ -1,6 +1,6 @@
 import React from 'react'
 import { cn } from '@/lib/utils'
-import { eventInkColor, eventLabelReadableInside } from './lib'
+import { eventInkColor, eventLabelReadableInside, isPastTimelineEvent } from './lib'
 import { EventPinContent } from './EventPin'
 import { OUTSIDE_LABEL_GAP_PX, outsideLabelMaxPx, pinLabelMaxPx } from './label-reserve'
 import { isRecurringSeries } from './recurrence-marks'
@@ -62,6 +62,10 @@ export interface EventPillProps {
    * pin et du libellé extérieur (`timeline.css`). 0 / absent : rangée 0, rendu inchangé.
    */
   rowOffsetPx?: number
+  /** #812 — verdict « passé » déjà calculé (géométrie de la frise) ; absent : calcul local. */
+  past?: boolean
+  /** #812 — jour de référence du calcul local de « passé » ; absent : `new Date()`. */
+  today?: Date
 }
 
 export const EventPill: React.FC<EventPillProps> = ({
@@ -73,6 +77,8 @@ export const EventPill: React.FC<EventPillProps> = ({
   navKey,
   pillRef,
   rowOffsetPx = 0,
+  past: pastProp,
+  today,
 }) => {
   // #709 — variable posée seulement hors rangée 0 : une lane mono-rangée garde un DOM
   // strictement identique à l'avant-empilage.
@@ -90,6 +96,13 @@ export const EventPill: React.FC<EventPillProps> = ({
    * surfaces (PIT-S46-001).
    */
   const archived = event.extendedProps?.archived === true
+  /**
+   * #812 — événement PASSÉ (règle de l'historique produit, `isPastTimelineEvent`) : sa
+   * pastille décorative porte `.mt-evt--past` (grisage complet, cumulé à l'archivé). Le
+   * titre et la barre ne changent pas (PIT-S61-003, PIT-S70-003) ; l'état est déjà dit
+   * par le statut « Terminé » de `ariaLabel`, donc rien de plus à annoncer.
+   */
+  const past = pastProp ?? isPastTimelineEvent(event, today ?? new Date())
   /**
    * #595 (BR-EVE-006) — série récurrente : glyphe `↻` en préfixe (barre : `<span>` mono,
    * maquette §4 ; pin : `"↻ " + titre`, maquette §2). Décoratif (`aria-hidden`) : le
@@ -177,7 +190,11 @@ export const EventPill: React.FC<EventPillProps> = ({
             telle quelle, mais sur ce seul élément DÉCORATIF (`aria-hidden`) : posée
             sur la barre, son opacité ferait passer le titre sous AA (décision #307). */}
         <span
-          className={cn('mt-tlv__evt-dot', archived && 'mt-evt--archived')}
+          className={cn(
+            'mt-tlv__evt-dot',
+            archived && 'mt-evt--archived',
+            past && 'mt-evt--past',
+          )}
           style={{ background: statusVar }}
           aria-hidden="true"
         />

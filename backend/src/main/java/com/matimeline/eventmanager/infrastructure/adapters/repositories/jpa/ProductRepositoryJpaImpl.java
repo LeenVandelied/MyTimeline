@@ -16,9 +16,11 @@ import com.matimeline.eventmanager.application.mappers.CategoryMapper;
 import com.matimeline.eventmanager.application.mappers.ProductMapper;
 import com.matimeline.eventmanager.application.mappers.UserMapper;
 import com.matimeline.eventmanager.domain.models.CategoryProductCounts;
+import com.matimeline.eventmanager.domain.models.Event;
 import com.matimeline.eventmanager.domain.models.Product;
 import com.matimeline.eventmanager.domain.ports.repositories.ProductRepository;
 import com.matimeline.eventmanager.infrastructure.entities.CategoryEntity;
+import com.matimeline.eventmanager.infrastructure.entities.EventEntity;
 import com.matimeline.eventmanager.infrastructure.entities.ProductEntity;
 import com.matimeline.eventmanager.infrastructure.entities.UserEntity;
 
@@ -248,6 +250,46 @@ public class ProductRepositoryJpaImpl
                 new ArrayList<>(),
                 entity.isArchived(),
                 entity.getColor());
+    }
+
+    // #718 — Lecture NATIVE du produit archivé (ownership + état dans le même WHERE) puis de
+    // TOUS ses événements, actifs et archivés. Pas de ProductMapper.toDomain ni de
+    // getEvents() : la relation de l'entité filtrée n'est pas fiable pour un archivé.
+    @Override
+    public Optional<Product> findArchivedDetailByIdAndUserId(UUID productId, UUID userId) {
+        @SuppressWarnings("unchecked")
+        List<ProductEntity> rows = entityManager
+                .createNativeQuery(
+                        "SELECT * FROM products WHERE id = :id AND user_id = :uid AND archived = true",
+                        ProductEntity.class)
+                .setParameter("id", productId)
+                .setParameter("uid", userId)
+                .getResultList();
+        if (rows.isEmpty()) {
+            return Optional.empty();
+        }
+        Product product = toDomainWithoutEvents(rows.get(0));
+
+        // INVARIANT D'ORDRE : le produit est chargé dans le contexte de persistance AVANT les
+        // événements. EventEntity.product est un @ManyToOne EAGER : sans le produit déjà géré,
+        // Hibernate le relirait par une lecture filtrée par @SQLRestriction et ne le trouverait pas.
+        @SuppressWarnings("unchecked")
+        List<EventEntity> events = entityManager
+                .createNativeQuery(
+                        "SELECT * FROM events WHERE product_id = :id ORDER BY start_date, id",
+                        EventEntity.class)
+                .setParameter("id", productId)
+                .getResultList();
+        for (EventEntity e : events) {
+            Event event = new Event(
+                    e.getId(), e.getTitle(), e.getType(), e.getDurationValue(), e.getDurationUnit(),
+                    e.getIsRecurring(), e.getRecurrenceUnit(), e.getRecurrenceEndDate(),
+                    e.getStartDate(), e.getEndDate(), productId, e.getIsAllDay(),
+                    e.getColor(), e.isArchived());
+            event.setVersion(e.getVersion());
+            product.addEvent(event);
+        }
+        return Optional.of(product);
     }
 
     // #711 — UPDATE NATIF : l'entité archivée est introuvable par findById (@SQLRestriction),

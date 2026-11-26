@@ -1,5 +1,7 @@
 import { FullCalendarEvent } from '@/types/event'
 import { parseLocalDate } from '@/lib/date-iso'
+import { isPastTimelineEvent } from './lib'
+import { occurrenceStart, seriesHorizon, MAX_OCCURRENCES } from '@/lib/recurrence'
 
 /**
  * #55 — Cœur (pur, testable) de la Vue Timeline desktop.
@@ -29,7 +31,7 @@ export const DAY_WIDTH_PX: Record<ZoomLevel, number> = {
 }
 
 /** Granularité des graduations MAJEURES de la règle selon le zoom. */
-export type TickUnit = 'day' | 'week' | 'month' | 'quarter' | 'year'
+export type TickUnit = 'hour' | 'day' | 'week' | 'month' | 'quarter' | 'year'
 export const MAJOR_TICK_UNIT: Record<ZoomLevel, TickUnit> = {
   day: 'day',
   week: 'day',
@@ -96,6 +98,171 @@ export function zoomReducer(state: ZoomState, action: ZoomAction): ZoomState {
     default:
       return state
   }
+}
+
+/**
+ * #593 — Zoom CONTINU de la frise desktop : échelle `pxPerDay` bornée, un cran la
+ * multiplie ou la divise par `ZOOM_STEP`. Les frises mobiles gardent `zoomReducer`.
+ */
+/** Borne large du zoom manuel : le trimestre. */
+export const MIN_PX_PER_DAY = DAY_WIDTH_PX.quarter
+/** Borne fine du zoom manuel : l'heure (16 px par heure). */
+export const MAX_PX_PER_DAY = 384
+/** Le recadrage `F` peut descendre jusqu'à l'ancien niveau année. */
+export const FIT_MIN_PX_PER_DAY = DAY_WIDTH_PX.year
+/** Facteur d'un cran de zoom (clavier, boutons). */
+export const ZOOM_STEP = 1.5
+
+export interface ContinuousZoomState {
+  pxPerDay: number
+  /** Décalage horizontal en jours depuis `rangeStart` (même repère que `ZoomState`). */
+  offsetDays: number
+}
+
+export type ContinuousZoomAction =
+  | { type: 'ZOOM_IN' }
+  | { type: 'ZOOM_OUT' }
+  /** Molette : facteur dérivé de `deltaY`. */
+  | { type: 'ZOOM_BY'; factor: number }
+  | { type: 'PAN'; days: number }
+  | { type: 'SET_OFFSET'; days: number }
+  | { type: 'GO_TO_TODAY'; todayOffsetDays: number }
+  | { type: 'PREV_PERIOD' }
+  | { type: 'NEXT_PERIOD' }
+  | { type: 'FIT'; pxPerDay: number; offsetDays: number }
+
+export const initialContinuousZoomState: ContinuousZoomState = {
+  pxPerDay: DAY_WIDTH_PX.month,
+  offsetDays: 0,
+}
+
+/**
+ * #593 — Palier discret qui sert de SEUIL à une échelle continue : le plus fin dont la
+ * largeur de jour ne dépasse pas `pxPerDay` (`year` en dessous de tout). Pilote le pas
+ * de [ / ], l'overlay week-end et la granularité de la règle, comme avant à ce palier.
+ */
+export function zoomLevelForScale(pxPerDay: number): ZoomLevel {
+  return ZOOM_LEVELS.find((l) => DAY_WIDTH_PX[l] <= pxPerDay) ?? ZOOM_LEVELS[ZOOM_LEVELS.length - 1]
+}
+
+/**
+ * Échelle visée bornée au zoom manuel, dans le seul sens du geste : un zoom avant ne
+ * bute que sur `MAX_PX_PER_DAY`, un zoom arrière sur `MIN_PX_PER_DAY`. Après un
+ * recadrage sous `MIN_PX_PER_DAY`, un zoom avant progresse donc par son facteur, et un
+ * zoom arrière reste sans effet (il ne remonte jamais à la borne).
+ */
+function zoomTo(state: ContinuousZoomState, target: number): ContinuousZoomState {
+  const pxPerDay =
+    target > state.pxPerDay ? Math.min(MAX_PX_PER_DAY, target) : Math.max(MIN_PX_PER_DAY, target)
+  if (!((pxPerDay - state.pxPerDay) * (target - state.pxPerDay) > 0)) return state
+  return { ...state, pxPerDay }
+}
+
+/**
+ * #593 — Pas de [ / ] à une échelle continue : celui du palier-seuil
+ * (`zoomLevelForScale`), sauf dans la zone horaire (`HOUR_TICKS_MIN_PX_PER_DAY`) où il
+ * vaut un jour. Une semaine à 384 px/jour sauterait plus de deux largeurs d'écran.
+ */
+export function periodStepDaysForScale(pxPerDay: number): number {
+  return pxPerDay >= HOUR_TICKS_MIN_PX_PER_DAY ? 1 : PERIOD_STEP_DAYS[zoomLevelForScale(pxPerDay)]
+}
+
+export function continuousZoomReducer(
+  state: ContinuousZoomState,
+  action: ContinuousZoomAction,
+): ContinuousZoomState {
+  switch (action.type) {
+    case 'ZOOM_IN':
+      return zoomTo(state, state.pxPerDay * ZOOM_STEP)
+    case 'ZOOM_OUT':
+      return zoomTo(state, state.pxPerDay / ZOOM_STEP)
+    case 'ZOOM_BY':
+      return zoomTo(state, state.pxPerDay * action.factor)
+    case 'PAN':
+      return { ...state, offsetDays: state.offsetDays + action.days }
+    case 'SET_OFFSET':
+      return { ...state, offsetDays: action.days }
+    case 'GO_TO_TODAY':
+      return { ...state, offsetDays: action.todayOffsetDays }
+    case 'PREV_PERIOD':
+      return { ...state, offsetDays: state.offsetDays - periodStepDaysForScale(state.pxPerDay) }
+    case 'NEXT_PERIOD':
+      return { ...state, offsetDays: state.offsetDays + periodStepDaysForScale(state.pxPerDay) }
+    case 'FIT':
+      // Objet TOUJOURS neuf (cf. `zoomReducer`). L'échelle peut descendre sous
+      // `MIN_PX_PER_DAY`, jusqu'à `FIT_MIN_PX_PER_DAY` (`computeFit`).
+      return { pxPerDay: action.pxPerDay, offsetDays: action.offsetDays }
+    default:
+      return state
+  }
+}
+
+/** `deltaY` d'un cran de molette souris (mode pixel), qui vaut un `ZOOM_STEP`. */
+export const WHEEL_NOTCH_PX = 100
+
+/**
+ * #593 — Facteur de zoom d'un événement `wheel` : `ZOOM_STEP` à la puissance du nombre
+ * de crans (fractionnaire au pavé tactile), donc proportionnel au mouvement, borné à
+ * un cran par événement. `deltaY` négatif = zoom avant. Modes ligne et page ramenés au
+ * pixel (trois lignes ou une page par cran).
+ */
+export function wheelZoomFactor(deltaY: number, deltaMode = 0): number {
+  const px =
+    deltaMode === 1
+      ? (deltaY * WHEEL_NOTCH_PX) / 3
+      : deltaMode === 2
+        ? deltaY * WHEEL_NOTCH_PX
+        : deltaY
+  const notches = Math.max(-1, Math.min(1, -px / WHEEL_NOTCH_PX))
+  return ZOOM_STEP ** notches
+}
+
+/**
+ * #593 — Jour (fractionnaire, depuis `rangeStart`) sous le curseur. `cursorX` se mesure
+ * depuis le bord gauche du conteneur défilant, gouttière comprise.
+ */
+export function cursorDayFromScroll(
+  scrollLeft: number,
+  cursorX: number,
+  pxPerDay: number,
+  gutterPx: number,
+): number {
+  return (scrollLeft + cursorX - gutterPx) / pxPerDay
+}
+
+/** #593 — `scrollLeft` qui ramène `cursorDay` sous le curseur à l'échelle donnée. */
+export function scrollLeftForCursorDay(
+  cursorDay: number,
+  cursorX: number,
+  pxPerDay: number,
+  gutterPx: number,
+): number {
+  return cursorDay * pxPerDay - cursorX + gutterPx
+}
+
+const hoursFormatters = new Map<string, Intl.NumberFormat>()
+
+/** #593 — Heures par pixel (24 / pxPerDay), deux chiffres significatifs, au format de `locale`. */
+export function formatHoursPerPx(pxPerDay: number, locale: string): string {
+  let fmt = hoursFormatters.get(locale)
+  if (!fmt) {
+    fmt = new Intl.NumberFormat(locale, { maximumSignificantDigits: 2 })
+    hoursFormatters.set(locale, fmt)
+  }
+  return fmt.format(24 / pxPerDay)
+}
+
+/** #593 — Graduations horaires à partir de deux fois l'ancien palier jour (192 px/jour). */
+export const HOUR_TICKS_MIN_PX_PER_DAY = DAY_WIDTH_PX.day * 2
+
+/**
+ * #593 — Unité des graduations selon l'échelle : heures au-delà de
+ * `HOUR_TICKS_MIN_PX_PER_DAY`, sinon celle du palier-seuil (`zoomLevelForScale`) :
+ * jours dès la semaine (34), semaines dès le mois (12), mois en dessous.
+ */
+export function tickUnitForScale(pxPerDay: number): TickUnit {
+  if (pxPerDay >= HOUR_TICKS_MIN_PX_PER_DAY) return 'hour'
+  return MAJOR_TICK_UNIT[zoomLevelForScale(pxPerDay)]
 }
 
 /**
@@ -200,6 +367,8 @@ export interface PositionedEvent extends FullCalendarEvent {
    */
   labelTrailPx?: number
   status: 'expired' | 'ongoing' | 'upcoming'
+  /** #812 — verdict « passé » calculé par `indexEventsByResource` ; absent = à calculer. */
+  past?: boolean
 }
 
 /**
@@ -274,7 +443,7 @@ export const FIT_MARGINS_PX: Readonly<Record<'desktop' | 'mobile', Readonly<FitM
 }
 
 /**
- * #597 — Cadrage `F` : niveau le plus FIN dont l'échelle fait tenir `extent` dans
+ * #597 — Cadrage `F` : échelle qui fait tenir `extent` dans
  * `viewportTrackWidthPx − margins.leadPx − margins.trailPx`, et `offsetDays` (même
  * repère que `PAN`/`GO_TO_TODAY` : jour affleurant la gouttière) qui CENTRE l'étendue
  * dans cette largeur utile — alignée à gauche (`leadPx` compris) si elle déborde même
@@ -289,19 +458,18 @@ export function computeFit(
   extent: { startDay: number; endDay: number } | null,
   viewportTrackWidthPx: number,
   margins: Readonly<FitMargins> = FIT_MARGINS_PX.desktop,
-): { level: ZoomLevel; offsetDays: number } | null {
+): { level: ZoomLevel; pxPerDay: number; offsetDays: number } | null {
   if (!extent || !(viewportTrackWidthPx > 0)) return null
   const usablePx = Math.max(0, viewportTrackWidthPx - margins.leadPx - margins.trailPx)
   const spanDays = Math.max(0, extent.endDay - extent.startDay)
-  // #593 (zoom continu) : px/jour IDÉAL d'abord — c'est lui qu'un zoom continu
-  // retiendra tel quel ; aujourd'hui il est ramené au niveau discret qui le respecte.
   const idealPxPerDay = spanDays === 0 ? Infinity : usablePx / spanDays
-  const level =
-    ZOOM_LEVELS.find((l) => DAY_WIDTH_PX[l] <= idealPxPerDay) ?? ZOOM_LEVELS[ZOOM_LEVELS.length - 1]
-  const dayWidth = DAY_WIDTH_PX[level]
-  const spanPx = spanDays * dayWidth
+  // `level` : palier discret le plus fin qui tient (frises à paliers, lecture des tests #597).
+  const level = zoomLevelForScale(idealPxPerDay)
+  // #593 — échelle continue : l'idéale, bornée entre l'heure et l'ancien palier année.
+  const pxPerDay = Math.min(MAX_PX_PER_DAY, Math.max(FIT_MIN_PX_PER_DAY, idealPxPerDay))
+  const spanPx = spanDays * pxPerDay
   const leadPx = margins.leadPx + Math.max(0, (usablePx - spanPx) / 2)
-  return { level, offsetDays: Math.max(0, extent.startDay - leadPx / dayWidth) }
+  return { level, pxPerDay, offsetDays: Math.max(0, extent.startDay - leadPx / pxPerDay) }
 }
 
 /**
@@ -331,6 +499,42 @@ export interface EventGeometry {
   /** Durée en jours (≥ 1). */
   spanDays: number
   status: PositionedEvent['status']
+  /** #812 — verdict « passé » (`isPastEvent`), calculé UNE fois ici, pas à chaque rendu. */
+  past: boolean
+}
+
+/**
+ * #812 — Une occurrence réelle de l'événement couvre-t-elle le jour civil de `today` ?
+ * Ponctuel ou borné : début ≤ aujourd'hui ≤ fin. Série : dernière occurrence dont le
+ * début est ≤ aujourd'hui (et ≤ `seriesHorizon`, borne incluse), même calcul que la frise
+ * et `isPastEvent` (`occurrenceStart` depuis l'origine), durée = celle de la 1re.
+ */
+function occurrenceCoversDay(
+  event: FullCalendarEvent,
+  start: Date,
+  end: Date,
+  today: Date,
+): boolean {
+  const day = startOfDay(today).getTime()
+  const origin = startOfDay(start)
+  const span = Math.max(0, daysBetween(origin, end))
+  const props = event.extendedProps
+  const unit = props?.isRecurring ? props.recurrenceUnit : null
+  if (!unit) return origin.getTime() <= day && day <= addDays(origin, span).getTime()
+
+  const bound = props?.recurrenceEndDate ? parseLocalDate(props.recurrenceEndDate) : null
+  const horizon = seriesHorizon({
+    start: origin,
+    unit,
+    endDate: bound && !Number.isNaN(bound.getTime()) ? startOfDay(bound) : null,
+  }).getTime()
+  let lastStart: Date | null = null
+  for (let k = 0; k < MAX_OCCURRENCES; k++) {
+    const next = occurrenceStart(origin, unit, k)
+    if (next.getTime() > day || next.getTime() > horizon) break
+    lastStart = next
+  }
+  return lastStart !== null && day <= addDays(lastStart, span).getTime()
 }
 
 /**
@@ -355,16 +559,27 @@ export function indexEventsByResource(
     const dayOffset = daysBetween(rangeStart, eventStart)
     const spanDays = Math.max(1, daysBetween(eventStart, eventEnd))
 
-    let status: PositionedEvent['status'] = 'upcoming'
-    if (eventEnd < now) status = 'expired'
-    else if (eventStart <= now && now <= eventEnd) status = 'ongoing'
+    // #812 — statut exact, dérivé de DEUX questions distinctes :
+    //  - « Terminé » = `isPastEvent` (règle de l'historique produit) : fin strictement
+    //    antérieure à aujourd'hui, dernière occurrence réelle pour une série bornée ;
+    //  - « En cours » = une occurrence RÉELLE couvre aujourd'hui. Une série entre deux
+    //    occurrences n'est pas en cours (« À venir »), même si son premier événement est
+    //    révolu et sa borne de série lointaine. Un événement qui finit aujourd'hui est en
+    //    cours : la comparaison se fait en jours civils, pas en instants (minuit de fin
+    //    < maintenant ferait basculer à tort).
+    const past = isPastTimelineEvent(event, now)
+    const status: PositionedEvent['status'] = past
+      ? 'expired'
+      : occurrenceCoversDay(event, eventStart, eventEnd, now)
+        ? 'ongoing'
+        : 'upcoming'
 
     let bucket = map.get(resourceId)
     if (!bucket) {
       bucket = []
       map.set(resourceId, bucket)
     }
-    bucket.push({ event, dayOffset, spanDays, status })
+    bucket.push({ event, dayOffset, spanDays, status, past })
   }
   return map
 }
@@ -396,6 +611,7 @@ export function scaleEventPositions(
             ? pinFootprintPx
             : Math.max(minWidth, g.spanDays * dayWidth),
         status: g.status,
+        past: g.past,
       }
     }
     map.set(resourceId, positioned)
@@ -448,7 +664,7 @@ export interface RulerTick {
  */
 const rulerFormatters = new Map<
   string,
-  { dayFmt: Intl.DateTimeFormat; monthFmt: Intl.DateTimeFormat }
+  { dayFmt: Intl.DateTimeFormat; monthFmt: Intl.DateTimeFormat; hourFmt: Intl.DateTimeFormat }
 >()
 
 function getRulerFormatters(locale: string) {
@@ -458,6 +674,7 @@ function getRulerFormatters(locale: string) {
       // Jours et semaines partagent le même format (numéro + mois court).
       dayFmt: new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short' }),
       monthFmt: new Intl.DateTimeFormat(locale, { month: 'short', year: '2-digit' }),
+      hourFmt: new Intl.DateTimeFormat(locale, { hour: 'numeric' }),
     }
     rulerFormatters.set(locale, cached)
   }
@@ -476,13 +693,78 @@ export function buildRulerTicks(
   dayWidth: number,
   locale: string,
 ): RulerTick[] {
-  const unit = MAJOR_TICK_UNIT[level]
+  return buildTicksForUnit(rangeStart, totalDays, MAJOR_TICK_UNIT[level], dayWidth, locale)
+}
+
+/**
+ * #593 — Règle de la frise desktop à échelle continue : unité par seuils
+ * (`tickUnitForScale`), graduations horaires au plus fin. `days` restreint les
+ * graduations HORAIRES aux jours `[startDay, endDay[` (la bande rendue) : jusqu'à huit
+ * par jour, elles ne se génèrent pas sur toute l'étendue. Les autres unités l'ignorent.
+ */
+export function buildRulerTicksForScale(
+  rangeStart: Date,
+  totalDays: number,
+  pxPerDay: number,
+  locale: string,
+  days?: { startDay: number; endDay: number },
+): RulerTick[] {
+  return buildTicksForUnit(
+    rangeStart,
+    totalDays,
+    tickUnitForScale(pxPerDay),
+    pxPerDay,
+    locale,
+    days,
+  )
+}
+
+/** Écart minimal (px) entre deux graduations horaires : place d'un libellé de jour. */
+export const HOUR_TICK_MIN_GAP_PX = 48
+const HOUR_TICK_STEPS = [1, 2, 3, 6, 12] as const
+
+function buildTicksForUnit(
+  rangeStart: Date,
+  totalDays: number,
+  unit: TickUnit,
+  dayWidth: number,
+  locale: string,
+  days?: { startDay: number; endDay: number },
+): RulerTick[] {
   const ticks: RulerTick[] = []
   const end = addDays(rangeStart, totalDays)
 
-  const { dayFmt, monthFmt } = getRulerFormatters(locale)
+  const { dayFmt, monthFmt, hourFmt } = getRulerFormatters(locale)
 
-  if (unit === 'day') {
+  if (unit === 'hour') {
+    // Pas horaire le plus fin qui laisse `HOUR_TICK_MIN_GAP_PX` entre deux graduations.
+    // Minuit porte la date ; les libellés d'heure, identiques chaque jour, sont formatés une fois.
+    const hourPx = dayWidth / 24
+    const step = HOUR_TICK_STEPS.find((h) => h * hourPx >= HOUR_TICK_MIN_GAP_PX) ?? 12
+    const hourLabels: string[] = []
+    for (let h = step; h < 24; h += step) {
+      hourLabels.push(hourFmt.format(new Date(2000, 0, 1, h)))
+    }
+    const firstDay = Math.max(0, days?.startDay ?? 0)
+    const endDay = Math.min(totalDays, days?.endDay ?? totalDays)
+    for (let i = firstDay; i < endDay; i++) {
+      const d = addDays(rangeStart, i)
+      ticks.push({
+        leftPx: i * dayWidth,
+        label: dayFmt.format(d),
+        weekend: isWeekend(d),
+        monthBoundary: d.getDate() === 1,
+      })
+      for (let k = 0; k < hourLabels.length; k++) {
+        ticks.push({
+          leftPx: i * dayWidth + (k + 1) * step * hourPx,
+          label: hourLabels[k],
+          weekend: false,
+          monthBoundary: false,
+        })
+      }
+    }
+  } else if (unit === 'day') {
     for (let i = 0; i < totalDays; i++) {
       const d = addDays(rangeStart, i)
       ticks.push({

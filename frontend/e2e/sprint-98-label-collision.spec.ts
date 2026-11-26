@@ -3,6 +3,7 @@ import { type Locator, type Page, type Route } from '@playwright/test'
 import { ensureAuthenticated } from './support/auth'
 import { PROD } from './support/accounts'
 import { sessionState } from './support/session'
+import { INITIAL_PX_PER_DAY, scaleReadout } from './support/timeline-zoom'
 
 /**
  * #746 (Sprint 98) — Frise : aucun LIBELLÉ ne se peint sur l'occurrence suivante de sa
@@ -241,7 +242,9 @@ test.describe('#746 frise desktop — aucun libellé ne chevauche l’occurrence
     // Barrière d'hydratation (PIT-S83-001), cf. `sprint-85-timeline-group-head`.
     await expect(page.getByTestId('timeline-view')).toHaveAttribute('data-layout', 'screen')
     await expect(laneLocator(page, PIN_LANE)).toHaveCount(1)
-    await expect(page.getByTestId('timeline-zoom-level')).toHaveText('Mois')
+    await expect(page.getByTestId('timeline-zoom-level')).toHaveText(
+      scaleReadout(INITIAL_PX_PER_DAY),
+    )
     await page.keyboard.press('t')
 
     const pin = await measureLabel(page, { lane: PIN_LANE, owner: PIN_LONG, kind: 'pin' })

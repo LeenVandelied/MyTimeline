@@ -3,6 +3,7 @@ import { type Locator, type Page, type Route } from '@playwright/test'
 import { ensureAuthenticated } from './support/auth'
 import { PROD } from './support/accounts'
 import { sessionState } from './support/session'
+import { scaleAfterSteps, scaleReadout } from './support/timeline-zoom'
 
 /**
  * #709 (Sprint 97) — Frise : deux occurrences RÉELLES qui se chevauchent dans une même
@@ -215,8 +216,13 @@ function assertStacked(
   expect(m.rows, `${tag} crochet data-lane-rows`).toBe('2')
 }
 
-/** Libellés FR des niveaux de zoom parcourus (Mois = défaut, puis Trimestre). */
+/** Libellés FR des niveaux de zoom parcourus par les frises MOBILES (Mois = défaut, puis Trimestre). */
 const LEVELS = ['Mois', 'Trimestre'] as const
+/**
+ * #593 — frise desktop à zoom continu : l'échelle du mois au chargement, puis la borne
+ * trimestre (trois crans arrière).
+ */
+const DESKTOP_STEPS_OUT = [0, 3] as const
 
 test.describe('#709 frise desktop — deux occurrences qui se chevauchent sont empilées', () => {
   test('visibles, disjointes, cliquables, et atteignables au clavier (↓ = rangée suivante)', async ({
@@ -231,8 +237,10 @@ test.describe('#709 frise desktop — deux occurrences qui se chevauchent sont e
     await expect(laneLocator(page, STACKED_LANE)).toHaveCount(1)
 
     const level = page.getByTestId('timeline-zoom-level')
-    for (const [i, label] of LEVELS.entries()) {
-      if (i > 0) await page.getByTestId('timeline-zoom-out').click()
+    let stepsDone = 0
+    for (const steps of DESKTOP_STEPS_OUT) {
+      for (; stepsDone < steps; stepsDone++) await page.getByTestId('timeline-zoom-out').click()
+      const label = scaleReadout(scaleAfterSteps(-steps))
       await expect(level).toHaveText(label)
       await page.keyboard.press('t')
       assertStacked(await measureStack(page), {

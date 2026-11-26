@@ -89,10 +89,15 @@ import {
  * 409 la suppression de SA catégorie. La purge liste donc les produits du compte et
  * archive tout ce qui pend à une catégorie tracée, semé par l'API ou par l'IHM.
  *
- * CE QUE LA PURGE NE COUVRE PAS (assumé) : un produit créé par l'IHM sous une
- * catégorie elle aussi créée par l'IHM — aucune des deux n'étant tracée, rien ne
- * les relie à ce test. Aucune spec ne fait ça aujourd'hui (toutes partent d'une
- * `seedCategory`), mais ce n'est pas garanti par construction.
+ * LES CATÉGORIES CRÉÉES AU CLIC (#550) sont suivies quand la page passe par
+ * `openCategoriesTab` (`support/products.ts`) : un écouteur lit la réponse du POST
+ * et `trackSeedLater` la garde en attente, que `flushSeedTracking` attend avant la
+ * purge. Seules les réponses venues du réseau comptent (pas un `route.fulfill`).
+ * Une création sur une page qui n'y passe pas n'est PAS suivie.
+ *
+ * CE QUE LA PURGE NE COUVRE PAS (assumé) : cette dernière catégorie, et ses
+ * produits créés à l'IHM : rien ne les relie à ce test. Aucune spec ne fait ça
+ * aujourd'hui, mais ce n'est pas garanti par construction.
  *
  * ÉCHEC DE PURGE : il est FATAL quand le test a par ailleurs réussi. Une purge
  * silencieusement inopérante restaurerait le défaut sans que rien ne rougisse —
@@ -117,7 +122,12 @@ interface Bucket {
 
 interface TrackingState {
   baseURL: string | undefined
-  buckets: Map<BrowserContext, Bucket>
+  /** Promesse par contexte : deux `trackSeed` concurrents partagent le même registre. */
+  buckets: Map<BrowserContext, Promise<Bucket>>
+  /** Enregistrements lancés par des écouteurs, attendus par `flushSeedTracking` avant la purge. */
+  pendingRecordings: Promise<void>[]
+  /** Échecs d'enregistrement d'une création réussie : ils font échouer la purge. */
+  recordingFailures: string[]
 }
 
 /**
@@ -136,22 +146,71 @@ interface TrackingState {
 let tracking: TrackingState | undefined
 
 export function beginSeedTracking(baseURL: string | undefined): void {
-  tracking = { baseURL, buckets: new Map() }
+  tracking = { baseURL, buckets: new Map(), pendingRecordings: [], recordingFailures: [] }
+}
+
+/** Réponse HTTP de création observée par un écouteur (méthode, URL, statut, corps JSON). */
+export interface CreationResponse {
+  method: string
+  url: string
+  status: number
+  body: unknown
+}
+
+/**
+ * Transforme la réponse d'une création de catégorie en entrée de purge, ou en rien.
+ * Seule une 201 sur `POST …/api/categories` dont le corps porte un `id` est retenue.
+ */
+export function categorySeedFromResponse(response: CreationResponse): SeededEntry | null {
+  if (response.method !== 'POST' || response.status !== 201) return null
+  let pathname: string
+  try {
+    pathname = new URL(response.url).pathname
+  } catch {
+    return null
+  }
+  if (!/\/api\/categories\/?$/.test(pathname)) return null
+  const id = (response.body as { id?: unknown } | null)?.id
+  return typeof id === 'string' && id !== '' ? { kind: 'category', id } : null
 }
 
 /** Enregistre une entité semée pour purge en fin de test. No-op si le tracking n'est pas armé. */
 export async function trackSeed(page: Page, entry: SeededEntry): Promise<void> {
-  if (!tracking) return
+  const state = tracking
+  if (!state) return
   const context = page.context()
-  let bucket = tracking.buckets.get(context)
-  if (!bucket) {
+  let pending = state.buckets.get(context)
+  if (!pending) {
     // Capture des cookies MAINTENANT : plusieurs specs ouvrent un contexte ad hoc
     // (`browser.newContext()`) et le ferment dans le corps du test — à la purge il
     // n'existe plus, et `page.request` lèverait « Target page/context closed ».
-    bucket = { storageState: await context.storageState(), entries: [] }
-    tracking.buckets.set(context, bucket)
+    // La promesse est posée dans la map avant tout `await` : deux appels concurrents
+    // sur un contexte neuf partagent donc le même registre.
+    pending = context.storageState().then((storageState) => ({ storageState, entries: [] }))
+    state.buckets.set(context, pending)
   }
+  const bucket = await pending
+  // Un même id peut arriver par deux écouteurs (aide commune et spec) : on ne le note qu'une fois.
+  if (bucket.entries.some((e) => e.kind === entry.kind && e.id === entry.id)) return
   bucket.entries.push(entry)
+}
+
+/**
+ * Pour un écouteur d'événement : garde en attente un enregistrement asynchrone, que
+ * `flushSeedTracking` attend avant de purger. Un échec n'est pas avalé, il fait
+ * échouer la purge. Le travail démarre tout de suite (lire le corps avant que le
+ * contexte ne ferme). No-op si le tracking n'est pas armé.
+ */
+export function trackSeedLater(task: () => Promise<void>): void {
+  const state = tracking
+  if (!state) return
+  state.pendingRecordings.push(
+    task().catch((error) => {
+      state.recordingFailures.push(
+        `enregistrement d'une création : ${error instanceof Error ? error.message : String(error)}`,
+      )
+    }),
+  )
 }
 
 interface ProductListing {
@@ -308,8 +367,13 @@ export async function flushSeedTracking(): Promise<string[]> {
   const state = tracking
   tracking = undefined
   if (!state) return []
-  const failures: string[] = []
-  for (const bucket of state.buckets.values()) {
+  // Un enregistrement peut en déclencher un autre : on vide jusqu'à stabilité.
+  while (state.pendingRecordings.length > 0) {
+    await Promise.all(state.pendingRecordings.splice(0))
+  }
+  const failures: string[] = [...state.recordingFailures]
+  for (const pendingBucket of state.buckets.values()) {
+    const bucket = await pendingBucket
     if (bucket.entries.length === 0) continue
     try {
       await purgeBucket(state.baseURL, bucket.storageState, bucket.entries)

@@ -1,10 +1,5 @@
 {
   "title": "Dashboard",
-  "welcome": "Welcome to your dashboard",
-  "lastConnection": "Last connection",
-  "email": "Email",
-  "role": "Role",
-  "products": "Products",
   "greeting": {
     "eyebrow": "Overview",
     "morning": "Good morning {name}, here's your day",
@@ -19,7 +14,6 @@
     "today": "Today",
     "window": "Window · {range}",
     "viewport": "{days}-day preview window",
-    "empty": "No events in this period",
     "openTimeline": "Open timeline"
   },
   "week": {
@@ -77,17 +71,6 @@
     "emptyCta": "Go to products",
     "noUpcoming": "No upcoming"
   },
-  "stats": {
-    "title": "Statistics",
-    "totalEvents": "Total events",
-    "upcomingEvents": "Upcoming events",
-    "completedEvents": "Completed events"
-  },
-  "actions": {
-    "createEvent": "Create event",
-    "viewCalendar": "View calendar",
-    "manageProfile": "Manage profile"
-  },
   "timeline": {
     "zoom": {
       "label": "Zoom level",
@@ -97,7 +80,11 @@
       "week": "Week",
       "month": "Month",
       "quarter": "Quarter",
-      "year": "Year"
+      "year": "Year",
+      "scale": "1 px = {hours} h"
+    },
+    "footer": {
+      "counter": "{events, plural, one {# event} other {# events}} · {products, plural, one {# product} other {# products}}"
     },
     "minimap": {
       "label": "Timeline overview",

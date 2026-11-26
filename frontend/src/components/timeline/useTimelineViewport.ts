@@ -58,6 +58,12 @@ export interface TimelineViewport {
    * À appeler après une série d'`ensureVisible`, qui ne fait qu'élargir.
    */
   resync: () => void
+  /**
+   * #593 — Recale les bandes TOUT DE SUITE (forcé), dans l'effet de layout qui vient de
+   * déplacer le défilement : celui de la remesure (`geometryKey`) passe AVANT la
+   * re-projection d'ancre d'un zoom, et lirait l'ancien `scrollLeft`.
+   */
+  syncNow: () => void
 }
 
 interface ViewportState {
@@ -299,6 +305,8 @@ export function useTimelineViewport(
     [],
   )
 
+  const syncNow = useCallback(() => sync(true), [sync])
+
   const ensureVisible = useCallback((horizontal: Band, vertical: Band) => {
     setState((previous) => {
       if (!previous.measurable) return previous
@@ -331,6 +339,7 @@ export function useTimelineViewport(
     measurable: state.measurable,
     ensureVisible,
     resync,
+    syncNow,
   }
 }
 

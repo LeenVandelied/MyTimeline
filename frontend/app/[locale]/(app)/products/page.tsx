@@ -1,9 +1,10 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslations } from 'next-intl'
 
 import { useAuthGuard } from '@/hooks/useAuthGuard'
+import { useCategories } from '@/hooks/useCategories'
 import { AppFooter } from '@/components/ui/footer-app'
 import { Tabs } from '@/components/ui/tabs'
 import { ProductsListView } from '@/components/products/ProductsListView'
@@ -33,6 +34,26 @@ export default function ProductsPage() {
   const { user } = useAuthGuard()
 
   const [tab, setTab] = useState<ProductsTab>('products')
+  // #719 — filtre des archivés par catégorie. Il vit ICI : les vues sont remontées à chaque
+  // changement d'onglet, un état local à la vue serait perdu.
+  const [archivedCategoryId, setArchivedCategoryId] = useState<string | undefined>()
+
+  // #719 — le compteur d'une carte démonte la vue Catégories : le focus tombait sur `body`.
+  // Il va à l'onglet Archivés (scopé à CETTE tablist), posé après le rendu du nouvel onglet.
+  const tabsRef = useRef<HTMLDivElement>(null)
+  const focusArchivedTabRef = useRef(false)
+  useEffect(() => {
+    if (tab !== 'archived' || !focusArchivedTabRef.current) return
+    focusArchivedTabRef.current = false
+    tabsRef.current?.querySelector<HTMLElement>('[role="tab"][aria-selected="true"]')?.focus()
+  }, [tab])
+
+  // Même requête que `CategoriesView` (cache partagé) : le nom du filtre survit à la
+  // restauration du dernier archivé de la catégorie.
+  const categoriesQuery = useCategories(true)
+  const archivedCategoryName = categoriesQuery.data?.find(
+    (category) => category.id === archivedCategoryId,
+  )?.name
 
   const tabItems = useMemo(
     () => [
@@ -56,10 +77,14 @@ export default function ProductsPage() {
     <div className="bg-bg text-ink flex min-h-screen flex-col" data-testid="products-page">
       <div className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6 lg:px-8">
         <Tabs
+          ref={tabsRef}
           items={tabItems}
           value={tab}
           onValueChange={(v) => {
-            if (isProductsTab(v)) setTab(v)
+            if (!isProductsTab(v)) return
+            // Un clic direct sur un onglet (Archivés compris) retire le filtre.
+            setArchivedCategoryId(undefined)
+            setTab(v)
           }}
           aria-label={t('list.title')}
           className="mb-6"
@@ -67,8 +92,22 @@ export default function ProductsPage() {
         />
 
         {tab === 'products' && <ProductsListView />}
-        {tab === 'categories' && <CategoriesView />}
-        {tab === 'archived' && <ArchivedProductsView />}
+        {tab === 'categories' && (
+          <CategoriesView
+            onShowArchived={(categoryId) => {
+              setArchivedCategoryId(categoryId)
+              focusArchivedTabRef.current = true
+              setTab('archived')
+            }}
+          />
+        )}
+        {tab === 'archived' && (
+          <ArchivedProductsView
+            categoryId={archivedCategoryId}
+            categoryName={archivedCategoryName}
+            onClearCategoryFilter={() => setArchivedCategoryId(undefined)}
+          />
+        )}
       </div>
 
       <AppFooter />

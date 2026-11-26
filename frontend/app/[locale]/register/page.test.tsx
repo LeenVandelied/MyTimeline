@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { AxiosError, AxiosHeaders } from 'axios'
@@ -120,5 +120,17 @@ describe('RegisterPage', () => {
     expect(submit).toHaveClass('bg-accent', 'text-accent-ink')
 
     expect(container.querySelector('.text-ink-faint')).toBeNull()
+  })
+
+  // #625 — présentation en deux zones : panneau d'illustration à côté du formulaire.
+  it('uses the asymmetric auth layout', () => {
+    render(<RegisterPage params={params} />)
+
+    const panel = screen.queryByTestId('auth-side-panel')
+    const zone = screen.queryByTestId('auth-form-zone')
+    expect(panel).not.toBeNull()
+    expect(zone).not.toBeNull()
+    expect(within(zone as HTMLElement).getByTestId('register-form')).toBeInTheDocument()
+    expect(within(panel as HTMLElement).queryByTestId('register-form')).toBeNull()
   })
 })

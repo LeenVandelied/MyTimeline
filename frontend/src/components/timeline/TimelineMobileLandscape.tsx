@@ -5,7 +5,13 @@ import { Minus, MoreHorizontal, Plus, Map as MapIcon } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { FullCalendarEvent } from '@/types/event'
 import { cn } from '@/lib/utils'
-import { buildEventAriaLabel, categoryColorsOf, eventInkColor, Resource } from './lib'
+import {
+  buildEventAriaLabel,
+  categoryColorsOf,
+  eventInkColor,
+  isPastTimelineEvent,
+  Resource,
+} from './lib'
 import { Minimap } from './Minimap'
 import { TimelineLandscapeDrawer } from './TimelineLandscapeDrawer'
 import { TimelineActionSheet } from './TimelineActionSheet'
@@ -331,6 +337,8 @@ export const TimelineMobileLandscape: React.FC<TimelineMobileLandscapeProps> = (
                           const color = event.color || 'var(--color-accent)'
                           // #230 (BR-EVE-011/013) — archivé = GRISÉ, pas masqué.
                           const archived = event.extendedProps?.archived === true
+                          // #812 — passé (règle de l'historique produit) : pastille grisée.
+                          const past = event.past ?? isPastTimelineEvent(event, state.now)
                           // #230 (correction review S61) — encre calculée sur la
                           // couleur RENDUE (désaturée si archivé), cf. `eventInkColor`.
                           const ink = event.color
@@ -392,6 +400,7 @@ export const TimelineMobileLandscape: React.FC<TimelineMobileLandscapeProps> = (
                                       className={cn(
                                         'mt-tlm__evt-dot',
                                         archived && 'mt-evt--archived',
+                                        past && 'mt-evt--past',
                                       )}
                                       style={{ background: statusToVar(event.status) }}
                                       aria-hidden="true"

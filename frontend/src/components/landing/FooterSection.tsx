@@ -20,9 +20,9 @@ export interface FooterSectionProps {
  * légales ont un contenu juridique obligatoire (identité de l'éditeur, directeur de
  * publication, hébergeur) qu'on ne peut pas inventer, et une route placeholder vide
  * serait une promesse de conformité fausse. Un lien absent est plus honnête qu'un lien
- * mort, et un lien mort est en outre un défaut d'accessibilité. Les clés i18n sont
- * CONSERVÉES dans les quatre locales : le jour où la page existe, il suffit de
- * rétablir l'entrée. Suivi : follow-up « créer la page mentions légales ».
+ * mort, et un lien mort est en outre un défaut d'accessibilité. La clé i18n a été
+ * RETIRÉE des quatre locales avec la purge des orphelines (#90) : le jour où la page
+ * existe, il faudra la recréer dans les 4 locales en même temps que l'entrée. Suivi : follow-up « créer la page mentions légales ».
  *
  * #348 (AC #2) — ÉCHELLE DU WORDMARK. Il portait `text-2xl`, soit 45 px dans l'échelle
  * DS (PAS 24) et à TOUTES les largeurs, aucun palier responsive. Il BATTAIT donc le h1

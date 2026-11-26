@@ -1,16 +1,13 @@
 {
   "email": {
-    "invalid": "El email es inválido",
-    "required": "El email es requerido"
+    "invalid": "El email es inválido"
   },
   "name": {
     "min": "El nombre debe contener al menos 3 caracteres",
-    "required": "El nombre es requerido",
     "max": "El nombre no debe superar los 20 caracteres"
   },
   "username": {
     "min": "El nombre de usuario debe contener al menos 3 caracteres",
-    "required": "El nombre de usuario es requerido",
     "max": "El nombre de usuario no debe superar los 20 caracteres"
   },
   "password": {
@@ -34,7 +31,6 @@
     "colorInvalid": "Color inválido (se espera formato hexadecimal, p. ej. #3B82F6)",
     "submitError": "Se produjo un error al guardar, inténtalo de nuevo.",
     "forbidden": "Modificación denegada: no tienes permiso para editar este evento.",
-    "conflict": "Este evento se modificó mientras tanto. Recarga para ver la última versión.",
-    "reload": "Recargar"
+    "conflict": "Este evento se modificó mientras tanto. Recarga para ver la última versión."
   }
 }

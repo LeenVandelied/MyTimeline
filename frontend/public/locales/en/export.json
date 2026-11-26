@@ -1,5 +1,4 @@
 {
-  "title": "Export my data",
   "description": "Download a copy of your personal data (GDPR portability).",
   "formatLabel": "Export format",
   "steps": {

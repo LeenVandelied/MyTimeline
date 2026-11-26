@@ -217,6 +217,13 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional(readOnly = true)
+    public Product getArchivedProductDetail(UUID productId, UUID userId) {
+        return productRepository.findArchivedDetailByIdAndUserId(productId, userId)
+                .orElseThrow(() -> new ProductNotFoundException(productId));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public boolean existsById(UUID id) {
         return productRepository.existsById(id);
     }

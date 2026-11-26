@@ -26,7 +26,7 @@ import com.matimeline.eventmanager.domain.ports.services.ProductService;
 import com.matimeline.eventmanager.infrastructure.security.CallerResolver;
 
 /**
- * Matrice des 8 routes /api/users/{userId}/products... : sans appelant -> 401, appelant différent
+ * Matrice des 9 routes /api/users/{userId}/products... : sans appelant -> 401, appelant différent
  * du {userId} du path -> 403, et dans les deux cas ni productService ni eventService ne sont
  * touchés. Même montage standalone que {@link ProductControllerOwnershipTest}.
  */
@@ -37,6 +37,7 @@ class ProductControllerPathOwnershipMatrixTest {
         CREATE(HttpMethod.POST, "/products"),
         LIST(HttpMethod.GET, "/products"),
         ARCHIVED(HttpMethod.GET, "/products/archived"),
+        ARCHIVED_DETAIL(HttpMethod.GET, "/products/archived/{productId}"),
         RESTORE(HttpMethod.POST, "/products/{productId}/restore"),
         GET_BY_ID(HttpMethod.GET, "/products/{productId}"),
         PATCH(HttpMethod.PATCH, "/products/{productId}"),

@@ -32,6 +32,9 @@ export const queryKeys = {
      * de `useArchiveProduct` rafraîchit ainsi l'onglet « Archivés » sans le connaître.
      */
     archived: (userId: string) => ['products', { userId, archived: true }] as const,
+    /** #718 — Fiche d'un produit archivé (lecture seule), sous le préfixe `['products']`. */
+    archivedDetail: (userId: string, productId: string) =>
+      ['products', { userId, archived: true, productId }] as const,
   },
   events: {
     all: ['events'] as const,

@@ -87,6 +87,23 @@ describe('useRestoreProduct', () => {
     expect(client.getQueryState(CATEGORIES_KEY)?.isInvalidated).toBe(true)
   })
 
+  it('#718 succès : la fiche archivée du produit restauré est retirée du cache, pas celle des autres', async () => {
+    restoreMock.mockResolvedValue(undefined)
+    const client = makeClient()
+    const key1 = queryKeys.products.archivedDetail('user-1', 'p-1')
+    const key2 = queryKeys.products.archivedDetail('user-1', 'p-2')
+    client.setQueryData(key1, { ...active('p-1') })
+    client.setQueryData(key2, { ...active('p-2') })
+    const { result } = renderHook(() => useRestoreProduct('user-1'), {
+      wrapper: makeWrapper(client),
+    })
+
+    await result.current.mutateAsync({ productId: 'p-1' })
+
+    expect(client.getQueryData(key1)).toBeUndefined()
+    expect(client.getQueryData(key2)).toBeDefined()
+  })
+
   it('échec 404 : erreur exposée, archivés invalidés mais NON modifiés, liste active intacte', async () => {
     const notFound = { response: { status: 404 } }
     restoreMock.mockRejectedValue(notFound)

@@ -1,10 +1,5 @@
 {
   "title": "Panel de control",
-  "welcome": "Bienvenido a tu panel de control",
-  "lastConnection": "Última conexión",
-  "email": "Correo electrónico",
-  "role": "Rol",
-  "products": "Productos",
   "greeting": {
     "eyebrow": "Resumen",
     "morning": "Buenos días {name}, aquí está tu día",
@@ -19,7 +14,6 @@
     "today": "Hoy",
     "window": "Ventana · {range}",
     "viewport": "Ventana de vista previa de {days} días",
-    "empty": "Sin eventos en este período",
     "openTimeline": "Abrir la cronología"
   },
   "week": {
@@ -77,17 +71,6 @@
     "emptyCta": "Ir a los productos",
     "noUpcoming": "Sin vencimientos"
   },
-  "stats": {
-    "title": "Estadísticas",
-    "totalEvents": "Eventos totales",
-    "upcomingEvents": "Próximos eventos",
-    "completedEvents": "Eventos completados"
-  },
-  "actions": {
-    "createEvent": "Crear evento",
-    "viewCalendar": "Ver calendario",
-    "manageProfile": "Administrar perfil"
-  },
   "timeline": {
     "zoom": {
       "label": "Nivel de zoom",
@@ -97,7 +80,11 @@
       "week": "Semana",
       "month": "Mes",
       "quarter": "Trimestre",
-      "year": "Año"
+      "year": "Año",
+      "scale": "1 px = {hours} h"
+    },
+    "footer": {
+      "counter": "{events, plural, one {# evento} other {# eventos}} · {products, plural, one {# producto} other {# productos}}"
     },
     "minimap": {
       "label": "Vista general de la cronología",

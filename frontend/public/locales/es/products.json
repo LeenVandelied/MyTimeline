@@ -1,24 +1,6 @@
 {
   "add": {
-    "title": "Añadir Producto",
-    "form": {
-      "name": "Nombre del Producto",
-      "namePlaceholder": "Ingrese el nombre del producto",
-      "category": "Categoría",
-      "categoryPlaceholder": "Seleccione una categoría",
-      "submit": "Añadir",
-      "error": "Ocurrió un error al añadir el producto."
-    },
-    "categories": {
-      "vehicles": "Vehículos",
-      "insurance": "Seguros",
-      "food": "Alimentos",
-      "medical": "Médico"
-    },
     "event": {
-      "title": "Añadir Evento",
-      "list": "Eventos Añadidos",
-      "empty": "No hay eventos añadidos",
       "form": {
         "name": "Nombre del Evento",
         "namePlaceholder": "Ingrese el nombre del evento",
@@ -51,35 +33,21 @@
         "months": "Meses",
         "years": "Años"
       }
-    },
-    "events": {
-      "list": "Eventos Añadidos",
-      "empty": "No hay eventos añadidos"
-    },
-    "description": "Añada un nuevo producto con sus eventos asociados"
+    }
   },
   "details": {
     "title": "Detalles del Evento",
-    "end": "Su evento termina en ",
     "duration": "Duración",
-    "colors": "Personalización de Colores",
     "color": "Color",
     "preview": "Vista Previa del Evento",
     "sampleEvent": "Evento de Ejemplo",
-    "sampleDescription": "Descripción del evento con los colores seleccionados",
     "previewTimeline": {
       "label": "Vista previa cronológica del evento",
       "nextOccurrence": "Próxima ocurrencia"
-    },
-    "edit": {
-      "title": "Editar Evento",
-      "success": "Evento modificado con éxito",
-      "error": "Error al modificar el evento"
     }
   },
   "edit": {
-    "title": "Editar Evento",
-    "save": "Guardar Cambios"
+    "title": "Editar Evento"
   },
   "eventCategory": {
     "label": "Categoría",
@@ -134,7 +102,6 @@
     "emptySearch": "Ningún producto coincide con tu búsqueda.",
     "clearSearch": "Borrar la búsqueda",
     "error": "No se pudieron cargar los productos.",
-    "count": "{count, plural, =0 {ningún producto} one {# producto} other {# productos}}",
     "columns": {
       "product": "Producto",
       "nextEvent": "Próximo evento",
@@ -160,6 +127,7 @@
   "detail": {
     "back": "Volver a los productos",
     "notFound": "Producto no encontrado o archivado.",
+    "loadError": "No se pudo cargar el producto.",
     "loading": "Cargando producto…",
     "newEvent": "Nuevo evento",
     "edit": "Editar",
@@ -182,11 +150,8 @@
       "all": "Todos"
     },
     "fields": {
-      "name": "Nombre",
       "category": "Categoría",
-      "description": "Descripción",
       "color": "Color",
-      "noDescription": "Sin descripción",
       "noCategory": "Sin categoría"
     },
     "eventsCount": "{count, plural, =0 {ningún evento} one {# evento} other {# eventos}}"
@@ -202,9 +167,24 @@
     "system": "Sistema",
     "productCount": "{count, plural, =0 {ningún producto} one {# producto} other {# productos}}",
     "archivedCount": "{count, plural, one {# archivado} other {# archivados}}",
+    "showArchivedLabel": "Ver los productos archivados de {name}",
     "delete": "Eliminar",
     "edit": "Editar",
-    "openEdit": "Editar {name}"
+    "openEdit": "Editar {name}",
+    "assignLabel": "Categoría de {name}",
+    "assignError": "No se pudo cambiar la categoría del producto. Inténtalo de nuevo.",
+    "productsError": "No se pudieron cargar los productos: las etiquetas están ocultas.",
+    "suggestionConflict": "La categoría «{name}» ya existe.",
+    "suggestionError": "No se pudo crear «{name}». Inténtalo de nuevo.",
+    "suggestions": {
+      "vehicles": "Vehículos",
+      "insurance": "Seguros",
+      "health": "Salud",
+      "food": "Alimentación",
+      "housing": "Vivienda",
+      "travel": "Viajes",
+      "finance": "Finanzas"
+    }
   },
   "archived": {
     "title": "Archivados",
@@ -218,7 +198,20 @@
       "actions": "Acciones"
     },
     "restore": "Desarchivar",
-    "restoreLabel": "Desarchivar {name}"
+    "restoreLabel": "Desarchivar {name}",
+    "filter": {
+      "label": "Categoría:",
+      "unknown": "esta categoría",
+      "empty": "Ningún producto archivado en esta categoría.",
+      "clear": "Quitar el filtro por categoría"
+    }
+  },
+  "archivedDetail": {
+    "banner": "Este producto está archivado. Lo ves en modo de solo lectura.",
+    "restore": "Desarchivar",
+    "eventsTitle": "Eventos",
+    "eventsEmpty": "Sin eventos.",
+    "eventArchived": "archivado"
   },
   "restoreDialog": {
     "title": "¿Desarchivar este producto?",

@@ -4,6 +4,12 @@ import { ensureAuthenticated } from './support/auth'
 import { PROD } from './support/accounts'
 import { sessionState } from './support/session'
 import { LANE_GUTTER_PX } from './support/timeline-lanes'
+import {
+  INITIAL_PX_PER_DAY,
+  MIN_PX_PER_DAY,
+  scaleAfterSteps,
+  scaleReadout,
+} from './support/timeline-zoom'
 
 /**
  * #595 (Sprint 91) — Frise : une série récurrente est identifiable SANS lecteur d'écran.
@@ -275,7 +281,11 @@ async function centerOn(page: Page, target: Locator): Promise<void> {
   await twoFrames(page)
 }
 
-/** px/jour par libellé FR du niveau de zoom (`DAY_WIDTH_PX`, `zoom.ts`). */
+/**
+ * px/jour par libellé FR du niveau de zoom des frises MOBILES (`DAY_WIDTH_PX`, `zoom.ts`).
+ * #593 — la frise desktop affiche « 1 px = X h » (zoom continu) : son échelle se relit sur
+ * la largeur du rail (`desktopDayWidth`).
+ */
 const DAY_WIDTH_BY_LEVEL: Record<string, number> = {
   Jour: 96,
   Semaine: 34,
@@ -290,6 +300,16 @@ const EVENT_DAYS: Record<string, Date> = {
   [C_TITLE]: C_START,
 }
 const daysFrom = (a: Date, b: Date) => Math.round((b.getTime() - a.getTime()) / 86_400_000)
+/** Étendue de la fixture en jours (cf. bornes ci-dessus). */
+const TOTAL_DAYS = 862
+
+/** #593 — échelle exacte de la frise desktop : (largeur du rail − gouttière) / étendue. */
+async function desktopDayWidth(page: Page): Promise<number> {
+  const railWidth = await page
+    .getByTestId('timeline-scroll')
+    .evaluate((el) => (el.firstElementChild as HTMLElement).getBoundingClientRect().width)
+  return (railWidth - LANE_GUTTER_PX) / TOTAL_DAYS
+}
 
 /**
  * Amène `day` au centre de la piste ET garantit que la BANDE RENDUE le suive, AVANT toute
@@ -318,7 +338,9 @@ const daysFrom = (a: Date, b: Date) => Math.round((b.getTime() - a.getTime()) / 
  */
 async function scrollToDay(page: Page, day: Date): Promise<void> {
   const label = ((await page.getByTestId('timeline-zoom-level').textContent()) ?? '').trim()
-  const dayWidth = DAY_WIDTH_BY_LEVEL[label]
+  const dayWidth = label.startsWith('1 px =')
+    ? await desktopDayWidth(page)
+    : DAY_WIDTH_BY_LEVEL[label]
   if (!dayWidth) throw new Error(`niveau de zoom inconnu : ${label}`)
   const scroll = page.getByTestId('timeline-scroll')
   // 1. Purge de l'hystérésis (cf. supra) — la bande est recalée sur l'origine de la piste.
@@ -570,16 +592,22 @@ async function assertSeriesIdentifiable(page: Page, where: string) {
 }
 
 /**
- * Zoom Année : listes de fantômes EXACTES (bornes de série, coupe à l'étendue). La piste ne
- * tient pas toujours dans la bande rendue (portrait) : les fantômes de C sont réunis sur deux
- * cadrages.
+ * Zoom le plus large : listes de fantômes EXACTES (bornes de série, coupe à l'étendue). La
+ * piste ne tient pas toujours dans la bande rendue (portrait) : les fantômes de C sont
+ * réunis sur deux cadrages. Mobile : palier Année. #593 — desktop : borne trimestre du
+ * zoom continu (trois crans arrière depuis le mois), l'année n'y est plus manuelle.
  */
-async function assertGhostBounds(page: Page, where: string) {
+async function assertGhostBounds(page: Page, where: string, desktop = false) {
   const level = page.getByTestId('timeline-zoom-level')
-  await page.getByTestId('timeline-zoom-out').click()
-  await expect(level).toHaveText('Trimestre')
-  await page.getByTestId('timeline-zoom-out').click()
-  await expect(level).toHaveText('Année')
+  if (desktop) {
+    for (let i = 0; i < 3; i++) await page.getByTestId('timeline-zoom-out').click()
+    await expect(level).toHaveText(scaleReadout(MIN_PX_PER_DAY))
+  } else {
+    await page.getByTestId('timeline-zoom-out').click()
+    await expect(level).toHaveText('Trimestre')
+    await page.getByTestId('timeline-zoom-out').click()
+    await expect(level).toHaveText('Année')
+  }
   await revealEvent(page, A_TITLE)
 
   // A et B tiennent dans la bande rendue autour de A (≤ 3 mois ≈ 200 px) : listes EXACTES.
@@ -626,7 +654,9 @@ test.describe('#595 frise desktop — ↻, fantômes et connecteur de série', (
     await expect(page.getByTestId('timeline-screen')).toBeVisible()
     // Barrière d'hydratation (PIT-S83-001), cf. `sprint-85-timeline-group-head`.
     await expect(page.getByTestId('timeline-view')).toHaveAttribute('data-layout', 'screen')
-    await expect(page.getByTestId('timeline-zoom-level')).toHaveText('Mois')
+    await expect(page.getByTestId('timeline-zoom-level')).toHaveText(
+      scaleReadout(INITIAL_PX_PER_DAY),
+    )
 
     // Légende : les deux marques de récurrence rendues (DEC-S85-002).
     const legend = page.getByTestId('timeline-sidebar-legend')
@@ -639,14 +669,15 @@ test.describe('#595 frise desktop — ↻, fantômes et connecteur de série', (
 
     await assertSeriesIdentifiable(page, 'desktop Mois')
     await assertRealOccurrencesOnTop(page, 'desktop Mois', LANE_GUTTER_PX)
-    await assertGhostBounds(page, 'desktop Année')
+    await assertGhostBounds(page, 'desktop trimestre', true)
 
-    // VIRTUALISATION : au zoom Jour (96 px/j, piste ≈ 80 000 px), seuls les fantômes de C
-    // proches de la bande rendue sont montés — jamais la série entière.
+    // VIRTUALISATION : huit crans avant depuis la borne trimestre (128 px/j, plus fin que
+    // l'ancien 'Jour', piste ≈ 110 000 px), seuls les fantômes de C proches de la bande
+    // rendue sont montés — jamais la série entière.
     const level = page.getByTestId('timeline-zoom-level')
-    for (const label of ['Trimestre', 'Mois', 'Semaine', 'Jour']) {
+    for (let i = 1; i <= 8; i++) {
       await page.getByTestId('timeline-zoom-in').click()
-      await expect(level).toHaveText(label)
+      await expect(level).toHaveText(scaleReadout(scaleAfterSteps(i, MIN_PX_PER_DAY)))
     }
     await revealEvent(page, B_TITLE)
     const mountedC = (await ghostDates(page, C_ID)).length

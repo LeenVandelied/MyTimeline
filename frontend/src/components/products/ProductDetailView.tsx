@@ -22,11 +22,13 @@ import { useProductsWithEvents } from '@/hooks/useProductsWithEvents'
 import { useSetEventArchived } from '@/hooks/useSetEventArchived'
 import { useAuth } from '@/hooks/useAuth'
 import { useArchiveProduct, useIsProductArchivedHere } from '@/hooks/useArchiveProduct'
+import { useArchivedProductDetail } from '@/hooks/useArchivedProductDetail'
 import { HANDLES_FORBIDDEN_INLINE } from '@/services/inlineErrorHandling'
 import { mapToFullCalendarEvent, type Event, type FullCalendarEvent } from '@/types/event'
 import type { Product } from '@/types/product'
 import { isPastEvent } from './isPastEvent'
 import { formatEventSpan } from './eventSpan'
+import { ArchivedProductDetailView } from './ArchivedProductDetailView'
 
 /**
  * #68 — Vue détail d'un produit.
@@ -39,6 +41,8 @@ import { formatEventSpan } from './eventSpan'
  *
  * #50 : les produits archivés sont invisibles côté backend → un produit absent de
  * la liste (archivé ou inexistant) affiche l'état « introuvable ».
+ * #718 : avant de conclure « introuvable », un produit absent des actifs est cherché parmi les
+ * archivés (`ArchivedProductLookup`) : trouvé → fiche en lecture seule, sinon « introuvable ».
  *
  * Actions (#605, handoff §5, dans cet ordre) :
  *   - « Nouvel événement » → LE drawer de création du shell (`useOpenCreateEvent`), produit
@@ -94,6 +98,54 @@ function httpStatusOf(error: unknown): number | undefined {
     if (response && typeof response.status === 'number') return response.status
   }
   return undefined
+}
+
+/**
+ * #718 — Produit absent des actifs : interroge la route des archivés. Monté seulement dans ce
+ * cas, donc aucun appel réseau pour un produit actif.
+ *   - « introuvable » : un 404 (inconnu, actif ailleurs ou d'autrui, BR-PRO-011), ou un
+ *     identifiant qui n'est pas un UUID (requête désactivée, aucun appel) ;
+ *   - une autre erreur (5xx, réseau, 403) : état d'erreur, pas « introuvable » ;
+ *   - un 404 sur la dernière réponse écarte la fiche gardée en cache (produit restauré ailleurs).
+ */
+function ArchivedProductLookup({
+  userId,
+  productId,
+  backButton,
+}: {
+  userId: string | undefined
+  productId: string
+  backButton: React.ReactNode
+}) {
+  const t = useTranslations('products.detail')
+  const archived = useArchivedProductDetail(userId, productId)
+  const failedStatus = archived.isError ? httpStatusOf(archived.error) : undefined
+
+  if (archived.data && failedStatus !== 404) {
+    return <ArchivedProductDetailView product={archived.data} />
+  }
+
+  return (
+    <div className="flex flex-col gap-4" data-testid="product-detail-view">
+      {backButton}
+      {archived.isLoading ? (
+        <LoadingSkeleton
+          variant="timeline"
+          rows={3}
+          label={t('loading')}
+          testId="product-detail-loading"
+        />
+      ) : archived.isError && failedStatus !== 404 ? (
+        <p className="text-destructive text-sm" role="alert" data-testid="product-detail-error">
+          {t('loadError')}
+        </p>
+      ) : (
+        <p className="text-ink-muted text-sm" role="alert" data-testid="product-detail-not-found">
+          {t('notFound')}
+        </p>
+      )}
+    </div>
+  )
 }
 
 export function ProductDetailView({ productId }: ProductDetailViewProps) {
@@ -289,14 +341,7 @@ export function ProductDetailView({ productId }: ProductDetailViewProps) {
   }
 
   if (!product) {
-    return (
-      <div className="flex flex-col gap-4" data-testid="product-detail-view">
-        {backButton}
-        <p className="text-ink-muted text-sm" role="alert" data-testid="product-detail-not-found">
-          {t('notFound')}
-        </p>
-      </div>
-    )
+    return <ArchivedProductLookup userId={userId} productId={productId} backButton={backButton} />
   }
 
   const effectiveColor = product.color ?? product.category?.color ?? null

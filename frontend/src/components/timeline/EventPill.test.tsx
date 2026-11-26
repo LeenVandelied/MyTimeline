@@ -1,10 +1,11 @@
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { EventPill } from './EventPill'
 import { makePositionedEvent } from './fixtures'
 import { INK_DARK, INK_LIGHT } from '@/lib/color'
 import { DEFAULT_COLOR } from '@/types/event'
+import { isPastEvent } from '../products/isPastEvent'
 
 /**
  * #192 — Tests de rendu EventPill. Composant présentation pur (aucune dep
@@ -458,5 +459,170 @@ describe('#746 EventPill — libellés bornés à leur réserve d’empilage', (
     )
     const outside = screen.getByTestId('timeline-event-outside-label')
     expect(outside.style.getPropertyValue('--mt-label-max')).toBe('')
+  })
+})
+
+// ==================== #812 — événements PASSÉS distingués sur la frise ====================
+// Jour de référence figé via l'horloge (seule `Date` est simulée : userEvent/RTL intacts).
+describe('#812 pastille grisée d’un événement passé', () => {
+  const TODAY = new Date(2026, 8, 22, 15, 30) // 22 sept. 2026, heure locale
+
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(TODAY)
+  })
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  const base = {
+    productId: 'prod-1',
+    productName: 'Lait entier bio',
+    category: 'Produits frais',
+    type: 'duration',
+  }
+
+  const duration = (
+    start: string,
+    end: string,
+    extendedProps: Record<string, unknown> = {},
+    over: Partial<Parameters<typeof makePositionedEvent>[0]> = {},
+  ) =>
+    makePositionedEvent({
+      start,
+      end,
+      color: '#A7B83A',
+      extendedProps: { ...base, ...extendedProps },
+      ...over,
+    })
+
+  const dotOf = (container: HTMLElement) => container.querySelector('.mt-tlv__evt-dot')
+
+  it('marks the pill past using the shared past criterion', () => {
+    // Série hebdo bornée : occurrences 30/08, 06/09, 13/09, 20/09 (27/09 dépasse la borne).
+    // La dernière occurrence réelle (20→21/09) est révolue, alors que la borne de série
+    // (26/09) tombe APRÈS aujourd'hui : un test naïf « borne < aujourd'hui » dirait faux.
+    const series = {
+      startDate: '2026-08-30',
+      endDate: '2026-08-31',
+      isRecurring: true,
+      recurrenceUnit: 'WEEK' as const,
+      recurrenceEndDate: '2026-09-26',
+    }
+    expect(isPastEvent(series, TODAY)).toBe(true)
+    expect(new Date(2026, 8, 26).getTime()).toBeGreaterThan(TODAY.getTime())
+
+    const { container } = render(
+      <EventPill
+        event={duration(
+          series.startDate,
+          series.endDate,
+          {
+            isRecurring: true,
+            recurrenceUnit: 'WEEK',
+            recurrenceEndDate: series.recurrenceEndDate,
+          },
+          // Statut de la 1re occurrence volontairement non « expired » : la règle ne s'y fie pas.
+          { status: 'ongoing' },
+        )}
+        ariaLabel="x"
+        onSelect={() => {}}
+      />,
+    )
+    expect(dotOf(container)).toHaveClass('mt-evt--past')
+  })
+
+  it('greys the status dot of a past event', () => {
+    const { container } = render(
+      <EventPill
+        event={duration('2026-09-15', '2026-09-21', {}, { status: 'expired' })}
+        ariaLabel="x"
+        onSelect={() => {}}
+      />,
+    )
+    const dot = dotOf(container)
+    expect(dot).toHaveClass('mt-evt--past')
+    expect(dot).toHaveAttribute('aria-hidden', 'true')
+  })
+
+  it('keeps the title untouched on a past event', () => {
+    // Même événement (couleur, durée), décalé : passé vs à venir. Même statut posé aux deux
+    // pour que seule la date change (la variable de statut est une autre info).
+    const past = duration('2026-09-15', '2026-09-21', {}, { status: 'ongoing' })
+    const future = duration('2026-09-25', '2026-09-30', {}, { status: 'ongoing' })
+    const snapshot = (event: typeof past) => {
+      const { unmount } = render(<EventPill event={event} ariaLabel="x" onSelect={() => {}} />)
+      const pill = screen.getByTestId('timeline-event')
+      const title = within(pill).getByText('Péremption')
+      const out = {
+        pillClass: pill.className,
+        pillStyle: pill.getAttribute('style'),
+        titleClass: title.className,
+        titleStyle: title.getAttribute('style'),
+        titleHidden: title.getAttribute('aria-hidden'),
+        ink: pill.style.getPropertyValue('--mt-evt-ink'),
+      }
+      unmount()
+      return out
+    }
+    const before = snapshot(future)
+    const after = snapshot(past)
+    // Seule la pastille décorative peut différer : barre et titre identiques, classes
+    // et style en ligne (PIT-S61-003, PIT-S70-003 : aucun grisage ni opacité sur le texte).
+    expect(after).toEqual(before)
+    // Encre calculée sur la couleur d'origine.
+    expect(after.ink).toBe(INK_DARK)
+    expect(after.titleHidden).toBeNull()
+  })
+
+  it('does not mark ending-today or endless-series events as past', () => {
+    const { container, rerender } = render(
+      <EventPill
+        event={duration('2026-09-15', '2026-09-22', {}, { status: 'ongoing' })}
+        ariaLabel="x"
+        onSelect={() => {}}
+      />,
+    )
+    expect(dotOf(container)).not.toHaveClass('mt-evt--past')
+
+    // Série sans date de fin : sa 1re occurrence est révolue (statut « expired »), pas la série.
+    rerender(
+      <EventPill
+        event={duration(
+          '2026-08-01',
+          '2026-08-03',
+          { isRecurring: true, recurrenceUnit: 'MONTH', recurrenceEndDate: null },
+          { status: 'expired' },
+        )}
+        ariaLabel="x"
+        onSelect={() => {}}
+      />,
+    )
+    expect(dotOf(container)).not.toHaveClass('mt-evt--past')
+  })
+
+  it('past and archived event keeps both markers', () => {
+    const { container, rerender } = render(
+      <EventPill
+        event={duration('2026-09-15', '2026-09-21', { archived: true }, { status: 'expired' })}
+        ariaLabel="x"
+        onSelect={() => {}}
+      />,
+    )
+    const pill = screen.getByTestId('timeline-event')
+    expect(pill).toHaveAttribute('data-archived', 'true')
+    expect(pill).toHaveClass('mt-tlv__evt--archived')
+    expect(dotOf(container)).toHaveClass('mt-evt--archived', 'mt-evt--past')
+
+    // Archivé NON passé : inchangé (marque d'archivé seule).
+    rerender(
+      <EventPill
+        event={duration('2026-09-25', '2026-09-28', { archived: true }, { status: 'upcoming' })}
+        ariaLabel="x"
+        onSelect={() => {}}
+      />,
+    )
+    expect(dotOf(container)).toHaveClass('mt-evt--archived')
+    expect(dotOf(container)).not.toHaveClass('mt-evt--past')
   })
 })

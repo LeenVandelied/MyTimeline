@@ -1,24 +1,6 @@
 {
   "add": {
-    "title": "Produkt hinzufügen",
-    "form": {
-      "name": "Produktname",
-      "namePlaceholder": "Produktname eingeben",
-      "category": "Kategorie",
-      "categoryPlaceholder": "Kategorie auswählen",
-      "submit": "Hinzufügen",
-      "error": "Beim Hinzufügen des Produkts ist ein Fehler aufgetreten."
-    },
-    "categories": {
-      "vehicles": "Fahrzeuge",
-      "insurance": "Versicherung",
-      "food": "Lebensmittel",
-      "medical": "Medizinisch"
-    },
     "event": {
-      "title": "Ereignis hinzufügen",
-      "list": "Hinzugefügte Ereignisse",
-      "empty": "Keine Ereignisse hinzugefügt",
       "form": {
         "name": "Ereignisname",
         "namePlaceholder": "Ereignisname eingeben",
@@ -51,35 +33,21 @@
         "months": "Monate",
         "years": "Jahre"
       }
-    },
-    "events": {
-      "list": "Hinzugefügte Ereignisse",
-      "empty": "Keine Ereignisse hinzugefügt"
-    },
-    "description": "Fügen Sie ein neues Produkt mit zugehörigen Ereignissen hinzu"
+    }
   },
   "details": {
     "title": "Ereignisdetails",
-    "end": "Ihr Ereignis endet in ",
     "duration": "Dauer",
-    "colors": "Farbanpassung",
     "color": "Farbe",
     "preview": "Ereignisvorschau",
     "sampleEvent": "Beispielereignis",
-    "sampleDescription": "Ereignisbeschreibung mit ausgewählten Farben",
     "previewTimeline": {
       "label": "Zeitleisten-Vorschau des Ereignisses",
       "nextOccurrence": "Nächstes Vorkommen"
-    },
-    "edit": {
-      "title": "Ereignis bearbeiten",
-      "success": "Ereignis erfolgreich geändert",
-      "error": "Fehler beim Ändern des Ereignisses"
     }
   },
   "edit": {
-    "title": "Ereignis bearbeiten",
-    "save": "Änderungen speichern"
+    "title": "Ereignis bearbeiten"
   },
   "eventCategory": {
     "label": "Kategorie",
@@ -134,7 +102,6 @@
     "emptySearch": "Kein Produkt entspricht deiner Suche.",
     "clearSearch": "Suche löschen",
     "error": "Produkte konnten nicht geladen werden.",
-    "count": "{count, plural, =0 {keine Produkte} one {# Produkt} other {# Produkte}}",
     "columns": {
       "product": "Produkt",
       "nextEvent": "Nächstes Ereignis",
@@ -160,6 +127,7 @@
   "detail": {
     "back": "Zurück zu den Produkten",
     "notFound": "Produkt nicht gefunden oder archiviert.",
+    "loadError": "Das Produkt konnte nicht geladen werden.",
     "loading": "Produkt wird geladen…",
     "newEvent": "Neues Ereignis",
     "edit": "Bearbeiten",
@@ -182,11 +150,8 @@
       "all": "Alle"
     },
     "fields": {
-      "name": "Name",
       "category": "Kategorie",
-      "description": "Beschreibung",
       "color": "Farbe",
-      "noDescription": "Keine Beschreibung",
       "noCategory": "Keine Kategorie"
     },
     "eventsCount": "{count, plural, =0 {keine Ereignisse} one {# Ereignis} other {# Ereignisse}}"
@@ -202,9 +167,24 @@
     "system": "System",
     "productCount": "{count, plural, =0 {keine Produkte} one {# Produkt} other {# Produkte}}",
     "archivedCount": "{count, plural, one {# archiviert} other {# archiviert}}",
+    "showArchivedLabel": "Archivierte Produkte von {name} anzeigen",
     "delete": "Löschen",
     "edit": "Bearbeiten",
-    "openEdit": "{name} bearbeiten"
+    "openEdit": "{name} bearbeiten",
+    "assignLabel": "Kategorie von {name}",
+    "assignError": "Die Kategorie des Produkts konnte nicht geändert werden. Versuche es erneut.",
+    "productsError": "Die Produkte konnten nicht geladen werden: Die Chips sind ausgeblendet.",
+    "suggestionConflict": "Die Kategorie „{name}“ gibt es bereits.",
+    "suggestionError": "„{name}“ konnte nicht erstellt werden. Versuche es erneut.",
+    "suggestions": {
+      "vehicles": "Fahrzeuge",
+      "insurance": "Versicherung",
+      "health": "Gesundheit",
+      "food": "Ernährung",
+      "housing": "Wohnen",
+      "travel": "Reisen",
+      "finance": "Finanzen"
+    }
   },
   "archived": {
     "title": "Archiviert",
@@ -218,7 +198,20 @@
       "actions": "Aktionen"
     },
     "restore": "Wiederherstellen",
-    "restoreLabel": "{name} wiederherstellen"
+    "restoreLabel": "{name} wiederherstellen",
+    "filter": {
+      "label": "Kategorie:",
+      "unknown": "diese Kategorie",
+      "empty": "Kein archiviertes Produkt in dieser Kategorie.",
+      "clear": "Kategoriefilter entfernen"
+    }
+  },
+  "archivedDetail": {
+    "banner": "Dieses Produkt ist archiviert. Du siehst es nur lesend.",
+    "restore": "Wiederherstellen",
+    "eventsTitle": "Ereignisse",
+    "eventsEmpty": "Keine Ereignisse.",
+    "eventArchived": "archiviert"
   },
   "restoreDialog": {
     "title": "Dieses Produkt wiederherstellen?",

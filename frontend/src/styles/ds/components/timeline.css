@@ -106,7 +106,9 @@
 .mt-evt--draft{background:color-mix(in srgb, var(--mt-evt, var(--color-accent)) 8%, var(--color-surface)); border:1.5px dashed var(--mt-evt-outline, var(--mt-evt, var(--color-rule-emphasis))); color:var(--color-ink-muted); box-shadow:none;}
 .dark .mt-evt--draft, [data-theme="dark"] .mt-evt--draft{border-color:var(--mt-evt-outline-dark, var(--mt-evt, var(--color-rule-emphasis)));}
 .mt-evt--archived{opacity:.45; filter:grayscale(.5);}
-/* #607 — ÉVÉNEMENT PASSÉ (historique du détail produit, handoff §5 « gris désaturé »).
+/* #607 — ÉVÉNEMENT PASSÉ (historique du détail produit, handoff §5 « gris désaturé »),
+   #812 — réutilisée telle quelle par la frise (desktop, mobile portrait et paysage).
+   Sur la frise elle ne se pose que sur `.mt-tlv__evt-dot` / `.mt-tlm__evt-dot`.
    Réservé, comme `.mt-evt--archived`, à la PASTILLE décorative (`aria-hidden`) : grisage
    COMPLET, SANS opacité. Le TEXTE de la ligne passe, lui, à l'encre `ink-muted` (token
    AA) côté composant — jamais de filtre ni d'opacité sur du texte (PIT-S61-003 : le
@@ -573,16 +575,17 @@
    `Vue Timeline.dc.html` (§A de `sprint-85/maquette-vue-timeline.md`), sauf les
    écarts de CONTRASTE commentés sur place.
 
-   DISPOSITION — une GRILLE sur la section, pas un wrapper : la sidebar doit
+   DISPOSITION — une GRILLE sur la section (3 lignes : barre, frise, pied #673 ;
+   colonne `side` en plus à partir de 1024 px), pas un wrapper : la sidebar doit
    rester DANS `rootRef` (le plein écran l'inclut) et le panneau superposé
    < 1024 px doit couvrir la FRISE sans couvrir la barre d'outils (le bouton
    « Filtres » y reste cliquable). Un même `<aside>` occupe donc la zone `side`
    (≥ 1024 px) ou se superpose en `position:absolute` à la zone `scroll` : un
    enfant absolu d'une grille positionnée prend sa ZONE comme bloc conteneur.
    Les enfants sr-only et le drawer (fixe) sont hors flux : ils ne prennent pas
-   de cellule.
+   de cellule. Le pied (#673) se place par numéros de lignes (2 à 3), pas par zone.
    ============================================================================ */
-.mt-tlv--screen{display:grid; grid-template-columns:minmax(0,1fr); grid-template-rows:auto minmax(0,1fr); grid-template-areas:"toolbar" "scroll";}
+.mt-tlv--screen{--tlv-footer-h:57px; display:grid; grid-template-columns:minmax(0,1fr); grid-template-rows:auto minmax(0,1fr) var(--tlv-footer-h); grid-template-areas:"toolbar" "scroll" "."; overflow:clip;}
 .mt-tlv--screen > .mt-tlv__toolbar{grid-area:toolbar;}
 .mt-tlv--screen > .mt-tlv__scroll{grid-area:scroll;}
 
@@ -610,28 +613,45 @@
 .mt-tlv__today-btn:hover{background:var(--color-surface-2);}
 .mt-tlv__today-btn:focus-visible{outline:2px solid var(--color-focus); outline-offset:2px;}
 
-/* #602 — PLACE DE LA MINIMAP dans la barre `screen`. Avec « Aujourd'hui » et
-   « Nouvel événement », les contrôles occupent ~470 px (fr, ≥ 1024 px) à ~560 px
-   (fr, < 1024 px, bouton « Filtres » compris). La minimap (`flex:1`, base 0)
-   absorbait seule le manque : MESURÉ à 1024 px, 9 px de large en français, 56 px
-   en allemand — un curseur de défilement inutilisable, sans aucun débordement
-   pour le signaler. Deux gardes :
-   (1) base de 160 px : si elle ne tient plus, la barre (`flex-wrap:wrap`) renvoie
-       à la ligne au lieu d'écraser la minimap — filet indépendant de la locale ;
-   (2) sous 700 px de BOÎTE DE CONTENU de barre (une requête de conteneur mesure
-       le contenu, padding exclu ; seuil = contrôles fr < 1024 px 520 px + gap +
-       160 px = 692 px mesurés), la minimap passe SEULE sur une 2e ligne pleine
-       largeur, les contrôles restant groupés sur la 1re, « Nouvel événement »
-       calé à droite (dernier, maquette §D). À 1280 px (contenu 710 px) : une
-       seule ligne.
-   `container-type` sur la barre `screen` seulement : le layout `embedded`
-   (dashboard, fiche produit) et sa bulle `?` en position absolue sont intacts. */
-.mt-tlv--screen > .mt-tlv__toolbar{container-type:inline-size;}
-.mt-tlv--screen .mt-tlv__minimap-slot{flex:1 1 160px;}
+/* #602 — « Nouvel événement » calé à droite de la barre `screen` (dernier, maquette §D).
+   #673 — la minimap n'est plus dans la barre : plus de contrôle élastique à garder
+   (base 160 px, requête de conteneur 700 px retirées), la barre tient sur une ligne. */
 .mt-tlv--screen .mt-tlv__new-event{margin-left:auto;}
-@container (max-width:700px){
-  .mt-tlv--screen .mt-tlv__minimap-slot{order:1; flex-basis:100%;}
+/* #673 — Le palier le plus étroit où la sidebar est permanente : à 1024 px la barre
+   fait 462 px de contenu. MESURÉ en français, contrôles + interstices : 470 px au zoom
+   le plus éloigné (« 1 px = 4,8 h »), 483 px au plus proche (« 1 px = 0,063 h », le
+   libellé continu change de largeur avec l'échelle) — « Nouvel événement » passait à la
+   ligne. On resserre jusqu'à 1100 px, pour ~9 px de marge au pire cas :
+   interstices 6 px, marges de barre 8 px, boutons de zoom 26 px, marges du libellé de
+   zoom et du bouton « Nouvel événement » 8 px.
+   ÉCARTS : « Aujourd'hui » passe de 10 à 8 px de marge latérale (hauteur et cadre
+   inchangés), sous la valeur de la maquette §D et du bouton « Filtres » ; le bloc zoom
+   (boutons 26 px, libellé à 8 px de marge) et « Nouvel événement » (8 px) sont aussi
+   plus serrés que les valeurs du DS, dans ce palier seulement. */
+@media (min-width:1024px) and (max-width:1099.98px){
+  .mt-tlv--screen > .mt-tlv__toolbar{gap:6px; padding-inline:8px;}
+  .mt-tlv--screen .mt-tlv__today-btn{padding-inline:8px;}
+  .mt-tlv--screen .mt-zoom__btn{width:26px;}
+  .mt-tlv--screen .mt-zoom__level{padding-inline:8px;}
+  .mt-tlv--screen .mt-tlv__new-event{padding-inline:8px;}
 }
+
+/* #673 — Pied de la frise `screen` : vue d'ensemble + compteur. Il tient dans `rootRef`,
+   donc dans la grille aussi en plein écran (là, la grille borne la hauteur et le pied
+   est la dernière ligne).
+   P1 — hors plein écran la section grandit avec les lanes et le pied tombait sous
+   l'écran. Il reste donc COLLÉ AU BAS DE LA FENÊTRE (sticky, fond opaque) pendant le
+   défilement de la page. Une cellule de grille borne un élément sticky : le pied
+   occupe les lignes 2 à 3 (zone de la frise + sa propre ligne, haute de
+   `--tlv-footer-h`), alignée en bas, ce qui le laisse glisser sur la frise. Il faut
+   `overflow:clip` sur la section (`overflow:hidden` en ferait le conteneur de
+   défilement du sticky). Hauteur fixe : la ligne réservée doit valoir exactement le
+   pied (40 px de minimap + 2 × 8 px + 1 px de filet).
+   P2 — la minimap garde 160 px au moins : le compteur ne l'écrase pas (PIT-S85-002). */
+.mt-tlv__footer{box-sizing:border-box; display:flex; align-items:center; gap:12px; height:var(--tlv-footer-h); padding:8px 12px; border-top:1px solid var(--color-rule); background:var(--color-surface-2);}
+.mt-tlv--screen > .mt-tlv__footer{grid-row:2 / 4; grid-column:-2 / -1; align-self:end; position:sticky; bottom:0; z-index:1;}
+.mt-tlv__footer .mt-tlv__minimap-slot{flex:1 1 160px; min-width:160px;}
+.mt-tlv__footer-counter{flex:none; font-family:var(--font-ui); font-size:12px; color:var(--color-ink-muted); white-space:nowrap;}
 
 /* < 1024 px (DEC-S85-004) : panneau superposé à la frise, fermé par défaut.
    `display:none` le retire aussi de l'arbre d'accessibilité et de l'ordre de
@@ -644,7 +664,7 @@
 /* ≥ 1024 px : colonne permanente sur toute la hauteur (barre d'outils comprise,
    comme la maquette), et le bouton « Filtres » n'a plus d'objet. */
 @media (min-width:1024px){
-  .mt-tlv--screen{grid-template-columns:248px minmax(0,1fr); grid-template-areas:"side toolbar" "side scroll";}
+  .mt-tlv--screen{grid-template-columns:248px minmax(0,1fr); grid-template-areas:"side toolbar" "side scroll" "side .";}
   .mt-tlv--screen > .mt-tlv-side{grid-area:side;}
   .mt-tlv-side-toggle{display:none;}
 }

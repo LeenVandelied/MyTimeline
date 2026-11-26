@@ -53,6 +53,10 @@ export function useRestoreProduct(userId: string | undefined) {
     },
     onSuccess: (_result, { productId }) => {
       if (userId) {
+        // #718 : la fiche archivée du produit restauré n'est plus valable (404 désormais).
+        queryClient.removeQueries({
+          queryKey: queryKeys.products.archivedDetail(userId, productId),
+        })
         queryClient.setQueryData<ArchivedProduct[]>(
           queryKeys.products.archived(userId),
           (previous) => previous?.filter((product) => product.id !== productId),

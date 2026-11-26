@@ -22,6 +22,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { createRegisterFormSchema, type RegisterFormValues } from '@/lib/schemas/auth'
 import { LanguageSelector } from '@/components/ui/language-selector'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
+import { AuthSplitLayout } from '@/components/auth/AuthSplitLayout'
 import { AppFooter } from '@/components/ui/footer-app'
 import { useTranslations } from 'next-intl'
 
@@ -66,10 +67,10 @@ export default function RegisterPage({ params }: { params: Promise<{ locale: str
       {/* #642 (DEC-S82-009) — la bascule de thème rejoint le sélecteur de langue
           dans le coin haut-droit, sur les 4 pages d'auth à l'identique. Deux
           boutons à icône seule de 36 px, `gap-1` : le bloc passe de 36 à 76 px
-          de large dans un coin libre, sans croiser la carte (`max-w-md` centrée)
+          de large dans un coin libre, sans croiser la carte (`auth-form-card`)
           — `e2e/sprint-77-theme-visual.spec.ts` capture la CARTE
-          (`div.bg-surface.border-rule.max-w-md.rounded-lg`), pas ce coin, ses
-          10 références restent donc valides.
+          (`[data-testid="auth-form-card"]`), pas ce coin : ce déplacement
+          ne change donc aucune capture.
 
           #656 — `relative` CI-DESSUS N'EST PAS DÉCORATIF. Sans lui, le bloc
           conteneur de cet `absolute` est le BLOC CONTENEUR INITIAL (aucun ancêtre
@@ -87,171 +88,169 @@ export default function RegisterPage({ params }: { params: Promise<{ locale: str
         <LanguageSelector />
       </div>
 
-      <div className="flex flex-grow items-center justify-center">
-        <div className="bg-surface border-rule w-full max-w-md rounded-lg border p-6 shadow-xs">
-          <h2 className="mb-6 text-center text-2xl font-bold">{t('register.title')}</h2>
+      <AuthSplitLayout>
+        <h2 className="mb-6 text-center text-2xl font-bold">{t('register.title')}</h2>
 
-          <Form {...form}>
-            <form
-              onSubmit={form.handleSubmit(onSubmit)}
-              className="space-y-6"
-              noValidate
-              data-testid="register-form"
-            >
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('register.form.email')}</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="email"
-                        autoComplete="email"
-                        data-testid="register-email"
-                        placeholder={t('register.form.emailPlaceholder')}
-                        {...field}
-                        className="bg-surface-2 border-rule-emphasis"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('register.form.name')}</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="text"
-                        autoComplete="name"
-                        data-testid="register-name"
-                        placeholder={t('register.form.namePlaceholder')}
-                        {...field}
-                        className="bg-surface-2 border-rule-emphasis"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="username"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('register.form.username')}</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="text"
-                        autoComplete="username"
-                        data-testid="register-username"
-                        placeholder={t('register.form.usernamePlaceholder')}
-                        {...field}
-                        className="bg-surface-2 border-rule-emphasis"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('register.form.password')}</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="password"
-                        autoComplete="new-password"
-                        data-testid="register-password"
-                        placeholder={t('register.form.passwordPlaceholder')}
-                        {...field}
-                        className="bg-surface-2 border-rule-emphasis"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="confirmPassword"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('register.form.confirmPassword')}</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="password"
-                        autoComplete="new-password"
-                        data-testid="register-confirm-password"
-                        placeholder={t('register.form.confirmPasswordPlaceholder')}
-                        {...field}
-                        className="bg-surface-2 border-rule-emphasis"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {serverError && (
-                <p
-                  role="alert"
-                  data-testid="register-error"
-                  className="text-danger text-sm font-medium"
-                >
-                  {serverError}
-                </p>
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="space-y-5"
+            noValidate
+            data-testid="register-form"
+          >
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('register.form.email')}</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="email"
+                      autoComplete="email"
+                      data-testid="register-email"
+                      placeholder={t('register.form.emailPlaceholder')}
+                      {...field}
+                      className="bg-surface-2 border-rule-emphasis"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
               )}
+            />
 
-              {success && (
-                <p
-                  role="status"
-                  data-testid="register-success"
-                  className="text-success text-sm font-medium"
-                >
-                  {t('common.register.success')}
-                </p>
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('register.form.name')}</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="text"
+                      autoComplete="name"
+                      data-testid="register-name"
+                      placeholder={t('register.form.namePlaceholder')}
+                      {...field}
+                      className="bg-surface-2 border-rule-emphasis"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
               )}
+            />
 
-              <Button
-                type="submit"
-                className="bg-accent text-accent-ink hover:bg-accent-hover w-full"
-                disabled={loading}
-                aria-busy={loading}
-                data-testid="register-submit"
+            <FormField
+              control={form.control}
+              name="username"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('register.form.username')}</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="text"
+                      autoComplete="username"
+                      data-testid="register-username"
+                      placeholder={t('register.form.usernamePlaceholder')}
+                      {...field}
+                      className="bg-surface-2 border-rule-emphasis"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('register.form.password')}</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="password"
+                      autoComplete="new-password"
+                      data-testid="register-password"
+                      placeholder={t('register.form.passwordPlaceholder')}
+                      {...field}
+                      className="bg-surface-2 border-rule-emphasis"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="confirmPassword"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('register.form.confirmPassword')}</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="password"
+                      autoComplete="new-password"
+                      data-testid="register-confirm-password"
+                      placeholder={t('register.form.confirmPasswordPlaceholder')}
+                      {...field}
+                      className="bg-surface-2 border-rule-emphasis"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {serverError && (
+              <p
+                role="alert"
+                data-testid="register-error"
+                className="text-danger text-sm font-medium"
               >
-                {loading ? (
-                  <>
-                    <Spinner label={t('common.spinner.loading')} />
-                    {t('register.form.submitting')}
-                  </>
-                ) : (
-                  t('register.form.submit')
-                )}
-              </Button>
-            </form>
-          </Form>
+                {serverError}
+              </p>
+            )}
 
-          <div className="mt-6 text-center">
-            <p className="text-ink-muted">
-              {t('register.form.alreadyAccount')}{' '}
-              <Link href={`/${locale}/login`} className="text-accent hover:text-accent-hover">
-                {t('register.form.loginLink')}
-              </Link>
-            </p>
-          </div>
+            {success && (
+              <p
+                role="status"
+                data-testid="register-success"
+                className="text-success text-sm font-medium"
+              >
+                {t('common.register.success')}
+              </p>
+            )}
+
+            <Button
+              type="submit"
+              className="bg-accent text-accent-ink hover:bg-accent-hover w-full"
+              disabled={loading}
+              aria-busy={loading}
+              data-testid="register-submit"
+            >
+              {loading ? (
+                <>
+                  <Spinner label={t('common.spinner.loading')} />
+                  {t('register.form.submitting')}
+                </>
+              ) : (
+                t('register.form.submit')
+              )}
+            </Button>
+          </form>
+        </Form>
+
+        <div className="mt-6 text-center">
+          <p className="text-ink-muted">
+            {t('register.form.alreadyAccount')}{' '}
+            <Link href={`/${locale}/login`} className="text-accent hover:text-accent-hover">
+              {t('register.form.loginLink')}
+            </Link>
+          </p>
         </div>
-      </div>
+      </AuthSplitLayout>
 
       <AppFooter />
     </div>

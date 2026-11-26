@@ -5,6 +5,7 @@ import {
   selectSetupAccounts,
   type E2eAccount,
 } from './support/accounts'
+import { shouldWarmProductDetail, warmProductDetail } from './support/dev-warmup'
 import { ensureRegisterForm } from './support/register-page'
 import {
   acceptedRegisterStatus,
@@ -259,7 +260,7 @@ setup('persist account identities', async () => {
 // identités ci-dessus restent persistées EN ENTIER : seule la connexion est sautée. Ancré par
 // `e2e-rate-limit-budget.test.ts`, qui compte le setup de chaque passe CI par cette fonction.
 for (const account of selectSetupAccounts(process.env[SETUP_ACCOUNTS_ENV])) {
-  setup(`provision ${account.key}`, async ({ browser }) => {
+  setup(`provision ${account.key}`, async ({ browser, baseURL }) => {
     // Sans ce budget, les retrys (rendu ET requête) expirent avant d'aboutir et le
     // message d'échec explicatif n'est jamais produit. Cf. PROVISION_TIMEOUT_MS.
     setup.setTimeout(PROVISION_TIMEOUT_MS)
@@ -268,7 +269,12 @@ for (const account of selectSetupAccounts(process.env[SETUP_ACCOUNTS_ENV])) {
     const page = await context.newPage()
     try {
       await provision(account, page)
+      // Session sauvegardée AVANT le préchauffage : celui-ci ne doit jamais la compromettre.
       await context.storageState({ path: account.storageState })
+      // #558 : compile la fiche produit avant les specs, serveur de dev local seulement.
+      if (shouldWarmProductDetail(account, process.env.PLAYWRIGHT_BASE_URL)) {
+        await warmProductDetail(page, baseURL)
+      }
     } finally {
       await context.close()
     }

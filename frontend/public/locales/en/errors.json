@@ -1,28 +1,21 @@
 {
   "auth": {
-    "register": "Error during registration",
-    "login": "Error during login",
-    "logout": "Error during logout",
     "sessionExpired": "Your session has expired. Please login again",
     "forbidden": "Access denied: you are not allowed to perform this action."
   },
   "validation": {
     "error": "Validation error, please check your input."
   },
-  "network": {
-    "offline": "You are offline. Please check your connection",
-    "timeout": "Request timeout. Please try again"
-  },
   "server": {
-    "error": "Server error. Please try again later",
-    "maintenance": "Server is under maintenance. Please try again later"
+    "error": "Server error. Please try again later"
   },
   "notFound": {
     "eyebrow": "Error 404",
     "title": "This page isn't in the almanac.",
     "description": "The page you're looking for has expired, moved, or never existed. Head back home — it's always a safe bet.",
     "week": "Week {week}",
-    "backHome": "Back to home"
+    "backHome": "Back to home",
+    "backToToday": "Back to today"
   },
   "forbidden": {
     "title": "Access denied",

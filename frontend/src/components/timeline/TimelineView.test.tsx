@@ -2,10 +2,18 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { IntlMessageFormat } from 'intl-messageformat'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import type { FullCalendarEvent } from '@/types/event'
 import type { Resource } from './lib'
 import { LANE_TRACK_OFFSET_PX, TimelineView } from './TimelineView'
+import {
+  computeRange,
+  DAY_WIDTH_PX,
+  formatHoursPerPx,
+  MAX_PX_PER_DAY,
+  MIN_PX_PER_DAY,
+} from './zoom'
 import { CreateEventProvider } from '@/components/layout/CreateEventContext'
 
 /**
@@ -16,9 +24,30 @@ import { CreateEventProvider } from '@/components/layout/CreateEventContext'
  * hook réseau monté — le composant ne consomme que ses props).
  */
 
+// #593 — les valeurs interpolées sont rendues après la clé : la lecture « 1 px = X h »
+// doit être observable sous le mock.
+// #673 — le compteur du pied se rend avec le VRAI message fr (pluriels ICU) : sans lui, le
+// mock ne montrerait que des nombres derrière une clé et ne prouverait ni le libellé ni
+// l'accord. Clé absente de `dashboard.json` → rendu par défaut (clé + valeurs), l'assertion échoue.
+const FOOTER_COUNTER_KEY = 'dashboard.timeline.footer.counter'
+function realFrCounter(values: Record<string, unknown>): string | null {
+  const messages = JSON.parse(
+    readFileSync(resolve(__dirname, '../../../public/locales/fr/dashboard.json'), 'utf8'),
+  )
+  const message: unknown = messages.timeline?.footer?.counter
+  if (typeof message !== 'string') return null
+  return String(new IntlMessageFormat(message, 'fr').format(values as Record<string, number>))
+}
+
 vi.mock('next-intl', () => ({
-  useTranslations: (namespace?: string) => (key: string) =>
-    namespace ? `${namespace}.${key}` : key,
+  useTranslations: (namespace?: string) => (key: string, values?: Record<string, unknown>) => {
+    const full = namespace ? `${namespace}.${key}` : key
+    if (full === FOOTER_COUNTER_KEY && values) {
+      const real = realFrCounter(values)
+      if (real !== null) return real
+    }
+    return values ? `${full} ${Object.values(values).join(' ')}` : full
+  },
 }))
 
 // jsdom n'implémente pas l'API Fullscreen ni scroll — stubs neutres.
@@ -1232,5 +1261,158 @@ describe('TimelineView', () => {
       expect(screen.getByTestId('timeline-today-button')).toBeInTheDocument()
       expect(screen.queryByTestId('timeline-new-event')).not.toBeInTheDocument()
     })
+  })
+
+  // ==================== #673 — pied de frise (layout screen) ====================
+  // Câblage seulement : la grille et la tenue de la barre sur une ligne se prouvent au
+  // navigateur (`e2e/sprint-85-timeline-toolbar.spec.ts`), jsdom n'applique aucune feuille.
+  describe('#673 pied de frise (layout screen)', () => {
+    const mk = (id: string, resourceId: string, category: string, start: string) => ({
+      id,
+      title: `Event ${id}`,
+      start,
+      end: start,
+      allDay: true,
+      resourceId,
+      color: '#3B62D4',
+      extendedProps: { productId: resourceId, productName: resourceId, category, type: 'single' },
+    })
+    const renderScreen = (events: FullCalendarEvent[], resources: Resource[]) =>
+      render(
+        <TimelineView
+          events={events}
+          resources={resources}
+          locale="fr-FR"
+          today={new Date(2026, 6, 15)}
+          layout="screen"
+        />,
+      )
+    const counterText = () => screen.queryByTestId('timeline-footer-counter')?.textContent?.trim()
+
+    // 4 événements, 3 produits, 3 catégories : Cat A porte 2 événements du produit pa.
+    const FOUR_EVENTS: FullCalendarEvent[] = [
+      mk('a1', 'pa', 'Cat A', '2026-07-10'),
+      mk('a2', 'pa', 'Cat A', '2026-07-11'),
+      mk('b1', 'pb', 'Cat B', '2026-07-18'),
+      mk('c1', 'pc', 'Cat C', '2026-07-26'),
+    ]
+    const THREE_PRODUCTS: Resource[] = [
+      { id: 'pa', title: 'Prod A', category: 'Cat A' },
+      { id: 'pb', title: 'Prod B', category: 'Cat B' },
+      { id: 'pc', title: 'Prod C', category: 'Cat C' },
+    ]
+
+    it('screen layout renders the minimap in the footer, not in the toolbar', () => {
+      const { container } = renderScreen(EVENTS, RESOURCES)
+      const toolbar = container.querySelector('.mt-tlv__toolbar') as HTMLElement
+      const footer = screen.queryByTestId('timeline-footer')
+      expect(toolbar.querySelector('[data-testid="timeline-minimap"]')).toBeNull()
+      expect(footer?.querySelector('[data-testid="timeline-minimap"]')).not.toBeNull()
+      expect(footer).not.toBeNull()
+      // Sous la frise : le pied vient après la zone de défilement.
+      expect(
+        screen.getByTestId('timeline-scroll').compareDocumentPosition(footer!) &
+          Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy()
+    })
+
+    it('footer shows the events and products counter', () => {
+      // 3 événements répartis sur 2 produits.
+      renderScreen([...EVENTS, mk('e3', 'p1', 'Frais', '2026-07-12')], RESOURCES)
+      expect(counterText()).toBe('3 événements · 2 produits')
+      expect(screen.getByTestId('timeline-footer')).toContainElement(
+        screen.getByTestId('timeline-footer-counter'),
+      )
+    })
+
+    it('footer counter uses singular forms for one event and one product', () => {
+      renderScreen([EVENTS[0]], [RESOURCES[0]])
+      expect(counterText()).toBe('1 événement · 1 produit')
+    })
+
+    it('footer counter excludes hidden categories', async () => {
+      const user = userEvent.setup()
+      renderScreen(FOUR_EVENTS, THREE_PRODUCTS)
+      expect(counterText()).toBe('4 événements · 3 produits')
+
+      const filterB = screen
+        .getAllByTestId('timeline-sidebar-filter')
+        .find((b) => b.getAttribute('data-category') === 'Cat B')!
+      await user.click(filterB)
+      expect(counterText()).toBe('3 événements · 2 produits')
+
+      // Réafficher la catégorie rend le total.
+      await user.click(filterB)
+      expect(counterText()).toBe('4 événements · 3 produits')
+    })
+  })
+})
+
+/**
+ * #593 — Zoom CONTINU de la frise desktop. L'échelle se lit sur la largeur du rail
+ * (étendue en jours × px par jour + gouttière) : c'est la taille réellement peinte.
+ */
+describe('#593 TimelineView — zoom continu', () => {
+  const TOTAL_DAYS = computeRange(EVENTS, new Date(2026, 6, 15)).totalDays
+
+  function pxPerDay(): number {
+    const rail = screen.getByTestId('timeline-scroll').firstElementChild as HTMLElement
+    return (parseFloat(rail.style.width) - LANE_TRACK_OFFSET_PX) / TOTAL_DAYS
+  }
+
+  it('ctrl wheel zooms proportionally to deltaY without jumping a level', () => {
+    const start = DAY_WIDTH_PX.month
+    const ratioAfterWheel = (deltaY: number): number => {
+      const view = setup()
+      expect(pxPerDay()).toBeCloseTo(start, 6)
+      fireEvent.wheel(screen.getByTestId('timeline-scroll'), { deltaY, ctrlKey: true })
+      const ratio = pxPerDay() / start
+      view.unmount()
+      return ratio
+    }
+    const small = ratioAfterWheel(-10)
+    const large = ratioAfterWheel(-100)
+    expect(small).toBeGreaterThan(1)
+    expect(large).toBeGreaterThan(small)
+    // Aucun des deux n'atteint le palier suivant (semaine).
+    expect(start * large).toBeLessThan(DAY_WIDTH_PX.week)
+  })
+
+  it('plus and minus keys zoom on the continuum', async () => {
+    const user = userEvent.setup()
+    setup()
+    const readout = screen.getByTestId('timeline-zoom-level')
+    const initialScale = pxPerDay()
+    const initialReadout = readout.textContent
+    expect(initialReadout).not.toContain('dashboard.timeline.zoom.month')
+    expect(initialReadout).toContain(formatHoursPerPx(initialScale, 'fr-FR'))
+
+    await user.keyboard('+')
+    await waitFor(() => expect(pxPerDay()).toBeGreaterThan(initialScale))
+    const zoomed = pxPerDay()
+    expect(zoomed).toBeLessThan(DAY_WIDTH_PX.week)
+    expect(readout.textContent).not.toBe(initialReadout)
+    expect(readout.textContent).toContain(formatHoursPerPx(zoomed, 'fr-FR'))
+
+    await user.keyboard('-')
+    await waitFor(() => expect(pxPerDay()).toBeCloseTo(initialScale, 6))
+    expect(readout.textContent).toBe(initialReadout)
+  })
+
+  it('zoom buttons are disabled at the scale bounds', async () => {
+    const user = userEvent.setup()
+    setup()
+    const zoomIn = screen.getByTestId('timeline-zoom-in') as HTMLButtonElement
+    const zoomOut = screen.getByTestId('timeline-zoom-out') as HTMLButtonElement
+
+    for (let i = 0; i < 60 && !zoomIn.disabled; i++) await user.click(zoomIn)
+    expect(pxPerDay()).toBeCloseTo(MAX_PX_PER_DAY, 6)
+    expect(zoomIn).toBeDisabled()
+    expect(zoomOut).toBeEnabled()
+
+    for (let i = 0; i < 60 && !zoomOut.disabled; i++) await user.click(zoomOut)
+    expect(pxPerDay()).toBeCloseTo(MIN_PX_PER_DAY, 6)
+    expect(zoomOut).toBeDisabled()
+    expect(zoomIn).toBeEnabled()
   })
 })

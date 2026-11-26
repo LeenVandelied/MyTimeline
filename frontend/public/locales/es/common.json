@@ -83,33 +83,20 @@
       "archived": "Archivado"
     }
   },
-  "validation": {
-    "username": "El nombre de usuario debe contener al menos 3 caracteres",
-    "password": "La contraseña debe contener al menos 6 caracteres"
-  },
   "buttons": {
-    "submit": "Validar",
     "cancel": "Cancelar",
     "save": "Guardar",
     "delete": "Eliminar",
     "edit": "Editar",
-    "back": "Atrás",
     "logout": "Cerrar sesión",
-    "settings": "Ajustes",
-    "previous": "Anterior",
-    "next": "Siguiente",
     "today": "Hoy",
     "close": "Cerrar"
   },
   "loading": {
     "default": "Cargando...",
-    "saving": "Guardando...",
-    "deleting": "Eliminando..."
+    "saving": "Guardando..."
   },
   "navigation": {
-    "home": "Inicio",
-    "profile": "Perfil",
-    "settings": "Configuración",
     "back": "Atrás",
     "backToHome": "Volver al inicio",
     "changeLanguage": "Cambiar de idioma"
@@ -130,15 +117,7 @@
     "days": "días",
     "expired": "Expirado"
   },
-  "events": {
-    "ongoing": "En curso",
-    "expired": "Expirado",
-    "upcoming": "Próximo",
-    "duration": "Duración",
-    "single": "Fecha única"
-  },
   "landing": {
-    "title": "Mi Timeline | Tu asistente personal de organización",
     "navigation": {
       "howItWorks": "Cómo funciona",
       "menuOpen": "Abrir el menú",
@@ -147,9 +126,6 @@
     },
     "buttons": {
       "register": "Registrarse"
-    },
-    "meta": {
-      "description": "Mi Timeline te ayuda a gestionar tus plazos, organizar tu tiempo y optimizar tu productividad. Simple, intuitivo y personalizable."
     },
     "hero": {
       "title": "Organiza tu vida con Mi Timeline",
@@ -231,8 +207,7 @@
     "cta": {
       "title": "¿Listo para transformar tu organización?",
       "subtitle": "Comienza ahora y mejora tu productividad",
-      "button": "Crear mi cuenta gratis",
-      "secondary": "Obtener más información"
+      "button": "Crear mi cuenta gratis"
     },
     "footer": {
       "description": "Tu asistente personal de organización y gestión del tiempo",
@@ -241,7 +216,6 @@
       "legal": "Legal",
       "terms": "Términos de servicio",
       "privacy": "Política de privacidad",
-      "legalNotice": "Aviso legal",
       "account": "Cuenta",
       "login": "Iniciar sesión",
       "register": "Registrarse"

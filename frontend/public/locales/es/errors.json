@@ -1,28 +1,21 @@
 {
   "auth": {
-    "register": "Error al registrarse",
-    "login": "Error al iniciar sesión",
-    "logout": "Error al cerrar sesión",
     "sessionExpired": "Su sesión ha expirado. Por favor, vuelva a conectarse",
     "forbidden": "Acceso denegado: no tiene permiso para realizar esta acción."
   },
   "validation": {
     "error": "Error de validación, por favor compruebe sus datos."
   },
-  "network": {
-    "offline": "Está desconectado. Por favor, verifique su conexión",
-    "timeout": "Se acabó el tiempo de espera. Por favor, inténtelo de nuevo"
-  },
   "server": {
-    "error": "Error del servidor. Por favor, inténtelo más tarde",
-    "maintenance": "El servidor está en mantenimiento. Por favor, inténtelo más tarde"
+    "error": "Error del servidor. Por favor, inténtelo más tarde"
   },
   "notFound": {
     "eyebrow": "Error 404",
     "title": "Esta página no figura en el almanaque.",
     "description": "La página que buscas ha caducado, se ha mudado o nunca existió. Vuelve al inicio: siempre es una apuesta segura.",
     "week": "Semana {week}",
-    "backHome": "Volver al inicio"
+    "backHome": "Volver al inicio",
+    "backToToday": "Volver a hoy"
   },
   "forbidden": {
     "title": "Acceso denegado",

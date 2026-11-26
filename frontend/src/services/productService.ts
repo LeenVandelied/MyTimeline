@@ -1,5 +1,12 @@
 import apiClient from './apiClient'
-import { ArchivedProduct, Product, ProductCreate, ProductUpdate } from '@/types/product'
+import {
+  ArchivedProduct,
+  ArchivedProductDetail,
+  archivedProductDetailSchema,
+  Product,
+  ProductCreate,
+  ProductUpdate,
+} from '@/types/product'
 import { safeErrorMessage } from '@/lib/safe-error'
 import type { InlineErrorOptions } from './inlineErrorHandling'
 
@@ -126,6 +133,25 @@ export const restoreProduct = async (userId: string, productId: string): Promise
     await apiClient.post(`/users/${userId}/products/${productId}/restore`)
   } catch (error) {
     console.error('Erreur lors du désarchivage du produit :', safeErrorMessage(error))
+    throw error
+  }
+}
+
+/**
+ * #718 — Fiche en lecture seule d'un produit archivé, événements inclus :
+ * `GET /users/{userId}/products/archived/{productId}`. Un 404 (inconnu, actif ou d'autrui)
+ * est propagé tel quel : l'appelant l'affiche comme « introuvable ». La réponse est validée par
+ * `archivedProductDetailSchema` avant retour.
+ */
+export const getArchivedProductDetail = async (
+  userId: string,
+  productId: string,
+): Promise<ArchivedProductDetail> => {
+  try {
+    const response = await apiClient.get(`/users/${userId}/products/archived/${productId}`)
+    return archivedProductDetailSchema.parse(response.data)
+  } catch (error) {
+    console.error('Erreur lors de la récupération du produit archivé :', safeErrorMessage(error))
     throw error
   }
 }

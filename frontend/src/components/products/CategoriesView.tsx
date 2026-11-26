@@ -9,13 +9,18 @@ import { contrastInk } from '@/lib/color'
 import { Button } from '@/components/ui/button'
 import { TOUCH_TARGET_BUTTON, TOUCH_TARGET_HITBOX } from '@/lib/touchTarget'
 import { CategoryDrawer } from '@/components/categories/CategoryDrawer'
+import { CategorySuggestions } from '@/components/categories/CategorySuggestions'
 import { DeleteConfirmDialog } from '@/components/shared/DeleteConfirmDialog'
 import { EmptyState } from '@/components/shared/EmptyState'
 import { LoadingSkeleton } from '@/components/shared/LoadingSkeleton'
 import { useCategories } from '@/hooks/useCategories'
 import { useDeleteCategory } from '@/hooks/useDeleteCategory'
+import { useAuth } from '@/hooks/useAuth'
+import { useProductsWithEvents } from '@/hooks/useProductsWithEvents'
+import { useAssignProductCategory } from '@/hooks/useAssignProductCategory'
 import { HANDLES_FORBIDDEN_INLINE } from '@/services/inlineErrorHandling'
 import type { Category } from '@/types/category'
+import type { Product } from '@/types/product'
 
 /**
  * #68 — Vue catégories.
@@ -24,9 +29,13 @@ import type { Category } from '@/types/category'
  *   - BR-CAT-007 : chargement dynamique des catégories (`useCategories`).
  *   - BR-CAT-001 : nom obligatoire (géré par `CategoryDrawer`, non ré-implémenté).
  *
- * Cards = palette (pastille couleur) + nom + compteurs de produits liés. #695 : les
- * compteurs viennent du BACKEND (`CategoryResponse.productCount` /
- * `archivedProductCount`, `GET /api/categories`), plus de `useProductsWithEvents`.
+ * Cards = palette (pastille couleur) + nom + puces des produits ACTIFS (#604) + compteurs
+ * de produits liés. #695 : les compteurs viennent du BACKEND (`CategoryResponse.productCount` /
+ * `archivedProductCount`, `GET /api/categories`), pas de la liste produits : celle-ci ne
+ * sert qu'aux puces.
+ * #604 — chaque puce porte un `<select>` natif de catégorie (`useAssignProductCategory` :
+ * mise à jour optimiste, retour arrière si le serveur refuse, alerte locale). Les archivés ne
+ * sont jamais des puces (le listing les exclut déjà, le filtre `archived` est une garde).
  * Pourquoi : le listing produits exclut les archivés (`@SQLRestriction`) alors qu'un
  * produit archivé occupe toujours sa catégorie (DEC-S89-001) — une catégorie ne portant
  * que des archivés affichait « aucun produit » puis refusait sa propre suppression.
@@ -43,15 +52,43 @@ import type { Category } from '@/types/category'
  *     Les catégories système ne sont pas supprimables (bouton masqué).
  */
 
-export function CategoriesView() {
+export interface CategoriesViewProps {
+  /** #719 — le compteur d'archivés d'une catégorie ouvre l'onglet Archivés filtré sur elle. */
+  onShowArchived?: (categoryId: string) => void
+}
+
+export function CategoriesView({ onShowArchived }: CategoriesViewProps = {}) {
   const t = useTranslations('products.categories')
 
   const categoriesQuery = useCategories(true)
+  const { user } = useAuth()
+  const productsQuery = useProductsWithEvents(user?.id)
+  // #604 — le 403 est rendu par l'alerte locale ci-dessous : la requête se retire du toast
+  // global pour lui. 404 et 409 n'ont pas de toast ; 400/401/500, timeout et réseau sont déjà
+  // signalés par l'intercepteur (alerte locale limitée à 403/404/409 : un seul signalement).
+  const assignMutation = useAssignProductCategory(user?.id, HANDLES_FORBIDDEN_INLINE)
+  const assignStatus = (assignMutation.error as { response?: { status?: number } } | null)?.response
+    ?.status
+  const showAssignError =
+    assignMutation.isError && (assignStatus === 403 || assignStatus === 404 || assignStatus === 409)
   // #766 — `handleDeleteConfirm` relance l'erreur et `DeleteConfirmDialog` affiche `errors.forbidden`
   // sur un 403 : la requête se retire du toast global (sinon double signalement).
   const deleteMutation = useDeleteCategory(HANDLES_FORBIDDEN_INLINE)
 
   const categories = React.useMemo(() => categoriesQuery.data ?? [], [categoriesQuery.data])
+
+  // #604 — puces : produits actifs seulement, regroupés par catégorie. `archived` n'est pas
+  // dans le contrat `Product` (le listing exclut les archivés) : lecture défensive.
+  const chipsByCategory = React.useMemo(() => {
+    const map = new Map<string, Product[]>()
+    for (const product of productsQuery.data ?? []) {
+      if ((product as { archived?: boolean }).archived === true) continue
+      const list = map.get(product.category.id) ?? []
+      list.push(product)
+      map.set(product.category.id, list)
+    }
+    return map
+  }, [productsQuery.data])
 
   /**
    * #695 — total occupant la catégorie : actifs + archivés, tels que le backend les
@@ -93,10 +130,18 @@ export function CategoriesView() {
     }
     newButtonRef.current?.focus()
   }
+  // #638 — un choix de suggestion (clavier compris) démonte les boutons quand la liste
+  // arrive : le focus tombait sur `body`. Même rattrapage que le CTA, au même effet.
+  const focusBackFromSuggestionRef = React.useRef(false)
+  const handleSuggestionChoose = () => {
+    focusBackFromSuggestionRef.current = true
+  }
   const hasCategories = categories.length > 0
   React.useEffect(() => {
-    if (!hasCategories || !focusBackToEmptyCtaRef.current) return
+    if (!hasCategories) return
+    if (!focusBackToEmptyCtaRef.current && !focusBackFromSuggestionRef.current) return
     focusBackToEmptyCtaRef.current = false
+    focusBackFromSuggestionRef.current = false
     const active = document.activeElement
     if (active === null || active === document.body) newButtonRef.current?.focus()
   }, [hasCategories])
@@ -130,6 +175,20 @@ export function CategoriesView() {
         </Button>
       </div>
 
+      {showAssignError && (
+        <p className="text-destructive text-sm" role="alert" data-testid="categories-assign-error">
+          {t('assignError')}
+        </p>
+      )}
+
+      {/* #604 — la liste produits ne sert qu'aux puces : son échec ne touche pas les compteurs
+          (serveur, #695), il masque seulement les puces, on le dit sans alerte. */}
+      {productsQuery.isError && (
+        <p className="text-ink-muted text-xs" role="status" data-testid="categories-products-error">
+          {t('productsError')}
+        </p>
+      )}
+
       {categoriesQuery.isLoading ? (
         // #629 — Variante `cards` : même grille 1/2/3 colonnes `gap-4` et cartes
         // `rounded-lg border p-4` que la liste réelle. Testid et libellé inchangés.
@@ -145,21 +204,24 @@ export function CategoriesView() {
         </p>
       ) : categories.length === 0 ? (
         // #630 — État vide partagé + CTA : même handler que `categories-new-button`
-        // (ouvre le `CategoryDrawer` de création). Aucune catégorie semée ni
-        // suggérée ici (DEC-S82-004, suggestions = #638).
+        // (ouvre le `CategoryDrawer` de création). Aucune catégorie semée (DEC-S82-004) :
+        // #638 propose les sept catégories types, créées seulement au clic.
         <EmptyState
           title={t('empty')}
           action={
-            <Button
-              type="button"
-              ref={emptyCtaRef}
-              onClick={() => openCreate(true)}
-              // #767 — mesuré 182×36 à 375 px (cva `h-9`) : 44 px sous 768 px.
-              className={TOUCH_TARGET_BUTTON}
-              data-testid="categories-empty-cta"
-            >
-              {t('emptyCta')}
-            </Button>
+            <div className="flex flex-col items-center gap-4">
+              <CategorySuggestions onChoose={handleSuggestionChoose} />
+              <Button
+                type="button"
+                ref={emptyCtaRef}
+                onClick={() => openCreate(true)}
+                // #767 — mesuré 182×36 à 375 px (cva `h-9`) : 44 px sous 768 px.
+                className={TOUCH_TARGET_BUTTON}
+                data-testid="categories-empty-cta"
+              >
+                {t('emptyCta')}
+              </Button>
+            </div>
           }
           className="border-rule rounded-lg border px-4"
           testId="categories-empty"
@@ -175,6 +237,7 @@ export function CategoriesView() {
             // affiché à 0/0, où « aucun produit » est vrai (revue Designer #695).
             const showActiveBadge = activeCount > 0 || archivedCount === 0
             const color = category.color ?? null
+            const chips = chipsByCategory.get(category.id) ?? []
             return (
               <li key={category.id}>
                 <div
@@ -216,6 +279,57 @@ export function CategoriesView() {
                     )}
                   </div>
 
+                  {chips.length > 0 && (
+                    // #604 — la zone des puces n'ouvre pas l'édition de la carte (le `select`
+                    // natif est un contrôle à part entière).
+                    <div
+                      className="flex flex-wrap gap-2"
+                      onClick={(e) => e.stopPropagation()}
+                      data-testid={`categories-chips-${category.id}`}
+                    >
+                      {chips.map((product) => (
+                        <div
+                          key={product.id}
+                          className="border-rule bg-surface flex min-w-0 items-center gap-2 rounded-full border py-1 pr-1 pl-3 max-md:w-full max-md:flex-col max-md:items-stretch max-md:rounded-lg max-md:p-2"
+                          data-testid={`categories-chip-${product.id}`}
+                        >
+                          <span className="text-ink min-w-0 text-sm break-words">
+                            {product.name}
+                          </span>
+                          {/* Natif à dessein : un contrôle DANS une carte cliquable, sans portail
+                              (un Radix Select porterait son contenu hors de la carte, et ses
+                              clics remonteraient à l'ouverture de l'édition). Désactivé pendant
+                              un envoi : pas d'envoi concurrent, le retour arrière par instantané
+                              reste exact. Focus clavier : le contour `:focus-visible` du DS (@layer base)
+                              s'applique seul, aucune utilitaire locale (DEC-S58-001). */}
+                          <select
+                            value={product.category.id}
+                            disabled={assignMutation.isPending}
+                            aria-label={t('assignLabel', { name: product.name })}
+                            onChange={(e) =>
+                              assignMutation.mutate({
+                                productId: product.id,
+                                categoryId: e.target.value,
+                              })
+                            }
+                            className={cn(
+                              'border-rule bg-surface text-ink h-8 min-w-0 rounded-full border px-2 text-xs',
+                              'disabled:cursor-wait disabled:opacity-60',
+                              'max-md:h-11 max-md:w-full max-md:rounded-md max-md:text-sm',
+                            )}
+                            data-testid={`categories-assign-${product.id}`}
+                          >
+                            {categories.map((option) => (
+                              <option key={option.id} value={option.id}>
+                                {option.name}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex min-w-0 flex-wrap items-center gap-2">
                       {showActiveBadge && (
@@ -234,14 +348,26 @@ export function CategoriesView() {
                       {/* #695 — nœud FRÈRE hors du badge coloré (revue Designer) : les
                           archivés ne sont pas des produits visibles, ils ne partagent
                           donc pas l'emphase du badge. Deux compteurs = conditionnel JSX,
-                          l'ICU d'une seule clé ne peut pas exprimer la combinaison. */}
+                          l'ICU d'une seule clé ne peut pas exprimer la combinaison.
+                          #719 — c'est un bouton natif DANS une carte cliquable : le clic
+                          ne remonte pas à l'ouverture de l'édition. */}
                       {archivedCount > 0 && (
-                        <span
-                          className="text-ink-muted text-2xs"
+                        <button
+                          type="button"
+                          className={cn(
+                            'text-ink-muted hover:text-ink text-2xs underline-offset-2 hover:underline',
+                            TOUCH_TARGET_HITBOX,
+                          )}
+                          // WCAG 2.5.3 : le nom accessible reprend le texte visible.
+                          aria-label={`${t('archivedCount', { count: archivedCount })}, ${t('showArchivedLabel', { name: category.name })}`}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            onShowArchived?.(category.id)
+                          }}
                           data-testid={`categories-archived-count-${category.id}`}
                         >
                           {t('archivedCount', { count: archivedCount })}
-                        </span>
+                        </button>
                       )}
                     </div>
 

@@ -22,6 +22,7 @@ import { resetPassword } from '@/services/authService'
 import { createResetPasswordFormSchema, type ResetPasswordFormValues } from '@/lib/schemas/auth'
 import { LanguageSelector } from '@/components/ui/language-selector'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
+import { AuthSplitLayout } from '@/components/auth/AuthSplitLayout'
 import { AppFooter } from '@/components/ui/footer-app'
 import { useTranslations } from 'next-intl'
 
@@ -176,10 +177,10 @@ export default function ResetPasswordPage({ params }: { params: Promise<{ locale
       {/* #642 (DEC-S82-009) — la bascule de thème rejoint le sélecteur de langue
           dans le coin haut-droit, sur les 4 pages d'auth à l'identique. Deux
           boutons à icône seule de 36 px, `gap-1` : le bloc passe de 36 à 76 px
-          de large dans un coin libre, sans croiser la carte (`max-w-md` centrée)
+          de large dans un coin libre, sans croiser la carte (`auth-form-card`)
           — `e2e/sprint-77-theme-visual.spec.ts` capture la CARTE
-          (`div.bg-surface.border-rule.max-w-md.rounded-lg`), pas ce coin, ses
-          10 références restent donc valides.
+          (`[data-testid="auth-form-card"]`), pas ce coin : ce déplacement
+          ne change donc aucune capture.
 
           #656 — `relative` CI-DESSUS N'EST PAS DÉCORATIF. Sans lui, le bloc
           conteneur de cet `absolute` est le BLOC CONTENEUR INITIAL (aucun ancêtre
@@ -197,32 +198,30 @@ export default function ResetPasswordPage({ params }: { params: Promise<{ locale
         <LanguageSelector />
       </div>
 
-      <div className="flex flex-grow items-center justify-center">
-        <div className="bg-surface border-rule w-full max-w-md rounded-lg border p-6 shadow-xs">
-          <h2 className="mb-2 text-center text-2xl font-bold">{t('common.resetPassword.title')}</h2>
-          <p className="text-ink-muted mb-6 text-center text-sm">
-            {t('common.resetPassword.description')}
+      <AuthSplitLayout>
+        <h2 className="mb-2 text-center text-2xl font-bold">{t('common.resetPassword.title')}</h2>
+        <p className="text-ink-muted mb-6 text-center text-sm">
+          {t('common.resetPassword.description')}
+        </p>
+
+        <Suspense
+          fallback={
+            <div className="flex justify-center py-4">
+              <Spinner label={t('common.spinner.loading')} />
+            </div>
+          }
+        >
+          <ResetPasswordForm locale={locale} />
+        </Suspense>
+
+        <div className="mt-6 text-center">
+          <p className="text-ink-muted">
+            <Link href={`/${locale}/login`} className="text-accent hover:text-accent-hover">
+              &larr; {t('common.resetPassword.goToLogin')}
+            </Link>
           </p>
-
-          <Suspense
-            fallback={
-              <div className="flex justify-center py-4">
-                <Spinner label={t('common.spinner.loading')} />
-              </div>
-            }
-          >
-            <ResetPasswordForm locale={locale} />
-          </Suspense>
-
-          <div className="mt-6 text-center">
-            <p className="text-ink-muted">
-              <Link href={`/${locale}/login`} className="text-accent hover:text-accent-hover">
-                &larr; {t('common.resetPassword.goToLogin')}
-              </Link>
-            </p>
-          </div>
         </div>
-      </div>
+      </AuthSplitLayout>
 
       <AppFooter />
     </div>

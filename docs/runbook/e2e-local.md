@@ -185,3 +185,20 @@ n'était nécessaire, aucune spec n'a été touchée. Cf. `PIT-S58-003` et `PAT-
 ⚠ Le hook **RTK** tue `npx next dev|start` en ne laissant que « Errors: 1 » dans le log. Un log serveur
 de 3 lignes est un artefact RTK, pas un plantage de l'app : passer par `rtk proxy`.
 
+
+## Régénérer les références visuelles (`sprint-77-theme-visual`)
+
+Seules les références `-linux` sont comparées en CI : ne jamais committer de `-win32` ni de `-darwin`. Elles se
+régénèrent dans l'image du runner, sur un build de production, sans backend (pages publiques) :
+
+```bash
+# dans le conteneur mcr.microsoft.com/playwright:v1.61.1-noble, depuis frontend/ (node_modules Linux dans un volume nommé)
+npm ci && NEXT_PUBLIC_API_URL=/api E2E_API_PROXY_TARGET=http://localhost:8080 npm run build
+./node_modules/.bin/next start -p 3000 &
+PLAYWRIGHT_BASE_URL=http://localhost:3000 npx playwright test sprint-77-theme-visual --project=chromium --no-deps \
+  --update-snapshots=changed --grep "login|register|forgot-password|reset-password" --grep-invert "armement"
+```
+
+Rejouer ensuite deux fois sans `--update-snapshots` : 11 tests sur 11, contrôle d'armement compris. Si le démon
+Docker ne voit pas le disque Windows (`DOCKER_HOST` sur un démon WSL), copier `frontend/` avec `docker cp` et
+récupérer les PNG de la même façon.

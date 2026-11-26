@@ -1,5 +1,6 @@
 import { FullCalendarEvent } from '@/types/event'
 import { parseLocalDate } from '@/lib/date-iso'
+import { isPastEvent } from '@/lib/isPastEvent'
 import { contrastRatio, contrastInk, grayscaleHex, WCAG_AA_NORMAL } from '@/lib/color'
 
 /**
@@ -11,6 +12,30 @@ import { contrastRatio, contrastInk, grayscaleHex, WCAG_AA_NORMAL } from '@/lib/
 
 /** Statut temporel d'un event (dupliqué de zoom.ts pour éviter un cycle d'import). */
 type EventLabelStatus = 'expired' | 'ongoing' | 'upcoming'
+
+/**
+ * #812 — Un événement de la frise est-il PASSÉ ? Adaptateur de `isPastEvent` (#607,
+ * `@/lib/isPastEvent`, règle partagée avec l'historique du détail produit) : fin
+ * STRICTEMENT antérieure au jour civil de `today`, dernière occurrence réelle pour une
+ * série. Aucune règle dupliquée ici. Les pastilles reçoivent le verdict déjà calculé par
+ * `indexEventsByResource` ; cet appel direct sert aux rendus sans géométrie.
+ */
+export function isPastTimelineEvent(
+  event: Pick<FullCalendarEvent, 'start' | 'end' | 'extendedProps'>,
+  today: Date,
+): boolean {
+  const props = event.extendedProps
+  return isPastEvent(
+    {
+      startDate: event.start,
+      endDate: event.end,
+      isRecurring: props?.isRecurring,
+      recurrenceUnit: props?.recurrenceUnit ?? null,
+      recurrenceEndDate: props?.recurrenceEndDate ?? null,
+    },
+    today,
+  )
+}
 
 /**
  * #81 (a11y) — Libellé `aria-label` AGRÉGÉ d'un bloc event, annoncé en UNE
@@ -141,13 +166,6 @@ export type Resource = {
 /** Statut dérivé d'un event par rapport à `now` (pilote la couleur de la barre). */
 export type EventStatus = 'expired' | 'ongoing' | 'upcoming'
 
-/** Event enrichi de sa position (%) et de son statut, prêt à rendre en EventBar. */
-export type EventWithComputedPosition = FullCalendarEvent & {
-  leftPercent: number
-  widthPercent: number
-  status: EventStatus
-}
-
 /**
  * Construit la fenêtre glissante de `lengthDays` jours (30 par défaut) à partir
  * de `startDate` (borne minuit → 23:59:59.999). Retourne la liste des jours plus
@@ -208,64 +226,6 @@ export function formatDayParts(date: Date, locale: string): { weekday: string; d
   // Repli défensif : si une locale exotique ne produisait aucune part `day`,
   // mieux vaut le quantième local qu'une cellule vide.
   return { weekday: pick('weekday'), day: pick('day') || String(date.getDate()) }
-}
-
-/**
- * Positionne les events par ressource sur la fenêtre `[start, end]`.
- * Reprend à l'identique le `useMemo eventsByResource` du monolithe : clamp à la
- * vue, calcul left/width %, dérivation du statut vs `now`. Fonction pure pour
- * rester testable/mémoïsable côté orchestrateur.
- */
-export function buildEventsByResource(
-  events: FullCalendarEvent[],
-  start: Date,
-  end: Date,
-  now: Date,
-  daysCount: number,
-): Map<string, EventWithComputedPosition[]> {
-  const totalMs = end.getTime() - start.getTime() || 1
-  const map = new Map<string, EventWithComputedPosition[]>()
-
-  for (const event of events) {
-    const resourceId = event.resourceId
-    if (!resourceId) continue
-
-    const eventStart = parseLocalDate(event.start)
-    const eventEnd = parseLocalDate(event.end || event.start)
-
-    // Clamp à la vue courante.
-    const clampedStart = new Date(Math.max(eventStart.getTime(), start.getTime()))
-    const clampedEnd = new Date(Math.min(eventEnd.getTime(), end.getTime()))
-
-    if (clampedEnd < start || clampedStart > end) {
-      continue
-    }
-
-    const leftPercent = ((clampedStart.getTime() - start.getTime()) / totalMs) * 100
-    const widthPercent =
-      ((clampedEnd.getTime() - clampedStart.getTime()) / totalMs) * 100 || (1 / daysCount) * 100
-
-    let status: EventStatus = 'upcoming'
-    if (eventEnd < now) {
-      status = 'expired'
-    } else if (eventStart <= now && now <= eventEnd) {
-      status = 'ongoing'
-    }
-
-    const enhanced: EventWithComputedPosition = {
-      ...event,
-      leftPercent,
-      widthPercent,
-      status,
-    }
-
-    if (!map.has(resourceId)) {
-      map.set(resourceId, [])
-    }
-    map.get(resourceId)!.push(enhanced)
-  }
-
-  return map
 }
 
 /** Groupe les ressources par catégorie (ordre d'insertion préservé). */

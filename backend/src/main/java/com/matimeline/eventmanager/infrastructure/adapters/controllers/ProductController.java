@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.matimeline.eventmanager.application.dtos.ArchivedProductDetailResponse;
 import com.matimeline.eventmanager.application.dtos.ArchivedProductResponse;
 import com.matimeline.eventmanager.application.dtos.EventResponse;
 import com.matimeline.eventmanager.application.dtos.ProductCreationRequest;
@@ -97,6 +98,24 @@ public class ProductController {
                 .map(ArchivedProductResponse::fromDomain)
                 .toList();
         return ResponseEntity.ok(response);
+    }
+
+    /**
+     * #718 — Fiche en lecture seule d'un archivé. requireOwner d'abord (403), puis lecture
+     * native scopée user + archived : inconnu / actif / d'autrui -> ProductNotFoundException
+     * -> 404 uniforme (BR-PRO-011).
+     */
+    @GetMapping("/users/{userId}/products/archived/{productId}")
+    public ResponseEntity<ArchivedProductDetailResponse> getArchivedProductDetail(
+            @PathVariable UUID userId,
+            @PathVariable UUID productId) {
+        Optional<HttpStatus> denied = requireOwner(userId);
+        if (denied.isPresent()) {
+            return ResponseEntity.status(denied.get()).build();
+        }
+
+        return ResponseEntity.ok(ArchivedProductDetailResponse.fromDomain(
+                productService.getArchivedProductDetail(productId, userId)));
     }
 
     /**

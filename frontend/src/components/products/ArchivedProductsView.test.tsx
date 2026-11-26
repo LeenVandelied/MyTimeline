@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -29,6 +30,7 @@ vi.mock('@/hooks/useRestoreProduct', () => ({
 }))
 vi.mock('next-intl', () => ({
   useTranslations: (namespace: string) => (key: string) => `${namespace}.${key}`,
+  useLocale: () => 'fr',
 }))
 vi.mock('react-hot-toast', () => ({
   default: { success: toastSuccessMock, error: vi.fn() },
@@ -145,5 +147,78 @@ describe('ArchivedProductsView', () => {
       'notFound',
     )
     expect(toastSuccessMock).not.toHaveBeenCalled()
+  })
+
+  // #718 — le nom de chaque produit mène à sa fiche en lecture seule ; Désarchiver reste actif.
+  it('links each archived row to its read-only product page', async () => {
+    const user = userEvent.setup()
+    restoreMutateAsync.mockResolvedValue(undefined)
+    useArchivedMock.mockReturnValue(queryState({ data: PRODUCTS }))
+    render(<ArchivedProductsView />)
+
+    const velo = within(screen.getByTestId('products-archived-row-p-1')).getByRole('link', {
+      name: 'Vélo',
+    })
+    expect(velo).toHaveAttribute('href', '/fr/products/p-1')
+    const box = within(screen.getByTestId('products-archived-row-p-2')).getByRole('link', {
+      name: 'Box',
+    })
+    expect(box).toHaveAttribute('href', '/fr/products/p-2')
+
+    await user.click(screen.getByTestId('products-archived-restore-p-2'))
+    await user.click(await screen.findByTestId('product-restore-confirm-button'))
+    await waitFor(() => expect(restoreMutateAsync).toHaveBeenCalledWith({ productId: 'p-2' }))
+  })
+
+  // #719 — filtre par catégorie : trois archivés dans deux catégories.
+  const THREE: ArchivedProduct[] = [
+    ...PRODUCTS,
+    {
+      id: 'p-3',
+      name: 'Casque',
+      color: null,
+      category: { id: 'c-1', name: 'Sport', color: '#112233' },
+    },
+  ]
+
+  it('lists only the archived products of the filtered category', () => {
+    useArchivedMock.mockReturnValue(queryState({ data: THREE }))
+    render(<ArchivedProductsView categoryId="c-1" onClearCategoryFilter={vi.fn()} />)
+
+    expect(screen.getByTestId('products-archived-row-p-1')).toBeInTheDocument()
+    expect(screen.getByTestId('products-archived-row-p-3')).toBeInTheDocument()
+    expect(screen.queryByTestId('products-archived-row-p-2')).not.toBeInTheDocument()
+  })
+
+  it('shows the filtering category name with a control to clear the filter', () => {
+    useArchivedMock.mockReturnValue(queryState({ data: THREE }))
+    render(<ArchivedProductsView categoryId="c-1" onClearCategoryFilter={vi.fn()} />)
+
+    const chip = screen.getByTestId('products-archived-filter')
+    expect(chip).toHaveTextContent('Sport')
+    expect(within(chip).getByTestId('products-archived-filter-clear')).toBeInTheDocument()
+  })
+
+  it('shows every archived product again once the filter is cleared', async () => {
+    const user = userEvent.setup()
+    useArchivedMock.mockReturnValue(queryState({ data: THREE }))
+    function Harness() {
+      const [categoryId, setCategoryId] = useState<string | undefined>('c-1')
+      return (
+        <ArchivedProductsView
+          categoryId={categoryId}
+          onClearCategoryFilter={() => setCategoryId(undefined)}
+        />
+      )
+    }
+    render(<Harness />)
+    expect(screen.queryByTestId('products-archived-row-p-2')).not.toBeInTheDocument()
+
+    await user.click(screen.getByTestId('products-archived-filter-clear'))
+
+    expect(screen.getByTestId('products-archived-row-p-1')).toBeInTheDocument()
+    expect(screen.getByTestId('products-archived-row-p-2')).toBeInTheDocument()
+    expect(screen.getByTestId('products-archived-row-p-3')).toBeInTheDocument()
+    expect(screen.queryByTestId('products-archived-filter')).not.toBeInTheDocument()
   })
 })

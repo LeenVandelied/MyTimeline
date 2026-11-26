@@ -3,38 +3,29 @@ import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi, afterEach, beforeEach } from 'vitest'
 import type { FullCalendarEvent } from '@/types/event'
 import type { Resource } from './lib'
-import { DAY_WIDTH_PX, MAJOR_TICK_UNIT } from './zoom'
-import { TimelineView } from './TimelineView'
+import { tickUnitForScale, DAY_WIDTH_PX, ZOOM_STEP } from './zoom'
+import { createKeyedCache, TimelineView, ZOOM_CACHE_SIZE } from './TimelineView'
 
 /**
- * #349 — INJECTIVITÉ de la clé du cache de zoom (`useZoomCache`).
+ * #349 — Clé du cache de zoom (`useZoomCache`) : la règle mise en cache à une
+ * échelle ne doit jamais servir à une autre.
  *
- * `buildRulerTicks` consomme le niveau de zoom ET la largeur de jour, mais le
- * cache était clé sur `dayWidth` SEUL. La correction ne tenait que par un
- * invariant tacite — que les valeurs de `DAY_WIDTH_PX` soient deux à deux
- * distinctes — que rien ne garantissait. Le jour où deux niveaux partagent une
- * largeur, la règle graduée devient silencieusement fausse : pas d'erreur, pas
- * de test rouge, juste un mauvais rendu.
+ * Avant #593, deux PALIERS de même largeur de jour pouvaient se voler leurs
+ * graduations (clé sur `dayWidth` seul). #593 rend l'échelle continue : l'unité de
+ * graduation dérive de l'échelle (`tickUnitForScale`) et la clé porte les deux
+ * (`${unit}|${pxPerDay}`). Le cache est borné aux dernières échelles visitées.
  *
- * Ce test SUPPRIME l'invariant (mock : `week` et `month` à la même largeur) et
- * vérifie que les graduations restent propres à chaque niveau. Il ÉCHOUE avec
- * l'ancienne clé `dayWidth` (les deux niveaux se partagent une entrée de cache)
- * et passe avec la clé composite `${zoom.level}|${dayWidth}`.
+ * Ce test franchit un seuil d'unité (semaines → jours) puis revient : la règle
+ * doit changer de granularité à l'aller, et retrouver EXACTEMENT ses graduations
+ * de départ au retour (entrée relue, pas une autre).
  */
 
-// Les deux niveaux partagent DÉLIBÉRÉMENT la même largeur de jour.
-// (Littéral inliné : `vi.mock` est hoisté au-dessus des déclarations du module.)
-vi.mock('./zoom', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('./zoom')>()
-  return {
-    ...actual,
-    DAY_WIDTH_PX: { ...actual.DAY_WIDTH_PX, week: 34, month: 34 },
-  }
-})
-
+// #593 — valeurs interpolées rendues après la clé : la lecture « 1 px = X h » suit le zoom.
 vi.mock('next-intl', () => ({
-  useTranslations: (namespace?: string) => (key: string) =>
-    namespace ? `${namespace}.${key}` : key,
+  useTranslations: (namespace?: string) => (key: string, values?: Record<string, unknown>) => {
+    const full = namespace ? `${namespace}.${key}` : key
+    return values ? `${full} ${Object.values(values).join(' ')}` : full
+  },
 }))
 
 /**
@@ -94,14 +85,13 @@ function countTicks(): number {
 }
 
 describe('useZoomCache — clé de cache de zoom', () => {
-  it('le mock rend bien les deux niveaux indiscernables par leur largeur de jour', () => {
-    // Garde-fou : si cette égalité saute, le test ne teste plus rien.
-    expect(DAY_WIDTH_PX.week).toBe(DAY_WIDTH_PX.month)
-    // ...alors que la granularité des graduations, elle, DIFFÈRE.
-    expect(MAJOR_TICK_UNIT.week).not.toBe(MAJOR_TICK_UNIT.month)
+  it('trois crans depuis le mois franchissent le seuil semaines → jours', () => {
+    // Garde-fou : si ces unités ne diffèrent plus, le test ne teste plus rien.
+    expect(tickUnitForScale(DAY_WIDTH_PX.month)).toBe('week')
+    expect(tickUnitForScale(DAY_WIDTH_PX.month * ZOOM_STEP ** 3)).toBe('day')
   })
 
-  it('ne réutilise PAS les graduations d’un autre niveau de même largeur de jour', async () => {
+  it('ne réutilise PAS les graduations d’une autre échelle, et retrouve les siennes', async () => {
     const user = userEvent.setup()
     render(
       <TimelineView
@@ -112,21 +102,71 @@ describe('useZoomCache — clé de cache de zoom', () => {
       />,
     )
 
-    // Niveau initial `month` → graduations à la SEMAINE.
+    // Échelle initiale du mois → graduations à la SEMAINE.
     const level = screen.getByTestId('timeline-zoom-level')
     const monthTicks = countTicks()
     expect(monthTicks).toBeGreaterThan(0)
+    const monthLabels = screen.getByTestId('timeline-ruler').textContent
 
-    // Zoom avant → `week`, même largeur de jour, mais graduations au JOUR.
-    const before = level.textContent
-    await user.click(screen.getByTestId('timeline-zoom-in'))
-    await waitFor(() => expect(level.textContent).not.toBe(before))
+    // Trois crans avant → graduations au JOUR. Une par jour au lieu d'une par
+    // semaine : le rapport attendu est d'environ 7.
+    for (let i = 0; i < 3; i++) {
+      const before = level.textContent
+      await user.click(screen.getByTestId('timeline-zoom-in'))
+      await waitFor(() => expect(level.textContent).not.toBe(before))
+    }
+    expect(countTicks()).toBeGreaterThan(monthTicks * 3)
 
-    const weekTicks = countTicks()
+    // Retour : mêmes graduations qu'au départ.
+    for (let i = 0; i < 3; i++) {
+      const before = level.textContent
+      await user.click(screen.getByTestId('timeline-zoom-out'))
+      await waitFor(() => expect(level.textContent).not.toBe(before))
+    }
+    expect(countTicks()).toBe(monthTicks)
+    expect(screen.getByTestId('timeline-ruler').textContent).toBe(monthLabels)
+  })
+})
 
-    // Avec l'ancienne clé (`dayWidth` seul), `week` recevait le tableau mis en
-    // cache par `month` → compte INCHANGÉ. Une graduation par jour au lieu
-    // d'une par semaine : le rapport attendu est d'environ 7.
-    expect(weekTicks).toBeGreaterThan(monthTicks * 3)
+/**
+ * #593 — Le cache par échelle est borné (`ZOOM_CACHE_SIZE`, LRU) : testé directement, car
+ * le test de rendu ci-dessus passerait aussi sans cache. Compteur d'appels de `compute`.
+ */
+describe('createKeyedCache — LRU par échelle', () => {
+  it('garde les 8 dernières clés, et une clé relue repasse en dernier', () => {
+    expect(ZOOM_CACHE_SIZE).toBe(8)
+    const lookup = createKeyedCache<string>()
+    const compute = vi.fn((key: string) => `value:${key}`)
+    const read = (key: string) => lookup(key, () => compute(key))
+
+    for (let i = 0; i < 8; i++) expect(read(`k${i}`)).toBe(`value:k${i}`)
+    expect(compute).toHaveBeenCalledTimes(8)
+
+    // Relue, k0 est promue : c'est k1 qui sort quand la 9e clé entre.
+    expect(read('k0')).toBe('value:k0')
+    expect(compute).toHaveBeenCalledTimes(8)
+    read('k8')
+    expect(compute).toHaveBeenCalledTimes(9)
+
+    // k0 et k2..k8 restent en cache.
+    for (const key of ['k0', 'k2', 'k3', 'k4', 'k5', 'k6', 'k7', 'k8']) read(key)
+    expect(compute).toHaveBeenCalledTimes(9)
+
+    // k1 a été évincée : relue, elle est recalculée.
+    expect(read('k1')).toBe('value:k1')
+    expect(compute).toHaveBeenCalledTimes(10)
+    expect(compute).toHaveBeenLastCalledWith('k1')
+  })
+
+  it('sans promotion, la plus ancienne clé sort à la 9e', () => {
+    const lookup = createKeyedCache<number>()
+    const compute = vi.fn(() => 1)
+    for (let i = 0; i < 9; i++) lookup(`k${i}`, compute)
+    expect(compute).toHaveBeenCalledTimes(9)
+    lookup('k8', compute)
+    lookup('k1', compute)
+    expect(compute).toHaveBeenCalledTimes(9)
+    lookup('k0', compute)
+    expect(compute).toHaveBeenCalledTimes(10)
   })
 })
