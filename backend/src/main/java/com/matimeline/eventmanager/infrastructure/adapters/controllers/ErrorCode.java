@@ -32,6 +32,15 @@ public enum ErrorCode {
     // #88 : quota d'événements du palier atteint (HTTP 402). EXCEPTION à la taxonomie par
     // statut ci-dessus : code métier stable décidé pour #88, à ne pas généraliser sans décision.
     EVENT_QUOTA_EXCEEDED("event_quota_exceeded"),
+    // #692 : une cause de refus 409 de catégorie = un code stable (le front bascule en
+    // réassignation sur CATEGORY_IN_USE seul). EXCEPTION métier propre aux catégories à la
+    // taxonomie par statut, sur le précédent de EVENT_QUOTA_EXCEEDED : à ne pas généraliser
+    // sans décision. Exceptions de domaine : CATEGORY_IN_USE = CategoryInUseException,
+    // CATEGORY_REASSIGN_TARGET_INVALID = CategoryReassignTargetInvalidException,
+    // CATEGORY_NAME_CONFLICT = CategoryNameConflictException.
+    CATEGORY_IN_USE("category_in_use"),
+    CATEGORY_REASSIGN_TARGET_INVALID("category_reassign_target_invalid"),
+    CATEGORY_NAME_CONFLICT("category_name_conflict"),
     INTERNAL_ERROR("internal_error");
 
     private final String code;

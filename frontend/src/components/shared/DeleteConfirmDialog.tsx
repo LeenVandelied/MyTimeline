@@ -24,6 +24,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useCategories } from '@/hooks/useCategories'
+import { CATEGORY_IN_USE, apiErrorCodeOf } from '@/types/api-error'
 
 /**
  * #65 — Dialog de confirmation de suppression, 3 variantes (event / product /
@@ -175,14 +176,21 @@ export function DeleteConfirmDialog({
       onOpenChange(false)
     } catch (error) {
       const status = httpStatusOf(error)
-      // BR-CAT-002 : 404 (catégorie inexistante) géré inline. 409 = conflit de
-      // réassignation (S10 #52). Autres → message générique.
-      // #546 : 409 sur un DELETE catégorie SANS cible = catégorie encore occupée
-      // (produits archivés, ou listing local périmé) → bascule en réassignation.
+      // BR-CAT-002 : 404 (catégorie inexistante) géré inline. 409 : le code `error` décide
+      // (voir #546 / #692 ci-dessous), sans code = message de conflit. Autres → générique.
+      // #546 : 409 `category_in_use` sur un DELETE catégorie SANS cible = catégorie encore
+      // occupée (produits archivés, ou listing local périmé) → bascule en réassignation.
+      // #692 : tout autre 409 (cible invalide, sans code) → message de conflit.
       // #766 : 403 (ownership refusée) → cause explicite inline. C'est ce message qui
       // autorise les appelants à passer `HANDLES_FORBIDDEN_INLINE` (toast global coupé) :
       // le retirer rendrait le dialog muet sur un refus d'accès.
-      if (status === 409 && isCategory && !needsReassign) setReassignRequiredByServer(true)
+      if (
+        status === 409 &&
+        isCategory &&
+        !needsReassign &&
+        apiErrorCodeOf(error) === CATEGORY_IN_USE
+      )
+        setReassignRequiredByServer(true)
       else if (status === 403) setErrorMessage(t('errors.forbidden'))
       else if (status === 404) setErrorMessage(t('errors.notFound'))
       else if (status === 409) setErrorMessage(t('errors.conflict'))

@@ -10,6 +10,7 @@ import { RemoveScroll } from 'react-remove-scroll'
 import { useFocusTrap } from '@/components/timeline/useFocusTrap'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { useMobileKeyboard } from '@/hooks/useMobileKeyboard'
+import { BREAKPOINT_LG_PX } from '@/lib/breakpoints'
 import { cn } from '@/lib/utils'
 
 /**
@@ -89,7 +90,7 @@ export const EventFormDrawer: React.FC<EventFormDrawerProps> = ({
   const panelRef = useRef<HTMLDivElement>(null)
 
   // `< lg` (1024px) : même seuil que la sidebar du shell (`hidden lg:flex`).
-  const isCompact = useMediaQuery('(max-width: 1023px)')
+  const isCompact = useMediaQuery(`(max-width: ${BREAKPOINT_LG_PX - 1}px)`)
 
   /**
    * Historique BUG-S44-001 : `useFocusTrap` listait `onEscape` en dépendance d'effet et

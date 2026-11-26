@@ -122,7 +122,7 @@ export function HeroSection({ locale }: HeroSectionProps) {
   const t = useTranslations()
 
   return (
-    <section className="section-animation container-landing px-4 py-20">
+    <section className="section-animation container-landing py-20">
       <div className="flex flex-col gap-10 lg:flex-row lg:items-stretch">
         <div className="flex min-w-0 flex-col justify-center lg:max-w-[420px] lg:min-w-[300px] lg:flex-[1_1_300px]">
           <h1 className="mb-6 text-xl font-bold md:text-2xl lg:text-3xl">

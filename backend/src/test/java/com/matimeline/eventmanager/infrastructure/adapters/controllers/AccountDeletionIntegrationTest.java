@@ -247,4 +247,62 @@ class AccountDeletionIntegrationTest extends AbstractPostgresIntegrationTest {
 
         assertEquals(1, countRow("users", "id", s.userId()), "compte conservé");
     }
+
+    /**
+     * #720 — la suppression d'un compte ne retire que les produits de ce compte. `deleteAllByUserId`
+     * est un DELETE natif (contourne @SQLRestriction) : c'est son `WHERE user_id = :uid` qui limite
+     * la portée. Un autre compte, avec produit actif ET archivé, doit rester intact.
+     */
+    @Test
+    void deleteAccount_purgesOnlyThatUsersProducts_archivedIncluded() throws Exception {
+        Seed deleted = seedGraph();
+        // Autre compte seedé ici : produit actif ET archivé, SANS événement, pour qu'un DELETE
+        // trop large aboutisse (sinon fk_events_product l'arrête avant les assertions).
+        UUID[] other = new TransactionTemplate(txManager).execute(status -> {
+            String name = "o" + UUID.randomUUID().toString().replace("-", "").substring(0, 16);
+            UserEntity user = new UserEntity();
+            user.setName("OtherUser");
+            user.setUsername(name);
+            user.setEmail(name + "@example.test");
+            user.setPassword(passwordEncoder.encode("Secret60"));
+            user.setRole("ROLE_USER");
+            em.persist(user);
+            CategoryEntity category = new CategoryEntity();
+            category.setName("other-" + name);
+            category.setOwner(user);
+            em.persist(category);
+            ProductEntity active = new ProductEntity();
+            active.setName("other-active");
+            active.setArchived(false);
+            active.setCategory(category);
+            active.setUser(user);
+            em.persist(active);
+            ProductEntity archived = new ProductEntity();
+            archived.setName("other-archived");
+            archived.setArchived(true);
+            archived.setCategory(category);
+            archived.setUser(user);
+            em.persist(archived);
+            em.flush();
+            return new UUID[] {user.getId(), active.getId(), archived.getId()};
+        });
+        Cookie jwt = login(deleted.username());
+
+        mockMvc.perform(delete("/api/me")
+                        .cookie(jwt)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"username\":\"" + deleted.username() + "\"}"))
+                .andExpect(status().isNoContent());
+
+        // Compte supprimé : tous ses produits, archivé inclus.
+        assertEquals(0, countRow("products", "user_id", deleted.userId()));
+        assertEquals(0, countRow("products", "id", deleted.activeProductId()));
+        assertEquals(0, countRow("products", "id", deleted.archivedProductId()));
+
+        // Autre compte : produit actif ET archivé conservés.
+        assertEquals(2, countRow("products", "user_id", other[0]));
+        assertEquals(1, countRow("products", "id", other[1]));
+        assertEquals(1, countRow("products", "id", other[2]));
+        assertEquals(1, countRow("users", "id", other[0]));
+    }
 }

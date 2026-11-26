@@ -20,6 +20,7 @@ import {
   viewportDays,
   type TickAnchor,
 } from './densityWindow'
+import { projectDensityEvents } from './densityOccurrences'
 
 /**
  * #80 — Ruban de densité (hero, spec Designer §3). Densité = HAUTEUR de barre ∝
@@ -126,9 +127,10 @@ export const DensityRibbon: React.FC<DensityRibbonProps> = ({
   const from = useMemo(() => new Date(y, m, d), [y, m, d])
 
   // `now = from` : `isToday` compare des dates civiles (`toDateString`), le 1er bucket
-  // est donc aujourd'hui. Contrat de `buildDensityBuckets` inchangé.
+  // est donc aujourd'hui. Contrat de `buildDensityBuckets` inchangé. #818 : il reçoit la
+  // projection (occurrences de séries, jours des durées), pas les événements bruts.
   const buckets = useMemo(
-    () => buildDensityBuckets(events, from, from, rangeDays),
+    () => buildDensityBuckets(projectDensityEvents(events, from, rangeDays), from, from, rangeDays),
     [events, from, rangeDays],
   )
 

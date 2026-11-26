@@ -3,6 +3,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
+import { BREAKPOINT_LG_PX } from '@/lib/breakpoints'
 
 /**
  * #592 — SIDEBAR de l'écran Vue Timeline (maquette `Vue Timeline.dc.html`, §A de
@@ -34,7 +35,7 @@ import { useMediaQuery } from '@/hooks/useMediaQuery'
  */
 
 /** DEC-S85-004 — palier au-delà duquel la sidebar est permanente (`lg`). */
-export const SIDEBAR_PERMANENT_QUERY = '(min-width: 1024px)'
+export const SIDEBAR_PERMANENT_QUERY = `(min-width: ${BREAKPOINT_LG_PX}px)`
 
 export interface TimelineSidebarCategory {
   name: string

@@ -252,9 +252,38 @@ describe('DeleteConfirmDialog', () => {
   })
 
   describe('#546 — catégorie occupée par des produits archivés (compteur local à 0)', () => {
+    it('409 with category_in_use code and no target switches to reassignment', async () => {
+      const user = userEvent.setup()
+      const onConfirm = vi
+        .fn()
+        .mockRejectedValueOnce({ response: { status: 409, data: { error: 'category_in_use' } } })
+      render(
+        <DeleteConfirmDialog
+          open
+          variant="category"
+          linkedProductsCount={0}
+          categoryId="cat-current"
+          onOpenChange={noop}
+          onConfirm={onConfirm}
+        />,
+      )
+      expect(screen.queryByTestId('delete-reassign-label')).not.toBeInTheDocument()
+
+      await user.click(screen.getByRole('button', { name: 'common.deleteDialog.confirm' }))
+
+      expect(await screen.findByTestId('delete-reassign-label')).toBeInTheDocument()
+      expect(screen.getByTestId('delete-reassign-required-note')).toHaveTextContent(
+        'common.deleteDialog.category.reassignRequired',
+      )
+      expect(screen.getByRole('combobox')).toBeInTheDocument()
+      expect(screen.queryByText('common.deleteDialog.errors.conflict')).not.toBeInTheDocument()
+    })
+
     it('409 sans cible : bascule en réassignation (note explicative + select), sans message conflict', async () => {
       const user = userEvent.setup()
-      const onConfirm = vi.fn().mockRejectedValueOnce({ response: { status: 409 } })
+      const onConfirm = vi
+        .fn()
+        .mockRejectedValueOnce({ response: { status: 409, data: { error: 'category_in_use' } } })
       render(
         <DeleteConfirmDialog
           open
@@ -296,7 +325,7 @@ describe('DeleteConfirmDialog', () => {
       const onOpenChange = vi.fn()
       const onConfirm = vi
         .fn()
-        .mockRejectedValueOnce({ response: { status: 409 } })
+        .mockRejectedValueOnce({ response: { status: 409, data: { error: 'category_in_use' } } })
         .mockResolvedValueOnce(undefined)
       render(
         <DeleteConfirmDialog
@@ -324,7 +353,9 @@ describe('DeleteConfirmDialog', () => {
     it('409 sans cible et AUCUNE autre catégorie : message noOtherCategory, confirmer bloqué', async () => {
       const user = userEvent.setup()
       mockCategories({ data: [{ id: 'cat-current', name: 'Seule', system: false }] })
-      const onConfirm = vi.fn().mockRejectedValueOnce({ response: { status: 409 } })
+      const onConfirm = vi
+        .fn()
+        .mockRejectedValueOnce({ response: { status: 409, data: { error: 'category_in_use' } } })
       render(
         <DeleteConfirmDialog
           open
@@ -367,6 +398,35 @@ describe('DeleteConfirmDialog', () => {
       expect(await screen.findByRole('alert')).toHaveTextContent(
         'common.deleteDialog.errors.conflict',
       )
+      expect(screen.queryByTestId('delete-reassign-required-note')).not.toBeInTheDocument()
+    })
+
+    it.each([
+      [
+        '409 with another category code does not switch to reassignment',
+        { error: 'category_reassign_target_invalid' },
+      ],
+      ['409 without error code does not switch to reassignment', {}],
+    ])('%s', async (_name, data) => {
+      const user = userEvent.setup()
+      const onConfirm = vi.fn().mockRejectedValue({ response: { status: 409, data } })
+      render(
+        <DeleteConfirmDialog
+          open
+          variant="category"
+          linkedProductsCount={0}
+          categoryId="cat-current"
+          onOpenChange={noop}
+          onConfirm={onConfirm}
+        />,
+      )
+
+      await user.click(screen.getByRole('button', { name: 'common.deleteDialog.confirm' }))
+
+      expect(await screen.findByRole('alert')).toHaveTextContent(
+        'common.deleteDialog.errors.conflict',
+      )
+      expect(screen.queryByRole('combobox')).not.toBeInTheDocument()
       expect(screen.queryByTestId('delete-reassign-required-note')).not.toBeInTheDocument()
     })
 
