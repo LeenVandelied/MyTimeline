@@ -34,12 +34,13 @@ import { revealSeededLane } from './support/timeline-lanes'
  * ─────────────────────────────────────────────────────────────────────────────
  * GESTES TACTILES — repli assumé
  * ─────────────────────────────────────────────────────────────────────────────
- * Le pinch-zoom (2 pointeurs) n'est PAS automatisé : Playwright ne pilote qu'un
- * pointeur et le repli « événements simulés » testerait le handler, pas le
- * parcours (déjà couvert en RTL, `TimelineMobilePortrait.test.tsx`). On exerce
- * ici l'alternative accessible officielle (boutons +/-), qui passe par le MÊME
- * reducer de zoom. Le long-press EST automatisé (un seul pointeur, `mouse.down`
- * + attente > 500 ms) car c'est un geste réellement mono-pointeur.
+ * Le pinch-zoom (2 pointeurs) n'est PAS exercé ici : `page.mouse` ne pilote qu'un
+ * pointeur. Il est couvert par `sprint-750-mobile-pinch-zoom-anchor.spec.ts`, qui
+ * envoie de vrais points tactiles CDP (pincement à deux doigts en portrait et en
+ * paysage) et vérifie l'ancrage de la date centrale. On exerce ici l'alternative
+ * accessible officielle (boutons +/-), qui passe par le MÊME reducer de zoom.
+ * Le long-press EST automatisé (un seul pointeur, `mouse.down` + attente > 500 ms)
+ * car c'est un geste réellement mono-pointeur.
  *
  * Auth : compte fixe PROD (storageState) → zéro register par test. État seedé par
  * API, assertions sur `data-testid` uniquement (4 locales, `localePrefix:'always'`).
