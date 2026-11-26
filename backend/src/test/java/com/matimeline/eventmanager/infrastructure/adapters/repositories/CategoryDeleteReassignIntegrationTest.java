@@ -2,6 +2,10 @@ package com.matimeline.eventmanager.infrastructure.adapters.repositories;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.Map;
 import java.util.UUID;
@@ -9,6 +13,10 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.matimeline.eventmanager.domain.exceptions.CategoryInUseException;
@@ -35,6 +43,7 @@ import jakarta.persistence.EntityManager;
  * @Transactional -> rollback après chaque test.
  */
 @SpringBootTest
+@AutoConfigureMockMvc
 @Transactional
 class CategoryDeleteReassignIntegrationTest extends AbstractPostgresIntegrationTest {
 
@@ -42,6 +51,7 @@ class CategoryDeleteReassignIntegrationTest extends AbstractPostgresIntegrationT
     @Autowired private CategoryRepository categoryRepository;
     @Autowired private ProductRepository productRepository;
     @Autowired private CategoryService categoryService;
+    @Autowired private MockMvc mockMvc;
 
     private UserEntity persistUser() {
         UserEntity user = new UserEntity();
@@ -80,6 +90,20 @@ class CategoryDeleteReassignIntegrationTest extends AbstractPostgresIntegrationT
         product.setArchived(archived);
         em.persist(product);
         return product;
+    }
+
+    private RequestPostProcessor as(UserEntity u) {
+        return user(u.getUsername()).authorities(new SimpleGrantedAuthority("ROLE_USER"));
+    }
+
+    /** Produits portés par la catégorie dans l'état d'archivage donné (natif : voit les archivés). */
+    private long countProducts(UUID categoryId, boolean archived) {
+        Number n = (Number) em.createNativeQuery(
+                        "SELECT count(*) FROM products WHERE category_id = :cat AND archived = :archived")
+                .setParameter("cat", categoryId)
+                .setParameter("archived", archived)
+                .getSingleResult();
+        return n.longValue();
     }
 
     /** BR-CAT-004 : unicité PAR UTILISATEUR — même nom, deux owners distincts = OK. */
@@ -324,5 +348,69 @@ class CategoryDeleteReassignIntegrationTest extends AbstractPostgresIntegrationT
         assertThat(forMe.total()).isEqualTo(1L);
         // Le comptage global voit les deux produits (c'est lui qui protège la FK).
         assertThat(productRepository.countByCategoryId(system.getId())).isEqualTo(2L);
+    }
+
+    // ------------- #720 : portée utilisateur, propriété vérifiée par le contrôleur -------------
+
+    /**
+     * #720 — un utilisateur ne peut pas supprimer la catégorie d'un autre utilisateur. Le service
+     * ne revérifie pas la propriété (seul existsById) : le 403 est porté par le contrôleur. Produits
+     * actifs ET archivés de l'autre compte rattachés à la catégorie : aucun ne doit bouger.
+     */
+    @Test
+    void deleteOtherUsersCategory_returns403_andLeavesAllProductsUntouched() throws Exception {
+        UserEntity caller = persistUser();
+        UserEntity owner = persistUser();
+        CategoryEntity foreign = persistCategory(owner, "Foreign-" + UUID.randomUUID());
+        CategoryEntity mine = persistCategory(caller, "Mine-" + UUID.randomUUID());
+        persistProduct(owner, foreign, false);
+        persistProduct(owner, foreign, false);
+        persistProduct(owner, foreign, true);
+        em.flush();
+        em.clear();
+
+        // Avec une cible de réassignation du caller : sans contrôle de propriété, les produits
+        // d'autrui migreraient et leur catégorie serait supprimée (pas de 409 « catégorie utilisée »).
+        int status = mockMvc.perform(delete("/api/categories/" + foreign.getId())
+                        .param("reassignToCategoryId", mine.getId().toString())
+                        .with(as(caller)))
+                .andReturn().getResponse().getStatus();
+
+        em.clear();
+        assertAll(
+                () -> assertThat(categoryRepository.existsById(foreign.getId())).isTrue(),
+                () -> assertThat(countProducts(foreign.getId(), false)).isEqualTo(2L),
+                () -> assertThat(countProducts(foreign.getId(), true)).isEqualTo(1L),
+                () -> assertThat(countProducts(mine.getId(), false)).isZero(),
+                () -> assertThat(countProducts(mine.getId(), true)).isZero(),
+                () -> assertThat(status).isEqualTo(403));
+    }
+
+    /**
+     * #720 — un utilisateur ne peut pas réaffecter ses produits vers la catégorie d'un autre
+     * utilisateur. `updateCategoryForProducts` est un UPDATE natif sans filtre utilisateur : seul
+     * le contrôle de propriété de la cible, dans le contrôleur, l'empêche.
+     */
+    @Test
+    void reassignToOtherUsersCategory_returns403_andProductsKeepTheirCategory() throws Exception {
+        UserEntity caller = persistUser();
+        UserEntity owner = persistUser();
+        CategoryEntity mine = persistCategory(caller, "Mine-" + UUID.randomUUID());
+        CategoryEntity foreign = persistCategory(owner, "Foreign-" + UUID.randomUUID());
+        persistProduct(caller, mine, false);
+        persistProduct(caller, mine, true);
+        em.flush();
+        em.clear();
+
+        mockMvc.perform(delete("/api/categories/" + mine.getId())
+                        .param("reassignToCategoryId", foreign.getId().toString())
+                        .with(as(caller)))
+                .andExpect(status().isForbidden());
+
+        em.clear();
+        assertThat(categoryRepository.existsById(mine.getId())).isTrue();
+        assertThat(countProducts(mine.getId(), false)).isEqualTo(1L);
+        assertThat(countProducts(mine.getId(), true)).isEqualTo(1L);
+        assertThat(productRepository.countByCategoryId(foreign.getId())).isZero();
     }
 }
