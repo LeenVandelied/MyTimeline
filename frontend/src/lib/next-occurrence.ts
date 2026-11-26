@@ -62,6 +62,16 @@ function lowerBoundIndex(start: Date, unit: RecurrenceUnit, today: Date): number
   }
 }
 
+/** Borne de la série en ms : `recurrenceEndDate` incluse (BR-EVE-012), sinon horizon de 5 ans. */
+function horizonOf(event: NextStartInput, start: Date, unit: RecurrenceUnit): number {
+  const end = event.recurrenceEndDate ? parseLocalDate(event.recurrenceEndDate) : null
+  return seriesHorizon({
+    start,
+    unit,
+    endDate: end !== null && !Number.isNaN(end.getTime()) ? end : null,
+  }).getTime()
+}
+
 /**
  * Début de la prochaine occurrence ≥ aujourd'hui (minuit local), ou `null` : archivé,
  * date illisible, ponctuel passé, série terminée (borne ou horizon dépassés).
@@ -76,12 +86,7 @@ export function nextStart(event: NextStartInput, now: Date): Date | null {
   const unit = event.isRecurring ? event.recurrenceUnit : null
   if (!unit) return null
 
-  const end = event.recurrenceEndDate ? parseLocalDate(event.recurrenceEndDate) : null
-  const horizon = seriesHorizon({
-    start,
-    unit,
-    endDate: end !== null && !Number.isNaN(end.getTime()) ? end : null,
-  }).getTime()
+  const horizon = horizonOf(event, start, unit)
 
   for (let k = lowerBoundIndex(start, unit, today); k < MAX_OCCURRENCES; k++) {
     const occurrence = occurrenceStart(start, unit, k)
@@ -89,6 +94,35 @@ export function nextStart(event: NextStartInput, now: Date): Date | null {
     if (occurrence.getTime() >= today.getTime()) return occurrence
   }
   return null
+}
+
+/**
+ * Débuts des occurrences dans `[from, to]` (minuit local, bornes incluses), mêmes règles
+ * que `nextStart` : archivé écarté, `recurrenceEndDate` incluse,
+ * indice de départ estimé (jamais de pas à pas depuis l'origine), plafond `MAX_OCCURRENCES`.
+ * Un ponctuel, un récurrent sans unité ou le départ d'une série compte pour une occurrence
+ * si son départ tombe dans la fenêtre.
+ */
+export function occurrencesInRange(event: NextStartInput, from: Date, to: Date): Date[] {
+  if (event.archived) return []
+  const start = parseLocalDate(event.startDate)
+  if (Number.isNaN(start.getTime())) return []
+  const first = startOfLocalDay(from)
+  const last = startOfLocalDay(to)
+  const unit = event.isRecurring ? event.recurrenceUnit : null
+  if (!unit) {
+    return start.getTime() >= first.getTime() && start.getTime() <= last.getTime() ? [start] : []
+  }
+
+  const horizon = Math.min(horizonOf(event, start, unit), last.getTime())
+  const found: Date[] = []
+  const k0 = start.getTime() >= first.getTime() ? 0 : lowerBoundIndex(start, unit, first)
+  for (let k = k0; k < MAX_OCCURRENCES; k++) {
+    const occurrence = occurrenceStart(start, unit, k)
+    if (occurrence.getTime() > horizon) break
+    if (occurrence.getTime() >= first.getTime()) found.push(occurrence)
+  }
+  return found
 }
 
 export interface NextEvent {

@@ -53,6 +53,15 @@ describe('DensityRibbon', () => {
     expect(screen.getByTestId('dashboard-density-ribbon')).toBeInTheDocument()
     expect(screen.getByTestId('dashboard-density-today')).toBeInTheDocument()
   })
+
+  it('renders an empty ribbon when the account has no event', () => {
+    render(<DensityRibbon events={[]} now={NOW} locale={LOCALE} rangeDays={30} />)
+    expect(screen.getByTestId('dashboard-density-ribbon')).toBeInTheDocument()
+    const bars = within(screen.getByTestId('dashboard-density-track')).getAllByTitle(/ · /)
+    expect(bars).toHaveLength(30)
+    // Le titre d'une barre expose son compteur : « {date} · 0 ».
+    expect(bars.every((b) => b.getAttribute('title')?.endsWith(' · 0'))).toBe(true)
+  })
 })
 
 describe('WeekAgenda', () => {

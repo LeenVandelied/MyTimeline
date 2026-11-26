@@ -48,7 +48,7 @@ export function currentWeekEvents(events: FullCalendarEvent[], now: Date): FullC
 const isValid = (date: Date): boolean => !Number.isNaN(date.getTime())
 
 /** Écart en JOURS CIVILS (pas en ms : un changement d'heure fausserait la division). */
-const civilDaysBetween = (from: Date, to: Date): number =>
+export const civilDaysBetween = (from: Date, to: Date): number =>
   Math.round(
     (Date.UTC(to.getFullYear(), to.getMonth(), to.getDate()) -
       Date.UTC(from.getFullYear(), from.getMonth(), from.getDate())) /
