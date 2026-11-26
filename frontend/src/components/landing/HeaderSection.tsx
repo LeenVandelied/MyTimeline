@@ -186,7 +186,7 @@ export function HeaderSection({ locale }: HeaderSectionProps) {
         data-testid="landing-header-bar"
         className="landing-sticky-bar bg-bg border-rule border-b"
       >
-        <header className="container-landing flex flex-wrap items-center justify-between gap-x-2 gap-y-2 px-4 py-2">
+        <header className="container-landing flex flex-wrap items-center justify-between gap-x-2 gap-y-2 py-2">
           <div className="flex items-center">
             {/* #381 — ÉCHELLE ET RETOUR À LA LIGNE DU LOGO, PALIER UNIQUE.
             `text-md` (21 px) puis `text-lg` (27 px) à partir de `sm`, et
@@ -246,11 +246,17 @@ export function HeaderSection({ locale }: HeaderSectionProps) {
               36 + 4 = 40 px, soit −20 px par écart ; avec `gap-4` (52 px, −26)
               le pire cas n'aurait plus que ~8 px de réserve.
 
+              #800 : la gouttière passe de 16 à 40 px dès `md` (`container-landing`),
+              soit 48 px de moins de large utile à 1024 px. Les deux écarts
+              logo/nav et nav/groupe droit perdent chacun environ 24 px (estimation
+              par le calcul, non mesurée : le relevé ci-dessous date d'avant #800).
+              Le pire cas garde une très large réserve sur le plancher de 24 px.
+
               ⚠ Les chiffres de #381 et de #642 ci-dessus datent d'une nav à TROIS
               ancres (témoignages et fonctionnalités retirées au S103) : ils
               expliquent le choix de `gap-1`, ils ne décrivent PLUS le code.
 
-              RELEVÉ ACTUEL (#614, review S104), 1024 px — nav à UNE ancre en mono
+              RELEVÉ (#614, review S104, avant #800), 1024 px — nav à UNE ancre en mono
               capitales, filet `lg:border-l` du groupe compris. Plateforme :
               macOS, Chromium Playwright sur `next dev` — PAS l'image jammy : les
               métriques de police d'Ubuntu diffèrent (PIT-S52-001), seul l'ORDRE
@@ -289,7 +295,8 @@ export function HeaderSection({ locale }: HeaderSectionProps) {
             `lg:h-9` restaure la hauteur desktop d'origine.
 
             #347 (suivi) — PALIER PETIT TÉLÉPHONE, `max-[360px]`. À 320 px le header
-            n'a que 288 px utiles (`px-4` de part et d'autre) et empile trois blocs
+            n'a que 288 px utiles (gouttière de 16 px de part et d'autre, portée par
+            `container-landing`, #800 : 40 px dès `md`) et empile trois blocs
             INCOMPRESSIBLES : logo 122 px (`whitespace-nowrap`, #334), ce CTA, `gap-2`
             et le burger 44 px. Mesuré au navigateur Linux (image Playwright jammy,
             polices de la CI) au HEAD 13704ed, largeur du CTA par locale :

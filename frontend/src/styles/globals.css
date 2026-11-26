@@ -239,13 +239,22 @@ html[data-density='comfortable'] {
    - Réservée aux sections de la landing (`components/landing/`). `container`
      reste inchangé pour le reste de l'app (footer applicatif, pages légales) :
      ne PAS redéfinir `container` globalement. */
+/* #800 — Gouttière latérale de la landing : 16 px sous `md` (`--space-4`, l'en-tête
+   à 320 px n'a que 288 px utiles), 40 px dès `md` (maquette). 40 px n'existe pas dans
+   l'échelle `--space-*` du DS : token propre à la landing, pas de pas ajouté à l'échelle
+   générale. Portée par `container-landing`, donc par les 5 blocs de la landing. */
 @theme {
   --container-landing: 1340px;
+  --landing-gutter-md: 40px;
 }
 
 @utility container-landing {
   @apply container;
   margin-inline: auto;
+  padding-inline: var(--space-4);
+  @media (width >= --theme(--breakpoint-md)) {
+    padding-inline: var(--landing-gutter-md);
+  }
   @media (width >= --theme(--container-landing)) {
     max-width: --theme(--container-landing);
   }
