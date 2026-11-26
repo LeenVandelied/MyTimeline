@@ -23,13 +23,98 @@ import { cn } from '@/lib/utils'
  *     (KPI + liste produits).
  * Largeur MESURÉE contre la page réelle par `e2e/sprint-106-product-detail.spec.ts`.
  *
+ * #811 — le squelette suit aussi les mises en page MOBILES de `page.tsx` : portrait
+ * (`dashboard-loading-portrait`) et paysage (`dashboard-loading-landscape`). Le fallback
+ * est rendu avant que la taille d'écran soit connue : la bascule est donc purement CSS,
+ * avec les requêtes de `page.tsx` recopiées (#643 les centralisera) — paysage de faible
+ * hauteur d'abord, puis portrait sous 768 px (variantes `max-md:` / `md:` du thème, sans
+ * trou entre 767 et 768 px), puis bureau. Aucun crochet de média.
+ * Les trois mises en page n'ont aucun `display` en conflit sauf le paysage (`hidden` puis
+ * `flex`) : les autres ne font qu'ajouter `hidden` sous une requête.
+ *
  * Une SEULE région `role="status"` (celle de `LoadingSkeleton`, sur l'agenda, qui
  * garde son testid `dashboard-loading-skeleton`) : les autres blocs sont
  * `aria-hidden` — plusieurs régions annonceraient le même chargement plusieurs fois.
+ * Cette région est dans la mise en page bureau, en `display:none` sous 768 px et en
+ * paysage bas : un lecteur d'écran n'y entendrait rien. Un relais `aria-live="polite"`
+ * (sans rôle `status`), visible seulement là où le bureau est masqué, annonce alors
+ * `common.loading.default`. À chaque taille d'écran, une seule annonce est active.
  */
 function Block({ className }: { className: string }) {
   return (
     <div className={cn('bg-surface-2 animate-pulse rounded-md', className)} aria-hidden="true" />
+  )
+}
+
+/** Ruban défilant — `DensityRibbon scrollable` : carte + rail `overflow-x-auto` à largeur fixe. */
+function ScrollableRibbonSkeleton({ testId }: { testId: string }) {
+  return (
+    <div
+      className="bg-surface border-rule flex flex-col gap-2 rounded-lg border p-4"
+      data-testid={testId}
+    >
+      <Block className="h-3 w-24" />
+      <Block className="h-4 w-48 max-w-full" />
+      <div className="relative">
+        <div className="flex h-24 scrollbar-none overflow-x-auto pr-6">
+          <Block className="h-full w-[720px] shrink-0" />
+        </div>
+        {/* Indice de défilement — ligne `scrollHint` sous le rail. */}
+        <div className="mt-1 flex justify-end">
+          <Block className="h-3 w-24" />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/** Rangée d'agenda — `AgendaRow` de `CompactAgenda`. */
+function AgendaRowSkeleton() {
+  return (
+    <div className="border-rule flex items-center gap-3 border-b py-2 last:border-b-0">
+      <Block className="h-6 w-0.5 shrink-0" />
+      <Block className="h-3 min-w-0 flex-1" />
+      <Block className="h-3 w-12 shrink-0" />
+    </div>
+  )
+}
+
+/** Agenda compact — `CompactAgenda` : intertitre, puis groupes aujourd'hui et demain. */
+function CompactAgendaSkeleton({ testId, className }: { testId: string; className?: string }) {
+  return (
+    <section className={cn('flex flex-col gap-3', className)} data-testid={testId}>
+      <Block className="h-4 w-32" />
+      {(['today', 'tomorrow'] as const).map((day) => (
+        <div key={day} className="flex flex-col gap-1" data-testid={`${testId}-${day}`}>
+          <Block className="h-2 w-20" />
+          <div className="flex flex-col">
+            <AgendaRowSkeleton />
+            <AgendaRowSkeleton />
+          </div>
+        </div>
+      ))}
+    </section>
+  )
+}
+
+/** Carrousel produits — `ProductCarousel` : piste `flex overflow-x-auto`, cartes `w-40 shrink-0`. */
+function ProductCarouselSkeleton({ testId }: { testId: string }) {
+  return (
+    <section className="flex flex-col gap-3" data-testid={testId}>
+      <Block className="h-4 w-32" />
+      <div className="-mx-4 flex scrollbar-none gap-3 overflow-x-auto px-4 pb-1">
+        {[0, 1, 2].map((i) => (
+          <div
+            key={i}
+            className="bg-surface border-rule flex w-40 shrink-0 flex-col gap-2 rounded-lg border p-3"
+          >
+            <Block className="h-3 w-24" />
+            <Block className="h-2 w-28" />
+            <Block className="h-2 w-8" />
+          </div>
+        ))}
+      </div>
+    </section>
   )
 }
 
@@ -38,8 +123,21 @@ export default function DashboardLoading() {
 
   return (
     <div className="bg-bg text-ink flex min-h-screen flex-col">
+      {/* Relais d'annonce des tailles où la région `status` bureau est masquée. */}
+      <p
+        aria-live="polite"
+        className="sr-only hidden max-md:block [@media(orientation:landscape)_and_(max-height:500px)]:block"
+      >
+        {t('loading.default')}
+      </p>
+      {/* Bascule des mises en page : requêtes de `page.tsx` (`isLandscape`, `isMobile`) en
+          variantes Tailwind, classes LITTÉRALES (Tailwind ne génère que les chaînes qu'il lit). */}
       <div
-        className="mx-auto w-full max-w-7xl flex-1 space-y-6 px-4 py-6 sm:px-6 lg:px-8"
+        className={cn(
+          'mx-auto w-full max-w-7xl flex-1 space-y-6 px-4 py-6 sm:px-6 lg:px-8',
+          'max-md:hidden',
+          '[@media(orientation:landscape)_and_(max-height:500px)]:hidden',
+        )}
         data-testid="dashboard-loading-layout"
       >
         {/* Salutation — `GreetingHeader` (variant `full`). */}
@@ -84,6 +182,61 @@ export default function DashboardLoading() {
           <div className="flex flex-col gap-6" aria-hidden="true">
             <Block className="h-24 w-full" />
             <Block className="h-40 w-full" />
+          </div>
+        </div>
+      </div>
+
+      {/* Portrait (< 768 px) — `dashboard-mobile-portrait` : une colonne. */}
+      <div
+        className={cn(
+          'mx-auto w-full max-w-7xl flex-1 space-y-6 px-4 py-6',
+          'md:hidden',
+          '[@media(orientation:landscape)_and_(max-height:500px)]:hidden',
+        )}
+        aria-hidden="true"
+        data-testid="dashboard-loading-portrait"
+      >
+        {/* `GreetingHeader` compact : eyebrow + titre, sans sous-titre. */}
+        <div
+          className="border-rule flex flex-col gap-1 border-b pb-4"
+          data-testid="dashboard-loading-portrait-greeting"
+        >
+          <Block className="h-2 w-28" />
+          <Block className="h-7 w-48 max-w-full" />
+        </div>
+        <ScrollableRibbonSkeleton testId="dashboard-loading-portrait-ribbon" />
+        <CompactAgendaSkeleton testId="dashboard-loading-portrait-agenda" />
+        <ProductCarouselSkeleton testId="dashboard-loading-portrait-carousel" />
+      </div>
+
+      {/* Paysage de faible hauteur — `dashboard-landscape` : rail 64 px + deux colonnes. */}
+      <div
+        className={cn(
+          'hidden flex-1 overflow-hidden',
+          '[@media(orientation:landscape)_and_(max-height:500px)]:flex',
+        )}
+        aria-hidden="true"
+        data-testid="dashboard-loading-landscape"
+      >
+        {/* `CompactRail`. */}
+        <div
+          className="bg-surface border-rule flex w-16 shrink-0 flex-col items-center gap-2 border-r py-3"
+          data-testid="dashboard-loading-rail"
+        >
+          <div className="flex flex-1 flex-col items-center gap-2">
+            <Block className="h-12 w-12" />
+            <Block className="h-12 w-12" />
+          </div>
+          <Block className="h-12 w-12" />
+        </div>
+        <div className="grid flex-1 grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] gap-4 overflow-y-auto px-4 py-4">
+          <CompactAgendaSkeleton testId="dashboard-loading-landscape-agenda" className="min-w-0" />
+          <div
+            className="flex min-w-0 flex-col gap-4"
+            data-testid="dashboard-loading-landscape-products"
+          >
+            <ScrollableRibbonSkeleton testId="dashboard-loading-landscape-ribbon" />
+            <ProductCarouselSkeleton testId="dashboard-loading-landscape-carousel" />
           </div>
         </div>
       </div>
