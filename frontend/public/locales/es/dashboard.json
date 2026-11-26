@@ -1,10 +1,5 @@
 {
   "title": "Panel de control",
-  "welcome": "Bienvenido a tu panel de control",
-  "lastConnection": "Última conexión",
-  "email": "Correo electrónico",
-  "role": "Rol",
-  "products": "Productos",
   "greeting": {
     "eyebrow": "Resumen",
     "morning": "Buenos días {name}, aquí está tu día",
@@ -19,7 +14,6 @@
     "today": "Hoy",
     "window": "Ventana · {range}",
     "viewport": "Ventana de vista previa de {days} días",
-    "empty": "Sin eventos en este período",
     "openTimeline": "Abrir la cronología"
   },
   "week": {
@@ -76,17 +70,6 @@
     "empty": "Añade un primer producto para seguir sus vencimientos",
     "emptyCta": "Ir a los productos",
     "noUpcoming": "Sin vencimientos"
-  },
-  "stats": {
-    "title": "Estadísticas",
-    "totalEvents": "Eventos totales",
-    "upcomingEvents": "Próximos eventos",
-    "completedEvents": "Eventos completados"
-  },
-  "actions": {
-    "createEvent": "Crear evento",
-    "viewCalendar": "Ver calendario",
-    "manageProfile": "Administrar perfil"
   },
   "timeline": {
     "zoom": {

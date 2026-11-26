@@ -1,16 +1,13 @@
 {
   "email": {
-    "invalid": "Die E-Mail ist ungültig",
-    "required": "E-Mail ist erforderlich"
+    "invalid": "Die E-Mail ist ungültig"
   },
   "name": {
     "min": "Der Name muss mindestens 3 Zeichen enthalten",
-    "required": "Name ist erforderlich",
     "max": "Der Name darf höchstens 20 Zeichen lang sein"
   },
   "username": {
     "min": "Der Benutzername muss mindestens 3 Zeichen enthalten",
-    "required": "Benutzername ist erforderlich",
     "max": "Der Benutzername darf höchstens 20 Zeichen lang sein"
   },
   "password": {
@@ -34,7 +31,6 @@
     "colorInvalid": "Ungültige Farbe (Hexadezimalformat erwartet, z. B. #3B82F6)",
     "submitError": "Beim Speichern ist ein Fehler aufgetreten, bitte versuche es erneut.",
     "forbidden": "Änderung verweigert: Du bist nicht berechtigt, dieses Ereignis zu bearbeiten.",
-    "conflict": "Dieses Ereignis wurde zwischenzeitlich geändert. Lade neu, um die neueste Version zu sehen.",
-    "reload": "Neu laden"
+    "conflict": "Dieses Ereignis wurde zwischenzeitlich geändert. Lade neu, um die neueste Version zu sehen."
   }
 }

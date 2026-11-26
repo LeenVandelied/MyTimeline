@@ -1,18 +1,6 @@
 {
   "add": {
-    "title": "Añadir Producto",
-    "form": {
-      "name": "Nombre del Producto",
-      "namePlaceholder": "Ingrese el nombre del producto",
-      "category": "Categoría",
-      "categoryPlaceholder": "Seleccione una categoría",
-      "submit": "Añadir",
-      "error": "Ocurrió un error al añadir el producto."
-    },
     "event": {
-      "title": "Añadir Evento",
-      "list": "Eventos Añadidos",
-      "empty": "No hay eventos añadidos",
       "form": {
         "name": "Nombre del Evento",
         "namePlaceholder": "Ingrese el nombre del evento",
@@ -45,35 +33,21 @@
         "months": "Meses",
         "years": "Años"
       }
-    },
-    "events": {
-      "list": "Eventos Añadidos",
-      "empty": "No hay eventos añadidos"
-    },
-    "description": "Añada un nuevo producto con sus eventos asociados"
+    }
   },
   "details": {
     "title": "Detalles del Evento",
-    "end": "Su evento termina en ",
     "duration": "Duración",
-    "colors": "Personalización de Colores",
     "color": "Color",
     "preview": "Vista Previa del Evento",
     "sampleEvent": "Evento de Ejemplo",
-    "sampleDescription": "Descripción del evento con los colores seleccionados",
     "previewTimeline": {
       "label": "Vista previa cronológica del evento",
       "nextOccurrence": "Próxima ocurrencia"
-    },
-    "edit": {
-      "title": "Editar Evento",
-      "success": "Evento modificado con éxito",
-      "error": "Error al modificar el evento"
     }
   },
   "edit": {
-    "title": "Editar Evento",
-    "save": "Guardar Cambios"
+    "title": "Editar Evento"
   },
   "eventCategory": {
     "label": "Categoría",
@@ -128,7 +102,6 @@
     "emptySearch": "Ningún producto coincide con tu búsqueda.",
     "clearSearch": "Borrar la búsqueda",
     "error": "No se pudieron cargar los productos.",
-    "count": "{count, plural, =0 {ningún producto} one {# producto} other {# productos}}",
     "columns": {
       "product": "Producto",
       "nextEvent": "Próximo evento",
@@ -177,11 +150,8 @@
       "all": "Todos"
     },
     "fields": {
-      "name": "Nombre",
       "category": "Categoría",
-      "description": "Descripción",
       "color": "Color",
-      "noDescription": "Sin descripción",
       "noCategory": "Sin categoría"
     },
     "eventsCount": "{count, plural, =0 {ningún evento} one {# evento} other {# eventos}}"

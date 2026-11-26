@@ -63,17 +63,11 @@ describe('common.navigation.changeLanguage', () => {
     expect(readCommon(locale).navigation?.changeLanguage).not.toBe(fr)
   })
 
-  it('conserve les clés de navigation préexistantes dans les 4 locales', () => {
+  it('conserve les clés de navigation lues dans les 4 locales', () => {
+    // #90 : home, profile et settings n'étaient lues par aucun écran, elles sont retirées.
     for (const locale of LOCALES) {
       const navigation = readCommon(locale).navigation ?? {}
-      expect(Object.keys(navigation)).toEqual([
-        'home',
-        'profile',
-        'settings',
-        'back',
-        'backToHome',
-        'changeLanguage',
-      ])
+      expect(Object.keys(navigation)).toEqual(['back', 'backToHome', 'changeLanguage'])
     }
   })
 })

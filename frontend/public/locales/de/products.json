@@ -1,18 +1,6 @@
 {
   "add": {
-    "title": "Produkt hinzufügen",
-    "form": {
-      "name": "Produktname",
-      "namePlaceholder": "Produktname eingeben",
-      "category": "Kategorie",
-      "categoryPlaceholder": "Kategorie auswählen",
-      "submit": "Hinzufügen",
-      "error": "Beim Hinzufügen des Produkts ist ein Fehler aufgetreten."
-    },
     "event": {
-      "title": "Ereignis hinzufügen",
-      "list": "Hinzugefügte Ereignisse",
-      "empty": "Keine Ereignisse hinzugefügt",
       "form": {
         "name": "Ereignisname",
         "namePlaceholder": "Ereignisname eingeben",
@@ -45,35 +33,21 @@
         "months": "Monate",
         "years": "Jahre"
       }
-    },
-    "events": {
-      "list": "Hinzugefügte Ereignisse",
-      "empty": "Keine Ereignisse hinzugefügt"
-    },
-    "description": "Fügen Sie ein neues Produkt mit zugehörigen Ereignissen hinzu"
+    }
   },
   "details": {
     "title": "Ereignisdetails",
-    "end": "Ihr Ereignis endet in ",
     "duration": "Dauer",
-    "colors": "Farbanpassung",
     "color": "Farbe",
     "preview": "Ereignisvorschau",
     "sampleEvent": "Beispielereignis",
-    "sampleDescription": "Ereignisbeschreibung mit ausgewählten Farben",
     "previewTimeline": {
       "label": "Zeitleisten-Vorschau des Ereignisses",
       "nextOccurrence": "Nächstes Vorkommen"
-    },
-    "edit": {
-      "title": "Ereignis bearbeiten",
-      "success": "Ereignis erfolgreich geändert",
-      "error": "Fehler beim Ändern des Ereignisses"
     }
   },
   "edit": {
-    "title": "Ereignis bearbeiten",
-    "save": "Änderungen speichern"
+    "title": "Ereignis bearbeiten"
   },
   "eventCategory": {
     "label": "Kategorie",
@@ -128,7 +102,6 @@
     "emptySearch": "Kein Produkt entspricht deiner Suche.",
     "clearSearch": "Suche löschen",
     "error": "Produkte konnten nicht geladen werden.",
-    "count": "{count, plural, =0 {keine Produkte} one {# Produkt} other {# Produkte}}",
     "columns": {
       "product": "Produkt",
       "nextEvent": "Nächstes Ereignis",
@@ -177,11 +150,8 @@
       "all": "Alle"
     },
     "fields": {
-      "name": "Name",
       "category": "Kategorie",
-      "description": "Beschreibung",
       "color": "Farbe",
-      "noDescription": "Keine Beschreibung",
       "noCategory": "Keine Kategorie"
     },
     "eventsCount": "{count, plural, =0 {keine Ereignisse} one {# Ereignis} other {# Ereignisse}}"

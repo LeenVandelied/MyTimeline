@@ -1,21 +1,13 @@
 {
   "auth": {
-    "register": "Fehler bei der Registrierung",
-    "login": "Anmeldefehler",
-    "logout": "Fehler beim Abmelden",
     "sessionExpired": "Ihre Sitzung ist abgelaufen. Bitte melden Sie sich erneut an",
     "forbidden": "Zugriff verweigert: Sie sind nicht berechtigt, diese Aktion auszuführen."
   },
   "validation": {
     "error": "Validierungsfehler, bitte überprüfen Sie Ihre Eingaben."
   },
-  "network": {
-    "offline": "Sie sind offline. Bitte überprüfen Sie Ihre Verbindung",
-    "timeout": "Zeitüberschreitung. Bitte versuchen Sie es erneut"
-  },
   "server": {
-    "error": "Serverfehler. Bitte versuchen Sie es später erneut",
-    "maintenance": "Der Server wird gewartet. Bitte versuchen Sie es später erneut"
+    "error": "Serverfehler. Bitte versuchen Sie es später erneut"
   },
   "notFound": {
     "eyebrow": "Fehler 404",

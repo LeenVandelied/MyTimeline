@@ -78,7 +78,7 @@ async function openShell(page: Page): Promise<void> {
  * d'une chrome à l'autre (`dashboard-settings-link` vs
  * `shell-sidebar-settings-link`), donc un compte par testid ne pourrait
  * STRUCTURELLEMENT jamais voir un doublon inter-chrome. Les libellés viennent
- * de `public/locales/fr/` : `common.buttons.settings` == `shell.settings` et
+ * de `public/locales/fr/` : `shell.settings` pour Réglages et
  * `common.buttons.logout` == `shell.logout`, ce qui rend l'appariement exact.
  */
 const NAME_SETTINGS = 'Réglages'

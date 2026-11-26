@@ -1,10 +1,5 @@
 {
   "title": "Dashboard",
-  "welcome": "Willkommen in Ihrem Dashboard",
-  "lastConnection": "Letzte Verbindung",
-  "email": "E-Mail",
-  "role": "Rolle",
-  "products": "Produkte",
   "greeting": {
     "eyebrow": "Überblick",
     "morning": "Guten Morgen {name}, hier ist dein Tag",
@@ -19,7 +14,6 @@
     "today": "Heute",
     "window": "Fenster · {range}",
     "viewport": "Vorschaufenster über {days} Tage",
-    "empty": "Keine Ereignisse in diesem Zeitraum",
     "openTimeline": "Zeitachse öffnen"
   },
   "week": {
@@ -76,17 +70,6 @@
     "empty": "Füge ein erstes Produkt hinzu, um seine Fristen zu verfolgen",
     "emptyCta": "Zu den Produkten",
     "noUpcoming": "Keine anstehenden"
-  },
-  "stats": {
-    "title": "Statistiken",
-    "totalEvents": "Gesamtereignisse",
-    "upcomingEvents": "Kommende Ereignisse",
-    "completedEvents": "Abgeschlossene Ereignisse"
-  },
-  "actions": {
-    "createEvent": "Ereignis erstellen",
-    "viewCalendar": "Kalender anzeigen",
-    "manageProfile": "Profil verwalten"
   },
   "timeline": {
     "zoom": {

@@ -1,18 +1,6 @@
 {
   "add": {
-    "title": "Add Product",
-    "form": {
-      "name": "Product Name",
-      "namePlaceholder": "Enter product name",
-      "category": "Category",
-      "categoryPlaceholder": "Select a category",
-      "submit": "Add",
-      "error": "An error occurred while adding the product."
-    },
     "event": {
-      "title": "Add Event",
-      "list": "Added Events",
-      "empty": "No events added",
       "form": {
         "name": "Event Name",
         "namePlaceholder": "Enter event name",
@@ -45,35 +33,21 @@
         "months": "Months",
         "years": "Years"
       }
-    },
-    "events": {
-      "list": "Added Events",
-      "empty": "No events added"
-    },
-    "description": "Add a new product with its associated events"
+    }
   },
   "details": {
     "title": "Event Details",
-    "end": "Your event ends in ",
     "duration": "Duration",
-    "colors": "Color Customization",
     "color": "Color",
     "preview": "Event Preview",
     "sampleEvent": "Sample Event",
-    "sampleDescription": "Event description with selected colors",
     "previewTimeline": {
       "label": "Event timeline preview",
       "nextOccurrence": "Next occurrence"
-    },
-    "edit": {
-      "title": "Edit Event",
-      "success": "Event successfully modified",
-      "error": "Error while modifying event"
     }
   },
   "edit": {
-    "title": "Edit Event",
-    "save": "Save Changes"
+    "title": "Edit Event"
   },
   "eventCategory": {
     "label": "Category",
@@ -128,7 +102,6 @@
     "emptySearch": "No product matches your search.",
     "clearSearch": "Clear search",
     "error": "Unable to load products.",
-    "count": "{count, plural, =0 {no products} one {# product} other {# products}}",
     "columns": {
       "product": "Product",
       "nextEvent": "Next event",
@@ -177,11 +150,8 @@
       "all": "All"
     },
     "fields": {
-      "name": "Name",
       "category": "Category",
-      "description": "Description",
       "color": "Color",
-      "noDescription": "No description",
       "noCategory": "No category"
     },
     "eventsCount": "{count, plural, =0 {no events} one {# event} other {# events}}"

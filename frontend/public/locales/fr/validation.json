@@ -1,17 +1,14 @@
 {
   "email": {
-    "invalid": "L'email est invalide",
-    "required": "L'email est requis"
+    "invalid": "L'email est invalide"
   },
   "name": {
     "min": "Le nom doit contenir au moins 3 caractères",
-    "max": "Le nom ne doit pas dépasser 20 caractères",
-    "required": "Le nom est requis"
+    "max": "Le nom ne doit pas dépasser 20 caractères"
   },
   "username": {
     "min": "Le nom d'utilisateur doit contenir au moins 3 caractères",
-    "max": "Le nom d'utilisateur ne doit pas dépasser 20 caractères",
-    "required": "Le nom d'utilisateur est requis"
+    "max": "Le nom d'utilisateur ne doit pas dépasser 20 caractères"
   },
   "password": {
     "min": "Le mot de passe doit contenir au moins 8 caractères, dont une majuscule et un chiffre",
@@ -34,7 +31,6 @@
     "colorInvalid": "Couleur invalide (format hexadécimal attendu, ex. #3B82F6)",
     "submitError": "Une erreur est survenue lors de l'enregistrement, veuillez réessayer.",
     "forbidden": "Modification refusée : vous n'avez pas l'autorisation de modifier cet événement.",
-    "conflict": "Cet événement a été modifié entre-temps. Rechargez pour voir la dernière version.",
-    "reload": "Recharger"
+    "conflict": "Cet événement a été modifié entre-temps. Rechargez pour voir la dernière version."
   }
 }

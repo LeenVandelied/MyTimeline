@@ -83,33 +83,20 @@
       "archived": "Archived"
     }
   },
-  "validation": {
-    "username": "Username must contain at least 3 characters",
-    "password": "Password must contain at least 6 characters"
-  },
   "buttons": {
-    "submit": "Submit",
     "cancel": "Cancel",
     "save": "Save",
     "delete": "Delete",
     "edit": "Edit",
-    "back": "Back",
     "logout": "Logout",
-    "settings": "Settings",
-    "previous": "Previous",
-    "next": "Next",
     "today": "Today",
     "close": "Close"
   },
   "loading": {
     "default": "Loading...",
-    "saving": "Saving...",
-    "deleting": "Deleting..."
+    "saving": "Saving..."
   },
   "navigation": {
-    "home": "Home",
-    "profile": "Profile",
-    "settings": "Settings",
     "back": "Back",
     "backToHome": "Back to home",
     "changeLanguage": "Change language"
@@ -130,15 +117,7 @@
     "days": "days",
     "expired": "Expired"
   },
-  "events": {
-    "ongoing": "Ongoing",
-    "expired": "Expired",
-    "upcoming": "Upcoming",
-    "duration": "Duration",
-    "single": "Single date"
-  },
   "landing": {
-    "title": "My Timeline | Your personal organization assistant",
     "navigation": {
       "howItWorks": "How it works",
       "menuOpen": "Open menu",
@@ -147,9 +126,6 @@
     },
     "buttons": {
       "register": "Sign up"
-    },
-    "meta": {
-      "description": "My Timeline helps you manage your deadlines, organize your time, and optimize your productivity. Simple, intuitive, and customizable."
     },
     "hero": {
       "title": "Organize your life with My Timeline",
@@ -231,8 +207,7 @@
     "cta": {
       "title": "Ready to transform your organization?",
       "subtitle": "Start now and improve your productivity",
-      "button": "Create my free account",
-      "secondary": "Learn more"
+      "button": "Create my free account"
     },
     "footer": {
       "description": "Your personal time management and organization assistant",
@@ -241,7 +216,6 @@
       "legal": "Legal",
       "terms": "Terms of Service",
       "privacy": "Privacy Policy",
-      "legalNotice": "Legal Notice",
       "account": "Account",
       "login": "Login",
       "register": "Sign up"

@@ -1,16 +1,13 @@
 {
   "email": {
-    "invalid": "Invalid email",
-    "required": "Email is required"
+    "invalid": "Invalid email"
   },
   "name": {
     "min": "Name must be at least 3 characters",
-    "required": "Name is required",
     "max": "Name must be at most 20 characters"
   },
   "username": {
     "min": "Username must be at least 3 characters",
-    "required": "Username is required",
     "max": "Username must be at most 20 characters"
   },
   "password": {
@@ -34,7 +31,6 @@
     "colorInvalid": "Invalid color (hexadecimal format expected, e.g. #3B82F6)",
     "submitError": "An error occurred while saving, please try again.",
     "forbidden": "Update denied: you are not allowed to edit this event.",
-    "conflict": "This event was modified in the meantime. Reload to see the latest version.",
-    "reload": "Reload"
+    "conflict": "This event was modified in the meantime. Reload to see the latest version."
   }
 }
