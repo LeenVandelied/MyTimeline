@@ -56,11 +56,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(CategoryNameConflictException.class)
     public ResponseEntity<Map<String, Object>> handleCategoryNameConflict(CategoryNameConflictException ex) {
         // BR-CAT-004 (#52) : nom de catégorie déjà pris par CET utilisateur -> 409.
-        // #290 : contrat structuré buildBody — `error`=code stable CONFLICT, texte humain
-        // en `message`. Le front lit le statut 409 (pas la valeur texte de `error`).
+        // #290 : contrat structuré buildBody — `error`=category_name_conflict, texte humain
+        // en `message`. #692 : un code par cause de refus 409.
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
-                .body(buildBody(HttpStatus.CONFLICT, ErrorCode.CONFLICT, "category name already used"));
+                .body(buildBody(HttpStatus.CONFLICT, ErrorCode.CATEGORY_NAME_CONFLICT, "category name already used"));
     }
 
     @ExceptionHandler(CategoryInUseException.class)
@@ -68,10 +68,10 @@ public class GlobalExceptionHandler {
         // AP-CAT-05 (#52) : suppression d'une catégorie référencée sans réassignation
         // -> 409. Le message métier explicite (nombre de produits + marche à suivre)
         // est renvoyé tel quel pour guider le client (critère d'acceptation).
-        // #290 : buildBody — `error`=CONFLICT, message dynamique lisible en `message`.
+        // #290 : buildBody — `error`=category_in_use (#692), message dynamique lisible en `message`.
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
-                .body(buildBody(HttpStatus.CONFLICT, ErrorCode.CONFLICT, ex.getMessage()));
+                .body(buildBody(HttpStatus.CONFLICT, ErrorCode.CATEGORY_IN_USE, ex.getMessage()));
     }
 
     @ExceptionHandler(ExportFormatNotSupportedException.class)
@@ -139,10 +139,10 @@ public class GlobalExceptionHandler {
         // FIX review #153 : DELETE avec reassignToCategoryId == id (cible == source) -> 409
         // avec un message DÉDIÉ (au lieu de réutiliser CategoryInUseException, dont le
         // message « fournissez reassignToCategoryId » était trompeur pour ce cas).
-        // #290 : buildBody — `error`=CONFLICT, message dédié lisible en `message`.
+        // #290 : buildBody — `error`=category_reassign_target_invalid (#692), message dédié lisible en `message`.
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
-                .body(buildBody(HttpStatus.CONFLICT, ErrorCode.CONFLICT, ex.getMessage()));
+                .body(buildBody(HttpStatus.CONFLICT, ErrorCode.CATEGORY_REASSIGN_TARGET_INVALID, ex.getMessage()));
     }
 
     // FIX review #153 : SUPPRESSION du @ExceptionHandler(DataIntegrityViolationException)

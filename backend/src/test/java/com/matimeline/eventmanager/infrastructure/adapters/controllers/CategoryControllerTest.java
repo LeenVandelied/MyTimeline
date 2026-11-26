@@ -114,7 +114,7 @@ class CategoryControllerTest {
     }
 
     @Test
-    void createCategory_duplicateNameForUser_returns409() throws Exception {
+    void createCategory_duplicateNameForUser_returns409_withNameConflictCode() throws Exception {
         stubCaller();
         when(categoryService.createCategory(eq("Travail"), isNull(), isNull(), eq(callerId)))
                 .thenThrow(new CategoryNameConflictException("Travail"));
@@ -124,8 +124,8 @@ class CategoryControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"name\":\"Travail\"}"))
                 .andExpect(status().isConflict())
-                // #290 : `error`=code stable CONFLICT, texte humain en `message`.
-                .andExpect(jsonPath("$.error").value("conflict"))
+                // #692 : code stable propre à la cause, texte humain en `message`.
+                .andExpect(jsonPath("$.error").value("category_name_conflict"))
                 .andExpect(jsonPath("$.message").value("category name already used"));
     }
 
@@ -354,7 +354,7 @@ class CategoryControllerTest {
     }
 
     @Test
-    void patchCategory_duplicateName_returns409() throws Exception {
+    void patchCategory_duplicateName_returns409_withNameConflictCode() throws Exception {
         stubCaller();
         UUID id = UUID.randomUUID();
         when(categoryService.getCategoryById(id)).thenReturn(Optional.of(owned(id, "old")));
@@ -366,8 +366,8 @@ class CategoryControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"name\":\"dup\"}"))
                 .andExpect(status().isConflict())
-                // #290 : `error`=code stable CONFLICT, texte humain en `message`.
-                .andExpect(jsonPath("$.error").value("conflict"))
+                // #692 : code stable propre à la cause, texte humain en `message`.
+                .andExpect(jsonPath("$.error").value("category_name_conflict"))
                 .andExpect(jsonPath("$.message").value("category name already used"));
     }
 
@@ -387,7 +387,7 @@ class CategoryControllerTest {
     }
 
     @Test
-    void deleteCategory_referencedWithoutReassign_returns409_withMessage() throws Exception {
+    void deleteCategory_referencedWithoutReassign_returns409_withCategoryInUseCode() throws Exception {
         stubCaller();
         UUID id = UUID.randomUUID();
         when(categoryService.getCategoryById(id)).thenReturn(Optional.of(owned(id, "c")));
@@ -397,8 +397,8 @@ class CategoryControllerTest {
         mockMvc.perform(delete("/api/categories/" + id)
                         .cookie(new Cookie("jwt", TOKEN)))
                 .andExpect(status().isConflict())
-                // #290 : `error`=code stable CONFLICT, message métier dynamique en `message`.
-                .andExpect(jsonPath("$.error").value("conflict"))
+                // #692 : code stable propre à la cause, message métier dynamique en `message`.
+                .andExpect(jsonPath("$.error").value("category_in_use"))
                 .andExpect(jsonPath("$.message")
                         .value("La catégorie est utilisée par 3 produits. Fournissez reassignToCategoryId."));
     }
@@ -424,7 +424,7 @@ class CategoryControllerTest {
      * trompeur « fournissez reassignToCategoryId ». On vérifie le contrat HTTP end-to-end.
      */
     @Test
-    void deleteCategory_reassignToSelf_returns409_withDedicatedMessage() throws Exception {
+    void deleteCategory_reassignToSelf_returns409_withReassignTargetInvalidCode() throws Exception {
         stubCaller();
         UUID id = UUID.randomUUID();
         when(categoryService.getCategoryById(id)).thenReturn(Optional.of(owned(id, "src")));
@@ -434,8 +434,8 @@ class CategoryControllerTest {
         mockMvc.perform(delete("/api/categories/" + id + "?reassignToCategoryId=" + id)
                         .cookie(new Cookie("jwt", TOKEN)))
                 .andExpect(status().isConflict())
-                // #290 : `error`=code stable CONFLICT, message dédié en `message`.
-                .andExpect(jsonPath("$.error").value("conflict"))
+                // #692 : code stable propre à la cause, message dédié en `message`.
+                .andExpect(jsonPath("$.error").value("category_reassign_target_invalid"))
                 .andExpect(jsonPath("$.message")
                         .value("The reassignment target category cannot be the category being deleted."));
     }
